@@ -21,6 +21,28 @@ export interface Movie {
   vote_average: number;
   overview: string;
   genre_ids: number[];
+  runtime?: number;
+  number_of_seasons?: number;
+  number_of_episodes?: number;
+  genres?: { id: number; name: string }[];
+  production_companies?: { id: number; name: string; logo_path: string }[];
+  videos?: {
+    results: Array<{
+      id: string;
+      key: string;
+      name: string;
+      site: string;
+      type: string;
+    }>;
+  };
+  credits?: {
+    cast: Array<{
+      id: number;
+      name: string;
+      character: string;
+      profile_path: string;
+    }>;
+  };
 }
 
 export const tmdbApi = {
@@ -52,15 +74,25 @@ export const tmdbApi = {
     return data.results.filter((item: any) => item.media_type === 'movie' || item.media_type === 'tv');
   },
 
-  // Get movie details
+  // Real-time search suggestions
+  searchSuggestions: async (query: string): Promise<Movie[]> => {
+    if (!query.trim()) return [];
+    const response = await fetch(`${BASE_URL}/search/multi?query=${encodeURIComponent(query)}&page=1`, options);
+    const data = await response.json();
+    return data.results
+      .filter((item: any) => item.media_type === 'movie' || item.media_type === 'tv')
+      .slice(0, 8);
+  },
+
+  // Get movie details with additional info
   getMovieDetails: async (movieId: number): Promise<Movie> => {
-    const response = await fetch(`${BASE_URL}/movie/${movieId}`, options);
+    const response = await fetch(`${BASE_URL}/movie/${movieId}?append_to_response=videos,credits`, options);
     return response.json();
   },
 
-  // Get TV show details
+  // Get TV show details with additional info
   getTVDetails: async (tvId: number): Promise<Movie> => {
-    const response = await fetch(`${BASE_URL}/tv/${tvId}`, options);
+    const response = await fetch(`${BASE_URL}/tv/${tvId}?append_to_response=videos,credits`, options);
     return response.json();
   },
 

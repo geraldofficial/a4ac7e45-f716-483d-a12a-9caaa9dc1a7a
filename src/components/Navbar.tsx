@@ -1,25 +1,15 @@
 
 import React, { useState } from 'react';
-import { Search, Menu, X, Film, User, LogOut, Bookmark } from 'lucide-react';
+import { Menu, X, Film, User, LogOut, Bookmark } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+import { SearchSuggestions } from './SearchSuggestions';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 
 export const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
   const { user, logout } = useAuth();
   const navigate = useNavigate();
-
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (searchQuery.trim()) {
-      navigate(`/search?q=${encodeURIComponent(searchQuery.trim())}`);
-      setSearchQuery('');
-      setIsMenuOpen(false);
-    }
-  };
 
   const handleLogout = () => {
     logout();
@@ -49,15 +39,7 @@ export const Navbar = () => {
           {/* Search and User Menu */}
           <div className="flex items-center space-x-4">
             {/* Desktop Search */}
-            <form onSubmit={handleSearch} className="relative hidden md:block">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-              <Input 
-                placeholder="Search movies, TV shows..." 
-                className="pl-10 bg-white/10 border-white/20 text-white placeholder:text-gray-400 w-64"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-              />
-            </form>
+            <SearchSuggestions className="hidden md:block w-64" />
             
             {/* User Menu */}
             {user ? (
@@ -112,15 +94,7 @@ export const Navbar = () => {
               )}
               
               {/* Mobile Search */}
-              <form onSubmit={handleSearch} className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                <Input 
-                  placeholder="Search..." 
-                  className="pl-10 bg-white/10 border-white/20 text-white placeholder:text-gray-400"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                />
-              </form>
+              <SearchSuggestions onClose={() => setIsMenuOpen(false)} />
               
               {/* Mobile User Menu */}
               {user ? (
