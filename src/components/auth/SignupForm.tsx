@@ -34,11 +34,10 @@ export const SignupForm: React.FC<SignupFormProps> = ({ onToggleMode }) => {
     setIsLoading(true);
 
     try {
-      const success = await signup(email, password, username);
-      if (success) {
-        // Stay on auth page to show email verification message
-        onToggleMode(); // Switch back to login
-      }
+      await signup(email, password, username);
+      // The signup function handles navigation via window.location.href
+    } catch (error) {
+      console.error('Signup failed:', error);
     } finally {
       setIsLoading(false);
     }

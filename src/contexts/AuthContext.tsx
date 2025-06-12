@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { User, Session } from '@supabase/supabase-js';
@@ -13,8 +12,8 @@ interface AuthContextType {
   user: UserProfile | null;
   session: Session | null;
   loading: boolean;
-  login: (email: string, password: string) => Promise<void>;
-  signup: (email: string, password: string, username: string) => Promise<void>;
+  login: (email: string, password: string) => Promise<boolean>;
+  signup: (email: string, password: string, username: string) => Promise<boolean>;
   logout: () => Promise<void>;
   addToWatchlist: (movieId: number) => Promise<void>;
   removeFromWatchlist: (movieId: number) => Promise<void>;
@@ -99,7 +98,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  const login = async (email: string, password: string) => {
+  const login = async (email: string, password: string): Promise<boolean> => {
     try {
       // Clean up any existing state
       await supabase.auth.signOut({ scope: 'global' });
@@ -113,14 +112,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       
       if (data.user) {
         window.location.href = '/';
+        return true;
       }
+      return false;
     } catch (error) {
       console.error('Login error:', error);
       throw error;
     }
   };
 
-  const signup = async (email: string, password: string, username: string) => {
+  const signup = async (email: string, password: string, username: string): Promise<boolean> => {
     try {
       const { data, error } = await supabase.auth.signUp({
         email,
@@ -136,7 +137,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       
       if (data.user) {
         window.location.href = '/';
+        return true;
       }
+      return false;
     } catch (error) {
       console.error('Signup error:', error);
       throw error;

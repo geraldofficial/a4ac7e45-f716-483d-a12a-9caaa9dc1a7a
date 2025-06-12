@@ -23,10 +23,10 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onToggleMode }) => {
     setIsLoading(true);
 
     try {
-      const success = await login(email, password);
-      if (success) {
-        navigate('/');
-      }
+      await login(email, password);
+      // The login function handles navigation via window.location.href
+    } catch (error) {
+      console.error('Login failed:', error);
     } finally {
       setIsLoading(false);
     }
