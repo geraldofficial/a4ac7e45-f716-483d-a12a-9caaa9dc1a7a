@@ -1,9 +1,11 @@
 
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Play, Plus, Star } from 'lucide-react';
+import { Play, Plus, Check, Star } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { VideoPlayer } from './VideoPlayer';
+import { useAuth } from '@/contexts/AuthContext';
+import { useToast } from '@/hooks/use-toast';
 
 interface Movie {
   id: number;
@@ -22,13 +24,48 @@ interface MovieCardProps {
 export const MovieCard: React.FC<MovieCardProps> = ({ movie, type }) => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
+  const { user, addToWatchlist, removeFromWatchlist, isInWatchlist } = useAuth();
+  const { toast } = useToast();
 
-  const posterUrl = movie.poster_path.startsWith('http') 
-    ? movie.poster_path 
-    : `https://image.tmdb.org/t/p/w500${movie.poster_path}`;
+  const posterUrl = movie.poster_path 
+    ? `https://image.tmdb.org/t/p/w500${movie.poster_path}`
+    : 'https://images.unsplash.com/photo-1489599904276-39c2bb2d7b64?w=400&h=600&fit=crop';
 
   const handleWatch = () => {
+    if (!user) {
+      toast({
+        title: "Sign in required",
+        description: "Please sign in to watch content.",
+        variant: "destructive",
+      });
+      return;
+    }
     setIsPlaying(true);
+  };
+
+  const handleWatchlistToggle = () => {
+    if (!user) {
+      toast({
+        title: "Sign in required",
+        description: "Please sign in to add items to your watchlist.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (isInWatchlist(movie.id)) {
+      removeFromWatchlist(movie.id);
+      toast({
+        title: "Removed from watchlist",
+        description: `${movie.title} has been removed from your watchlist.`,
+      });
+    } else {
+      addToWatchlist(movie.id);
+      toast({
+        title: "Added to watchlist",
+        description: `${movie.title} has been added to your watchlist.`,
+      });
+    }
   };
 
   return (
@@ -98,9 +135,16 @@ export const MovieCard: React.FC<MovieCardProps> = ({ movie, type }) => {
                   </DialogContent>
                 </Dialog>
                 
-                <Button size="sm" variant="outline" className="border-white/30 text-white hover:bg-white/10">
-                  <Plus className="h-4 w-4" />
-                </Button>
+                {user && (
+                  <Button 
+                    size="sm" 
+                    variant="outline" 
+                    className="border-white/30 text-white hover:bg-white/10"
+                    onClick={handleWatchlistToggle}
+                  >
+                    {isInWatchlist(movie.id) ? <Check className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
+                  </Button>
+                )}
               </div>
             </div>
           </div>
