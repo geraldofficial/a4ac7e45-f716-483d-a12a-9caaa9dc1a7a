@@ -1,61 +1,122 @@
 
 import React from 'react';
-import { Film, Github, Twitter, Youtube } from 'lucide-react';
+import { Github, Twitter, Youtube, Instagram } from 'lucide-react';
+import { FlickPickLogo } from './FlickPickLogo';
+import { useNavigate } from 'react-router-dom';
 
 export const Footer = () => {
+  const navigate = useNavigate();
+
   return (
-    <footer className="bg-black/80 border-t border-white/10 py-12">
+    <footer className="bg-background border-t border-border/50 py-16">
       <div className="container mx-auto px-4">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-12">
           {/* Logo & Description */}
           <div className="col-span-1 md:col-span-2">
-            <div className="flex items-center space-x-2 mb-4">
-              <Film className="h-8 w-8 text-purple-400" />
-              <span className="text-2xl font-bold text-white">LickPick</span>
-            </div>
-            <p className="text-gray-400 max-w-md">
+            <FlickPickLogo className="mb-6" />
+            <p className="text-muted-foreground max-w-md leading-relaxed">
               Your ultimate destination for streaming movies and TV series. 
-              Discover, watch, and enjoy unlimited entertainment.
+              Discover, watch, and enjoy unlimited entertainment with FlickPick's 
+              curated collection of the best content from around the world.
             </p>
           </div>
 
           {/* Quick Links */}
           <div>
-            <h3 className="text-white font-semibold mb-4">Quick Links</h3>
-            <ul className="space-y-2">
-              <li><a href="#" className="text-gray-400 hover:text-purple-400 transition-colors">Home</a></li>
-              <li><a href="#" className="text-gray-400 hover:text-purple-400 transition-colors">Movies</a></li>
-              <li><a href="#" className="text-gray-400 hover:text-purple-400 transition-colors">TV Series</a></li>
-              <li><a href="#" className="text-gray-400 hover:text-purple-400 transition-colors">Trending</a></li>
+            <h3 className="text-foreground font-semibold mb-6 text-lg">Quick Links</h3>
+            <ul className="space-y-3">
+              <li>
+                <button 
+                  onClick={() => navigate('/')} 
+                  className="text-muted-foreground hover:text-primary transition-colors"
+                >
+                  Home
+                </button>
+              </li>
+              <li>
+                <button 
+                  onClick={() => navigate('/browse')} 
+                  className="text-muted-foreground hover:text-primary transition-colors"
+                >
+                  Browse
+                </button>
+              </li>
+              <li>
+                <button 
+                  onClick={() => navigate('/trending')} 
+                  className="text-muted-foreground hover:text-primary transition-colors"
+                >
+                  Trending
+                </button>
+              </li>
+              <li>
+                <button 
+                  onClick={() => navigate('/top-rated')} 
+                  className="text-muted-foreground hover:text-primary transition-colors"
+                >
+                  Top Rated
+                </button>
+              </li>
             </ul>
           </div>
 
           {/* Support */}
           <div>
-            <h3 className="text-white font-semibold mb-4">Support</h3>
-            <ul className="space-y-2">
-              <li><a href="#" className="text-gray-400 hover:text-purple-400 transition-colors">Help Center</a></li>
-              <li><a href="#" className="text-gray-400 hover:text-purple-400 transition-colors">Contact Us</a></li>
-              <li><a href="#" className="text-gray-400 hover:text-purple-400 transition-colors">Privacy Policy</a></li>
-              <li><a href="#" className="text-gray-400 hover:text-purple-400 transition-colors">Terms of Service</a></li>
+            <h3 className="text-foreground font-semibold mb-6 text-lg">Support</h3>
+            <ul className="space-y-3">
+              <li>
+                <button 
+                  onClick={() => navigate('/help')} 
+                  className="text-muted-foreground hover:text-primary transition-colors"
+                >
+                  Help Center
+                </button>
+              </li>
+              <li>
+                <button 
+                  onClick={() => navigate('/contact')} 
+                  className="text-muted-foreground hover:text-primary transition-colors"
+                >
+                  Contact Us
+                </button>
+              </li>
+              <li>
+                <button 
+                  onClick={() => navigate('/privacy')} 
+                  className="text-muted-foreground hover:text-primary transition-colors"
+                >
+                  Privacy Policy
+                </button>
+              </li>
+              <li>
+                <button 
+                  onClick={() => navigate('/terms')} 
+                  className="text-muted-foreground hover:text-primary transition-colors"
+                >
+                  Terms of Service
+                </button>
+              </li>
             </ul>
           </div>
         </div>
 
         {/* Bottom Bar */}
-        <div className="border-t border-white/10 mt-8 pt-8 flex flex-col md:flex-row items-center justify-between">
-          <p className="text-gray-400 text-sm">
-            © 2024 LickPick. All rights reserved.
+        <div className="border-t border-border/50 mt-12 pt-8 flex flex-col md:flex-row items-center justify-between">
+          <p className="text-muted-foreground text-sm">
+            © 2024 FlickPick. All rights reserved.
           </p>
           
-          <div className="flex items-center space-x-4 mt-4 md:mt-0">
-            <a href="#" className="text-gray-400 hover:text-purple-400 transition-colors">
+          <div className="flex items-center space-x-6 mt-4 md:mt-0">
+            <a href="#" className="text-muted-foreground hover:text-primary transition-colors">
               <Twitter className="h-5 w-5" />
             </a>
-            <a href="#" className="text-gray-400 hover:text-purple-400 transition-colors">
+            <a href="#" className="text-muted-foreground hover:text-primary transition-colors">
               <Youtube className="h-5 w-5" />
             </a>
-            <a href="#" className="text-gray-400 hover:text-purple-400 transition-colors">
+            <a href="#" className="text-muted-foreground hover:text-primary transition-colors">
+              <Instagram className="h-5 w-5" />
+            </a>
+            <a href="#" className="text-muted-foreground hover:text-primary transition-colors">
               <Github className="h-5 w-5" />
             </a>
           </div>

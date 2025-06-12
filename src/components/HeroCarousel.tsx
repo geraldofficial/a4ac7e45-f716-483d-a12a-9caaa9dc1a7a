@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
-import { Play, Plus, Star } from 'lucide-react';
+import { Play, Plus, Star, Info } from 'lucide-react';
 import { tmdbApi, Movie } from '@/services/tmdb';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
@@ -22,7 +22,7 @@ export const HeroCarousel = () => {
   const fetchPopularMovies = async () => {
     try {
       const popularMovies = await tmdbApi.getPopularMovies();
-      setMovies(popularMovies.slice(0, 5)); // Get top 5 movies
+      setMovies(popularMovies.slice(0, 5));
     } catch (error) {
       console.error('Error fetching popular movies:', error);
     } finally {
@@ -55,16 +55,16 @@ export const HeroCarousel = () => {
 
   if (loading) {
     return (
-      <section className="relative h-screen flex items-center justify-center">
+      <section className="relative h-screen flex items-center justify-center bg-background">
         <div className="text-foreground text-xl">Loading...</div>
       </section>
     );
   }
 
   return (
-    <section className="relative h-screen overflow-hidden">
-      <Carousel className="h-full">
-        <CarouselContent className="h-full">
+    <section className="relative w-full h-screen overflow-hidden">
+      <Carousel className="w-full h-full" opts={{ align: "start", loop: true }}>
+        <CarouselContent className="h-full -ml-0">
           {movies.map((movie) => {
             const title = movie.title || movie.name || 'Unknown Title';
             const backdropUrl = movie.backdrop_path 
@@ -72,46 +72,61 @@ export const HeroCarousel = () => {
               : 'https://images.unsplash.com/photo-1489599904276-39c2bb2d7b64?w=1920&h=1080&fit=crop';
 
             return (
-              <CarouselItem key={movie.id} className="h-full">
-                <div className="relative h-full">
+              <CarouselItem key={movie.id} className="h-full pl-0 basis-full">
+                <div className="relative w-full h-full">
                   <div 
-                    className="absolute inset-0 bg-cover bg-center"
+                    className="absolute inset-0 bg-cover bg-center bg-no-repeat"
                     style={{ backgroundImage: `url(${backdropUrl})` }}
                   >
-                    <div className="absolute inset-0 bg-gradient-to-t from-background via-background/70 to-transparent" />
+                    <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/50 to-transparent" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
                   </div>
                   
-                  <div className="relative z-10 container mx-auto px-4 h-full flex items-center">
-                    <div className="max-w-2xl">
-                      <h1 className="text-5xl md:text-7xl font-bold text-foreground mb-6 animate-fade-in">
+                  <div className="relative z-10 container mx-auto px-6 h-full flex items-center">
+                    <div className="max-w-2xl text-white">
+                      <h1 className="text-5xl md:text-7xl font-bold mb-6 leading-tight animate-fade-in">
                         {title}
                       </h1>
                       
-                      <div className="flex items-center gap-4 text-foreground mb-6">
-                        <div className="flex items-center gap-1">
-                          <Star className="h-5 w-5 text-yellow-400 fill-current" />
-                          <span className="text-lg font-semibold">{movie.vote_average.toFixed(1)}</span>
+                      <div className="flex items-center gap-6 mb-6">
+                        <div className="flex items-center gap-2">
+                          <Star className="h-6 w-6 text-yellow-400 fill-current" />
+                          <span className="text-xl font-semibold">{movie.vote_average.toFixed(1)}</span>
                         </div>
                         
                         {(movie.release_date || movie.first_air_date) && (
-                          <span className="text-lg">
+                          <span className="text-lg font-medium">
                             {new Date(movie.release_date || movie.first_air_date || '').getFullYear()}
                           </span>
                         )}
+                        
+                        <span className="px-3 py-1 bg-primary/20 backdrop-blur-sm rounded-full text-sm font-medium border border-primary/30">
+                          {movie.title ? 'Movie' : 'TV Series'}
+                        </span>
                       </div>
                       
-                      <p className="text-muted-foreground text-lg leading-relaxed mb-8 max-w-xl line-clamp-3">
+                      <p className="text-gray-200 text-lg leading-relaxed mb-8 max-w-2xl line-clamp-3">
                         {movie.overview}
                       </p>
                       
-                      <div className="flex gap-4 animate-fade-in">
+                      <div className="flex flex-wrap gap-4 animate-fade-in">
                         <Button 
                           onClick={() => handleWatchClick(movie)}
                           size="lg"
-                          className="bg-primary hover:bg-primary/90 px-8"
+                          className="bg-primary hover:bg-primary/90 text-primary-foreground px-8 py-3 text-lg font-semibold"
                         >
-                          <Play className="h-5 w-5 mr-2" />
+                          <Play className="h-6 w-6 mr-2 fill-current" />
                           Watch Now
+                        </Button>
+                        
+                        <Button
+                          onClick={() => handleWatchClick(movie)}
+                          variant="outline"
+                          size="lg"
+                          className="border-white/30 text-white hover:bg-white/10 backdrop-blur-sm px-8 py-3 text-lg font-semibold"
+                        >
+                          <Info className="h-6 w-6 mr-2" />
+                          More Info
                         </Button>
                         
                         {user && !isInWatchlist(movie.id) && (
@@ -119,10 +134,10 @@ export const HeroCarousel = () => {
                             onClick={() => handleWatchlistClick(movie)}
                             variant="outline"
                             size="lg"
-                            className="border-border text-foreground hover:bg-accent px-8"
+                            className="border-white/30 text-white hover:bg-white/10 backdrop-blur-sm px-8 py-3 text-lg font-semibold"
                           >
-                            <Plus className="h-5 w-5 mr-2" />
-                            Add to List
+                            <Plus className="h-6 w-6 mr-2" />
+                            My List
                           </Button>
                         )}
                       </div>
@@ -134,8 +149,8 @@ export const HeroCarousel = () => {
           })}
         </CarouselContent>
         
-        <CarouselPrevious className="left-4 text-foreground border-border hover:bg-accent" />
-        <CarouselNext className="right-4 text-foreground border-border hover:bg-accent" />
+        <CarouselPrevious className="left-6 h-12 w-12 border-white/30 text-white hover:bg-white/10 backdrop-blur-sm" />
+        <CarouselNext className="right-6 h-12 w-12 border-white/30 text-white hover:bg-white/10 backdrop-blur-sm" />
       </Carousel>
     </section>
   );
