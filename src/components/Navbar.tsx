@@ -8,7 +8,7 @@ import { useNavigate } from 'react-router-dom';
 
 export const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const { user, logout } = useAuth();
+  const { user, logout, loading } = useAuth();
   const navigate = useNavigate();
 
   const handleLogout = () => {
@@ -42,7 +42,9 @@ export const Navbar = () => {
             <SearchSuggestions className="hidden md:block w-64" />
             
             {/* User Menu */}
-            {user ? (
+            {loading ? (
+              <div className="hidden md:block text-white text-sm">Loading...</div>
+            ) : user ? (
               <div className="hidden md:flex items-center space-x-4">
                 <button
                   onClick={() => navigate('/watchlist')}
@@ -97,7 +99,9 @@ export const Navbar = () => {
               <SearchSuggestions onClose={() => setIsMenuOpen(false)} />
               
               {/* Mobile User Menu */}
-              {user ? (
+              {loading ? (
+                <div className="text-white text-sm">Loading...</div>
+              ) : user ? (
                 <div className="flex flex-col space-y-2 pt-2 border-t border-white/10">
                   <div className="flex items-center space-x-2 text-white">
                     <User className="h-4 w-4" />

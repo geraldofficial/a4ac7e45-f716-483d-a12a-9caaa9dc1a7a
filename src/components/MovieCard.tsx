@@ -41,7 +41,7 @@ export const MovieCard: React.FC<MovieCardProps> = ({ movie }) => {
     navigate(`/${type}/${movie.id}`);
   };
 
-  const handleWatchlistToggle = (e: React.MouseEvent) => {
+  const handleWatchlistToggle = async (e: React.MouseEvent) => {
     e.stopPropagation();
     if (!user) {
       toast({
@@ -53,13 +53,13 @@ export const MovieCard: React.FC<MovieCardProps> = ({ movie }) => {
     }
 
     if (isInWatchlist(movie.id)) {
-      removeFromWatchlist(movie.id);
+      await removeFromWatchlist(movie.id);
       toast({
         title: "Removed from watchlist",
         description: `${title} has been removed from your watchlist.`,
       });
     } else {
-      addToWatchlist(movie.id);
+      await addToWatchlist(movie.id);
       toast({
         title: "Added to watchlist",
         description: `${title} has been added to your watchlist.`,
@@ -79,16 +79,16 @@ export const MovieCard: React.FC<MovieCardProps> = ({ movie }) => {
           }}
         />
         
-        {/* Overlay */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+        {/* Enhanced Overlay with better visibility */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-300">
           <div className="absolute bottom-4 left-4 right-4">
-            <div className="flex items-center gap-2 mb-2">
+            <div className="flex items-center gap-2 mb-3">
               <div className="flex items-center gap-1">
                 <Star className="h-4 w-4 text-yellow-400 fill-current" />
-                <span className="text-white text-sm">{movie.vote_average.toFixed(1)}</span>
+                <span className="text-white text-sm font-medium">{movie.vote_average.toFixed(1)}</span>
               </div>
               {releaseDate && (
-                <span className="text-gray-300 text-sm">
+                <span className="text-gray-200 text-sm">
                   {new Date(releaseDate).getFullYear()}
                 </span>
               )}
@@ -97,7 +97,7 @@ export const MovieCard: React.FC<MovieCardProps> = ({ movie }) => {
             <div className="flex gap-2">
               <Button 
                 size="sm" 
-                className="bg-purple-600 hover:bg-purple-700"
+                className="bg-purple-600 hover:bg-purple-700 text-white font-medium transition-all duration-200 hover:scale-105 shadow-lg"
                 onClick={(e) => {
                   e.stopPropagation();
                   handleWatch();
@@ -110,7 +110,7 @@ export const MovieCard: React.FC<MovieCardProps> = ({ movie }) => {
               <Button 
                 size="sm" 
                 variant="outline"
-                className="border-white/30 text-white hover:bg-white/10"
+                className="border-white/50 bg-white/10 backdrop-blur-sm text-white hover:bg-white/20 hover:border-white transition-all duration-200 hover:scale-105 shadow-lg"
                 onClick={(e) => {
                   e.stopPropagation();
                   handleMoreInfo();
@@ -123,7 +123,7 @@ export const MovieCard: React.FC<MovieCardProps> = ({ movie }) => {
                 <Button 
                   size="sm" 
                   variant="outline" 
-                  className="border-white/30 text-white hover:bg-white/10"
+                  className="border-white/50 bg-white/10 backdrop-blur-sm text-white hover:bg-white/20 hover:border-white transition-all duration-200 hover:scale-105 shadow-lg"
                   onClick={handleWatchlistToggle}
                 >
                   {isInWatchlist(movie.id) ? <Check className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
@@ -134,8 +134,8 @@ export const MovieCard: React.FC<MovieCardProps> = ({ movie }) => {
         </div>
       </div>
       
-      <div className="p-4">
-        <h3 className="text-white font-semibold truncate">{title}</h3>
+      <div className="p-4 bg-gray-900">
+        <h3 className="text-white font-semibold truncate mb-1">{title}</h3>
         {releaseDate && (
           <p className="text-gray-400 text-sm">
             {new Date(releaseDate).getFullYear()}

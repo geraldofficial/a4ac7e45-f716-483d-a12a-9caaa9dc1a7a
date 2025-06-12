@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useAuth } from '@/contexts/AuthContext';
 import { Film, Eye, EyeOff } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
+import { useNavigate } from 'react-router-dom';
 
 interface SignupFormProps {
   onToggleMode: () => void;
@@ -12,56 +12,33 @@ interface SignupFormProps {
 
 export const SignupForm: React.FC<SignupFormProps> = ({ onToggleMode }) => {
   const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const { signup } = useAuth();
-  const { toast } = useToast();
+  const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (password !== confirmPassword) {
-      toast({
-        title: "Password mismatch",
-        description: "Passwords do not match.",
-        variant: "destructive",
-      });
       return;
     }
 
     if (password.length < 6) {
-      toast({
-        title: "Password too short",
-        description: "Password must be at least 6 characters long.",
-        variant: "destructive",
-      });
       return;
     }
 
     setIsLoading(true);
 
     try {
-      const success = await signup(username, password);
+      const success = await signup(email, password, username);
       if (success) {
-        toast({
-          title: "Account created!",
-          description: "Welcome to LickPick!",
-        });
-      } else {
-        toast({
-          title: "Signup failed",
-          description: "Username already exists.",
-          variant: "destructive",
-        });
+        // Stay on auth page to show email verification message
+        onToggleMode(); // Switch back to login
       }
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Something went wrong. Please try again.",
-        variant: "destructive",
-      });
     } finally {
       setIsLoading(false);
     }
@@ -84,6 +61,17 @@ export const SignupForm: React.FC<SignupFormProps> = ({ onToggleMode }) => {
               placeholder="Username"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
+              className="bg-white/10 border-white/20 text-white placeholder:text-gray-400"
+              required
+            />
+          </div>
+          
+          <div>
+            <Input
+              type="email"
+              placeholder="Email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
               className="bg-white/10 border-white/20 text-white placeholder:text-gray-400"
               required
             />
