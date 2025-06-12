@@ -103,20 +103,20 @@ export const Footer = () => {
         {/* Bottom Bar */}
         <div className="border-t border-border/50 mt-12 pt-8 flex flex-col md:flex-row items-center justify-between">
           <p className="text-muted-foreground text-sm">
-            © 2024 FlickPick. All rights reserved.
+            © 2025 FlickPick. made by Gerald all rights reserved.
           </p>
           
           <div className="flex items-center space-x-6 mt-4 md:mt-0">
-            <a href="#" className="text-muted-foreground hover:text-primary transition-colors">
+            <a href="https://www.youtube.com/watch?v=6s0OVdoo4Q4" className="text-muted-foreground hover:text-primary transition-colors">
               <Twitter className="h-5 w-5" />
             </a>
-            <a href="#" className="text-muted-foreground hover:text-primary transition-colors">
+            <a href="https://www.youtube.com/watch?v=6s0OVdoo4Q4" className="text-muted-foreground hover:text-primary transition-colors">
               <Youtube className="h-5 w-5" />
             </a>
-            <a href="#" className="text-muted-foreground hover:text-primary transition-colors">
+            <a href="https://www.youtube.com/watch?v=6s0OVdoo4Q4" className="text-muted-foreground hover:text-primary transition-colors">
               <Instagram className="h-5 w-5" />
             </a>
-            <a href="#" className="text-muted-foreground hover:text-primary transition-colors">
+            <a href="https://www.youtube.com/watch?v=6s0OVdoo4Q4" className="text-muted-foreground hover:text-primary transition-colors">
               <Github className="h-5 w-5" />
             </a>
           </div>
