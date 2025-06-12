@@ -78,11 +78,11 @@ export const HeroCarousel = () => {
                     className="absolute inset-0 bg-cover bg-center bg-no-repeat"
                     style={{ backgroundImage: `url(${backdropUrl})` }}
                   >
-                    <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/50 to-transparent" />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+                    <div className="absolute inset-0 bg-gradient-to-r from-black/90 via-black/60 to-black/20" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
                   </div>
                   
-                  <div className="relative z-10 container mx-auto px-6 h-full flex items-center">
+                  <div className="relative z-10 container mx-auto px-6 h-full flex items-center pt-20">
                     <div className="max-w-2xl text-white">
                       <h1 className="text-5xl md:text-7xl font-bold mb-6 leading-tight animate-fade-in">
                         {title}
