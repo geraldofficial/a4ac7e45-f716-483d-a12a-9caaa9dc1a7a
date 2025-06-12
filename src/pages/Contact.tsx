@@ -78,7 +78,7 @@ const Contact = () => {
                     </div>
                   </div>
                 </CardContent>
-              </div>
+              </Card>
             </div>
           </div>
         </div>
