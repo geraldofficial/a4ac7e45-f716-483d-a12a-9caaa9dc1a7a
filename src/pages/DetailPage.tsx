@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { Navbar } from '@/components/Navbar';
 import { Footer } from '@/components/Footer';
 import { Button } from '@/components/ui/button';
@@ -11,7 +11,8 @@ import { streamingSources, getStreamingUrl } from '@/services/streaming';
 import { Play, Plus, Check, Star, Calendar, Clock, Users, ArrowLeft } from 'lucide-react';
 
 const DetailPage = () => {
-  const { type, id } = useParams<{ type: 'movie' | 'tv'; id: string }>();
+  const { id } = useParams<{ id: string }>();
+  const location = useLocation();
   const navigate = useNavigate();
   const [content, setContent] = useState<Movie | null>(null);
   const [loading, setLoading] = useState(true);
@@ -20,19 +21,22 @@ const DetailPage = () => {
   const { user, addToWatchlist, removeFromWatchlist, isInWatchlist } = useAuth();
   const { toast } = useToast();
 
+  // Determine type from the current route
+  const type = location.pathname.startsWith('/movie/') ? 'movie' : 'tv';
+
   useEffect(() => {
-    if (type && id) {
+    if (id) {
       console.log('Fetching content for:', { type, id });
       fetchContent();
     } else {
-      console.log('Missing type or id:', { type, id });
+      console.log('Missing id:', { type, id });
       setLoading(false);
     }
   }, [type, id]);
 
   const fetchContent = async () => {
-    if (!type || !id) {
-      console.log('No type or id provided');
+    if (!id) {
+      console.log('No id provided');
       setLoading(false);
       return;
     }
