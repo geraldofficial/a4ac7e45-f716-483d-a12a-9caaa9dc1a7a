@@ -22,18 +22,29 @@ const DetailPage = () => {
 
   useEffect(() => {
     if (type && id) {
+      console.log('Fetching content for:', { type, id });
       fetchContent();
+    } else {
+      console.log('Missing type or id:', { type, id });
+      setLoading(false);
     }
   }, [type, id]);
 
   const fetchContent = async () => {
-    if (!type || !id) return;
+    if (!type || !id) {
+      console.log('No type or id provided');
+      setLoading(false);
+      return;
+    }
     
     setLoading(true);
     try {
+      console.log(`Fetching ${type} with id: ${id}`);
       const data = type === 'movie' 
         ? await tmdbApi.getMovieDetails(parseInt(id))
         : await tmdbApi.getTVDetails(parseInt(id));
+      
+      console.log('Fetched content:', data);
       setContent(data);
     } catch (error) {
       console.error('Error fetching content:', error);
@@ -96,7 +107,7 @@ const DetailPage = () => {
         <Navbar />
         <div className="pt-24 pb-20 px-4">
           <div className="container mx-auto text-center">
-            <div className="text-white text-xl">Loading...</div>
+            <div className="text-white text-xl">Loading content...</div>
           </div>
         </div>
         <Footer />
@@ -111,6 +122,7 @@ const DetailPage = () => {
         <div className="pt-24 pb-20 px-4">
           <div className="container mx-auto text-center">
             <div className="text-white text-xl">Content not found</div>
+            <p className="text-gray-400 mt-2">Type: {type}, ID: {id}</p>
             <Button onClick={() => navigate('/')} className="mt-4">
               Go Home
             </Button>

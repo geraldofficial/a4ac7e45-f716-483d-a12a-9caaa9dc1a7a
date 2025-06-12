@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Play, Plus, Check, Star, Info } from 'lucide-react';
@@ -19,7 +18,9 @@ export const MovieCard: React.FC<MovieCardProps> = ({ movie }) => {
   // Handle optional title/name from TMDB API
   const title = movie.title || movie.name || 'Unknown Title';
   const releaseDate = movie.release_date || movie.first_air_date || '';
-  const type = movie.title ? 'movie' : 'tv';
+  
+  // Determine type from media_type or fallback to title/name check
+  const type = movie.media_type || (movie.title ? 'movie' : 'tv');
 
   const posterUrl = movie.poster_path 
     ? `https://image.tmdb.org/t/p/w500${movie.poster_path}`
@@ -34,10 +35,12 @@ export const MovieCard: React.FC<MovieCardProps> = ({ movie }) => {
       });
       return;
     }
+    console.log('Navigating to:', `/${type}/${movie.id}`);
     navigate(`/${type}/${movie.id}`);
   };
 
   const handleMoreInfo = () => {
+    console.log('Navigating to:', `/${type}/${movie.id}`);
     navigate(`/${type}/${movie.id}`);
   };
 

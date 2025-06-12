@@ -21,6 +21,8 @@ export interface Movie {
   vote_average: number;
   overview: string;
   genre_ids: number[];
+  popularity?: number;
+  media_type?: string;
   runtime?: number;
   number_of_seasons?: number;
   number_of_episodes?: number;
