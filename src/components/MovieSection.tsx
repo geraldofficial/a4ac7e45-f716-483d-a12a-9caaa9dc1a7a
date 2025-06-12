@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { MovieCard } from './MovieCard';
 import { MovieFilters } from './MovieFilters';
@@ -32,12 +31,18 @@ export const MovieSection = () => {
         tmdbApi.getTrending()
       ]);
 
-      // Add media_type to distinguish between movies and TV shows
-      const moviesWithType = moviesData.map(movie => ({ ...movie, media_type: 'movie' }));
-      const tvWithType = tvData.map(tv => ({ ...tv, media_type: 'tv' }));
-      const trendingWithType = trendingData.map(item => ({
+      // Add media_type to distinguish between movies and TV shows with proper typing
+      const moviesWithType: Movie[] = moviesData.map(movie => ({ 
+        ...movie, 
+        media_type: 'movie' as const 
+      }));
+      const tvWithType: Movie[] = tvData.map(tv => ({ 
+        ...tv, 
+        media_type: 'tv' as const 
+      }));
+      const trendingWithType: Movie[] = trendingData.map(item => ({
         ...item,
-        media_type: item.title ? 'movie' : 'tv'
+        media_type: (item.title ? 'movie' : 'tv') as 'movie' | 'tv'
       }));
 
       const allContent = [...moviesWithType, ...tvWithType, ...trendingWithType];

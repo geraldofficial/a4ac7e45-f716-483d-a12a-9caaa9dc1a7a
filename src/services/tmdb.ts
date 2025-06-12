@@ -97,6 +97,16 @@ class TMDBApi {
     };
   }
 
+  async search(query: string): Promise<Movie[]> {
+    const data = await this.searchMulti(query);
+    return data.results;
+  }
+
+  async searchSuggestions(query: string): Promise<Movie[]> {
+    const data = await this.searchMulti(query, 1);
+    return data.results.slice(0, 8); // Limit to 8 suggestions
+  }
+
   async getMovieDetails(id: number): Promise<Movie> {
     const data = await this.fetchFromTMDB(`/movie/${id}?append_to_response=credits`);
     return data;
