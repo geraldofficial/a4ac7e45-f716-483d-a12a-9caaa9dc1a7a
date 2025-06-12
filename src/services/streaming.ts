@@ -26,6 +26,25 @@ export const streamingSources: StreamingSource[] = [
     }
   },
   {
+    name: 'VidSrc Me',
+    getUrl: (tmdbId, type, season, episode) => {
+      const baseUrl = `https://vidsrc.me/embed/${type}?tmdb=${tmdbId}`;
+      if (type === 'tv' && season && episode) {
+        return `${baseUrl}&season=${season}&episode=${episode}`;
+      }
+      return baseUrl;
+    }
+  },
+  {
+    name: 'MoviesAPI',
+    getUrl: (tmdbId, type, season, episode) => {
+      if (type === 'tv' && season && episode) {
+        return `https://moviesapi.club/tv/${tmdbId}-${season}-${episode}`;
+      }
+      return `https://moviesapi.club/${type}/${tmdbId}`;
+    }
+  },
+  {
     name: 'SuperEmbed',
     getUrl: (tmdbId, type, season, episode) => {
       const baseUrl = `https://multiembed.mov/?video_id=${tmdbId}&tmdb=1`;

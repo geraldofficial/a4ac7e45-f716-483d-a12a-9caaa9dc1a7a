@@ -4,10 +4,10 @@ import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { Navbar } from '@/components/Navbar';
 import { Footer } from '@/components/Footer';
 import { Button } from '@/components/ui/button';
+import { VideoPlayer } from '@/components/VideoPlayer';
 import { tmdbApi, Movie } from '@/services/tmdb';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
-import { streamingSources, getStreamingUrl } from '@/services/streaming';
 import { Play, Plus, Check, Star, Calendar, Clock, Users, ArrowLeft } from 'lucide-react';
 
 const DetailPage = () => {
@@ -16,7 +16,6 @@ const DetailPage = () => {
   const navigate = useNavigate();
   const [content, setContent] = useState<Movie | null>(null);
   const [loading, setLoading] = useState(true);
-  const [currentSource, setCurrentSource] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
   const { user, addToWatchlist, removeFromWatchlist, isInWatchlist } = useAuth();
   const { toast } = useToast();
@@ -101,17 +100,13 @@ const DetailPage = () => {
     }
   };
 
-  const handleSourceChange = (sourceIndex: number) => {
-    setCurrentSource(sourceIndex);
-  };
-
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
+      <div className="min-h-screen bg-background">
         <Navbar />
         <div className="pt-24 pb-20 px-4">
           <div className="container mx-auto text-center">
-            <div className="text-white text-xl">Loading content...</div>
+            <div className="text-foreground text-xl">Loading content...</div>
           </div>
         </div>
         <Footer />
@@ -121,12 +116,12 @@ const DetailPage = () => {
 
   if (!content) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
+      <div className="min-h-screen bg-background">
         <Navbar />
         <div className="pt-24 pb-20 px-4">
           <div className="container mx-auto text-center">
-            <div className="text-white text-xl">Content not found</div>
-            <p className="text-gray-400 mt-2">Type: {type}, ID: {id}</p>
+            <div className="text-foreground text-xl">Content not found</div>
+            <p className="text-muted-foreground mt-2">Type: {type}, ID: {id}</p>
             <Button onClick={() => navigate('/')} className="mt-4">
               Go Home
             </Button>
@@ -144,7 +139,7 @@ const DetailPage = () => {
     : 'https://images.unsplash.com/photo-1489599904276-39c2bb2d7b64?w=1920&h=1080&fit=crop';
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
+    <div className="min-h-screen bg-background">
       <Navbar />
       
       <div className="pt-16">
@@ -154,7 +149,7 @@ const DetailPage = () => {
             className="absolute inset-0 bg-cover bg-center"
             style={{ backgroundImage: `url(${backdropUrl})` }}
           >
-            <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/70 to-transparent" />
+            <div className="absolute inset-0 bg-gradient-to-t from-background via-background/70 to-transparent" />
           </div>
           
           <div className="relative z-10 container mx-auto px-4 h-full flex items-center">
@@ -162,17 +157,17 @@ const DetailPage = () => {
               <Button
                 variant="ghost"
                 onClick={() => navigate(-1)}
-                className="text-white mb-4 hover:bg-white/10"
+                className="text-foreground mb-4 hover:bg-accent"
               >
                 <ArrowLeft className="h-4 w-4 mr-2" />
                 Back
               </Button>
               
-              <h1 className="text-5xl md:text-7xl font-bold text-white mb-6">
+              <h1 className="text-5xl md:text-7xl font-bold text-foreground mb-6">
                 {title}
               </h1>
               
-              <div className="flex items-center gap-6 text-white mb-6">
+              <div className="flex items-center gap-6 text-foreground mb-6">
                 <div className="flex items-center gap-1">
                   <Star className="h-5 w-5 text-yellow-400 fill-current" />
                   <span className="text-lg font-semibold">{content.vote_average.toFixed(1)}</span>
@@ -200,7 +195,7 @@ const DetailPage = () => {
                 )}
               </div>
               
-              <p className="text-gray-300 text-lg leading-relaxed mb-8 max-w-xl">
+              <p className="text-muted-foreground text-lg leading-relaxed mb-8 max-w-xl">
                 {content.overview}
               </p>
               
@@ -208,7 +203,7 @@ const DetailPage = () => {
                 <Button 
                   onClick={handleWatch}
                   size="lg"
-                  className="bg-purple-600 hover:bg-purple-700 text-white px-8"
+                  className="bg-primary hover:bg-primary/90 px-8"
                 >
                   <Play className="h-5 w-5 mr-2" />
                   Watch Now
@@ -219,7 +214,7 @@ const DetailPage = () => {
                     onClick={handleWatchlistToggle}
                     variant="outline"
                     size="lg"
-                    className="border-white/30 text-white hover:bg-white/10"
+                    className="border-border text-foreground hover:bg-accent"
                   >
                     {isInWatchlist(content.id) ? (
                       <>
@@ -240,50 +235,28 @@ const DetailPage = () => {
         </div>
 
         {/* Video Player Section */}
-        {isPlaying && type && (
-          <div className="bg-black py-8">
+        {isPlaying && (
+          <div className="bg-card py-8">
             <div className="container mx-auto px-4">
-              <div className="mb-4">
-                <h3 className="text-white text-xl mb-4">Streaming Sources</h3>
-                <div className="flex gap-2 flex-wrap">
-                  {streamingSources.map((source, index) => (
-                    <Button
-                      key={source.name}
-                      variant={currentSource === index ? "default" : "outline"}
-                      size="sm"
-                      onClick={() => handleSourceChange(index)}
-                      className={currentSource === index ? "bg-purple-600" : "border-white/30 text-white hover:bg-white/10"}
-                    >
-                      {source.name}
-                    </Button>
-                  ))}
-                </div>
-              </div>
-              
-              <div className="relative w-full aspect-video">
-                <iframe
-                  src={getStreamingUrl(content.id, type, currentSource)}
-                  title={title}
-                  className="w-full h-full rounded-lg"
-                  allowFullScreen
-                  allow="autoplay; encrypted-media; gyroscope; picture-in-picture"
-                  style={{ border: 'none' }}
-                />
-              </div>
+              <VideoPlayer
+                title={title}
+                tmdbId={content.id}
+                type={type}
+              />
             </div>
           </div>
         )}
 
         {/* Additional Info */}
         {content.genres && content.genres.length > 0 && (
-          <div className="bg-slate-900/80 py-8">
+          <div className="bg-card/80 py-8">
             <div className="container mx-auto px-4">
-              <h3 className="text-white text-xl mb-4">Genres</h3>
+              <h3 className="text-foreground text-xl mb-4">Genres</h3>
               <div className="flex gap-2 flex-wrap">
                 {content.genres.map((genre) => (
                   <span
                     key={genre.id}
-                    className="bg-purple-600 text-white px-3 py-1 rounded-full text-sm"
+                    className="bg-primary text-primary-foreground px-3 py-1 rounded-full text-sm"
                   >
                     {genre.name}
                   </span>
@@ -295,9 +268,9 @@ const DetailPage = () => {
 
         {/* Cast */}
         {content.credits?.cast && content.credits.cast.length > 0 && (
-          <div className="bg-slate-900/60 py-8">
+          <div className="bg-card/60 py-8">
             <div className="container mx-auto px-4">
-              <h3 className="text-white text-xl mb-4">Cast</h3>
+              <h3 className="text-foreground text-xl mb-4">Cast</h3>
               <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
                 {content.credits.cast.slice(0, 12).map((actor) => (
                   <div key={actor.id} className="text-center">
@@ -309,8 +282,8 @@ const DetailPage = () => {
                       alt={actor.name}
                       className="w-full aspect-[2/3] object-cover rounded-lg mb-2"
                     />
-                    <p className="text-white text-sm font-medium">{actor.name}</p>
-                    <p className="text-gray-400 text-xs">{actor.character}</p>
+                    <p className="text-foreground text-sm font-medium">{actor.name}</p>
+                    <p className="text-muted-foreground text-xs">{actor.character}</p>
                   </div>
                 ))}
               </div>
