@@ -55,7 +55,7 @@ export const HeroCarousel = () => {
 
   if (loading) {
     return (
-      <section className="relative h-screen flex items-center justify-center bg-background">
+      <section className="relative w-full h-screen flex items-center justify-center bg-background">
         <div className="text-foreground text-xl">Loading...</div>
       </section>
     );
@@ -64,7 +64,7 @@ export const HeroCarousel = () => {
   return (
     <section className="relative w-full h-screen overflow-hidden">
       <Carousel className="w-full h-full" opts={{ align: "start", loop: true }}>
-        <CarouselContent className="h-full -ml-0">
+        <CarouselContent className="h-full m-0">
           {movies.map((movie) => {
             const title = movie.title || movie.name || 'Unknown Title';
             const backdropUrl = movie.backdrop_path 
@@ -72,7 +72,7 @@ export const HeroCarousel = () => {
               : 'https://images.unsplash.com/photo-1489599904276-39c2bb2d7b64?w=1920&h=1080&fit=crop';
 
             return (
-              <CarouselItem key={movie.id} className="h-full pl-0 basis-full">
+              <CarouselItem key={movie.id} className="h-full p-0 basis-full">
                 <div className="relative w-full h-full">
                   <div 
                     className="absolute inset-0 bg-cover bg-center bg-no-repeat"
