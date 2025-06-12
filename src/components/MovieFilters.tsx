@@ -78,12 +78,12 @@ export const MovieFilters: React.FC<MovieFiltersProps> = ({
         {/* Genre */}
         <div>
           <label className="text-white text-sm mb-2 block">Genre</label>
-          <Select value={selectedGenre} onValueChange={onGenreChange}>
+          <Select value={selectedGenre || 'all-genres'} onValueChange={(value) => onGenreChange(value === 'all-genres' ? '' : value)}>
             <SelectTrigger className="bg-white/10 border-white/20 text-white">
               <SelectValue placeholder="All Genres" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">All Genres</SelectItem>
+              <SelectItem value="all-genres">All Genres</SelectItem>
               {genres.map(genre => (
                 <SelectItem key={genre.id} value={genre.id}>
                   {genre.name}
@@ -96,12 +96,12 @@ export const MovieFilters: React.FC<MovieFiltersProps> = ({
         {/* Year */}
         <div>
           <label className="text-white text-sm mb-2 block">Year</label>
-          <Select value={selectedYear} onValueChange={onYearChange}>
+          <Select value={selectedYear || 'all-years'} onValueChange={(value) => onYearChange(value === 'all-years' ? '' : value)}>
             <SelectTrigger className="bg-white/10 border-white/20 text-white">
               <SelectValue placeholder="All Years" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">All Years</SelectItem>
+              <SelectItem value="all-years">All Years</SelectItem>
               {years.map(year => (
                 <SelectItem key={year} value={year.toString()}>
                   {year}
