@@ -1,8 +1,7 @@
 
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { User, Session } from '@supabase/supabase-js';
-import { useToast } from '@/hooks/use-toast';
 
 interface UserProfile {
   id: string;
@@ -13,13 +12,13 @@ interface UserProfile {
 interface AuthContextType {
   user: UserProfile | null;
   session: Session | null;
-  login: (email: string, password: string) => Promise<boolean>;
-  signup: (email: string, password: string, username: string) => Promise<boolean>;
-  logout: () => void;
+  loading: boolean;
+  login: (email: string, password: string) => Promise<void>;
+  signup: (email: string, password: string, username: string) => Promise<void>;
+  logout: () => Promise<void>;
   addToWatchlist: (movieId: number) => Promise<void>;
   removeFromWatchlist: (movieId: number) => Promise<void>;
   isInWatchlist: (movieId: number) => boolean;
-  loading: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -36,31 +35,38 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [user, setUser] = useState<UserProfile | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
-  const { toast } = useToast();
 
   useEffect(() => {
-    // Set up auth state listener
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
+    // Get initial session
+    const getSession = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
         setSession(session);
+        
         if (session?.user) {
-          // Fetch user profile
-          setTimeout(async () => {
-            await fetchUserProfile(session.user.id);
-          }, 0);
-        } else {
-          setUser(null);
+          await loadUserProfile(session.user);
         }
+      } catch (error) {
+        console.error('Error getting session:', error);
+      } finally {
         setLoading(false);
       }
-    );
+    };
 
-    // Check for existing session
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    getSession();
+
+    // Listen for auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      console.log('Auth state changed:', event, session);
       setSession(session);
-      if (session?.user) {
-        fetchUserProfile(session.user.id);
-      } else {
+      
+      if (event === 'SIGNED_IN' && session?.user) {
+        setTimeout(async () => {
+          await loadUserProfile(session.user);
+          setLoading(false);
+        }, 0);
+      } else if (event === 'SIGNED_OUT') {
+        setUser(null);
         setLoading(false);
       }
     });
@@ -68,122 +74,90 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return () => subscription.unsubscribe();
   }, []);
 
-  const fetchUserProfile = async (userId: string) => {
+  const loadUserProfile = async (authUser: User) => {
     try {
-      const { data, error } = await supabase
+      const { data: profile, error } = await supabase
         .from('profiles')
         .select('*')
-        .eq('id', userId)
+        .eq('id', authUser.id)
         .single();
 
       if (error) {
-        console.error('Error fetching profile:', error);
+        console.error('Error loading profile:', error);
         return;
       }
 
-      if (data) {
+      if (profile) {
         setUser({
-          id: data.id,
-          username: data.username,
-          watchlist: data.watchlist || []
+          id: profile.id,
+          username: profile.username,
+          watchlist: profile.watchlist || []
         });
       }
     } catch (error) {
-      console.error('Error in fetchUserProfile:', error);
+      console.error('Error in loadUserProfile:', error);
     }
   };
 
-  const login = async (email: string, password: string): Promise<boolean> => {
+  const login = async (email: string, password: string) => {
     try {
+      // Clean up any existing state
+      await supabase.auth.signOut({ scope: 'global' });
+      
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
 
-      if (error) {
-        toast({
-          title: "Login failed",
-          description: error.message,
-          variant: "destructive",
-        });
-        return false;
-      }
-
+      if (error) throw error;
+      
       if (data.user) {
-        toast({
-          title: "Welcome back!",
-          description: "You've successfully logged in.",
-        });
-        return true;
+        window.location.href = '/';
       }
-      return false;
     } catch (error) {
-      toast({
-        title: "Error",
-        description: "Something went wrong. Please try again.",
-        variant: "destructive",
-      });
-      return false;
+      console.error('Login error:', error);
+      throw error;
     }
   };
 
-  const signup = async (email: string, password: string, username: string): Promise<boolean> => {
+  const signup = async (email: string, password: string, username: string) => {
     try {
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
         options: {
           data: {
-            username: username
+            username,
           },
-          emailRedirectTo: `${window.location.origin}/`
-        }
+        },
       });
 
-      if (error) {
-        toast({
-          title: "Signup failed",
-          description: error.message,
-          variant: "destructive",
-        });
-        return false;
-      }
-
+      if (error) throw error;
+      
       if (data.user) {
-        toast({
-          title: "Account created!",
-          description: "Please check your email to verify your account.",
-        });
-        return true;
+        window.location.href = '/';
       }
-      return false;
     } catch (error) {
-      toast({
-        title: "Error",
-        description: "Something went wrong. Please try again.",
-        variant: "destructive",
-      });
-      return false;
+      console.error('Signup error:', error);
+      throw error;
     }
   };
 
   const logout = async () => {
     try {
-      await supabase.auth.signOut();
+      await supabase.auth.signOut({ scope: 'global' });
       setUser(null);
       setSession(null);
-      toast({
-        title: "Signed out",
-        description: "You've been successfully signed out.",
-      });
+      window.location.href = '/auth';
     } catch (error) {
-      console.error('Error signing out:', error);
+      console.error('Logout error:', error);
+      throw error;
     }
   };
 
   const addToWatchlist = async (movieId: number) => {
     if (!user) return;
-    
+
     try {
       const updatedWatchlist = [...user.watchlist, movieId];
       
@@ -192,27 +166,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         .update({ watchlist: updatedWatchlist })
         .eq('id', user.id);
 
-      if (error) {
-        toast({
-          title: "Error",
-          description: "Failed to add to watchlist.",
-          variant: "destructive",
-        });
-        return;
-      }
+      if (error) throw error;
 
-      setUser({
-        ...user,
-        watchlist: updatedWatchlist
-      });
+      setUser({ ...user, watchlist: updatedWatchlist });
     } catch (error) {
       console.error('Error adding to watchlist:', error);
+      throw error;
     }
   };
 
   const removeFromWatchlist = async (movieId: number) => {
     if (!user) return;
-    
+
     try {
       const updatedWatchlist = user.watchlist.filter(id => id !== movieId);
       
@@ -221,40 +186,33 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         .update({ watchlist: updatedWatchlist })
         .eq('id', user.id);
 
-      if (error) {
-        toast({
-          title: "Error",
-          description: "Failed to remove from watchlist.",
-          variant: "destructive",
-        });
-        return;
-      }
+      if (error) throw error;
 
-      setUser({
-        ...user,
-        watchlist: updatedWatchlist
-      });
+      setUser({ ...user, watchlist: updatedWatchlist });
     } catch (error) {
       console.error('Error removing from watchlist:', error);
+      throw error;
     }
   };
 
-  const isInWatchlist = (movieId: number) => {
-    return user ? user.watchlist.includes(movieId) : false;
+  const isInWatchlist = (movieId: number): boolean => {
+    return user?.watchlist.includes(movieId) || false;
+  };
+
+  const value: AuthContextType = {
+    user,
+    session,
+    loading,
+    login,
+    signup,
+    logout,
+    addToWatchlist,
+    removeFromWatchlist,
+    isInWatchlist,
   };
 
   return (
-    <AuthContext.Provider value={{
-      user,
-      session,
-      login,
-      signup,
-      logout,
-      addToWatchlist,
-      removeFromWatchlist,
-      isInWatchlist,
-      loading
-    }}>
+    <AuthContext.Provider value={value}>
       {children}
     </AuthContext.Provider>
   );
