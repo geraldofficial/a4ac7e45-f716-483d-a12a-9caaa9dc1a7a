@@ -37,7 +37,7 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onToggleMode }) => {
       <div className="bg-black/40 backdrop-blur-md p-8 rounded-lg border border-white/10 w-full max-w-md">
         <div className="flex items-center justify-center mb-8">
           <Film className="h-8 w-8 text-purple-400 mr-2" />
-          <span className="text-2xl font-bold text-white">LickPick</span>
+          <span className="text-2xl font-bold text-white">FlickPick</span>
         </div>
         
         <h2 className="text-2xl font-bold text-white mb-6 text-center">Sign In</h2>
