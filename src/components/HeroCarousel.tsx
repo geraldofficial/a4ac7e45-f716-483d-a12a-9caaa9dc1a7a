@@ -73,7 +73,7 @@ export const HeroCarousel = () => {
 
             return (
               <CarouselItem key={movie.id} className="h-full p-0 basis-full">
-                <div className="relative w-full h-full">
+                <div className="relative w-full h-screen">
                   <div 
                     className="absolute inset-0 bg-cover bg-center bg-no-repeat"
                     style={{ backgroundImage: `url(${backdropUrl})` }}
@@ -82,40 +82,40 @@ export const HeroCarousel = () => {
                     <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
                   </div>
                   
-                  <div className="relative z-10 container mx-auto px-6 h-full flex items-center pt-20">
-                    <div className="max-w-2xl text-white">
-                      <h1 className="text-5xl md:text-7xl font-bold mb-6 leading-tight animate-fade-in">
+                  <div className="relative z-10 container mx-auto px-4 sm:px-6 lg:px-8 h-full flex items-center">
+                    <div className="max-w-4xl text-white pt-16 sm:pt-20">
+                      <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold mb-4 sm:mb-6 leading-tight animate-fade-in">
                         {title}
                       </h1>
                       
-                      <div className="flex items-center gap-6 mb-6">
+                      <div className="flex flex-wrap items-center gap-3 sm:gap-4 lg:gap-6 mb-4 sm:mb-6">
                         <div className="flex items-center gap-2">
-                          <Star className="h-6 w-6 text-yellow-400 fill-current" />
-                          <span className="text-xl font-semibold">{movie.vote_average.toFixed(1)}</span>
+                          <Star className="h-5 w-5 sm:h-6 sm:w-6 text-yellow-400 fill-current" />
+                          <span className="text-lg sm:text-xl font-semibold">{movie.vote_average.toFixed(1)}</span>
                         </div>
                         
                         {(movie.release_date || movie.first_air_date) && (
-                          <span className="text-lg font-medium">
+                          <span className="text-base sm:text-lg font-medium">
                             {new Date(movie.release_date || movie.first_air_date || '').getFullYear()}
                           </span>
                         )}
                         
-                        <span className="px-3 py-1 bg-primary/20 backdrop-blur-sm rounded-full text-sm font-medium border border-primary/30">
+                        <span className="px-2 sm:px-3 py-1 bg-primary/20 backdrop-blur-sm rounded-full text-xs sm:text-sm font-medium border border-primary/30">
                           {movie.title ? 'Movie' : 'TV Series'}
                         </span>
                       </div>
                       
-                      <p className="text-gray-200 text-lg leading-relaxed mb-8 max-w-2xl line-clamp-3">
+                      <p className="text-gray-200 text-sm sm:text-base lg:text-lg leading-relaxed mb-6 sm:mb-8 max-w-2xl line-clamp-3">
                         {movie.overview}
                       </p>
                       
-                      <div className="flex flex-wrap gap-4 animate-fade-in">
+                      <div className="flex flex-col sm:flex-row flex-wrap gap-3 sm:gap-4 animate-fade-in">
                         <Button 
                           onClick={() => handleWatchClick(movie)}
                           size="lg"
-                          className="bg-primary hover:bg-primary/90 text-primary-foreground px-8 py-3 text-lg font-semibold"
+                          className="bg-primary hover:bg-primary/90 text-primary-foreground px-6 sm:px-8 py-2 sm:py-3 text-base sm:text-lg font-semibold w-full sm:w-auto"
                         >
-                          <Play className="h-6 w-6 mr-2 fill-current" />
+                          <Play className="h-5 w-5 sm:h-6 sm:w-6 mr-2 fill-current" />
                           Watch Now
                         </Button>
                         
@@ -123,9 +123,9 @@ export const HeroCarousel = () => {
                           onClick={() => handleWatchClick(movie)}
                           variant="outline"
                           size="lg"
-                          className="border-white/30 text-white hover:bg-white/10 backdrop-blur-sm px-8 py-3 text-lg font-semibold"
+                          className="border-white/30 text-white hover:bg-white/10 backdrop-blur-sm px-6 sm:px-8 py-2 sm:py-3 text-base sm:text-lg font-semibold w-full sm:w-auto"
                         >
-                          <Info className="h-6 w-6 mr-2" />
+                          <Info className="h-5 w-5 sm:h-6 sm:w-6 mr-2" />
                           More Info
                         </Button>
                         
@@ -134,9 +134,9 @@ export const HeroCarousel = () => {
                             onClick={() => handleWatchlistClick(movie)}
                             variant="outline"
                             size="lg"
-                            className="border-white/30 text-white hover:bg-white/10 backdrop-blur-sm px-8 py-3 text-lg font-semibold"
+                            className="border-white/30 text-white hover:bg-white/10 backdrop-blur-sm px-6 sm:px-8 py-2 sm:py-3 text-base sm:text-lg font-semibold w-full sm:w-auto"
                           >
-                            <Plus className="h-6 w-6 mr-2" />
+                            <Plus className="h-5 w-5 sm:h-6 sm:w-6 mr-2" />
                             My List
                           </Button>
                         )}
@@ -149,8 +149,8 @@ export const HeroCarousel = () => {
           })}
         </CarouselContent>
         
-        <CarouselPrevious className="left-6 h-12 w-12 border-white/30 text-white hover:bg-white/10 backdrop-blur-sm" />
-        <CarouselNext className="right-6 h-12 w-12 border-white/30 text-white hover:bg-white/10 backdrop-blur-sm" />
+        <CarouselPrevious className="left-2 sm:left-6 h-10 w-10 sm:h-12 sm:w-12 border-white/30 text-white hover:bg-white/10 backdrop-blur-sm" />
+        <CarouselNext className="right-2 sm:right-6 h-10 w-10 sm:h-12 sm:w-12 border-white/30 text-white hover:bg-white/10 backdrop-blur-sm" />
       </Carousel>
     </section>
   );
