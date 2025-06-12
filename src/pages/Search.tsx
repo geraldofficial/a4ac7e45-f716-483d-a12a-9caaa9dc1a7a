@@ -53,11 +53,7 @@ const Search = () => {
               {results.map((item) => (
                 <MovieCard 
                   key={item.id} 
-                  movie={{
-                    ...item,
-                    title: item.title || item.name || '',
-                    release_date: item.release_date || item.first_air_date || ''
-                  }} 
+                  movie={item}
                   type={item.title ? 'movie' : 'tv'} 
                 />
               ))}

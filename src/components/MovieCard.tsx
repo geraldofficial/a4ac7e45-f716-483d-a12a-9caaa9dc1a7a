@@ -6,15 +6,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { VideoPlayer } from './VideoPlayer';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
-
-interface Movie {
-  id: number;
-  title: string;
-  poster_path: string;
-  release_date: string;
-  vote_average: number;
-  overview: string;
-}
+import { Movie } from '@/services/tmdb';
 
 interface MovieCardProps {
   movie: Movie;
@@ -26,6 +18,10 @@ export const MovieCard: React.FC<MovieCardProps> = ({ movie, type }) => {
   const [isPlaying, setIsPlaying] = useState(false);
   const { user, addToWatchlist, removeFromWatchlist, isInWatchlist } = useAuth();
   const { toast } = useToast();
+
+  // Handle optional title/name from TMDB API
+  const title = movie.title || movie.name || 'Unknown Title';
+  const releaseDate = movie.release_date || movie.first_air_date || '';
 
   const posterUrl = movie.poster_path 
     ? `https://image.tmdb.org/t/p/w500${movie.poster_path}`
@@ -57,13 +53,13 @@ export const MovieCard: React.FC<MovieCardProps> = ({ movie, type }) => {
       removeFromWatchlist(movie.id);
       toast({
         title: "Removed from watchlist",
-        description: `${movie.title} has been removed from your watchlist.`,
+        description: `${title} has been removed from your watchlist.`,
       });
     } else {
       addToWatchlist(movie.id);
       toast({
         title: "Added to watchlist",
-        description: `${movie.title} has been added to your watchlist.`,
+        description: `${title} has been added to your watchlist.`,
       });
     }
   };
@@ -74,7 +70,7 @@ export const MovieCard: React.FC<MovieCardProps> = ({ movie, type }) => {
         <div className="aspect-[2/3] overflow-hidden">
           <img
             src={posterUrl}
-            alt={movie.title}
+            alt={title}
             className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-110"
             onError={(e) => {
               e.currentTarget.src = 'https://images.unsplash.com/photo-1489599904276-39c2bb2d7b64?w=400&h=600&fit=crop';
@@ -89,9 +85,11 @@ export const MovieCard: React.FC<MovieCardProps> = ({ movie, type }) => {
                   <Star className="h-4 w-4 text-yellow-400 fill-current" />
                   <span className="text-white text-sm">{movie.vote_average.toFixed(1)}</span>
                 </div>
-                <span className="text-gray-300 text-sm">
-                  {new Date(movie.release_date).getFullYear()}
-                </span>
+                {releaseDate && (
+                  <span className="text-gray-300 text-sm">
+                    {new Date(releaseDate).getFullYear()}
+                  </span>
+                )}
               </div>
               
               <div className="flex gap-2">
@@ -104,12 +102,12 @@ export const MovieCard: React.FC<MovieCardProps> = ({ movie, type }) => {
                   </DialogTrigger>
                   <DialogContent className="max-w-4xl bg-gray-900 border-gray-700">
                     <DialogHeader>
-                      <DialogTitle className="text-white">{movie.title}</DialogTitle>
+                      <DialogTitle className="text-white">{title}</DialogTitle>
                     </DialogHeader>
                     <div className="space-y-4">
                       {isPlaying ? (
                         <VideoPlayer 
-                          title={movie.title}
+                          title={title}
                           tmdbId={movie.id}
                           type={type}
                         />
@@ -121,9 +119,11 @@ export const MovieCard: React.FC<MovieCardProps> = ({ movie, type }) => {
                               <Star className="h-4 w-4 text-yellow-400 fill-current" />
                               <span className="text-white">{movie.vote_average.toFixed(1)}</span>
                             </div>
-                            <span className="text-gray-300">
-                              {new Date(movie.release_date).getFullYear()}
-                            </span>
+                            {releaseDate && (
+                              <span className="text-gray-300">
+                                {new Date(releaseDate).getFullYear()}
+                              </span>
+                            )}
                           </div>
                           <Button onClick={handleWatch} className="bg-purple-600 hover:bg-purple-700">
                             <Play className="h-4 w-4 mr-2" />
@@ -151,10 +151,12 @@ export const MovieCard: React.FC<MovieCardProps> = ({ movie, type }) => {
         </div>
         
         <div className="p-4">
-          <h3 className="text-white font-semibold truncate">{movie.title}</h3>
-          <p className="text-gray-400 text-sm">
-            {new Date(movie.release_date).getFullYear()}
-          </p>
+          <h3 className="text-white font-semibold truncate">{title}</h3>
+          {releaseDate && (
+            <p className="text-gray-400 text-sm">
+              {new Date(releaseDate).getFullYear()}
+            </p>
+          )}
         </div>
       </div>
     </>

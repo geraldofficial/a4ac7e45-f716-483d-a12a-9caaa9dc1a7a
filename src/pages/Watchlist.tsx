@@ -85,11 +85,7 @@ const Watchlist = () => {
               {watchlistMovies.map((movie) => (
                 <MovieCard 
                   key={movie.id} 
-                  movie={{
-                    ...movie,
-                    title: movie.title || movie.name || '',
-                    release_date: movie.release_date || movie.first_air_date || ''
-                  }} 
+                  movie={movie}
                   type={movie.title ? 'movie' : 'tv'} 
                 />
               ))}
