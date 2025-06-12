@@ -61,8 +61,7 @@ export const MovieSection = () => {
             {trending.map((item) => (
               <MovieCard 
                 key={item.id} 
-                movie={item} 
-                type={item.title ? 'movie' : 'tv'} 
+                movie={item}
               />
             ))}
           </div>
@@ -80,7 +79,7 @@ export const MovieSection = () => {
           
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
             {movies.map((movie) => (
-              <MovieCard key={movie.id} movie={movie} type="movie" />
+              <MovieCard key={movie.id} movie={movie} />
             ))}
           </div>
         </section>
@@ -97,7 +96,7 @@ export const MovieSection = () => {
           
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
             {tvShows.map((show) => (
-              <MovieCard key={show.id} movie={show} type="tv" />
+              <MovieCard key={show.id} movie={show} />
             ))}
           </div>
         </section>

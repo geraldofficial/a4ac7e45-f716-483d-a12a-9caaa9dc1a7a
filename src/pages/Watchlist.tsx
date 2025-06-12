@@ -86,7 +86,6 @@ const Watchlist = () => {
                 <MovieCard 
                   key={movie.id} 
                   movie={movie}
-                  type={movie.title ? 'movie' : 'tv'} 
                 />
               ))}
             </div>

@@ -54,7 +54,6 @@ const Search = () => {
                 <MovieCard 
                   key={item.id} 
                   movie={item}
-                  type={item.title ? 'movie' : 'tv'} 
                 />
               ))}
             </div>
