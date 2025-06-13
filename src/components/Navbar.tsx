@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { Search, Menu, X, User, LogOut, Settings, Bookmark, Heart, TrendingUp, Star } from 'lucide-react';
@@ -11,7 +12,7 @@ export const Navbar = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
-  const { user, signOut } = useAuth();
+  const { user, logout } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const userMenuRef = useRef<HTMLDivElement>(null);
@@ -46,7 +47,7 @@ export const Navbar = () => {
   };
 
   const handleSignOut = async () => {
-    await signOut();
+    await logout();
     setIsUserMenuOpen(false);
     navigate('/');
   };
@@ -102,7 +103,7 @@ export const Navbar = () => {
                     className="flex items-center space-x-2 focus:outline-none"
                   >
                     <Avatar className="h-8 w-8">
-                      <AvatarImage src={user.avatar_url || undefined} alt={user.email} />
+                      <AvatarImage src={user.avatar || undefined} alt={user.username || 'User'} />
                       <AvatarFallback>
                         <User className="h-4 w-4" />
                       </AvatarFallback>
@@ -112,7 +113,7 @@ export const Navbar = () => {
                   {isUserMenuOpen && (
                     <div className="absolute right-0 mt-2 w-48 bg-background border border-border rounded-lg shadow-lg py-1 z-50">
                       <div className="px-4 py-2 border-b border-border">
-                        <p className="text-sm font-medium text-foreground truncate">{user.email}</p>
+                        <p className="text-sm font-medium text-foreground truncate">{user.username || 'User'}</p>
                       </div>
                       <Link
                         to="/watchlist"
@@ -154,7 +155,7 @@ export const Navbar = () => {
               {user && (
                 <Link to="/watchlist">
                   <Avatar className="h-7 w-7">
-                    <AvatarImage src={user.avatar_url || undefined} alt={user.email} />
+                    <AvatarImage src={user.avatar || undefined} alt={user.username || 'User'} />
                     <AvatarFallback>
                       <User className="h-3 w-3" />
                     </AvatarFallback>
@@ -205,7 +206,7 @@ export const Navbar = () => {
               {user ? (
                 <div className="pt-3 border-t border-border/50 space-y-1">
                   <div className="px-3 py-2">
-                    <p className="text-sm font-medium text-foreground truncate">{user.email}</p>
+                    <p className="text-sm font-medium text-foreground truncate">{user.username || 'User'}</p>
                   </div>
                   <Link
                     to="/watchlist"
