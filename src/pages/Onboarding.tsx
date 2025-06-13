@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -10,7 +9,7 @@ import { ArrowRight, ArrowLeft } from 'lucide-react';
 
 const Onboarding = () => {
   const [currentStep, setCurrentStep] = useState(1);
-  const [selectedAvatar, setSelectedAvatar] = useState('👤');
+  const [selectedAvatar, setSelectedAvatar] = useState('https://api.dicebear.com/7.x/avataaars/svg?seed=Felix');
   const [selectedGenres, setSelectedGenres] = useState<number[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const { user, completeOnboarding, loading } = useAuth();
