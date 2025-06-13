@@ -42,19 +42,20 @@ export const AvatarSelector: React.FC<AvatarSelectorProps> = ({
   className = ''
 }) => {
   return (
-    <div className={`space-y-4 ${className}`}>
-      <h3 className="text-lg font-semibold text-foreground">Choose Your Avatar</h3>
-      <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 gap-3">
+    <div className={`space-y-6 ${className}`}>
+      <h3 className="text-xl font-bold text-white text-center">Choose Your Avatar</h3>
+      <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 gap-4">
         {defaultAvatars.map((avatar, index) => (
           <button
             key={index}
             onClick={() => onAvatarSelect(avatar)}
             className={`
-              relative w-12 h-12 sm:w-14 sm:h-14 rounded-full border-2 flex items-center justify-center
-              transition-all duration-200 hover:scale-110 overflow-hidden
+              relative w-14 h-14 sm:w-16 sm:h-16 rounded-full border-3 flex items-center justify-center
+              transition-all duration-300 hover:scale-110 overflow-hidden backdrop-blur-sm
+              shadow-lg hover:shadow-xl
               ${selectedAvatar === avatar 
-                ? 'border-primary bg-primary/20' 
-                : 'border-border hover:border-primary/50'
+                ? 'border-purple-400 bg-purple-500/20 shadow-purple-500/25' 
+                : 'border-white/30 hover:border-purple-400/50 bg-white/10 hover:bg-white/15'
               }
             `}
           >
@@ -64,8 +65,8 @@ export const AvatarSelector: React.FC<AvatarSelectorProps> = ({
               className="w-full h-full object-cover rounded-full"
             />
             {selectedAvatar === avatar && (
-              <div className="absolute -top-1 -right-1 w-6 h-6 bg-primary rounded-full flex items-center justify-center border-2 border-background shadow-lg">
-                <Check className="w-3 h-3 text-primary-foreground" />
+              <div className="absolute -top-1 -right-1 w-7 h-7 bg-purple-500 rounded-full flex items-center justify-center border-3 border-white shadow-lg animate-scale-in">
+                <Check className="w-4 h-4 text-white font-bold" strokeWidth={3} />
               </div>
             )}
           </button>

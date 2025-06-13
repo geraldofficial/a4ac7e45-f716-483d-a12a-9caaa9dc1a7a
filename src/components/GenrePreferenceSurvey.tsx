@@ -45,10 +45,10 @@ export const GenrePreferenceSurvey: React.FC<GenrePreferenceSurveyProps> = ({
   };
 
   return (
-    <div className={`space-y-4 ${className}`}>
-      <div>
-        <h3 className="text-lg font-semibold text-foreground mb-2">What are your favorite movie genres?</h3>
-        <p className="text-sm text-muted-foreground">Select at least 3 genres to get personalized recommendations</p>
+    <div className={`space-y-6 ${className}`}>
+      <div className="text-center">
+        <h3 className="text-xl font-bold text-white mb-2">What are your favorite movie genres?</h3>
+        <p className="text-white/70 text-sm">Select at least 3 genres to get personalized recommendations</p>
       </div>
       
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
@@ -57,31 +57,37 @@ export const GenrePreferenceSurvey: React.FC<GenrePreferenceSurveyProps> = ({
             key={genre.id}
             onClick={() => toggleGenre(genre.id)}
             className={`
-              relative p-3 rounded-lg border-2 text-sm font-medium transition-all duration-200
-              hover:scale-105 min-h-[50px] flex items-center justify-center
+              relative p-4 rounded-xl border-2 text-sm font-medium transition-all duration-300
+              hover:scale-105 min-h-[60px] flex items-center justify-center
+              backdrop-blur-sm shadow-lg hover:shadow-xl
               ${selectedGenres.includes(genre.id)
-                ? 'border-primary bg-primary/20 text-primary'
-                : 'border-border text-foreground hover:border-primary/50'
+                ? 'border-purple-400 bg-purple-500/30 text-white shadow-purple-500/25'
+                : 'border-white/20 bg-white/10 text-white hover:border-purple-400/50 hover:bg-white/15'
               }
             `}
           >
             {genre.name}
             {selectedGenres.includes(genre.id) && (
-              <div className="absolute -top-2 -right-2 w-6 h-6 bg-primary rounded-full flex items-center justify-center border-2 border-background shadow-lg">
-                <Check className="w-3 h-3 text-primary-foreground" />
+              <div className="absolute -top-2 -right-2 w-7 h-7 bg-purple-500 rounded-full flex items-center justify-center border-3 border-white shadow-lg animate-scale-in">
+                <Check className="w-4 h-4 text-white font-bold" strokeWidth={3} />
               </div>
             )}
           </button>
         ))}
       </div>
       
-      <div className="text-sm text-muted-foreground">
-        Selected: {selectedGenres.length} genre{selectedGenres.length !== 1 ? 's' : ''}
-        {selectedGenres.length < 3 && (
-          <span className="text-yellow-500 ml-2">
-            (Select at least {3 - selectedGenres.length} more)
+      <div className="text-center">
+        <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm rounded-full px-4 py-2 border border-white/20">
+          <div className={`w-2 h-2 rounded-full ${selectedGenres.length >= 3 ? 'bg-green-400' : 'bg-yellow-400'}`}></div>
+          <span className="text-white text-sm font-medium">
+            Selected: {selectedGenres.length} genre{selectedGenres.length !== 1 ? 's' : ''}
           </span>
-        )}
+          {selectedGenres.length < 3 && (
+            <span className="text-yellow-300 text-sm">
+              (Need {3 - selectedGenres.length} more)
+            </span>
+          )}
+        </div>
       </div>
     </div>
   );
