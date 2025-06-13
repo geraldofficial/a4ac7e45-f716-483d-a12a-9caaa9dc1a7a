@@ -93,11 +93,13 @@
 
   html {
     overflow-x: hidden;
+    scroll-behavior: smooth;
   }
 
   body {
     @apply bg-background text-foreground;
     overflow-x: hidden;
+    font-family: system-ui, -apple-system, sans-serif;
   }
 }
 
@@ -110,6 +112,40 @@
   .h-screen {
     height: 100vh;
     height: 100dvh; /* Dynamic viewport height for mobile browsers */
+  }
+
+  /* Mobile touch improvements */
+  .touch-manipulation {
+    touch-action: manipulation;
+  }
+
+  /* Responsive text sizing */
+  .text-responsive-sm {
+    font-size: clamp(0.875rem, 2.5vw, 1rem);
+  }
+
+  .text-responsive-base {
+    font-size: clamp(1rem, 3vw, 1.125rem);
+  }
+
+  .text-responsive-lg {
+    font-size: clamp(1.125rem, 4vw, 1.25rem);
+  }
+
+  .text-responsive-xl {
+    font-size: clamp(1.25rem, 5vw, 1.5rem);
+  }
+
+  .text-responsive-2xl {
+    font-size: clamp(1.5rem, 6vw, 2rem);
+  }
+
+  .text-responsive-3xl {
+    font-size: clamp(1.875rem, 7vw, 2.5rem);
+  }
+
+  .text-responsive-4xl {
+    font-size: clamp(2.25rem, 8vw, 3rem);
   }
 }
 
@@ -129,5 +165,51 @@
   .container {
     padding-left: 1rem;
     padding-right: 1rem;
+  }
+
+  /* Improve tap targets on mobile */
+  button, a, input, select, textarea {
+    min-height: 44px;
+    min-width: 44px;
+  }
+
+  /* Better spacing for mobile */
+  .space-y-mobile > * + * {
+    margin-top: 0.75rem;
+  }
+
+  .gap-mobile {
+    gap: 0.75rem;
+  }
+}
+
+/* Tablet adjustments */
+@media (min-width: 641px) and (max-width: 1024px) {
+  .container {
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
+  }
+}
+
+/* Desktop adjustments */
+@media (min-width: 1025px) {
+  .container {
+    padding-left: 2rem;
+    padding-right: 2rem;
+  }
+}
+
+/* Improve scrolling on iOS */
+@supports (-webkit-overflow-scrolling: touch) {
+  .overflow-scroll, .overflow-y-scroll {
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+/* High DPI display adjustments */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+  img {
+    image-rendering: -webkit-optimize-contrast;
+    image-rendering: crisp-edges;
   }
 }

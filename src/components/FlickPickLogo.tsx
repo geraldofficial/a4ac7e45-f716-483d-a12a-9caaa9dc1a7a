@@ -1,3 +1,4 @@
+
 import React from 'react';
 
 interface FlickPickLogoProps {
@@ -30,12 +31,11 @@ export const FlickPickLogo: React.FC<FlickPickLogoProps> = ({
           <img 
             src="/favicon.ico" 
             alt="FlickPick logo" 
-            className={`${iconSizes[size]} object-contain`}
+            className={`${iconSizes[size]} object-contain filter grayscale`}
           />
-          <div className="absolute inset-0 bg-gradient-to-br from-primary to-purple-600 opacity-20 rounded blur-sm" />
         </div>
       )}
-      <span className={`${sizeClasses[size]} font-bold bg-gradient-to-r from-primary to-purple-400 bg-clip-text text-transparent`}>
+      <span className={`${sizeClasses[size]} font-bold text-foreground`}>
         FlickPick
       </span>
     </div>
