@@ -1,250 +1,188 @@
 
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { MovieCard } from './MovieCard';
-import { MovieFilters } from './MovieFilters';
 import { tmdbApi, Movie } from '@/services/tmdb';
+import { getPersonalizedRecommendations, getRecommendationTitle } from '@/services/recommendations';
+import { useAuth } from '@/contexts/AuthContext';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 
 export const MovieSection = () => {
-  const [movies, setMovies] = useState<Movie[]>([]);
-  const [filteredMovies, setFilteredMovies] = useState<Movie[]>([]);
+  const [popularMovies, setPopularMovies] = useState<Movie[]>([]);
+  const [recommendedMovies, setRecommendedMovies] = useState<Movie[]>([]);
+  const [trendingMovies, setTrendingMovies] = useState<Movie[]>([]);
   const [loading, setLoading] = useState(true);
+  const [recommendedPage, setRecommendedPage] = useState(1);
+  const [hasMoreRecommended, setHasMoreRecommended] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
-  const [page, setPage] = useState(1);
-  const [hasMore, setHasMore] = useState(true);
+  const { user } = useAuth();
   
-  // Filter states
-  const [selectedType, setSelectedType] = useState<'all' | 'movie' | 'tv'>('all');
-  const [selectedGenre, setSelectedGenre] = useState('');
-  const [selectedYear, setSelectedYear] = useState('');
-  const [sortBy, setSortBy] = useState('popularity.desc');
-
   const observer = useRef<IntersectionObserver>();
   const lastMovieElementRef = useCallback((node: HTMLDivElement) => {
     if (loadingMore) return;
     if (observer.current) observer.current.disconnect();
     observer.current = new IntersectionObserver(entries => {
-      if (entries[0].isIntersecting && hasMore) {
-        loadMoreContent();
+      if (entries[0].isIntersecting && hasMoreRecommended) {
+        loadMoreRecommended();
       }
     });
     if (node) observer.current.observe(node);
-  }, [loadingMore, hasMore]);
+  }, [loadingMore, hasMoreRecommended]);
 
   useEffect(() => {
-    fetchContent();
-  }, []);
+    const fetchMovies = async () => {
+      try {
+        setLoading(true);
+        
+        // Fetch all sections in parallel
+        const [popularResponse, trendingResponse] = await Promise.all([
+          tmdbApi.getPopularMovies(1),
+          tmdbApi.getTrendingMovies(1)
+        ]);
 
-  useEffect(() => {
-    applyFilters();
-  }, [movies, selectedType, selectedGenre, selectedYear, sortBy]);
+        setPopularMovies(popularResponse.results);
+        setTrendingMovies(trendingResponse.results);
 
-  const fetchContent = async () => {
-    setLoading(true);
-    setPage(1);
-    try {
-      const [moviesData, tvData, trendingData] = await Promise.all([
-        tmdbApi.getPopularMovies(),
-        tmdbApi.getPopularTVShows(),
-        tmdbApi.getTrending()
-      ]);
+        // Fetch personalized recommendations if user has preferences
+        if (user && user.genre_preferences && user.genre_preferences.length > 0) {
+          const recommendedResponse = await getPersonalizedRecommendations(user.genre_preferences, 1);
+          setRecommendedMovies(recommendedResponse.results);
+          setHasMoreRecommended(recommendedResponse.total_pages > 1);
+        } else {
+          // Fallback to popular movies for non-authenticated users
+          setRecommendedMovies(popularResponse.results);
+          setHasMoreRecommended(false);
+        }
+      } catch (error) {
+        console.error('Error fetching movies:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-      // Add media_type to distinguish between movies and TV shows
-      const moviesWithType: Movie[] = moviesData.map(movie => ({ 
-        ...movie, 
-        media_type: 'movie' as const 
-      }));
-      const tvWithType: Movie[] = tvData.map(tv => ({ 
-        ...tv, 
-        media_type: 'tv' as const 
-      }));
-      const trendingWithType: Movie[] = trendingData.map(item => ({
-        ...item,
-        media_type: (item.title ? 'movie' : 'tv') as 'movie' | 'tv'
-      }));
+    fetchMovies();
+  }, [user]);
 
-      const allContent = [...moviesWithType, ...tvWithType, ...trendingWithType];
-      
-      // Remove duplicates based on id and media_type
-      const uniqueContent = allContent.filter((item, index, self) =>
-        index === self.findIndex(t => t.id === item.id && t.media_type === item.media_type)
-      );
-
-      setMovies(uniqueContent);
-      setHasMore(true);
-    } catch (error) {
-      console.error('Error fetching content:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const loadMoreContent = async () => {
-    if (loadingMore || !hasMore) return;
+  const loadMoreRecommended = async () => {
+    if (!user || !user.genre_preferences || loadingMore || !hasMoreRecommended) return;
     
     setLoadingMore(true);
     try {
-      const nextPage = page + 1;
+      const nextPage = recommendedPage + 1;
+      const response = await getPersonalizedRecommendations(user.genre_preferences, nextPage);
       
-      // Fetch more content from different endpoints
-      const promises = [];
-      if (nextPage <= 5) { // Limit to prevent too many requests
-        promises.push(
-          tmdbApi.discoverContent({ type: 'movie', page: nextPage }),
-          tmdbApi.discoverContent({ type: 'tv', page: nextPage })
-        );
-      }
-
-      if (promises.length > 0) {
-        const results = await Promise.all(promises);
-        const newMovies: Movie[] = [];
-        
-        results.forEach(result => {
-          const contentWithType = result.results.map(item => ({
-            ...item,
-            media_type: (item.title ? 'movie' : 'tv') as 'movie' | 'tv'
-          }));
-          newMovies.push(...contentWithType);
-        });
-
-        // Remove duplicates
-        const uniqueNewMovies = newMovies.filter(newMovie => 
-          !movies.some(existingMovie => 
-            existingMovie.id === newMovie.id && existingMovie.media_type === newMovie.media_type
-          )
-        );
-
-        if (uniqueNewMovies.length > 0) {
-          setMovies(prev => [...prev, ...uniqueNewMovies]);
-          setPage(nextPage);
-        } else {
-          setHasMore(false);
-        }
-      } else {
-        setHasMore(false);
-      }
+      setRecommendedMovies(prev => [...prev, ...response.results]);
+      setRecommendedPage(nextPage);
+      setHasMoreRecommended(nextPage < response.total_pages);
     } catch (error) {
-      console.error('Error loading more content:', error);
+      console.error('Error loading more recommendations:', error);
     } finally {
       setLoadingMore(false);
     }
   };
 
-  const applyFilters = () => {
-    let filtered = [...movies];
-
-    // Filter by type
-    if (selectedType !== 'all') {
-      filtered = filtered.filter(item => item.media_type === selectedType);
-    }
-
-    // Filter by genre
-    if (selectedGenre) {
-      filtered = filtered.filter(item =>
-        item.genre_ids?.includes(parseInt(selectedGenre))
-      );
-    }
-
-    // Filter by year
-    if (selectedYear) {
-      filtered = filtered.filter(item => {
-        const releaseDate = item.release_date || item.first_air_date;
-        return releaseDate && new Date(releaseDate).getFullYear() === parseInt(selectedYear);
+  const scrollSection = (sectionId: string, direction: 'left' | 'right') => {
+    const section = document.getElementById(sectionId);
+    if (section) {
+      const scrollAmount = window.innerWidth < 768 ? 200 : 400;
+      section.scrollBy({
+        left: direction === 'left' ? -scrollAmount : scrollAmount,
+        behavior: 'smooth'
       });
     }
-
-    // Sort
-    filtered.sort((a, b) => {
-      switch (sortBy) {
-        case 'popularity.desc':
-          return (b.popularity || 0) - (a.popularity || 0);
-        case 'popularity.asc':
-          return (a.popularity || 0) - (b.popularity || 0);
-        case 'vote_average.desc':
-          return b.vote_average - a.vote_average;
-        case 'vote_average.asc':
-          return a.vote_average - b.vote_average;
-        case 'release_date.desc':
-          return new Date(b.release_date || b.first_air_date || '').getTime() - 
-                 new Date(a.release_date || a.first_air_date || '').getTime();
-        case 'release_date.asc':
-          return new Date(a.release_date || a.first_air_date || '').getTime() - 
-                 new Date(b.release_date || b.first_air_date || '').getTime();
-        default:
-          return 0;
-      }
-    });
-
-    setFilteredMovies(filtered);
   };
 
-  const handleClearFilters = () => {
-    setSelectedType('all');
-    setSelectedGenre('');
-    setSelectedYear('');
-    setSortBy('popularity.desc');
-  };
+  const MovieRow = ({ 
+    title, 
+    movies, 
+    sectionId, 
+    showScrollButtons = true 
+  }: { 
+    title: string; 
+    movies: Movie[]; 
+    sectionId: string; 
+    showScrollButtons?: boolean;
+  }) => (
+    <section className="mb-8 sm:mb-12">
+      <div className="flex items-center justify-between mb-4 sm:mb-6 px-4 sm:px-6">
+        <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-foreground">
+          {title}
+        </h2>
+        {showScrollButtons && (
+          <div className="hidden md:flex gap-2">
+            <button
+              onClick={() => scrollSection(sectionId, 'left')}
+              className="p-2 rounded-full bg-accent hover:bg-accent/80 transition-colors"
+            >
+              <ChevronLeft className="h-5 w-5" />
+            </button>
+            <button
+              onClick={() => scrollSection(sectionId, 'right')}
+              className="p-2 rounded-full bg-accent hover:bg-accent/80 transition-colors"
+            >
+              <ChevronRight className="h-5 w-5" />
+            </button>
+          </div>
+        )}
+      </div>
+      <div 
+        id={sectionId}
+        className="flex gap-3 sm:gap-4 lg:gap-6 overflow-x-auto pb-4 px-4 sm:px-6 scrollbar-hide"
+        style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+      >
+        {movies.map((movie, index) => (
+          <div 
+            key={movie.id} 
+            className="flex-shrink-0 w-32 sm:w-40 md:w-48 lg:w-56"
+            ref={sectionId === 'recommended' && index === movies.length - 1 ? lastMovieElementRef : null}
+          >
+            <MovieCard movie={movie} />
+          </div>
+        ))}
+      </div>
+    </section>
+  );
 
   if (loading) {
     return (
-      <div className="py-8 sm:py-12 lg:py-20 px-4 pb-24 md:pb-8">
-        <div className="container mx-auto">
-          <div className="text-center text-foreground text-lg sm:text-xl">Loading content...</div>
-        </div>
+      <div className="flex items-center justify-center py-12 sm:py-16 lg:py-20">
+        <div className="text-foreground text-lg sm:text-xl">Loading amazing content...</div>
       </div>
     );
   }
 
+  const recommendationTitle = user && user.genre_preferences 
+    ? getRecommendationTitle(user.genre_preferences)
+    : 'Popular Movies';
+
   return (
-    <div className="py-8 sm:py-12 lg:py-20 px-4 pb-24 md:pb-8">
-      <div className="container mx-auto">
-        <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-foreground mb-6 sm:mb-8 text-center">
-          Discover Movies & TV Shows
-        </h2>
-        
-        <MovieFilters
-          selectedType={selectedType}
-          selectedGenre={selectedGenre}
-          selectedYear={selectedYear}
-          sortBy={sortBy}
-          onTypeChange={setSelectedType}
-          onGenreChange={setSelectedGenre}
-          onYearChange={setSelectedYear}
-          onSortChange={setSortBy}
-          onClearFilters={handleClearFilters}
-        />
-        
-        {filteredMovies.length === 0 ? (
-          <div className="text-center text-foreground text-lg sm:text-xl">
-            No content found matching your filters.
-          </div>
-        ) : (
-          <>
-            {/* Mobile: 1 column, Tablet: 3 columns, Desktop: 4-6 columns */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 sm:gap-4 lg:gap-6">
-              {filteredMovies.map((movie, index) => (
-                <div
-                  key={`${movie.id}-${movie.media_type}`}
-                  ref={index === filteredMovies.length - 1 ? lastMovieElementRef : null}
-                >
-                  <MovieCard movie={movie} />
-                </div>
-              ))}
-            </div>
-            
-            {loadingMore && (
-              <div className="text-center text-foreground text-lg mt-8">
-                Loading more content...
-              </div>
-            )}
-            
-            {!hasMore && filteredMovies.length > 20 && (
-              <div className="text-center text-muted-foreground text-sm mt-8">
-                You've reached the end of the content.
-              </div>
-            )}
-          </>
-        )}
-      </div>
+    <div className="space-y-6 sm:space-y-8 lg:space-y-12">
+      {/* Personalized Recommendations */}
+      <MovieRow
+        title={recommendationTitle}
+        movies={recommendedMovies}
+        sectionId="recommended"
+        showScrollButtons={false}
+      />
+
+      {/* Trending Movies */}
+      <MovieRow
+        title="Trending Now"
+        movies={trendingMovies}
+        sectionId="trending"
+      />
+
+      {/* Popular Movies */}
+      <MovieRow
+        title="Popular Movies"
+        movies={popularMovies}
+        sectionId="popular"
+      />
+
+      {loadingMore && (
+        <div className="text-center text-foreground text-lg py-4">
+          Loading more recommendations...
+        </div>
+      )}
     </div>
   );
 };

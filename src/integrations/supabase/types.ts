@@ -11,22 +11,31 @@ export type Database = {
     Tables: {
       profiles: {
         Row: {
+          avatar: string | null
           created_at: string
+          genre_preferences: number[] | null
           id: string
+          onboarding_completed: boolean | null
           updated_at: string
           username: string | null
           watchlist: number[] | null
         }
         Insert: {
+          avatar?: string | null
           created_at?: string
+          genre_preferences?: number[] | null
           id: string
+          onboarding_completed?: boolean | null
           updated_at?: string
           username?: string | null
           watchlist?: number[] | null
         }
         Update: {
+          avatar?: string | null
           created_at?: string
+          genre_preferences?: number[] | null
           id?: string
+          onboarding_completed?: boolean | null
           updated_at?: string
           username?: string | null
           watchlist?: number[] | null

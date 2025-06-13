@@ -1,301 +1,120 @@
 
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-
-/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. */
-
-@layer base {
-  :root {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
-
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
-
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
-
-    --primary: 210 40% 98%;
-    --primary-foreground: 222.2 47.4% 11.2%;
-
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
-
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
-
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
-
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
-
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 212.7 26.8% 83.9%;
-
-    --radius: 0.5rem;
-
-    --sidebar-background: 240 5.9% 10%;
-    --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 224.3 76.3% 48%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 3.7% 15.9%;
-    --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
-  }
-
-  .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
-
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
-
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
-
-    --primary: 210 40% 98%;
-    --primary-foreground: 222.2 47.4% 11.2%;
-
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
-
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
-
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
-
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
-
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 212.7 26.8% 83.9%;
-    --sidebar-background: 240 5.9% 10%;
-    --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 224.3 76.3% 48%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 3.7% 15.9%;
-    --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
-  }
-}
 
 @layer base {
   * {
     @apply border-border;
   }
-
-  html {
-    overflow-x: hidden;
-    scroll-behavior: smooth;
-  }
-
   body {
     @apply bg-background text-foreground;
-    overflow-x: hidden;
-    font-family: system-ui, -apple-system, sans-serif;
-  }
-
-  /* Custom scrollbar styles */
-  ::-webkit-scrollbar {
-    width: 8px;
-    height: 8px;
-  }
-
-  ::-webkit-scrollbar-track {
-    background: transparent;
-  }
-
-  ::-webkit-scrollbar-thumb {
-    background: hsl(var(--muted));
-    border-radius: 4px;
-    border: 2px solid transparent;
-    background-clip: content-box;
-  }
-
-  ::-webkit-scrollbar-thumb:hover {
-    background: hsl(var(--muted-foreground));
-    background-clip: content-box;
-  }
-
-  /* Hide scrollbar for Firefox */
-  html {
-    scrollbar-width: thin;
-    scrollbar-color: hsl(var(--muted)) transparent;
-  }
-
-  /* Hide scrollbar completely on mobile */
-  @media (max-width: 768px) {
-    ::-webkit-scrollbar {
-      display: none;
-    }
-    
-    html {
-      scrollbar-width: none;
-      -ms-overflow-style: none;
-    }
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+      'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+      sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
 }
 
-@layer utilities {
-  .animate-fade-in {
-    animation: fadeIn 1s ease-out;
+/* Custom scrollbar styles */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+/* Better scrollbar for webkit browsers */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 10px;
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.25);
+  background-clip: content-box;
+}
+
+/* Firefox scrollbar */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.15) rgba(255, 255, 255, 0.05);
+}
+
+/* Mobile optimizations */
+@media (max-width: 768px) {
+  .container {
+    @apply px-4;
   }
   
-  /* Ensure full viewport height on mobile */
-  .h-screen {
-    height: 100vh;
-    height: 100dvh; /* Dynamic viewport height for mobile browsers */
+  /* Hide scrollbars on mobile */
+  .overflow-x-auto {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
   }
-
-  /* Mobile touch improvements */
-  .touch-manipulation {
-    touch-action: manipulation;
-  }
-
-  /* Responsive text sizing */
-  .text-responsive-sm {
-    font-size: clamp(0.875rem, 2.5vw, 1rem);
-  }
-
-  .text-responsive-base {
-    font-size: clamp(1rem, 3vw, 1.125rem);
-  }
-
-  .text-responsive-lg {
-    font-size: clamp(1.125rem, 4vw, 1.25rem);
-  }
-
-  .text-responsive-xl {
-    font-size: clamp(1.25rem, 5vw, 1.5rem);
-  }
-
-  .text-responsive-2xl {
-    font-size: clamp(1.5rem, 6vw, 2rem);
-  }
-
-  .text-responsive-3xl {
-    font-size: clamp(1.875rem, 7vw, 2.5rem);
-  }
-
-  .text-responsive-4xl {
-    font-size: clamp(2.25rem, 8vw, 3rem);
-  }
-
-  /* Smooth transitions for interactive elements */
-  .transition-smooth {
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  }
-
-  /* Glass morphism effect for mobile navbar */
-  .glass-morphism {
-    background: rgba(255, 255, 255, 0.1);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.2);
+  
+  .overflow-x-auto::-webkit-scrollbar {
+    display: none;
   }
 }
 
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(30px);
+/* Smooth transitions */
+* {
+  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease,
+    transform 0.2s ease, opacity 0.2s ease;
+}
+
+/* Focus states */
+button:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible {
+  @apply outline-none ring-2 ring-primary ring-offset-2 ring-offset-background;
+}
+
+/* Loading animations */
+@keyframes shimmer {
+  0% {
+    background-position: -200px 0;
   }
-  to {
-    opacity: 1;
-    transform: translateY(0);
+  100% {
+    background-position: calc(200px + 100%) 0;
   }
 }
 
-/* Mobile-specific adjustments */
-@media (max-width: 640px) {
-  .container {
-    padding-left: 1rem;
-    padding-right: 1rem;
-  }
+.shimmer {
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+  background-size: 200px 100%;
+  animation: shimmer 1.5s infinite;
+}
 
-  /* Improve tap targets on mobile */
-  button, a, input, select, textarea {
+/* Enhanced mobile touch targets */
+@media (max-width: 768px) {
+  button, a {
     min-height: 44px;
     min-width: 44px;
   }
-
-  /* Better spacing for mobile */
-  .space-y-mobile > * + * {
-    margin-top: 0.75rem;
-  }
-
-  .gap-mobile {
-    gap: 0.75rem;
-  }
-
-  /* Ensure content doesn't go behind bottom navbar */
-  .pb-mobile-safe {
-    padding-bottom: 100px;
-  }
 }
 
-/* Tablet adjustments */
-@media (min-width: 641px) and (max-width: 1024px) {
-  .container {
-    padding-left: 1.5rem;
-    padding-right: 1.5rem;
-  }
-}
-
-/* Desktop adjustments */
-@media (min-width: 1025px) {
-  .container {
-    padding-left: 2rem;
-    padding-right: 2rem;
-  }
-}
-
-/* Improve scrolling on iOS */
-@supports (-webkit-overflow-scrolling: touch) {
-  .overflow-scroll, .overflow-y-scroll {
-    -webkit-overflow-scrolling: touch;
-  }
-}
-
-/* High DPI display adjustments */
-@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
-  img {
-    image-rendering: -webkit-optimize-contrast;
-    image-rendering: crisp-edges;
-  }
-}
-
-/* Enhanced mobile responsiveness */
-@media (max-width: 768px) {
-  /* Improve button touch targets */
-  .btn-mobile {
-    min-height: 48px;
-    padding: 12px 16px;
-  }
-
-  /* Better form inputs on mobile */
-  input, textarea, select {
-    font-size: 16px; /* Prevents zoom on iOS */
-  }
-
-  /* Optimize text for mobile reading */
-  p, span, div {
-    line-height: 1.6;
-  }
-
-  /* Safe area for devices with notches */
-  .safe-area-top {
-    padding-top: env(safe-area-inset-top);
-  }
-
-  .safe-area-bottom {
-    padding-bottom: env(safe-area-inset-bottom);
+/* Dark theme optimizations */
+@media (prefers-color-scheme: dark) {
+  html {
+    color-scheme: dark;
   }
 }

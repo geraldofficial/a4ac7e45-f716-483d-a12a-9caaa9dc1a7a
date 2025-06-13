@@ -8,6 +8,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
+import Onboarding from "./pages/Onboarding";
 import Search from "./pages/Search";
 import Watchlist from "./pages/Watchlist";
 import Browse from "./pages/Browse";
@@ -44,6 +45,7 @@ const AppContent: React.FC = () => {
     <Routes>
       <Route path="/" element={<Index />} />
       <Route path="/auth" element={<Auth />} />
+      <Route path="/onboarding" element={<Onboarding />} />
       <Route path="/search" element={<Search />} />
       <Route path="/watchlist" element={<Watchlist />} />
       <Route path="/browse" element={<Browse />} />
