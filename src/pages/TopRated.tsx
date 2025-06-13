@@ -1,9 +1,9 @@
-
 import React, { useState, useEffect } from 'react';
 import { Navbar } from '@/components/Navbar';
 import { MovieCard } from '@/components/MovieCard';
 import { Footer } from '@/components/Footer';
 import { tmdbApi, Movie } from '@/services/tmdb';
+import { Star } from 'lucide-react';
 
 const TopRated = () => {
   const [topRated, setTopRated] = useState<Movie[]>([]);
