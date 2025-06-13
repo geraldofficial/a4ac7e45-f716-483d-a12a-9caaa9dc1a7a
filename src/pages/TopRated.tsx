@@ -38,17 +38,17 @@ const TopRated = () => {
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
-      <div className="pt-20">
-        <div className="container mx-auto px-4 py-8">
-          <h1 className="text-4xl font-bold text-foreground mb-8">Top Rated</h1>
-          <p className="text-muted-foreground text-lg mb-8">
+      <div className="pt-20 pb-20 md:pb-8">
+        <div className="container mx-auto px-2 md:px-4 py-4 md:py-8">
+          <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold text-foreground mb-4 md:mb-8">Top Rated</h1>
+          <p className="text-muted-foreground text-sm md:text-lg mb-4 md:mb-8">
             The highest rated movies and TV shows according to our community
           </p>
           
           {loading ? (
-            <div className="text-center text-muted-foreground text-xl">Loading top rated content...</div>
+            <div className="text-center text-muted-foreground text-lg md:text-xl">Loading top rated content...</div>
           ) : (
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
+            <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-7 gap-2 md:gap-4 lg:gap-6">
               {topRated.map((item) => (
                 <MovieCard key={`${item.id}-${item.media_type}`} movie={item} />
               ))}

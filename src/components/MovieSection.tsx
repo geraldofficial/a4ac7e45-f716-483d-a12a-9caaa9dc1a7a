@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { MovieCard } from './MovieCard';
 import { tmdbApi, Movie } from '@/services/tmdb';
@@ -83,7 +82,7 @@ export const MovieSection = () => {
   const scrollSection = (sectionId: string, direction: 'left' | 'right') => {
     const section = document.getElementById(sectionId);
     if (section) {
-      const scrollAmount = window.innerWidth < 768 ? 200 : 400;
+      const scrollAmount = window.innerWidth < 768 ? 150 : 400;
       section.scrollBy({
         left: direction === 'left' ? -scrollAmount : scrollAmount,
         behavior: 'smooth'
@@ -102,37 +101,37 @@ export const MovieSection = () => {
     sectionId: string; 
     showScrollButtons?: boolean;
   }) => (
-    <section className="mb-8 sm:mb-12">
-      <div className="flex items-center justify-between mb-4 sm:mb-6 px-4 sm:px-6">
-        <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-foreground">
+    <section className="mb-6 md:mb-8 lg:mb-12">
+      <div className="flex items-center justify-between mb-3 md:mb-4 lg:mb-6 px-2 md:px-4 lg:px-6">
+        <h2 className="text-lg md:text-xl lg:text-2xl xl:text-3xl font-bold text-foreground">
           {title}
         </h2>
         {showScrollButtons && (
-          <div className="hidden md:flex gap-2">
+          <div className="hidden md:flex gap-1 lg:gap-2">
             <button
               onClick={() => scrollSection(sectionId, 'left')}
-              className="p-2 rounded-full bg-accent hover:bg-accent/80 transition-colors"
+              className="p-1.5 lg:p-2 rounded-full bg-accent hover:bg-accent/80 transition-colors"
             >
-              <ChevronLeft className="h-5 w-5" />
+              <ChevronLeft className="h-4 w-4 lg:h-5 lg:w-5" />
             </button>
             <button
               onClick={() => scrollSection(sectionId, 'right')}
-              className="p-2 rounded-full bg-accent hover:bg-accent/80 transition-colors"
+              className="p-1.5 lg:p-2 rounded-full bg-accent hover:bg-accent/80 transition-colors"
             >
-              <ChevronRight className="h-5 w-5" />
+              <ChevronRight className="h-4 w-4 lg:h-5 lg:w-5" />
             </button>
           </div>
         )}
       </div>
       <div 
         id={sectionId}
-        className="flex gap-3 sm:gap-4 lg:gap-6 overflow-x-auto pb-4 px-4 sm:px-6 scrollbar-hide"
+        className="flex gap-2 md:gap-3 lg:gap-4 xl:gap-6 overflow-x-auto pb-2 md:pb-4 px-2 md:px-4 lg:px-6 scrollbar-hide"
         style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
       >
         {movies.map((movie, index) => (
           <div 
             key={movie.id} 
-            className="flex-shrink-0 w-32 sm:w-40 md:w-48 lg:w-56"
+            className="flex-shrink-0 w-24 sm:w-28 md:w-32 lg:w-40 xl:w-48"
             ref={sectionId === 'recommended' && index === movies.length - 1 ? lastMovieElementRef : null}
           >
             <MovieCard movie={movie} />
@@ -144,8 +143,8 @@ export const MovieSection = () => {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center py-12 sm:py-16 lg:py-20">
-        <div className="text-foreground text-lg sm:text-xl">Loading amazing content...</div>
+      <div className="flex items-center justify-center py-8 md:py-12 lg:py-16 xl:py-20">
+        <div className="text-foreground text-sm md:text-lg lg:text-xl">Loading amazing content...</div>
       </div>
     );
   }
@@ -155,7 +154,7 @@ export const MovieSection = () => {
     : 'Popular Movies';
 
   return (
-    <div className="space-y-6 sm:space-y-8 lg:space-y-12">
+    <div className="space-y-4 md:space-y-6 lg:space-y-8 xl:space-y-12">
       {/* Personalized Recommendations */}
       <MovieRow
         title={recommendationTitle}
@@ -179,7 +178,7 @@ export const MovieSection = () => {
       />
 
       {loadingMore && (
-        <div className="text-center text-foreground text-lg py-4">
+        <div className="text-center text-foreground text-sm md:text-lg py-2 md:py-4">
           Loading more recommendations...
         </div>
       )}
