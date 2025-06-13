@@ -73,9 +73,13 @@ class TMDBApi {
     return data;
   }
 
-  async getPopularMovies(): Promise<Movie[]> {
-    const data = await this.fetchFromTMDB('/movie/popular');
-    return data.results;
+  async getPopularMovies(page: number = 1): Promise<SearchResults> {
+    const data = await this.fetchFromTMDB(`/movie/popular?page=${page}`);
+    return {
+      results: data.results,
+      total_pages: data.total_pages,
+      total_results: data.total_results
+    };
   }
 
   async getPopularTVShows(): Promise<Movie[]> {
@@ -86,6 +90,24 @@ class TMDBApi {
   async getTrending(): Promise<Movie[]> {
     const data = await this.fetchFromTMDB('/trending/all/week');
     return data.results;
+  }
+
+  async getTrendingMovies(page: number = 1): Promise<SearchResults> {
+    const data = await this.fetchFromTMDB(`/trending/all/week?page=${page}`);
+    return {
+      results: data.results,
+      total_pages: data.total_pages,
+      total_results: data.total_results
+    };
+  }
+
+  async getMoviesByGenre(genreId: number, page: number = 1): Promise<SearchResults> {
+    const data = await this.fetchFromTMDB(`/discover/movie?with_genres=${genreId}&page=${page}`);
+    return {
+      results: data.results,
+      total_pages: data.total_pages,
+      total_results: data.total_results
+    };
   }
 
   async searchMulti(query: string, page: number = 1): Promise<SearchResults> {
