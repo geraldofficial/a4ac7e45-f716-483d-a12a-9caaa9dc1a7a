@@ -4,8 +4,8 @@ export interface StreamingSource {
   getUrl: (tmdbId: number, type: 'movie' | 'tv', season?: number, episode?: number) => string;
 }
 
-// Ad blocking parameters to append to URLs
-const adBlockParams = '&adblock=1&nopop=1&noads=1&block_ads=true';
+// Enhanced ad blocking parameters
+const adBlockParams = '&adblock=1&nopop=1&noads=1&block_ads=true&popup=0&adsblock=true&adsblocker=1';
 
 export const streamingSources: StreamingSource[] = [
   {
@@ -65,6 +65,45 @@ export const streamingSources: StreamingSource[] = [
         return `${baseUrl}/${season}/${episode}?autoplay=1${adBlockParams}`;
       }
       return `${baseUrl}?autoplay=1${adBlockParams}`;
+    }
+  },
+  {
+    name: 'VidLink',
+    getUrl: (tmdbId, type, season, episode) => {
+      const baseUrl = `https://vidlink.pro/movie/${tmdbId}`;
+      if (type === 'tv' && season && episode) {
+        return `https://vidlink.pro/tv/${tmdbId}/${season}/${episode}?autoplay=1${adBlockParams}`;
+      }
+      return `${baseUrl}?autoplay=1${adBlockParams}`;
+    }
+  },
+  {
+    name: 'VidCloud',
+    getUrl: (tmdbId, type, season, episode) => {
+      const baseUrl = `https://embed.smashystream.com/playere.php?tmdb=${tmdbId}&autoplay=1${adBlockParams}`;
+      if (type === 'tv' && season && episode) {
+        return `${baseUrl}&season=${season}&episode=${episode}`;
+      }
+      return baseUrl;
+    }
+  },
+  {
+    name: 'AutoEmbed',
+    getUrl: (tmdbId, type, season, episode) => {
+      const baseUrl = `https://player.autoembed.cc/embed/${type}/${tmdbId}`;
+      if (type === 'tv' && season && episode) {
+        return `${baseUrl}/${season}/${episode}?autoplay=1${adBlockParams}`;
+      }
+      return `${baseUrl}?autoplay=1${adBlockParams}`;
+    }
+  },
+  {
+    name: 'DbGo',
+    getUrl: (tmdbId, type, season, episode) => {
+      if (type === 'tv' && season && episode) {
+        return `https://www.dbgo.fun/tv/${tmdbId}/${season}/${episode}?autoplay=1${adBlockParams}`;
+      }
+      return `https://www.dbgo.fun/movie/${tmdbId}?autoplay=1${adBlockParams}`;
     }
   }
 ];

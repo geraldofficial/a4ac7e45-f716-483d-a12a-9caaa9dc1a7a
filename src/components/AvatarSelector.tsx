@@ -9,31 +9,32 @@ interface AvatarSelectorProps {
   className?: string;
 }
 
+// Apple-style Memoji and professional avatars
 const defaultAvatars = [
-  'https://api.dicebear.com/7.x/avataaars/svg?seed=Felix',
-  'https://api.dicebear.com/7.x/avataaars/svg?seed=Aneka',
-  'https://api.dicebear.com/7.x/avataaars/svg?seed=Mia',
-  'https://api.dicebear.com/7.x/avataaars/svg?seed=Oliver',
-  'https://api.dicebear.com/7.x/avataaars/svg?seed=Sophia',
-  'https://api.dicebear.com/7.x/avataaars/svg?seed=Jack',
-  'https://api.dicebear.com/7.x/avataaars/svg?seed=Emma',
-  'https://api.dicebear.com/7.x/avataaars/svg?seed=Noah',
-  'https://api.dicebear.com/7.x/avataaars/svg?seed=Isabella',
-  'https://api.dicebear.com/7.x/avataaars/svg?seed=William',
-  'https://api.dicebear.com/7.x/avataaars/svg?seed=Ava',
-  'https://api.dicebear.com/7.x/avataaars/svg?seed=James',
-  'https://api.dicebear.com/7.x/avataaars/svg?seed=Charlotte',
-  'https://api.dicebear.com/7.x/avataaars/svg?seed=Benjamin',
-  'https://api.dicebear.com/7.x/avataaars/svg?seed=Amelia',
-  'https://api.dicebear.com/7.x/avataaars/svg?seed=Lucas',
-  'https://api.dicebear.com/7.x/avataaars/svg?seed=Harper',
-  'https://api.dicebear.com/7.x/avataaars/svg?seed=Mason',
-  'https://api.dicebear.com/7.x/avataaars/svg?seed=Evelyn',
-  'https://api.dicebear.com/7.x/avataaars/svg?seed=Ethan',
-  'https://api.dicebear.com/7.x/avataaars/svg?seed=Abigail',
-  'https://api.dicebear.com/7.x/avataaars/svg?seed=Alexander',
-  'https://api.dicebear.com/7.x/avataaars/svg?seed=Emily',
-  'https://api.dicebear.com/7.x/avataaars/svg?seed=Michael'
+  'https://api.dicebear.com/8.x/notionists/svg?seed=Alex&backgroundColor=b6e3f4,c0aede,d1d4f9,ffd5dc,ffdfbf',
+  'https://api.dicebear.com/8.x/notionists/svg?seed=Emma&backgroundColor=b6e3f4,c0aede,d1d4f9,ffd5dc,ffdfbf',
+  'https://api.dicebear.com/8.x/notionists/svg?seed=Liam&backgroundColor=b6e3f4,c0aede,d1d4f9,ffd5dc,ffdfbf',
+  'https://api.dicebear.com/8.x/notionists/svg?seed=Olivia&backgroundColor=b6e3f4,c0aede,d1d4f9,ffd5dc,ffdfbf',
+  'https://api.dicebear.com/8.x/notionists/svg?seed=Noah&backgroundColor=b6e3f4,c0aede,d1d4f9,ffd5dc,ffdfbf',
+  'https://api.dicebear.com/8.x/notionists/svg?seed=Ava&backgroundColor=b6e3f4,c0aede,d1d4f9,ffd5dc,ffdfbf',
+  'https://api.dicebear.com/8.x/notionists/svg?seed=William&backgroundColor=b6e3f4,c0aede,d1d4f9,ffd5dc,ffdfbf',
+  'https://api.dicebear.com/8.x/notionists/svg?seed=Sophia&backgroundColor=b6e3f4,c0aede,d1d4f9,ffd5dc,ffdfbf',
+  'https://api.dicebear.com/8.x/notionists/svg?seed=James&backgroundColor=b6e3f4,c0aede,d1d4f9,ffd5dc,ffdfbf',
+  'https://api.dicebear.com/8.x/notionists/svg?seed=Isabella&backgroundColor=b6e3f4,c0aede,d1d4f9,ffd5dc,ffdfbf',
+  'https://api.dicebear.com/8.x/notionists/svg?seed=Benjamin&backgroundColor=b6e3f4,c0aede,d1d4f9,ffd5dc,ffdfbf',
+  'https://api.dicebear.com/8.x/notionists/svg?seed=Charlotte&backgroundColor=b6e3f4,c0aede,d1d4f9,ffd5dc,ffdfbf',
+  'https://api.dicebear.com/8.x/notionists/svg?seed=Lucas&backgroundColor=b6e3f4,c0aede,d1d4f9,ffd5dc,ffdfbf',
+  'https://api.dicebear.com/8.x/notionists/svg?seed=Amelia&backgroundColor=b6e3f4,c0aede,d1d4f9,ffd5dc,ffdfbf',
+  'https://api.dicebear.com/8.x/notionists/svg?seed=Mason&backgroundColor=b6e3f4,c0aede,d1d4f9,ffd5dc,ffdfbf',
+  'https://api.dicebear.com/8.x/notionists/svg?seed=Harper&backgroundColor=b6e3f4,c0aede,d1d4f9,ffd5dc,ffdfbf',
+  'https://api.dicebear.com/8.x/notionists/svg?seed=Ethan&backgroundColor=b6e3f4,c0aede,d1d4f9,ffd5dc,ffdfbf',
+  'https://api.dicebear.com/8.x/notionists/svg?seed=Evelyn&backgroundColor=b6e3f4,c0aede,d1d4f9,ffd5dc,ffdfbf',
+  'https://api.dicebear.com/8.x/notionists/svg?seed=Alexander&backgroundColor=b6e3f4,c0aede,d1d4f9,ffd5dc,ffdfbf',
+  'https://api.dicebear.com/8.x/notionists/svg?seed=Abigail&backgroundColor=b6e3f4,c0aede,d1d4f9,ffd5dc,ffdfbf',
+  'https://api.dicebear.com/8.x/notionists/svg?seed=Michael&backgroundColor=b6e3f4,c0aede,d1d4f9,ffd5dc,ffdfbf',
+  'https://api.dicebear.com/8.x/notionists/svg?seed=Emily&backgroundColor=b6e3f4,c0aede,d1d4f9,ffd5dc,ffdfbf',
+  'https://api.dicebear.com/8.x/notionists/svg?seed=Daniel&backgroundColor=b6e3f4,c0aede,d1d4f9,ffd5dc,ffdfbf',
+  'https://api.dicebear.com/8.x/notionists/svg?seed=Madison&backgroundColor=b6e3f4,c0aede,d1d4f9,ffd5dc,ffdfbf'
 ];
 
 export const AvatarSelector: React.FC<AvatarSelectorProps> = ({
@@ -43,30 +44,30 @@ export const AvatarSelector: React.FC<AvatarSelectorProps> = ({
 }) => {
   return (
     <div className={`space-y-6 ${className}`}>
-      <h3 className="text-xl font-bold text-white text-center">Choose Your Avatar</h3>
+      <h3 className="text-xl font-bold text-foreground text-center">Choose Your Avatar</h3>
       <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 gap-4">
         {defaultAvatars.map((avatar, index) => (
           <button
             key={index}
             onClick={() => onAvatarSelect(avatar)}
             className={`
-              relative w-14 h-14 sm:w-16 sm:h-16 rounded-full border-3 flex items-center justify-center
-              transition-all duration-300 hover:scale-110 overflow-hidden backdrop-blur-sm
-              shadow-lg hover:shadow-xl
+              relative w-16 h-16 sm:w-18 sm:h-18 rounded-2xl border-3 flex items-center justify-center
+              transition-all duration-300 hover:scale-110 overflow-hidden backdrop-blur-2xl
+              shadow-lg hover:shadow-2xl
               ${selectedAvatar === avatar 
-                ? 'border-purple-400 bg-purple-500/20 shadow-purple-500/25' 
-                : 'border-white/30 hover:border-purple-400/50 bg-white/10 hover:bg-white/15'
+                ? 'border-primary bg-primary/10 shadow-primary/25 scale-110' 
+                : 'border-border/50 hover:border-primary/50 bg-background/20 hover:bg-background/30'
               }
             `}
           >
             <img 
               src={avatar} 
               alt={`Avatar ${index + 1}`}
-              className="w-full h-full object-cover rounded-full"
+              className="w-full h-full object-cover rounded-xl"
             />
             {selectedAvatar === avatar && (
-              <div className="absolute -top-1 -right-1 w-7 h-7 bg-purple-500 rounded-full flex items-center justify-center border-3 border-white shadow-lg animate-scale-in">
-                <Check className="w-4 h-4 text-white font-bold" strokeWidth={3} />
+              <div className="absolute -top-1 -right-1 w-7 h-7 bg-primary rounded-full flex items-center justify-center border-3 border-background shadow-lg animate-bounce-in">
+                <Check className="w-4 h-4 text-primary-foreground font-bold" strokeWidth={3} />
               </div>
             )}
           </button>
