@@ -1,8 +1,37 @@
 
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 220 17% 7%;
+    --foreground: 220 8% 95%;
+    --card: 220 17% 9%;
+    --card-foreground: 220 8% 95%;
+    --popover: 220 17% 9%;
+    --popover-foreground: 220 8% 95%;
+    --primary: 262 83% 58%;
+    --primary-foreground: 220 8% 95%;
+    --secondary: 220 17% 15%;
+    --secondary-foreground: 220 8% 95%;
+    --muted: 220 17% 15%;
+    --muted-foreground: 220 8% 65%;
+    --accent: 220 17% 15%;
+    --accent-foreground: 220 8% 95%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 220 8% 95%;
+    --border: 220 17% 20%;
+    --input: 220 17% 20%;
+    --ring: 262 83% 58%;
+    --radius: 0.5rem;
+    --chart-1: 220 70% 50%;
+    --chart-2: 160 60% 45%;
+    --chart-3: 30 80% 55%;
+    --chart-4: 280 65% 60%;
+    --chart-5: 340 75% 55%;
+  }
+}
 
 @layer base {
   * {
@@ -10,246 +39,61 @@
   }
   body {
     @apply bg-background text-foreground;
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-      'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-      sans-serif;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-    /* Prevent overscroll bounce on mobile */
-    overscroll-behavior: none;
   }
 }
 
-/* Enhanced glassmorphism effects */
+/* Enhanced glassmorphism styles */
 .glass-effect {
-  background: rgba(255, 255, 255, 0.05);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.glass-effect-strong {
   background: rgba(255, 255, 255, 0.08);
-  backdrop-filter: blur(40px);
-  -webkit-backdrop-filter: blur(40px);
+  backdrop-filter: blur(30px);
+  -webkit-backdrop-filter: blur(30px);
   border: 1px solid rgba(255, 255, 255, 0.15);
 }
 
-/* Custom scrollbar styles */
-.scrollbar-hide {
-  -ms-overflow-style: none;
-  scrollbar-width: none;
+.glass-effect-strong {
+  background: rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(40px);
+  -webkit-backdrop-filter: blur(40px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
-.scrollbar-hide::-webkit-scrollbar {
-  display: none;
-}
-
-/* Better scrollbar for webkit browsers */
+/* Custom scrollbar */
 ::-webkit-scrollbar {
   width: 8px;
-  height: 8px;
 }
 
 ::-webkit-scrollbar-track {
-  background: rgba(255, 255, 255, 0.03);
-  border-radius: 10px;
+  background: transparent;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 10px;
-  border: 2px solid transparent;
-  background-clip: content-box;
-  backdrop-filter: blur(10px);
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.2);
-  background-clip: content-box;
+  background: rgba(255, 255, 255, 0.3);
 }
 
-/* Firefox scrollbar */
-* {
-  scrollbar-width: thin;
-  scrollbar-color: rgba(255, 255, 255, 0.1) rgba(255, 255, 255, 0.03);
+/* Z-index hierarchy */
+.z-navbar { z-index: 1000; }
+.z-search-suggestions { z-index: 99999; }
+.z-dropdown { z-index: 9999; }
+.z-modal { z-index: 10000; }
+.z-tooltip { z-index: 5000; }
+
+/* Ensure search suggestions are always on top */
+[data-search-suggestions] {
+  z-index: 99999 !important;
 }
 
-/* Mobile optimizations */
-@media (max-width: 768px) {
-  .container {
-    @apply px-4;
-  }
-  
-  /* Hide scrollbars on mobile */
-  .overflow-x-auto {
-    -ms-overflow-style: none;
-    scrollbar-width: none;
-  }
-  
-  .overflow-x-auto::-webkit-scrollbar {
-    display: none;
-  }
-
-  /* One-handed usage - content accessible from bottom */
-  .mobile-content {
-    padding-bottom: calc(env(safe-area-inset-bottom) + 100px);
-  }
-
-  /* Enhanced touch targets for mobile */
-  button, a, [role="button"] {
-    min-height: 48px;
-    min-width: 48px;
-    @apply touch-manipulation;
-  }
-
-  /* Prevent text selection on touch */
-  .touch-action-manipulation {
-    touch-action: manipulation;
-  }
-
-  /* Optimize tap highlighting */
-  * {
-    -webkit-tap-highlight-color: rgba(0, 0, 0, 0.1);
-    -webkit-touch-callout: none;
-  }
-
-  /* Enhanced mobile glassmorphism */
-  .glass-effect {
-    background: rgba(255, 255, 255, 0.07);
-    backdrop-filter: blur(30px);
-    -webkit-backdrop-filter: blur(30px);
-  }
-
-  .glass-effect-strong {
-    background: rgba(255, 255, 255, 0.1);
-    backdrop-filter: blur(50px);
-    -webkit-backdrop-filter: blur(50px);
-  }
+/* Enhanced blur effects */
+.backdrop-blur-ultra {
+  backdrop-filter: blur(60px);
+  -webkit-backdrop-filter: blur(60px);
 }
 
-/* Smooth transitions */
-* {
-  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease,
-    transform 0.2s ease, opacity 0.2s ease, backdrop-filter 0.3s ease;
-}
-
-/* Focus states */
-button:focus-visible,
-input:focus-visible,
-textarea:focus-visible,
-select:focus-visible {
-  @apply outline-none ring-2 ring-primary ring-offset-2 ring-offset-background;
-}
-
-/* Loading animations */
-@keyframes shimmer {
-  0% {
-    background-position: -200px 0;
-  }
-  100% {
-    background-position: calc(200px + 100%) 0;
-  }
-}
-
-.shimmer {
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
-  background-size: 200px 100%;
-  animation: shimmer 1.5s infinite;
-}
-
-/* Pull to refresh animations */
-@keyframes bounce-in {
-  0% {
-    transform: scale(0.3);
-    opacity: 0;
-  }
-  50% {
-    transform: scale(1.05);
-  }
-  70% {
-    transform: scale(0.9);
-  }
-  100% {
-    transform: scale(1);
-    opacity: 1;
-  }
-}
-
-.animate-bounce-in {
-  animation: bounce-in 0.6s ease-out;
-}
-
-@keyframes scale-in {
-  0% {
-    transform: scale(0);
-    opacity: 0;
-  }
-  100% {
-    transform: scale(1);
-    opacity: 1;
-  }
-}
-
-.animate-scale-in {
-  animation: scale-in 0.3s ease-out;
-}
-
-/* Enhanced mobile touch targets */
-@media (max-width: 768px) {
-  .mobile-touch-target {
-    min-height: 48px;
-    min-width: 48px;
-    padding: 12px;
-  }
-
-  /* Thumb-friendly navigation area */
-  .thumb-zone {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    height: 120px;
-    pointer-events: none;
-  }
-
-  .thumb-zone > * {
-    pointer-events: auto;
-  }
-}
-
-/* Dark theme optimizations */
-@media (prefers-color-scheme: dark) {
-  html {
-    color-scheme: dark;
-  }
-}
-
-/* Safe area support for notched devices */
-@supports (padding-top: env(safe-area-inset-top)) {
-  .safe-top {
-    padding-top: env(safe-area-inset-top);
-  }
-  
-  .safe-bottom {
-    padding-bottom: env(safe-area-inset-bottom);
-  }
-}
-
-/* Enhanced backdrop blur support */
-@supports (backdrop-filter: blur(20px)) {
-  .backdrop-blur-3xl {
-    backdrop-filter: blur(64px);
-  }
-  
-  .backdrop-blur-2xl {
-    backdrop-filter: blur(40px);
-  }
-}
-
-@supports not (backdrop-filter: blur(20px)) {
-  .backdrop-blur-3xl,
-  .backdrop-blur-2xl {
-    background: rgba(0, 0, 0, 0.8);
-  }
+.backdrop-blur-extreme {
+  backdrop-filter: blur(80px);
+  -webkit-backdrop-filter: blur(80px);
 }

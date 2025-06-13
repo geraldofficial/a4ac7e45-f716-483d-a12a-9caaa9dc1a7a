@@ -92,7 +92,7 @@ export const SearchSuggestions: React.FC<SearchSuggestionsProps> = ({ onClose, c
         <Input
           ref={inputRef}
           placeholder="Search..."
-          className="pl-8 pr-3 py-2 h-9 text-sm bg-background/40 backdrop-blur-2xl border-border/50 rounded-full text-foreground placeholder:text-muted-foreground focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all"
+          className="pl-8 pr-3 py-2 h-9 text-sm bg-background/60 backdrop-blur-3xl border-border/60 rounded-full text-foreground placeholder:text-muted-foreground focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           onFocus={() => query && setShowSuggestions(true)}
@@ -100,7 +100,7 @@ export const SearchSuggestions: React.FC<SearchSuggestionsProps> = ({ onClose, c
       </form>
 
       {showSuggestions && (
-        <div className="fixed inset-x-2 mt-2 bg-background/90 backdrop-blur-3xl border border-border/50 rounded-2xl shadow-2xl z-[9999] max-h-[60vh] overflow-y-auto">
+        <div className="fixed inset-x-2 mt-2 bg-background/95 backdrop-blur-3xl border border-border/70 rounded-2xl shadow-2xl z-[99999] max-h-[60vh] overflow-y-auto">
           {loading ? (
             <div className="p-4 text-center text-muted-foreground text-sm">Searching...</div>
           ) : suggestions.length > 0 ? (
@@ -108,7 +108,7 @@ export const SearchSuggestions: React.FC<SearchSuggestionsProps> = ({ onClose, c
               <button
                 key={item.id}
                 onClick={() => handleSuggestionClick(item)}
-                className="w-full flex items-center gap-3 p-4 hover:bg-background/50 transition-all duration-200 text-left first:rounded-t-2xl last:rounded-b-2xl min-h-[64px] backdrop-blur-sm"
+                className="w-full flex items-center gap-3 p-4 hover:bg-background/70 transition-all duration-200 text-left first:rounded-t-2xl last:rounded-b-2xl min-h-[64px] backdrop-blur-sm"
               >
                 <img
                   src={getPosterUrl(item.poster_path)}
