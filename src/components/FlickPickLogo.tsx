@@ -1,15 +1,18 @@
+
 import React from 'react';
 
 interface FlickPickLogoProps {
   className?: string;
   size?: 'sm' | 'md' | 'lg';
   showIcon?: boolean;
+  showText?: boolean;
 }
 
 export const FlickPickLogo: React.FC<FlickPickLogoProps> = ({ 
   className = "", 
   size = 'md', 
-  showIcon = true 
+  showIcon = true,
+  showText = true 
 }) => {
   const sizeClasses = {
     sm: 'text-xl',
@@ -18,7 +21,7 @@ export const FlickPickLogo: React.FC<FlickPickLogoProps> = ({
   };
 
   const iconSizes = {
-    sm: 'h-6 w-6',
+    sm: 'h-7 w-7',
     md: 'h-8 w-8',
     lg: 'h-12 w-12'
   };
@@ -30,14 +33,15 @@ export const FlickPickLogo: React.FC<FlickPickLogoProps> = ({
           <img 
             src="/favicon.ico" 
             alt="FlickPick logo" 
-            className={`${iconSizes[size]} object-contain`}
+            className={`${iconSizes[size]} object-contain filter grayscale`}
           />
-          <div className="absolute inset-0 bg-gradient-to-br from-primary to-purple-600 opacity-20 rounded blur-sm" />
         </div>
       )}
-      <span className={`${sizeClasses[size]} font-bold bg-gradient-to-r from-primary to-purple-400 bg-clip-text text-transparent`}>
-        FlickPick
-      </span>
+      {showText && (
+        <span className={`${sizeClasses[size]} font-bold text-foreground hidden md:block`}>
+          FlickPick
+        </span>
+      )}
     </div>
   );
 };

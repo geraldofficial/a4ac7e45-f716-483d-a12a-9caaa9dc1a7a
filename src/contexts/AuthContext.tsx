@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { User, Session } from '@supabase/supabase-js';
@@ -5,6 +6,10 @@ import { User, Session } from '@supabase/supabase-js';
 interface UserProfile {
   id: string;
   username: string;
+  email: string;
+  avatar: string;
+  genre_preferences: number[];
+  onboarding_completed: boolean;
   watchlist: number[];
 }
 
@@ -15,6 +20,8 @@ interface AuthContextType {
   login: (email: string, password: string) => Promise<boolean>;
   signup: (email: string, password: string, username: string) => Promise<boolean>;
   logout: () => Promise<void>;
+  updateProfile: (updates: Partial<UserProfile>) => Promise<void>;
+  completeOnboarding: (avatar: string, genres: number[]) => Promise<void>;
   addToWatchlist: (movieId: number) => Promise<void>;
   removeFromWatchlist: (movieId: number) => Promise<void>;
   isInWatchlist: (movieId: number) => boolean;
@@ -90,6 +97,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setUser({
           id: profile.id,
           username: profile.username,
+          email: authUser.email || '',
+          avatar: profile.avatar || '👤',
+          genre_preferences: profile.genre_preferences || [],
+          onboarding_completed: profile.onboarding_completed || false,
           watchlist: profile.watchlist || []
         });
       }
@@ -136,7 +147,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (error) throw error;
       
       if (data.user) {
-        window.location.href = '/';
+        window.location.href = '/onboarding';
         return true;
       }
       return false;
@@ -154,6 +165,51 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       window.location.href = '/auth';
     } catch (error) {
       console.error('Logout error:', error);
+      throw error;
+    }
+  };
+
+  const updateProfile = async (updates: Partial<UserProfile>) => {
+    if (!user) return;
+
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .update(updates)
+        .eq('id', user.id);
+
+      if (error) throw error;
+
+      setUser({ ...user, ...updates });
+    } catch (error) {
+      console.error('Error updating profile:', error);
+      throw error;
+    }
+  };
+
+  const completeOnboarding = async (avatar: string, genres: number[]) => {
+    if (!user) return;
+
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .update({
+          avatar,
+          genre_preferences: genres,
+          onboarding_completed: true
+        })
+        .eq('id', user.id);
+
+      if (error) throw error;
+
+      setUser({
+        ...user,
+        avatar,
+        genre_preferences: genres,
+        onboarding_completed: true
+      });
+    } catch (error) {
+      console.error('Error completing onboarding:', error);
       throw error;
     }
   };
@@ -209,6 +265,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     login,
     signup,
     logout,
+    updateProfile,
+    completeOnboarding,
     addToWatchlist,
     removeFromWatchlist,
     isInWatchlist,

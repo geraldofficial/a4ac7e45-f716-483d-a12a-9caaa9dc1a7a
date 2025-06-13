@@ -21,8 +21,8 @@ export const HeroCarousel = () => {
 
   const fetchPopularMovies = async () => {
     try {
-      const popularMovies = await tmdbApi.getPopularMovies();
-      setMovies(popularMovies.slice(0, 5));
+      const popularMoviesResponse = await tmdbApi.getPopularMovies();
+      setMovies(popularMoviesResponse.results.slice(0, 5));
     } catch (error) {
       console.error('Error fetching popular movies:', error);
     } finally {

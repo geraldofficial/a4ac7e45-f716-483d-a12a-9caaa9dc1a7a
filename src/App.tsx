@@ -8,6 +8,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
+import Onboarding from "./pages/Onboarding";
 import Search from "./pages/Search";
 import Watchlist from "./pages/Watchlist";
 import Browse from "./pages/Browse";
@@ -19,6 +20,8 @@ import Privacy from "./pages/Privacy";
 import Terms from "./pages/Terms";
 import NotFound from "./pages/NotFound";
 import DetailPage from "./pages/DetailPage";
+import Profile from "./pages/Profile";
+import { ScrollToTop } from "./components/ScrollToTop";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -41,22 +44,27 @@ const AppContent: React.FC = () => {
   }
 
   return (
-    <Routes>
-      <Route path="/" element={<Index />} />
-      <Route path="/auth" element={<Auth />} />
-      <Route path="/search" element={<Search />} />
-      <Route path="/watchlist" element={<Watchlist />} />
-      <Route path="/browse" element={<Browse />} />
-      <Route path="/trending" element={<Trending />} />
-      <Route path="/top-rated" element={<TopRated />} />
-      <Route path="/help" element={<Help />} />
-      <Route path="/contact" element={<Contact />} />
-      <Route path="/privacy" element={<Privacy />} />
-      <Route path="/terms" element={<Terms />} />
-      <Route path="/movie/:id" element={<DetailPage />} />
-      <Route path="/tv/:id" element={<DetailPage />} />
-      <Route path="*" element={<NotFound />} />
-    </Routes>
+    <>
+      <ScrollToTop />
+      <Routes>
+        <Route path="/" element={<Index />} />
+        <Route path="/auth" element={<Auth />} />
+        <Route path="/onboarding" element={<Onboarding />} />
+        <Route path="/search" element={<Search />} />
+        <Route path="/watchlist" element={<Watchlist />} />
+        <Route path="/browse" element={<Browse />} />
+        <Route path="/trending" element={<Trending />} />
+        <Route path="/top-rated" element={<TopRated />} />
+        <Route path="/profile" element={<Profile />} />
+        <Route path="/help" element={<Help />} />
+        <Route path="/contact" element={<Contact />} />
+        <Route path="/privacy" element={<Privacy />} />
+        <Route path="/terms" element={<Terms />} />
+        <Route path="/movie/:id" element={<DetailPage />} />
+        <Route path="/tv/:id" element={<DetailPage />} />
+        <Route path="*" element={<NotFound />} />
+      </Routes>
+    </>
   );
 };
 
