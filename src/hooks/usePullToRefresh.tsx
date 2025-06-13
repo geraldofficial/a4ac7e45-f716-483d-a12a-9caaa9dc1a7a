@@ -36,8 +36,12 @@ export const usePullToRefresh = ({ onRefresh, threshold = 100, resistance = 0.3 
   }, [onRefresh, isRefreshing]);
 
   const bind = useGesture({
-    onDrag: ({ down, movement: [, my], velocity: [, vy], direction: [, dy] }) => {
+    onDrag: ({ down, movement, velocity, direction }) => {
       if (window.scrollY > 0) return;
+      
+      const [, my] = movement;
+      const [, vy] = velocity;
+      const [, dy] = direction;
       
       if (down && dy > 0) {
         const distance = Math.max(0, my * resistance);
