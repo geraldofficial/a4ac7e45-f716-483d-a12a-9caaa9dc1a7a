@@ -6,6 +6,7 @@ import { User, Session } from '@supabase/supabase-js';
 interface UserProfile {
   id: string;
   username: string;
+  email: string;
   avatar: string;
   genre_preferences: number[];
   onboarding_completed: boolean;
@@ -96,6 +97,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setUser({
           id: profile.id,
           username: profile.username,
+          email: authUser.email || '',
           avatar: profile.avatar || '👤',
           genre_preferences: profile.genre_preferences || [],
           onboarding_completed: profile.onboarding_completed || false,
