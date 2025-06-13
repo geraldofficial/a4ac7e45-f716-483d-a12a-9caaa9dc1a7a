@@ -186,7 +186,7 @@ export const MovieSection = () => {
 
   if (loading) {
     return (
-      <div className="py-8 sm:py-12 lg:py-20 px-4">
+      <div className="py-8 sm:py-12 lg:py-20 px-4 pb-24 md:pb-8">
         <div className="container mx-auto">
           <div className="text-center text-foreground text-lg sm:text-xl">Loading content...</div>
         </div>
@@ -195,7 +195,7 @@ export const MovieSection = () => {
   }
 
   return (
-    <div className="py-8 sm:py-12 lg:py-20 px-4">
+    <div className="py-8 sm:py-12 lg:py-20 px-4 pb-24 md:pb-8">
       <div className="container mx-auto">
         <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-foreground mb-6 sm:mb-8 text-center">
           Discover Movies & TV Shows
@@ -219,7 +219,8 @@ export const MovieSection = () => {
           </div>
         ) : (
           <>
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 sm:gap-4 lg:gap-6">
+            {/* Mobile: 1 column, Tablet: 3 columns, Desktop: 4-6 columns */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 sm:gap-4 lg:gap-6">
               {filteredMovies.map((movie, index) => (
                 <div
                   key={`${movie.id}-${movie.media_type}`}

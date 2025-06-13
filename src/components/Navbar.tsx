@@ -1,5 +1,6 @@
+
 import React, { useState } from 'react';
-import { Menu, X, User, LogOut, Bookmark } from 'lucide-react';
+import { Menu, X, User, LogOut, Bookmark, Home, Search, Film } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { SearchSuggestions } from './SearchSuggestions';
 import { FlickPickLogo } from './FlickPickLogo';
@@ -17,111 +18,59 @@ export const Navbar = () => {
   };
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-lg border-b border-border/50">
-      <div className="container mx-auto px-4 py-4">
-        <div className="flex items-center justify-between">
-          {/* Logo */}
-          <button 
-            onClick={() => navigate('/')} 
-            className="hover:scale-105 transition-transform duration-200"
-          >
-            <FlickPickLogo />
-          </button>
-
-          {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center space-x-8">
+    <>
+      {/* Desktop Navbar */}
+      <nav className="hidden md:block fixed top-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-lg border-b border-border/50">
+        <div className="container mx-auto px-4 py-4">
+          <div className="flex items-center justify-between">
+            {/* Logo */}
             <button 
               onClick={() => navigate('/')} 
-              className="text-foreground hover:text-primary transition-colors font-medium"
+              className="hover:scale-105 transition-transform duration-200"
             >
-              Home
+              <FlickPickLogo />
             </button>
-            <button 
-              onClick={() => navigate('/browse')} 
-              className="text-foreground hover:text-primary transition-colors font-medium"
-            >
-              Browse
-            </button>
-            {user && (
+
+            {/* Desktop Navigation */}
+            <div className="flex items-center space-x-8">
               <button 
-                onClick={() => navigate('/watchlist')} 
+                onClick={() => navigate('/')} 
                 className="text-foreground hover:text-primary transition-colors font-medium"
               >
-                My List
+                Home
               </button>
-            )}
-          </div>
-
-          {/* Search and User Menu */}
-          <div className="flex items-center space-x-4">
-            {/* Desktop Search */}
-            <SearchSuggestions className="hidden md:block w-64" />
-            
-            {/* User Menu */}
-            {loading ? (
-              <div className="hidden md:block text-muted-foreground text-sm">Loading...</div>
-            ) : user ? (
-              <div className="hidden md:flex items-center space-x-4">
-                <button
-                  onClick={() => navigate('/watchlist')}
-                  className="text-foreground hover:text-primary transition-colors p-2 rounded-lg hover:bg-accent"
-                >
-                  <Bookmark className="h-5 w-5" />
-                </button>
-                <div className="flex items-center space-x-2 text-foreground">
-                  <div className="h-8 w-8 rounded-full bg-primary/20 flex items-center justify-center">
-                    <User className="h-4 w-4" />
-                  </div>
-                  <span className="text-sm font-medium">{user.username}</span>
-                </div>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={handleLogout}
-                  className="text-foreground hover:text-primary"
-                >
-                  <LogOut className="h-4 w-4" />
-                </Button>
-              </div>
-            ) : (
-              <Button
-                onClick={() => navigate('/auth')}
-                className="hidden md:block"
+              <button 
+                onClick={() => navigate('/browse')} 
+                className="text-foreground hover:text-primary transition-colors font-medium"
               >
-                Sign In
-              </Button>
-            )}
-            
-            {/* Mobile Menu Button */}
-            <Button
-              variant="ghost"
-              size="icon"
-              className="md:hidden text-foreground"
-              onClick={() => setIsMenuOpen(!isMenuOpen)}
-            >
-              {isMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
-            </Button>
-          </div>
-        </div>
-
-        {/* Mobile Menu */}
-        {isMenuOpen && (
-          <div className="md:hidden mt-4 pb-4 border-t border-border/50">
-            <div className="flex flex-col space-y-4 pt-4">
-              <button onClick={() => { navigate('/'); setIsMenuOpen(false); }} className="text-foreground hover:text-primary transition-colors text-left">Home</button>
-              <button onClick={() => { navigate('/browse'); setIsMenuOpen(false); }} className="text-foreground hover:text-primary transition-colors text-left">Browse</button>
+                Browse
+              </button>
               {user && (
-                <button onClick={() => { navigate('/watchlist'); setIsMenuOpen(false); }} className="text-foreground hover:text-primary transition-colors text-left">My List</button>
+                <button 
+                  onClick={() => navigate('/watchlist')} 
+                  className="text-foreground hover:text-primary transition-colors font-medium"
+                >
+                  My List
+                </button>
               )}
+            </div>
+
+            {/* Search and User Menu */}
+            <div className="flex items-center space-x-4">
+              {/* Desktop Search */}
+              <SearchSuggestions className="w-64" />
               
-              {/* Mobile Search */}
-              <SearchSuggestions onClose={() => setIsMenuOpen(false)} />
-              
-              {/* Mobile User Menu */}
+              {/* User Menu */}
               {loading ? (
-                <div className="text-foreground text-sm">Loading...</div>
+                <div className="text-muted-foreground text-sm">Loading...</div>
               ) : user ? (
-                <div className="flex flex-col space-y-2 pt-2 border-t border-border/50">
+                <div className="flex items-center space-x-4">
+                  <button
+                    onClick={() => navigate('/watchlist')}
+                    className="text-foreground hover:text-primary transition-colors p-2 rounded-lg hover:bg-accent"
+                  >
+                    <Bookmark className="h-5 w-5" />
+                  </button>
                   <div className="flex items-center space-x-2 text-foreground">
                     <div className="h-8 w-8 rounded-full bg-primary/20 flex items-center justify-center">
                       <User className="h-4 w-4" />
@@ -130,25 +79,103 @@ export const Navbar = () => {
                   </div>
                   <Button
                     variant="ghost"
+                    size="sm"
                     onClick={handleLogout}
-                    className="text-foreground hover:text-primary justify-start px-0"
+                    className="text-foreground hover:text-primary"
                   >
-                    <LogOut className="h-4 w-4 mr-2" />
-                    Sign Out
+                    <LogOut className="h-4 w-4" />
                   </Button>
                 </div>
               ) : (
                 <Button
-                  onClick={() => { navigate('/auth'); setIsMenuOpen(false); }}
-                  className="bg-purple-600 hover:bg-purple-700 text-white"
+                  onClick={() => navigate('/auth')}
                 >
                   Sign In
                 </Button>
               )}
             </div>
           </div>
+        </div>
+      </nav>
+
+      {/* Mobile Bottom Navbar */}
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50">
+        <div className="mx-4 mb-4">
+          <div className="bg-background/95 backdrop-blur-lg border border-border/50 rounded-2xl shadow-lg">
+            <div className="flex items-center justify-around py-3 px-2">
+              <button
+                onClick={() => navigate('/')}
+                className="flex flex-col items-center space-y-1 p-2 rounded-xl hover:bg-accent transition-colors"
+              >
+                <Home className="h-5 w-5 text-foreground" />
+                <span className="text-xs text-foreground">Home</span>
+              </button>
+              
+              <button
+                onClick={() => navigate('/browse')}
+                className="flex flex-col items-center space-y-1 p-2 rounded-xl hover:bg-accent transition-colors"
+              >
+                <Film className="h-5 w-5 text-foreground" />
+                <span className="text-xs text-foreground">Browse</span>
+              </button>
+              
+              <button
+                onClick={() => setIsMenuOpen(!isMenuOpen)}
+                className="flex flex-col items-center space-y-1 p-2 rounded-xl hover:bg-accent transition-colors"
+              >
+                <Search className="h-5 w-5 text-foreground" />
+                <span className="text-xs text-foreground">Search</span>
+              </button>
+              
+              {user ? (
+                <button
+                  onClick={() => navigate('/watchlist')}
+                  className="flex flex-col items-center space-y-1 p-2 rounded-xl hover:bg-accent transition-colors"
+                >
+                  <Bookmark className="h-5 w-5 text-foreground" />
+                  <span className="text-xs text-foreground">List</span>
+                </button>
+              ) : (
+                <button
+                  onClick={() => navigate('/auth')}
+                  className="flex flex-col items-center space-y-1 p-2 rounded-xl hover:bg-accent transition-colors"
+                >
+                  <User className="h-5 w-5 text-foreground" />
+                  <span className="text-xs text-foreground">Sign In</span>
+                </button>
+              )}
+              
+              {user && (
+                <button
+                  onClick={handleLogout}
+                  className="flex flex-col items-center space-y-1 p-2 rounded-xl hover:bg-accent transition-colors"
+                >
+                  <LogOut className="h-5 w-5 text-foreground" />
+                  <span className="text-xs text-foreground">Exit</span>
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Mobile Search Overlay */}
+        {isMenuOpen && (
+          <div className="fixed inset-0 bg-background/95 backdrop-blur-lg z-40">
+            <div className="p-4 pt-8">
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-xl font-bold text-foreground">Search Movies</h2>
+                <button
+                  onClick={() => setIsMenuOpen(false)}
+                  className="p-2 rounded-lg hover:bg-accent"
+                >
+                  <X className="h-6 w-6 text-foreground" />
+                </button>
+              </div>
+              <SearchSuggestions onClose={() => setIsMenuOpen(false)} />
+            </div>
+          </div>
         )}
-      </div>
-    </nav>
+      </nav>
+    </>
   );
 };

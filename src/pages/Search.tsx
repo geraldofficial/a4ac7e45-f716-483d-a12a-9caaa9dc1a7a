@@ -80,11 +80,11 @@ const Search = () => {
     <div className="min-h-screen bg-background">
       <Navbar />
       
-      <div className="pt-16 sm:pt-20 lg:pt-24 pb-12 sm:pb-16 lg:pb-20 px-4">
+      <div className="pt-4 md:pt-16 sm:pt-20 lg:pt-24 pb-24 md:pb-16 lg:pb-20 px-4">
         <div className="container mx-auto">
           <div className="flex items-center gap-3 mb-6 sm:mb-8">
             <SearchIcon className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
-            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-foreground">
+            <h1 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold text-foreground">
               {query ? `Search results for "${query}"` : 'Search'}
             </h1>
           </div>
@@ -95,7 +95,8 @@ const Search = () => {
             </div>
           ) : results.length > 0 ? (
             <>
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 sm:gap-4 lg:gap-6">
+              {/* Mobile: 1 column, Tablet: 3 columns, Desktop: 4-6 columns */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 sm:gap-4 lg:gap-6">
                 {results.map((item, index) => (
                   <div
                     key={`${item.id}-${item.media_type}`}
