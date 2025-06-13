@@ -1,17 +1,15 @@
+
 import React, { useState, useEffect } from 'react';
 import { Navbar } from '@/components/Navbar';
 import { MovieCard } from '@/components/MovieCard';
 import { Footer } from '@/components/Footer';
+import { PullToRefresh } from '@/components/PullToRefresh';
 import { tmdbApi, Movie } from '@/services/tmdb';
 import { Star } from 'lucide-react';
 
 const TopRated = () => {
   const [topRated, setTopRated] = useState<Movie[]>([]);
   const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    fetchTopRated();
-  }, []);
 
   const fetchTopRated = async () => {
     try {
@@ -35,25 +33,33 @@ const TopRated = () => {
     }
   };
 
+  useEffect(() => {
+    fetchTopRated();
+  }, []);
+
+  const handleRefresh = async () => {
+    await fetchTopRated();
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
-      <div className="pt-20 pb-20 md:pb-8">
+      <PullToRefresh onRefresh={handleRefresh} className="pt-20 pb-24 md:pb-8">
         <div className="container mx-auto px-3 md:px-4 py-3 md:py-8">
-          <div className="flex items-center gap-2 md:gap-3 mb-3 md:mb-8">
-            <div className="bg-primary/10 p-1.5 md:p-3 rounded-lg md:rounded-xl">
-              <Star className="h-4 w-4 md:h-6 md:w-6 text-primary" />
+          <div className="flex items-center gap-2 md:gap-3 mb-4 md:mb-8">
+            <div className="bg-primary/10 p-2 md:p-3 rounded-lg md:rounded-xl flex-shrink-0">
+              <Star className="h-5 w-5 md:h-6 md:w-6 text-primary" />
             </div>
-            <div>
-              <h1 className="text-lg md:text-3xl lg:text-4xl font-bold text-foreground">Top Rated</h1>
-              <p className="text-muted-foreground text-xs md:text-lg">
+            <div className="flex-1 min-w-0">
+              <h1 className="text-xl md:text-3xl lg:text-4xl font-bold text-foreground truncate">Top Rated</h1>
+              <p className="text-muted-foreground text-sm md:text-lg">
                 The highest rated movies and TV shows
               </p>
             </div>
           </div>
           
           {loading ? (
-            <div className="text-center text-muted-foreground text-sm md:text-xl">Loading top rated content...</div>
+            <div className="text-center text-muted-foreground text-sm md:text-xl py-12">Loading top rated content...</div>
           ) : (
             <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-7 gap-2 md:gap-4 lg:gap-6">
               {topRated.map((item) => (
@@ -62,7 +68,7 @@ const TopRated = () => {
             </div>
           )}
         </div>
-      </div>
+      </PullToRefresh>
       <Footer />
     </div>
   );

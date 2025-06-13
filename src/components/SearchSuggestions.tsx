@@ -19,6 +19,13 @@ export const SearchSuggestions: React.FC<SearchSuggestionsProps> = ({ onClose, c
   const inputRef = useRef<HTMLInputElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
+  // Haptic feedback function
+  const triggerHaptic = () => {
+    if ('vibrate' in navigator) {
+      navigator.vibrate(30);
+    }
+  };
+
   useEffect(() => {
     const timeoutId = setTimeout(async () => {
       if (query.trim()) {
@@ -53,6 +60,7 @@ export const SearchSuggestions: React.FC<SearchSuggestionsProps> = ({ onClose, c
   }, []);
 
   const handleSuggestionClick = (item: Movie) => {
+    triggerHaptic();
     const type = item.title ? 'movie' : 'tv';
     navigate(`/${type}/${item.id}`);
     setShowSuggestions(false);
@@ -62,6 +70,7 @@ export const SearchSuggestions: React.FC<SearchSuggestionsProps> = ({ onClose, c
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
+    triggerHaptic();
     if (query.trim()) {
       navigate(`/search?q=${encodeURIComponent(query.trim())}`);
       setShowSuggestions(false);
@@ -79,11 +88,11 @@ export const SearchSuggestions: React.FC<SearchSuggestionsProps> = ({ onClose, c
   return (
     <div ref={containerRef} className={`relative ${className}`}>
       <form onSubmit={handleSearch} className="relative">
-        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+        <Search className="absolute left-2.5 top-1/2 transform -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
         <Input
           ref={inputRef}
-          placeholder="Search movies, TV shows..."
-          className="pl-10 bg-white/10 border-white/20 text-white placeholder:text-gray-400"
+          placeholder="Search..."
+          className="pl-8 pr-3 py-2 h-9 text-sm bg-accent/50 border-border rounded-full text-foreground placeholder:text-muted-foreground focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           onFocus={() => query && setShowSuggestions(true)}
@@ -91,36 +100,36 @@ export const SearchSuggestions: React.FC<SearchSuggestionsProps> = ({ onClose, c
       </form>
 
       {showSuggestions && (
-        <div className="absolute top-full left-0 right-0 mt-2 bg-gray-900 border border-gray-700 rounded-lg shadow-xl z-50 max-h-96 overflow-y-auto">
+        <div className="absolute top-full left-0 right-0 mt-2 bg-background/95 backdrop-blur-xl border border-border rounded-xl shadow-xl z-50 max-h-[70vh] overflow-y-auto">
           {loading ? (
-            <div className="p-4 text-center text-gray-400">Searching...</div>
+            <div className="p-4 text-center text-muted-foreground text-sm">Searching...</div>
           ) : suggestions.length > 0 ? (
-            suggestions.map((item) => (
+            suggestions.slice(0, 8).map((item) => (
               <button
                 key={item.id}
                 onClick={() => handleSuggestionClick(item)}
-                className="w-full flex items-center gap-3 p-3 hover:bg-gray-800 transition-colors text-left"
+                className="w-full flex items-center gap-3 p-3 hover:bg-accent/50 transition-colors text-left first:rounded-t-xl last:rounded-b-xl min-h-[56px]"
               >
                 <img
                   src={getPosterUrl(item.poster_path)}
                   alt={item.title || item.name}
-                  className="w-12 h-18 object-cover rounded"
+                  className="w-10 h-15 object-cover rounded-md flex-shrink-0"
                 />
                 <div className="flex-1 min-w-0">
-                  <p className="text-white font-medium truncate">
+                  <p className="text-foreground font-medium truncate text-sm">
                     {item.title || item.name}
                   </p>
-                  <p className="text-gray-400 text-sm">
+                  <p className="text-muted-foreground text-xs">
                     {item.title ? 'Movie' : 'TV Show'} • {item.release_date || item.first_air_date ? new Date(item.release_date || item.first_air_date!).getFullYear() : 'N/A'}
                   </p>
-                  <p className="text-gray-500 text-xs truncate">
+                  <p className="text-muted-foreground text-xs">
                     ⭐ {item.vote_average.toFixed(1)}
                   </p>
                 </div>
               </button>
             ))
           ) : query && !loading ? (
-            <div className="p-4 text-center text-gray-400">No results found</div>
+            <div className="p-4 text-center text-muted-foreground text-sm">No results found</div>
           ) : null}
         </div>
       )}
