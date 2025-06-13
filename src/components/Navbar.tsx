@@ -142,28 +142,28 @@ export const Navbar = () => {
       </nav>
 
       {/* Mobile Top Bar */}
-      <nav className="md:hidden fixed top-4 left-4 right-4 z-50 bg-background/95 backdrop-blur-xl border border-border/50 rounded-2xl shadow-lg">
-        <div className="px-4">
-          <div className="flex items-center justify-between h-14">
+      <nav className="md:hidden fixed top-2 left-2 right-2 z-50 bg-background/95 backdrop-blur-xl border border-border/50 rounded-2xl shadow-lg">
+        <div className="px-3">
+          <div className="flex items-center justify-between h-12">
             <Link to="/" className="flex items-center">
-              <FlickPickLogo />
+              <FlickPickLogo size="sm" />
             </Link>
 
-            <div className="flex items-center space-x-3">
+            <div className="flex items-center space-x-2">
               <form onSubmit={handleSearch} className="relative">
                 <input
                   type="text"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder="Search..."
-                  className="bg-accent/50 border border-border rounded-full px-3 py-1.5 pl-8 w-32 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary text-sm text-foreground placeholder-muted-foreground"
+                  className="bg-accent/50 border border-border rounded-full px-2.5 py-1 pl-7 w-28 focus:outline-none focus:ring-1 focus:ring-primary/50 focus:border-primary text-xs text-foreground placeholder-muted-foreground"
                 />
-                <Search className="absolute left-2.5 top-1/2 transform -translate-y-1/2 h-3 w-3 text-muted-foreground" />
+                <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 h-3 w-3 text-muted-foreground" />
               </form>
 
               {user ? (
                 <Link to="/watchlist">
-                  <Avatar className="h-8 w-8">
+                  <Avatar className="h-7 w-7">
                     <AvatarImage src={user.avatar || undefined} alt={user.username || 'User'} />
                     <AvatarFallback>
                       <User className="h-3 w-3" />
@@ -171,7 +171,7 @@ export const Navbar = () => {
                   </Avatar>
                 </Link>
               ) : (
-                <Button asChild size="sm" className="rounded-full">
+                <Button asChild size="sm" className="rounded-full h-7 px-3 text-xs">
                   <Link to="/auth">Sign In</Link>
                 </Button>
               )}
@@ -181,32 +181,32 @@ export const Navbar = () => {
       </nav>
 
       {/* Bottom Navigation for Mobile */}
-      <nav className="md:hidden fixed bottom-4 left-4 right-4 z-40 bg-background/95 backdrop-blur-xl border border-border/50 rounded-2xl shadow-lg">
-        <div className="flex items-center justify-around py-3">
+      <nav className="md:hidden fixed bottom-2 left-2 right-2 z-40 bg-background/95 backdrop-blur-xl border border-border/50 rounded-2xl shadow-lg">
+        <div className="flex items-center justify-around py-2">
           {navItems.map((item) => (
             <Link
               key={item.path}
               to={item.path}
-              className={`flex flex-col items-center py-2 px-4 rounded-xl transition-all duration-200 ${
+              className={`flex flex-col items-center py-1.5 px-3 rounded-xl transition-all duration-200 ${
                 location.pathname === item.path 
                   ? 'text-primary bg-primary/10 scale-105' 
                   : 'text-muted-foreground hover:text-foreground hover:bg-accent/50'
               }`}
             >
-              <item.icon className="h-5 w-5 mb-1" />
+              <item.icon className="h-4 w-4 mb-0.5" />
               <span className="text-xs font-medium">{item.label}</span>
             </Link>
           ))}
           {user && (
             <Link
               to="/watchlist"
-              className={`flex flex-col items-center py-2 px-4 rounded-xl transition-all duration-200 ${
+              className={`flex flex-col items-center py-1.5 px-3 rounded-xl transition-all duration-200 ${
                 location.pathname === '/watchlist'
                   ? 'text-primary bg-primary/10 scale-105' 
                   : 'text-muted-foreground hover:text-foreground hover:bg-accent/50'
               }`}
             >
-              <Bookmark className="h-5 w-5 mb-1" />
+              <Bookmark className="h-4 w-4 mb-0.5" />
               <span className="text-xs font-medium">Watchlist</span>
             </Link>
           )}

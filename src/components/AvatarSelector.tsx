@@ -64,7 +64,7 @@ export const AvatarSelector: React.FC<AvatarSelectorProps> = ({
               className="w-full h-full object-cover rounded-full"
             />
             {selectedAvatar === avatar && (
-              <div className="absolute -top-1 -right-1 w-6 h-6 bg-primary rounded-full flex items-center justify-center">
+              <div className="absolute -top-1 -right-1 w-6 h-6 bg-primary rounded-full flex items-center justify-center border-2 border-background shadow-lg">
                 <Check className="w-3 h-3 text-primary-foreground" />
               </div>
             )}
