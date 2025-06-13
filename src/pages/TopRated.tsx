@@ -15,12 +15,12 @@ const TopRated = () => {
 
   const fetchTopRated = async () => {
     try {
-      const [movies, tvShows] = await Promise.all([
+      const [moviesResponse, tvShows] = await Promise.all([
         tmdbApi.getPopularMovies(),
         tmdbApi.getPopularTVShows()
       ]);
       
-      const moviesWithType = movies.map(movie => ({ ...movie, media_type: 'movie' as const }));
+      const moviesWithType = moviesResponse.results.map(movie => ({ ...movie, media_type: 'movie' as const }));
       const tvWithType = tvShows.map(tv => ({ ...tv, media_type: 'tv' as const }));
       
       const combined = [...moviesWithType, ...tvWithType]
