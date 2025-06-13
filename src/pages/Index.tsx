@@ -22,7 +22,7 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-background dark overflow-x-hidden">
       <Navbar />
-      <main className="relative pt-0 md:pt-20 lg:pt-24 pb-24 md:pb-8">
+      <main className="relative pt-0 md:pt-24 pb-24 md:pb-8">
         <HeroSection />
         <MovieSection />
       </main>
