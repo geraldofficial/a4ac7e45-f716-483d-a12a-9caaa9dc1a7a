@@ -53,6 +53,40 @@ export const EmailSubscription = () => {
     }
   };
 
+  const sendWelcomeEmail = async (userEmail: string, userName?: string) => {
+    try {
+      const { error } = await supabase.functions.invoke('send-welcome-email', {
+        body: {
+          email: userEmail,
+          name: userName
+        }
+      });
+
+      if (error) {
+        console.error('Error sending welcome email:', error);
+      }
+    } catch (error) {
+      console.error('Error sending welcome email:', error);
+    }
+  };
+
+  const sendInstantTrendingEmail = async (userEmail: string, userName?: string) => {
+    try {
+      const { error } = await supabase.functions.invoke('send-trending-email', {
+        body: {
+          email: userEmail,
+          name: userName
+        }
+      });
+
+      if (error) {
+        console.error('Error sending trending email:', error);
+      }
+    } catch (error) {
+      console.error('Error sending trending email:', error);
+    }
+  };
+
   const handleSubscribe = async () => {
     if (!user || !email) {
       toast({
@@ -65,6 +99,8 @@ export const EmailSubscription = () => {
 
     setLoading(true);
     try {
+      const userName = user.user_metadata?.full_name || user.user_metadata?.username || user.email?.split('@')[0];
+      
       if (subscription) {
         // Update existing subscription
         const { error } = await supabase
@@ -96,9 +132,15 @@ export const EmailSubscription = () => {
 
         if (error) throw error;
 
+        // Send welcome email and instant trending email for new subscriptions
+        await Promise.all([
+          sendWelcomeEmail(email, userName),
+          sendInstantTrendingEmail(email, userName)
+        ]);
+
         toast({
           title: "Subscribed!",
-          description: "You'll receive trending movies in your inbox.",
+          description: "Welcome! You'll receive trending movies in your inbox and we've sent you the latest trending content.",
         });
       }
       
