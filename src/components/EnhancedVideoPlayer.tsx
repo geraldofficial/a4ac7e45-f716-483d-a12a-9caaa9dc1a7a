@@ -127,98 +127,96 @@ export const EnhancedVideoPlayer: React.FC<EnhancedVideoPlayerProps> = ({
   }, [isLoading]);
 
   return (
-    <div className="w-full">
-      <div ref={containerRef} className="relative w-full bg-black rounded-lg overflow-hidden">
-        {/* Video Controls Overlay */}
-        <div className="absolute top-4 left-4 right-4 z-10 flex items-center justify-between bg-black/50 backdrop-blur-sm rounded-lg p-2">
-          <div className="flex items-center gap-2">
-            <span className="text-white text-sm font-medium bg-primary px-2 py-1 rounded">
-              {currentSource.name}
-            </span>
-            <span className="text-white/80 text-xs">
-              {type === 'tv' && season && episode ? `S${season}E${episode}` : 'Movie'}
-            </span>
-          </div>
-          
-          <div className="flex items-center gap-2">
-            <Button
-              onClick={reloadPlayer}
-              size="sm"
-              variant="ghost"
-              className="text-white hover:bg-white/20"
-            >
-              <RotateCcw className="h-4 w-4" />
-            </Button>
-            
-            <Button
-              onClick={toggleMute}
-              size="sm"
-              variant="ghost"
-              className="text-white hover:bg-white/20"
-            >
-              {isMuted ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
-            </Button>
-            
-            <Button
-              onClick={toggleFullscreen}
-              size="sm"
-              variant="ghost"
-              className="text-white hover:bg-white/20"
-            >
-              <Maximize className="h-4 w-4" />
-            </Button>
-          </div>
+    <div ref={containerRef} className="relative w-full bg-black rounded-lg overflow-hidden">
+      {/* Video Controls Overlay */}
+      <div className="absolute top-4 left-4 right-4 z-10 flex items-center justify-between bg-black/50 backdrop-blur-sm rounded-lg p-2">
+        <div className="flex items-center gap-2">
+          <span className="text-white text-sm font-medium bg-primary px-2 py-1 rounded">
+            {currentSource.name}
+          </span>
+          <span className="text-white/80 text-xs">
+            {type === 'tv' && season && episode ? `S${season}E${episode}` : 'Movie'}
+          </span>
         </div>
-
-        {/* Loading State */}
-        {isLoading && (
-          <div className="absolute inset-0 flex items-center justify-center bg-black/80 z-20">
-            <div className="text-center">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mb-4"></div>
-              <p className="text-white">Loading {title}...</p>
-              <p className="text-white/60 text-sm">Source: {currentSource.name}</p>
-            </div>
-          </div>
-        )}
-
-        {/* Error State */}
-        {hasError && (
-          <div className="absolute inset-0 flex items-center justify-center bg-black/80 z-20">
-            <div className="text-center max-w-md mx-auto p-6">
-              <p className="text-white mb-4">Failed to load from {currentSource.name}</p>
-              <div className="flex gap-2 justify-center">
-                <Button onClick={switchSource} variant="default">
-                  <SkipForward className="h-4 w-4 mr-2" />
-                  Try Next Source
-                </Button>
-                <Button onClick={reloadPlayer} variant="outline">
-                  <RotateCcw className="h-4 w-4 mr-2" />
-                  Retry
-                </Button>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Video Iframe */}
-        <iframe
-          ref={iframeRef}
-          src={enhancedUrl}
-          title={title}
-          className="w-full aspect-video"
-          style={{ minHeight: '400px' }}
-          allowFullScreen
-          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-          onLoad={handleIframeLoad}
-          onError={handleIframeError}
-          referrerPolicy="no-referrer-when-downgrade"
-          loading="eager"
-        />
+        
+        <div className="flex items-center gap-2">
+          <Button
+            onClick={reloadPlayer}
+            size="sm"
+            variant="ghost"
+            className="text-white hover:bg-white/20"
+          >
+            <RotateCcw className="h-4 w-4" />
+          </Button>
+          
+          <Button
+            onClick={toggleMute}
+            size="sm"
+            variant="ghost"
+            className="text-white hover:bg-white/20"
+          >
+            {isMuted ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
+          </Button>
+          
+          <Button
+            onClick={toggleFullscreen}
+            size="sm"
+            variant="ghost"
+            className="text-white hover:bg-white/20"
+          >
+            <Maximize className="h-4 w-4" />
+          </Button>
+        </div>
       </div>
 
-      {/* Source Selector - Moved Outside Video Container */}
-      <div className="mt-4 w-full">
-        <div className="flex gap-2 overflow-x-auto pb-2">
+      {/* Loading State */}
+      {isLoading && (
+        <div className="absolute inset-0 flex items-center justify-center bg-black/80 z-20">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mb-4"></div>
+            <p className="text-white">Loading {title}...</p>
+            <p className="text-white/60 text-sm">Source: {currentSource.name}</p>
+          </div>
+        </div>
+      )}
+
+      {/* Error State */}
+      {hasError && (
+        <div className="absolute inset-0 flex items-center justify-center bg-black/80 z-20">
+          <div className="text-center max-w-md mx-auto p-6">
+            <p className="text-white mb-4">Failed to load from {currentSource.name}</p>
+            <div className="flex gap-2 justify-center">
+              <Button onClick={switchSource} variant="default">
+                <SkipForward className="h-4 w-4 mr-2" />
+                Try Next Source
+              </Button>
+              <Button onClick={reloadPlayer} variant="outline">
+                <RotateCcw className="h-4 w-4 mr-2" />
+                Retry
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Video Iframe */}
+      <iframe
+        ref={iframeRef}
+        src={enhancedUrl}
+        title={title}
+        className="w-full aspect-video"
+        style={{ minHeight: '400px' }}
+        allowFullScreen
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+        onLoad={handleIframeLoad}
+        onError={handleIframeError}
+        referrerPolicy="no-referrer-when-downgrade"
+        loading="eager"
+      />
+
+      {/* Source Selector - At Bottom of Frame */}
+      <div className="absolute bottom-0 left-0 right-0 z-10 bg-black/70 backdrop-blur-sm p-2">
+        <div className="flex gap-2 overflow-x-auto">
           {streamingSources.map((source, index) => (
             <Button
               key={source.name}
@@ -228,7 +226,7 @@ export const EnhancedVideoPlayer: React.FC<EnhancedVideoPlayerProps> = ({
               className={`flex-shrink-0 text-xs ${
                 index === currentSourceIndex 
                   ? "bg-primary text-primary-foreground" 
-                  : "bg-secondary/20 text-foreground border-border hover:bg-secondary/40"
+                  : "bg-black/50 text-white border-white/20 hover:bg-white/20"
               }`}
             >
               {source.name}
