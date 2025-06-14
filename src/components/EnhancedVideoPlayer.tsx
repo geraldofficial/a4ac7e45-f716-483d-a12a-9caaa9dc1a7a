@@ -101,17 +101,30 @@ export const EnhancedVideoPlayer: React.FC<EnhancedVideoPlayerProps> = ({
       setHasError(false);
       iframeRef.current.src = enhancedUrl;
     }
-  }, [currentSourceIndex, enhancedUrl]);
+  }, [currentSourceIndex]);
 
   const handleIframeLoad = () => {
-    setIsLoading(false);
-    setHasError(false);
+    setTimeout(() => {
+      setIsLoading(false);
+      setHasError(false);
+    }, 500); // Small delay to ensure content is actually loaded
   };
 
   const handleIframeError = () => {
     setIsLoading(false);
     setHasError(true);
   };
+
+  // Add timeout fallback for loading state
+  useEffect(() => {
+    if (isLoading) {
+      const timeout = setTimeout(() => {
+        setIsLoading(false);
+      }, 15000); // 15 second timeout
+
+      return () => clearTimeout(timeout);
+    }
+  }, [isLoading]);
 
   return (
     <div ref={containerRef} className="relative w-full bg-black rounded-lg overflow-hidden">
