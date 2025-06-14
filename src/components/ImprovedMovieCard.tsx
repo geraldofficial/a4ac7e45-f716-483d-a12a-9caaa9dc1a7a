@@ -1,8 +1,7 @@
-
 import React, { useState, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Play, Plus, Check, Star, Info, Heart, Share2 } from 'lucide-react';
+import { Play, Plus, Check, Star, Info, Share2 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
@@ -37,10 +36,6 @@ export const ImprovedMovieCard: React.FC<ImprovedMovieCardProps> = ({
 
   const posterUrl = movie.poster_path 
     ? `https://image.tmdb.org/t/p/${variant === 'featured' ? 'w780' : 'w500'}${movie.poster_path}`
-    : null;
-
-  const backdropUrl = movie.backdrop_path 
-    ? `https://image.tmdb.org/t/p/w1280${movie.backdrop_path}`
     : null;
 
   const fallbackUrl = 'https://images.unsplash.com/photo-1489599904276-39c2bb2d7b64?w=400&h=600&fit=crop';
@@ -132,7 +127,7 @@ export const ImprovedMovieCard: React.FC<ImprovedMovieCardProps> = ({
       case 'featured':
         return 'w-full max-w-lg';
       default:
-        return 'w-full max-w-sm';
+        return 'w-full';
     }
   };
 
@@ -188,10 +183,7 @@ export const ImprovedMovieCard: React.FC<ImprovedMovieCardProps> = ({
         )}
 
         {/* Gradient overlay */}
-        <div className={cn(
-          "absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent transition-opacity duration-300",
-          variant === 'compact' ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'
-        )} />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity duration-300" />
 
         {/* Rating badge */}
         <div className="absolute top-2 left-2 z-10">
@@ -211,67 +203,60 @@ export const ImprovedMovieCard: React.FC<ImprovedMovieCardProps> = ({
           </Badge>
         </div>
 
-        {/* Action buttons */}
-        <div className={cn(
-          "absolute bottom-2 left-2 right-2 z-10 transition-all duration-300 space-y-2",
-          variant === 'compact' ? 'opacity-100' : 'opacity-0 group-hover:opacity-100 group-hover:translate-y-0 translate-y-2'
-        )}>
-          {variant !== 'compact' && (
-            <>
-              <div className="flex items-center justify-between mb-2">
-                <div className="flex items-center gap-1">
-                  {year && (
-                    <Badge className="bg-white/20 text-white text-xs">
-                      {year}
-                    </Badge>
-                  )}
-                </div>
-              </div>
-              
-              <div className="flex gap-1.5">
-                <Button 
-                  size="sm" 
-                  className="bg-primary hover:bg-primary/90 text-primary-foreground font-medium transition-all duration-200 hover:scale-105 shadow-lg flex-1 h-8 text-xs rounded-full"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleWatch();
-                  }}
-                >
-                  <Play className="h-3 w-3 mr-1 fill-current" />
-                  Play
-                </Button>
-                
-                <Button 
-                  size="sm" 
-                  variant="outline"
-                  className="border-white/30 bg-white/10 backdrop-blur-sm text-white hover:bg-white/20 hover:border-white/50 transition-all duration-200 hover:scale-105 shadow-lg h-8 w-8 p-0 rounded-full"
-                  onClick={handleMoreInfo}
-                >
-                  <Info className="h-3 w-3" />
-                </Button>
-                
-                {user && (
-                  <Button 
-                    size="sm" 
-                    variant="outline" 
-                    className="border-white/30 bg-white/10 backdrop-blur-sm text-white hover:bg-white/20 hover:border-white/50 transition-all duration-200 hover:scale-105 shadow-lg h-8 w-8 p-0 rounded-full"
-                    onClick={handleWatchlistToggle}
-                  >
-                    {isInWatchlist(movie.id) ? <Check className="h-3 w-3" /> : <Plus className="h-3 w-3" />}
-                  </Button>
-                )}
+        {/* Action buttons - Always visible on mobile for better UX */}
+        <div className="absolute bottom-2 left-2 right-2 z-10 transition-all duration-300 space-y-2 opacity-100 md:opacity-0 md:group-hover:opacity-100 md:group-hover:translate-y-0 md:translate-y-2">
+          <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center gap-1">
+              {year && (
+                <Badge className="bg-white/20 text-white text-xs backdrop-blur-sm">
+                  {year}
+                </Badge>
+              )}
+            </div>
+          </div>
+          
+          <div className="flex gap-2">
+            <Button 
+              size="sm" 
+              className="bg-primary hover:bg-primary/90 text-primary-foreground font-medium transition-all duration-200 hover:scale-105 shadow-lg flex-1 h-10 text-sm rounded-lg touch-target"
+              onClick={(e) => {
+                e.stopPropagation();
+                handleWatch();
+              }}
+            >
+              <Play className="h-4 w-4 mr-2 fill-current" />
+              Play
+            </Button>
+            
+            <Button 
+              size="sm" 
+              variant="outline"
+              className="border-white/30 bg-white/10 backdrop-blur-sm text-white hover:bg-white/20 hover:border-white/50 transition-all duration-200 hover:scale-105 shadow-lg h-10 w-10 p-0 rounded-lg touch-target"
+              onClick={handleMoreInfo}
+            >
+              <Info className="h-4 w-4" />
+            </Button>
+            
+            {user && (
+              <Button 
+                size="sm" 
+                variant="outline" 
+                className="border-white/30 bg-white/10 backdrop-blur-sm text-white hover:bg-white/20 hover:border-white/50 transition-all duration-200 hover:scale-105 shadow-lg h-10 w-10 p-0 rounded-lg touch-target"
+                onClick={handleWatchlistToggle}
+              >
+                {isInWatchlist(movie.id) ? <Check className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
+              </Button>
+            )}
 
-                <Button 
-                  size="sm" 
-                  variant="outline"
-                  className="border-white/30 bg-white/10 backdrop-blur-sm text-white hover:bg-white/20 hover:border-white/50 transition-all duration-200 hover:scale-105 shadow-lg h-8 w-8 p-0 rounded-full"
-                  onClick={handleShare}
-                >
-                  <Share2 className="h-3 w-3" />
-                </Button>
-              </div>
-            </>
-          )}
+            <Button 
+              size="sm" 
+              variant="outline"
+              className="border-white/30 bg-white/10 backdrop-blur-sm text-white hover:bg-white/20 hover:border-white/50 transition-all duration-200 hover:scale-105 shadow-lg h-10 w-10 p-0 rounded-lg touch-target"
+              onClick={handleShare}
+            >
+              <Share2 className="h-4 w-4" />
+            </Button>
+          </div>
         </div>
       </div>
       
@@ -287,20 +272,10 @@ export const ImprovedMovieCard: React.FC<ImprovedMovieCardProps> = ({
           {title}
         </h3>
         
-        {variant !== 'compact' && (
-          <>
-            {year && (
-              <p className="text-muted-foreground text-xs mb-2">
-                {year}
-              </p>
-            )}
-            
-            {movie.overview && (
-              <p className="text-muted-foreground text-xs line-clamp-2 leading-relaxed">
-                {movie.overview}
-              </p>
-            )}
-          </>
+        {variant !== 'compact' && year && (
+          <p className="text-muted-foreground text-xs mb-2">
+            {year}
+          </p>
         )}
 
         {variant === 'compact' && year && (

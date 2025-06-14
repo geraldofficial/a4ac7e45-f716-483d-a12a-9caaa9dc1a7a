@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { ImprovedMovieCard } from './ImprovedMovieCard';
 import { LoadingSpinner } from './LoadingSpinner';
@@ -94,7 +93,7 @@ export const EnhancedMovieSection = () => {
   const scrollSection = (sectionId: string, direction: 'left' | 'right') => {
     const section = document.getElementById(sectionId);
     if (section) {
-      const scrollAmount = window.innerWidth < 768 ? 150 : 400;
+      const scrollAmount = window.innerWidth < 768 ? 200 : 400;
       section.scrollBy({
         left: direction === 'left' ? -scrollAmount : scrollAmount,
         behavior: 'smooth'
@@ -115,11 +114,11 @@ export const EnhancedMovieSection = () => {
     showScrollButtons?: boolean;
     priority?: boolean;
   }) => (
-    <section className="mb-6 md:mb-12 movie-section">
-      <div className="flex items-center justify-between mb-4 md:mb-6 px-3 md:px-6">
+    <section className="mb-8 md:mb-12 movie-section">
+      <div className="flex items-center justify-between mb-4 md:mb-6 px-4 md:px-6">
         <div className="flex items-center gap-2">
           <div className="w-1 h-6 bg-gradient-to-b from-primary to-primary/50 rounded-full"></div>
-          <h2 className="text-lg md:text-2xl lg:text-3xl font-bold text-foreground bg-gradient-to-r from-foreground to-foreground/80 bg-clip-text">
+          <h2 className="text-xl md:text-2xl lg:text-3xl font-bold text-foreground bg-gradient-to-r from-foreground to-foreground/80 bg-clip-text">
             {title}
           </h2>
         </div>
@@ -160,12 +159,17 @@ export const EnhancedMovieSection = () => {
       </div>
       <div 
         id={sectionId}
-        className="horizontal-scroll movie-row"
+        className="flex overflow-x-auto overflow-y-hidden scroll-smooth gap-3 md:gap-4 px-4 md:px-6 pb-4"
+        style={{
+          scrollbarWidth: 'none',
+          msOverflowStyle: 'none',
+          WebkitOverflowScrolling: 'touch'
+        }}
       >
         {movies.map((movie, index) => (
           <div 
             key={movie.id} 
-            className="movie-card-mobile md:w-40 lg:w-48 xl:w-52 movie-card"
+            className="flex-shrink-0 w-[160px] sm:w-[180px] md:w-48 lg:w-52 xl:w-56"
             ref={sectionId === 'recommended' && index === movies.length - 1 ? lastMovieElementRef : null}
           >
             <ImprovedMovieCard 
@@ -211,12 +215,12 @@ export const EnhancedMovieSection = () => {
     : 'Popular Movies';
 
   return (
-    <div className="space-y-4 md:space-y-8 lg:space-y-12 pb-mobile-nav">
+    <div className="space-y-6 md:space-y-8 lg:space-y-12 pb-24 md:pb-8">
       {/* Email Subscription Section */}
-      <section className="px-3 md:px-6">
+      <section className="px-4 md:px-6">
         <div className="flex items-center gap-2 mb-6">
           <div className="w-1 h-6 bg-gradient-to-b from-primary to-primary/50 rounded-full"></div>
-          <h2 className="text-lg md:text-2xl lg:text-3xl font-bold text-foreground">
+          <h2 className="text-xl md:text-2xl lg:text-3xl font-bold text-foreground">
             Stay Updated
           </h2>
         </div>

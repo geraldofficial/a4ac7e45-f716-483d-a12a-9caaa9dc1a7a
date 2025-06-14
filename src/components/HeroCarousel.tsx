@@ -9,6 +9,7 @@ import { useAuth } from '@/contexts/AuthContext';
 
 export const HeroCarousel = () => {
   const [currentSlide, setCurrentSlide] = useState(0);
+  const [isAutoPlaying, setIsAutoPlaying] = useState(true);
   const navigate = useNavigate();
   const { user, addToWatchlist, isInWatchlist } = useAuth();
 
@@ -21,21 +22,27 @@ export const HeroCarousel = () => {
   const featuredMovies = movies?.slice(0, 5) || [];
 
   useEffect(() => {
-    if (featuredMovies.length === 0) return;
+    if (featuredMovies.length === 0 || !isAutoPlaying) return;
 
     const timer = setInterval(() => {
       setCurrentSlide((prev) => (prev + 1) % featuredMovies.length);
-    }, 6000);
+    }, 5000); // Increased interval for better mobile experience
 
     return () => clearInterval(timer);
-  }, [featuredMovies.length]);
+  }, [featuredMovies.length, isAutoPlaying]);
 
   const nextSlide = () => {
+    setIsAutoPlaying(false);
     setCurrentSlide((prev) => (prev + 1) % featuredMovies.length);
+    // Resume autoplay after 10 seconds
+    setTimeout(() => setIsAutoPlaying(true), 10000);
   };
 
   const prevSlide = () => {
+    setIsAutoPlaying(false);
     setCurrentSlide((prev) => (prev - 1 + featuredMovies.length) % featuredMovies.length);
+    // Resume autoplay after 10 seconds
+    setTimeout(() => setIsAutoPlaying(true), 10000);
   };
 
   const handleWatchMovie = (movieId: number) => {
@@ -52,7 +59,7 @@ export const HeroCarousel = () => {
 
   if (isLoading || featuredMovies.length === 0) {
     return (
-      <div className="relative h-[70vh] bg-gradient-to-r from-purple-900 to-blue-900 flex items-center justify-center">
+      <div className="relative h-[50vh] md:h-[70vh] bg-gradient-to-r from-purple-900 to-blue-900 flex items-center justify-center">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white"></div>
       </div>
     );
@@ -61,28 +68,31 @@ export const HeroCarousel = () => {
   const currentMovie = featuredMovies[currentSlide];
 
   return (
-    <div className="relative h-[70vh] md:h-[80vh] overflow-hidden">
+    <div className="relative h-[50vh] md:h-[70vh] lg:h-[80vh] overflow-hidden touch-pan-y">
       {/* Background Image */}
       <div className="absolute inset-0">
         <img
           src={`https://image.tmdb.org/t/p/original${currentMovie.backdrop_path}`}
           alt={currentMovie.title}
           className="w-full h-full object-cover"
+          loading="eager"
         />
         <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/40 to-transparent"></div>
-        <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
+        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"></div>
       </div>
 
-      {/* Navigation Arrows */}
+      {/* Navigation Arrows - Hidden on mobile for better touch experience */}
       <button
         onClick={prevSlide}
-        className="absolute left-4 top-1/2 transform -translate-y-1/2 z-10 p-2 rounded-full bg-black/50 hover:bg-black/70 transition-all"
+        className="hidden md:block absolute left-4 top-1/2 transform -translate-y-1/2 z-10 p-3 rounded-full bg-black/50 hover:bg-black/70 transition-all touch-target"
+        aria-label="Previous slide"
       >
         <ChevronLeft className="h-6 w-6 text-white" />
       </button>
       <button
         onClick={nextSlide}
-        className="absolute right-4 top-1/2 transform -translate-y-1/2 z-10 p-2 rounded-full bg-black/50 hover:bg-black/70 transition-all"
+        className="hidden md:block absolute right-4 top-1/2 transform -translate-y-1/2 z-10 p-3 rounded-full bg-black/50 hover:bg-black/70 transition-all touch-target"
+        aria-label="Next slide"
       >
         <ChevronRight className="h-6 w-6 text-white" />
       </button>
@@ -90,45 +100,45 @@ export const HeroCarousel = () => {
       {/* Content */}
       <div className="relative z-10 h-full flex items-center">
         <div className="container mx-auto px-4 md:px-8">
-          <div className="max-w-2xl space-y-6">
-            <h1 className="text-4xl md:text-6xl font-bold text-white leading-tight">
+          <div className="max-w-2xl space-y-4 md:space-y-6">
+            <h1 className="text-2xl md:text-4xl lg:text-6xl font-bold text-white leading-tight">
               {currentMovie.title}
             </h1>
-            <p className="text-lg md:text-xl text-white/90 leading-relaxed line-clamp-3">
+            <p className="text-sm md:text-lg lg:text-xl text-white/90 leading-relaxed line-clamp-2 md:line-clamp-3">
               {currentMovie.overview}
             </p>
             
-            <div className="flex items-center space-x-4 text-white/80">
-              <span className="bg-yellow-500 text-black px-2 py-1 rounded text-sm font-semibold">
+            <div className="flex items-center space-x-3 md:space-x-4 text-white/80">
+              <span className="bg-yellow-500 text-black px-2 py-1 rounded text-xs md:text-sm font-semibold">
                 ★ {currentMovie.vote_average?.toFixed(1)}
               </span>
-              <span>{new Date(currentMovie.release_date).getFullYear()}</span>
+              <span className="text-xs md:text-base">{new Date(currentMovie.release_date).getFullYear()}</span>
             </div>
 
-            <div className="flex flex-col sm:flex-row gap-4">
+            <div className="flex flex-col sm:flex-row gap-3 md:gap-4">
               <Button
                 onClick={() => handleWatchMovie(currentMovie.id)}
-                className="bg-white text-black hover:bg-white/90 px-8 py-3 text-lg font-semibold"
+                className="bg-white text-black hover:bg-white/90 px-6 md:px-8 py-3 text-base md:text-lg font-semibold touch-target"
               >
-                <Play className="mr-2 h-5 w-5 fill-current" />
+                <Play className="mr-2 h-4 w-4 md:h-5 md:w-5 fill-current" />
                 Watch Now
               </Button>
               
               <Button
                 onClick={() => handleAddToWatchlist(currentMovie.id)}
                 variant="outline"
-                className="border-white/30 text-white hover:bg-white/10 px-8 py-3 text-lg"
+                className="border-white/30 text-white hover:bg-white/10 px-6 md:px-8 py-3 text-base md:text-lg touch-target"
               >
-                <Plus className="mr-2 h-5 w-5" />
+                <Plus className="mr-2 h-4 w-4 md:h-5 md:w-5" />
                 {user && isInWatchlist(currentMovie.id) ? 'In Watchlist' : 'Add to Watchlist'}
               </Button>
               
               <Button
                 onClick={() => navigate(`/movie/${currentMovie.id}`)}
                 variant="outline"
-                className="border-white/30 text-white hover:bg-white/10 px-8 py-3 text-lg"
+                className="border-white/30 text-white hover:bg-white/10 px-6 md:px-8 py-3 text-base md:text-lg touch-target"
               >
-                <Info className="mr-2 h-5 w-5" />
+                <Info className="mr-2 h-4 w-4 md:h-5 md:w-5" />
                 More Info
               </Button>
             </div>
@@ -137,14 +147,19 @@ export const HeroCarousel = () => {
       </div>
 
       {/* Slide Indicators */}
-      <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 flex space-x-2">
+      <div className="absolute bottom-4 md:bottom-8 left-1/2 transform -translate-x-1/2 flex space-x-2">
         {featuredMovies.map((_, index) => (
           <button
             key={index}
-            onClick={() => setCurrentSlide(index)}
-            className={`w-3 h-3 rounded-full transition-all ${
-              index === currentSlide ? 'bg-white' : 'bg-white/40'
+            onClick={() => {
+              setCurrentSlide(index);
+              setIsAutoPlaying(false);
+              setTimeout(() => setIsAutoPlaying(true), 10000);
+            }}
+            className={`w-2 h-2 md:w-3 md:h-3 rounded-full transition-all touch-target ${
+              index === currentSlide ? 'bg-white scale-125' : 'bg-white/40'
             }`}
+            aria-label={`Go to slide ${index + 1}`}
           />
         ))}
       </div>

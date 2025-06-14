@@ -38,23 +38,21 @@
     @apply border-border;
   }
   
-  html, body {
+  html {
     height: 100%;
-    overflow-x: hidden;
     scroll-behavior: smooth;
   }
   
   body {
     @apply bg-background text-foreground;
+    height: 100%;
     overscroll-behavior: none;
     -webkit-overflow-scrolling: touch;
     position: relative;
-    overflow-y: auto;
   }
   
   #root {
     min-height: 100vh;
-    overflow-x: hidden;
     display: flex;
     flex-direction: column;
   }
@@ -84,16 +82,18 @@
   padding-top: env(safe-area-inset-top);
 }
 
-/* Touch-friendly interactions */
+/* Enhanced touch-friendly interactions */
 .touch-target {
   min-height: 44px;
   min-width: 44px;
+  touch-action: manipulation;
 }
 
 /* Enhanced button interactions for mobile */
 button, [role="button"] {
   -webkit-tap-highlight-color: transparent;
   touch-action: manipulation;
+  user-select: none;
 }
 
 /* Improved focus states for accessibility */
@@ -102,9 +102,10 @@ button, [role="button"] {
   outline-offset: 2px;
 }
 
-/* Custom scrollbar */
+/* Custom scrollbar for desktop */
 ::-webkit-scrollbar {
   width: 8px;
+  height: 8px;
 }
 
 ::-webkit-scrollbar-track {
@@ -122,63 +123,29 @@ button, [role="button"] {
 
 /* Mobile optimization for scrolling */
 @media (max-width: 768px) {
-  html {
-    /* Fix iOS bounce scrolling */
-    height: 100%;
-    position: fixed;
-    overflow: hidden;
-    width: 100%;
-  }
-  
-  body {
-    height: 100%;
-    overflow: auto;
-    -webkit-overflow-scrolling: touch;
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-  }
-  
-  #root {
-    height: 100%;
-    overflow: auto;
-    -webkit-overflow-scrolling: touch;
-  }
-  
+  /* Hide scrollbars on mobile */
   ::-webkit-scrollbar {
     width: 0px;
+    height: 0px;
     background: transparent;
   }
   
-  /* Ensure movie cards are touch-friendly */
-  .movie-card {
-    touch-action: manipulation;
-    -webkit-tap-highlight-color: transparent;
-  }
-  
-  /* Better mobile container spacing */
+  /* Ensure proper mobile container spacing */
   .container {
     padding-left: 1rem;
     padding-right: 1rem;
   }
   
-  /* Ensure proper spacing for mobile bottom navigation */
-  .pb-mobile-nav {
-    padding-bottom: calc(80px + env(safe-area-inset-bottom));
+  /* Movie cards touch optimization */
+  .movie-card {
+    touch-action: pan-y;
+    -webkit-tap-highlight-color: transparent;
   }
   
-  /* Smooth horizontal scrolling for movie rows */
-  .movie-row {
-    scroll-behavior: smooth;
-    -webkit-overflow-scrolling: touch;
-  }
-  
-  /* Fix hero section for mobile */
+  /* Hero section mobile optimization */
   .hero-section {
-    max-height: 60vh;
-    min-height: 40vh;
+    touch-action: pan-y;
+    overscroll-behavior: contain;
   }
   
   /* Improve movie section spacing */
@@ -191,6 +158,25 @@ button, [role="button"] {
     min-height: 48px;
     min-width: 48px;
     padding: 12px;
+  }
+  
+  /* Ensure horizontal scrolling works properly */
+  .horizontal-scroll {
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  
+  .horizontal-scroll::-webkit-scrollbar {
+    display: none;
+  }
+  
+  .horizontal-scroll > * {
+    scroll-snap-align: start;
+    flex-shrink: 0;
   }
 }
 
@@ -227,27 +213,34 @@ button, [role="button"] {
 
 @media (max-width: 640px) {
   .responsive-grid {
-    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
     gap: 0.75rem;
   }
 }
 
-/* Ensure proper mobile scrolling behavior */
+/* iOS Safari specific fixes */
 @supports (-webkit-touch-callout: none) {
-  /* iOS specific styles */
   body {
     -webkit-overflow-scrolling: touch;
   }
   
-  /* Fix iOS scroll momentum */
+  /* Fix iOS scroll momentum and prevent bounce */
   .scroll-container {
     -webkit-overflow-scrolling: touch;
     overflow-y: scroll;
+    overscroll-behavior: contain;
+  }
+  
+  /* Hero carousel touch optimization for iOS */
+  .hero-carousel {
+    touch-action: pan-y;
+    -webkit-transform: translateZ(0);
+    transform: translateZ(0);
   }
 }
 
-/* Horizontal scroll improvements for mobile */
-.horizontal-scroll {
+/* Movie row horizontal scroll optimization */
+.movie-row {
   display: flex;
   overflow-x: auto;
   overflow-y: hidden;
@@ -257,27 +250,63 @@ button, [role="button"] {
   -ms-overflow-style: none;
   gap: 0.75rem;
   padding: 0 1rem;
+  scroll-snap-type: x proximity;
 }
 
-.horizontal-scroll::-webkit-scrollbar {
+.movie-row::-webkit-scrollbar {
   display: none;
 }
 
-.horizontal-scroll > * {
+.movie-row > * {
   flex-shrink: 0;
+  scroll-snap-align: start;
 }
 
-/* Mobile-specific movie card sizing */
+/* Mobile-specific improvements */
 @media (max-width: 640px) {
+  /* Ensure proper bottom navigation spacing */
+  .pb-mobile-nav {
+    padding-bottom: calc(96px + env(safe-area-inset-bottom, 0px)) !important;
+  }
+  
+  /* Better hero section for mobile */
+  .hero-section {
+    max-height: 50vh;
+    min-height: 40vh;
+    touch-action: pan-y;
+  }
+  
+  /* Improved movie card sizing */
   .movie-card-mobile {
-    width: 120px;
-    min-width: 120px;
+    width: 160px;
+    min-width: 160px;
+  }
+  
+  /* Better button spacing and sizing */
+  .mobile-button {
+    min-height: 44px;
+    min-width: 44px;
+    font-size: 14px;
+    padding: 8px 16px;
   }
 }
 
 @media (min-width: 641px) and (max-width: 768px) {
   .movie-card-mobile {
-    width: 140px;
-    min-width: 140px;
+    width: 180px;
+    min-width: 180px;
   }
+}
+
+/* Prevent text selection on interactive elements */
+.no-select {
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+/* Smooth transitions for better UX */
+.smooth-transition {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
