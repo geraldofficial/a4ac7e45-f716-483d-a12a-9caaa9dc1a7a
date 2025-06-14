@@ -13,6 +13,8 @@ export type Database = {
         Row: {
           avatar: string | null
           created_at: string
+          email_welcomed: boolean | null
+          full_name: string | null
           genre_preferences: number[] | null
           id: string
           onboarding_completed: boolean | null
@@ -23,6 +25,8 @@ export type Database = {
         Insert: {
           avatar?: string | null
           created_at?: string
+          email_welcomed?: boolean | null
+          full_name?: string | null
           genre_preferences?: number[] | null
           id: string
           onboarding_completed?: boolean | null
@@ -33,6 +37,8 @@ export type Database = {
         Update: {
           avatar?: string | null
           created_at?: string
+          email_welcomed?: boolean | null
+          full_name?: string | null
           genre_preferences?: number[] | null
           id?: string
           onboarding_completed?: boolean | null
