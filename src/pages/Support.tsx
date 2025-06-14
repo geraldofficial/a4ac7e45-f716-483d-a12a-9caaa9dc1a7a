@@ -3,105 +3,19 @@ import { Navbar } from '@/components/Navbar';
 import { Footer } from '@/components/Footer';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Heart, Coffee, Star, Users, Zap, Shield, Loader2, CheckCircle, XCircle } from 'lucide-react';
+import { Heart, Coffee, Star, Users, Zap, Shield, CheckCircle, XCircle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { KeshoPayButton } from 'keshopay-v1';
 
 const Support = () => {
   const { toast } = useToast();
   const [selectedAmount, setSelectedAmount] = useState(5);
-  const [isProcessing, setIsProcessing] = useState(false);
   const [paymentStatus, setPaymentStatus] = useState(null);
 
   const donationAmounts = [5, 10, 25, 50, 100];
 
-  // KeshoPay Configuration - In a real app, these would be environment variables
-  const KESHO_PUBLIC_KEY = process.env.REACT_APP_KESHO_PUBLIC_KEY || 'pk_test_your_public_key';
-  const KESHO_PRIVATE_KEY = process.env.REACT_APP_KESHO_PRIVATE_KEY || 'sk_test_your_private_key';
-  const KESHO_WALLET_APP_ID = '80165'; // Your app ID
-  const KESHO_API_BASE_URL = 'https://api.keshopay.co.ke/api/v1';
-
-  // Create Authorization Key as per KeshoPay documentation
-  const createAuthorizationKey = (publicKey, privateKey, amount, walletId) => {
-    const data = {
-      publicKey,
-      privateKey,
-      amount,
-      walletId,
-      timestamp: Date.now()
-    };
-    const jsonString = JSON.stringify(data);
-    return btoa(jsonString); // Base64 encode
-  };
-
-  const initializeKeshoPayment = async (amount) => {
-    setIsProcessing(true);
-    setPaymentStatus(null);
-
-    try {
-      // Convert USD to KES (approximate rate - in production, use real-time rates)
-      const amountInKES = Math.round(amount * 130); // 1 USD ≈ 130 KES
-      
-      // Create authorization key
-      const authorizationKey = createAuthorizationKey(
-        KESHO_PUBLIC_KEY,
-        KESHO_PRIVATE_KEY,
-        amountInKES,
-        KESHO_WALLET_APP_ID
-      );
-
-      // Generate unique reference
-      const reference = `FLICKPICK-${Date.now()}`;
-
-      // Make payment request to KeshoPay
-      const response = await fetch(`${KESHO_API_BASE_URL}/payment/initiate`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          authorizationKey,
-          amount: amountInKES,
-          reference: reference,
-          redirectUrl: `${window.location.origin}/support?payment=success`,
-          currency: 'KES',
-          phoneNumber: '', // Will be collected by KeshoPay checkout
-          description: `FlickPick Support Donation - ${amount} USD`
-        })
-      });
-
-      const result = await response.json();
-
-      if (result.success && result.data?.checkoutUrl) {
-        // Redirect to KeshoPay checkout
-        window.location.href = result.data.checkoutUrl;
-      } else {
-        throw new Error(result.message || 'Failed to initialize payment');
-      }
-    } catch (error) {
-      console.error('Payment initialization failed:', error);
-      setPaymentStatus('error');
-      setIsProcessing(false);
-      toast({
-        title: "Payment Failed",
-        description: error.message || "Unable to initialize payment. Please try again.",
-        variant: "destructive",
-      });
-    }
-  };
-
-  const handleDonate = async (amount) => {
-    if (amount <= 0) {
-      toast({
-        title: "Invalid Amount",
-        description: "Please enter a valid donation amount.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    // Initialize KeshoPay payment
-    await initializeKeshoPayment(amount);
-  };
+  // KeshoPay Configuration
+  const KESHO_APP_ID = "80165"; // Your app ID
 
   // Check for payment success on component mount
   React.useEffect(() => {
@@ -233,7 +147,6 @@ const Support = () => {
                         variant={selectedAmount === amount ? "default" : "outline"}
                         onClick={() => setSelectedAmount(amount)}
                         className="h-12 text-lg font-semibold"
-                        disabled={isProcessing}
                       >
                         ${amount}
                       </Button>
@@ -255,30 +168,20 @@ const Support = () => {
                           onChange={(e) => setSelectedAmount(parseInt(e.target.value) || 0)}
                           className="pl-8 pr-4 py-2 w-32 bg-background border border-border rounded-lg text-center focus:outline-none focus:ring-2 focus:ring-primary"
                           placeholder="Amount"
-                          disabled={isProcessing}
                         />
                       </div>
                     </div>
 
-                    {/* Donate Button with KeshoPay */}
-                    <Button
-                      onClick={() => handleDonate(selectedAmount)}
-                      size="lg"
-                      className="bg-primary hover:bg-primary/90 text-primary-foreground px-8 py-3 text-lg font-semibold"
-                      disabled={selectedAmount <= 0 || isProcessing}
-                    >
-                      {isProcessing ? (
-                        <>
-                          <Loader2 className="h-5 w-5 mr-2 animate-spin" />
-                          Processing...
-                        </>
-                      ) : (
-                        <>
-                          <Heart className="h-5 w-5 mr-2" />
-                          Donate ${selectedAmount}
-                        </>
-                      )}
-                    </Button>
+                    {/* KeshoPay Button Component */}
+                    <div className="flex justify-center">
+                      <KeshoPayButton
+                        amount={Math.round(selectedAmount * 130)} // Convert USD to KES
+                        reference={`FLICKPICK-${Date.now()}`}
+                        appId={KESHO_APP_ID}
+                        buttonText={`❤️ Donate $${selectedAmount}`}
+                        identifier={`flickpick-user-${Date.now()}`}
+                      />
+                    </div>
                   </div>
 
                   {/* KeshoPay Info */}
