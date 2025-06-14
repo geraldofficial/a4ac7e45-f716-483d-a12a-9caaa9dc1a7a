@@ -113,7 +113,8 @@ class CacheManager {
       
       if ('caches' in window) {
         const imageCache = await caches.open('flickpick-images-v1');
-        await imageCache.clear();
+        const requests = await imageCache.keys();
+        await Promise.all(requests.map(request => imageCache.delete(request)));
       }
     } catch (error) {
       console.error('Error clearing cache:', error);
