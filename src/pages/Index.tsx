@@ -116,10 +116,10 @@ const Index = () => {
       
       <OfflineBanner />
       
-      <div className="min-h-screen bg-background dark overflow-x-hidden">
+      <div className="min-h-screen bg-background">
         <Navbar />
         <PullToRefresh onRefresh={handleRefresh}>
-          <main className={`relative safe-area-top ${topPadding}`}>
+          <div className={`w-full ${topPadding}`}>
             {/* Use Netflix mobile hero on mobile, regular hero on desktop */}
             {isMobile ? <NetflixMobileHero /> : <HeroSection />}
             
@@ -128,7 +128,7 @@ const Index = () => {
             {!isMobile && user && <RecentlyWatched />}
             
             <EnhancedMovieSection />
-          </main>
+          </div>
         </PullToRefresh>
         
         {/* Always show footer */}
