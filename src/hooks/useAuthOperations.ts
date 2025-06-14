@@ -1,5 +1,4 @@
 
-import React from 'react';
 import { toast } from '@/components/ui/sonner';
 import { authApi } from '@/services/auth';
 import { userApi } from '@/services/user';
