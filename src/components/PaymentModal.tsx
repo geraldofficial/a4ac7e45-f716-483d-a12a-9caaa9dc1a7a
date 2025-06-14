@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { CreditCard, Smartphone } from 'lucide-react';
-import { useToast } from '@/components/ui/use-toast';
+import { toast } from '@/components/ui/sonner';
 import { supabase } from '@/integrations/supabase/client';
 
 interface PaymentModalProps {
@@ -25,13 +25,10 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
 }) => {
   const [phoneNumber, setPhoneNumber] = useState('');
   const [loading, setLoading] = useState(false);
-  const { toast } = useToast();
 
   const handlePayment = async () => {
     if (!phoneNumber) {
-      toast({
-        variant: "destructive",
-        title: "Phone number required",
+      toast.error("Phone number required", {
         description: "Please enter your phone number to proceed with payment."
       });
       return;
@@ -59,9 +56,7 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
       }
     } catch (error: any) {
       console.error('Payment error:', error);
-      toast({
-        variant: "destructive",
-        title: "Payment failed",
+      toast.error("Payment failed", {
         description: error.message || "Failed to initiate payment. Please try again."
       });
     } finally {
