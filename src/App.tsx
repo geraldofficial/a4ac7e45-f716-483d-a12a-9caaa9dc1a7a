@@ -8,6 +8,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { BottomNavigation } from "@/components/BottomNavigation";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
+import { LoadingFallback } from "@/components/LoadingFallback";
 import { LoadingWithTimeout } from "@/components/LoadingWithTimeout";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
@@ -51,10 +52,12 @@ const AppContent: React.FC = () => {
   if (loading) {
     return (
       <LoadingWithTimeout 
-        timeout={10000}
+        timeout={15000}
         onTimeout={() => {
-          console.warn('App loading timed out');
+          console.warn('App loading timed out, forcing page reload');
+          window.location.reload();
         }}
+        fallback={<LoadingFallback message="Initializing FlickPick..." />}
       />
     );
   }
@@ -91,15 +94,17 @@ const AppContent: React.FC = () => {
 
 const App: React.FC = () => {
   return (
-    <ErrorBoundary>
+    <ErrorBoundary fallback={<LoadingFallback message="Something went wrong. Please refresh the page." />}>
       <QueryClientProvider client={queryClient}>
         <TooltipProvider>
           <Toaster />
           <Sonner />
           <BrowserRouter>
-            <AuthProvider>
-              <AppContent />
-            </AuthProvider>
+            <ErrorBoundary fallback={<LoadingFallback message="Authentication error. Please refresh the page." />}>
+              <AuthProvider>
+                <AppContent />
+              </AuthProvider>
+            </ErrorBoundary>
           </BrowserRouter>
         </TooltipProvider>
       </QueryClientProvider>

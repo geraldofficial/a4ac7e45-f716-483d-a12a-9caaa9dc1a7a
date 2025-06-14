@@ -1,4 +1,3 @@
-
 import React, { createContext, useState, useEffect, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from "@/components/ui/use-toast";
@@ -42,11 +41,15 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 // Cleanup function to clear auth state
 const cleanupAuthState = () => {
-  Object.keys(localStorage).forEach((key) => {
-    if (key.startsWith('supabase.auth.') || key.includes('sb-')) {
-      localStorage.removeItem(key);
-    }
-  });
+  try {
+    Object.keys(localStorage).forEach((key) => {
+      if (key.startsWith('supabase.auth.') || key.includes('sb-')) {
+        localStorage.removeItem(key);
+      }
+    });
+  } catch (error) {
+    console.error('Error cleaning up auth state:', error);
+  }
 };
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -60,6 +63,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     
     const initializeAuth = async () => {
       try {
+        console.log('Initializing auth...');
+        
         // Set up auth state listener first
         const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
           console.log('Auth state changed:', event, session?.user?.id);
@@ -67,6 +72,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           if (!mounted) return;
           
           if (event === 'SIGNED_IN' && session?.user) {
+            console.log('User signed in, fetching profile...');
             // Use setTimeout to prevent deadlock
             setTimeout(async () => {
               try {
@@ -89,6 +95,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
               }
             }, 0);
           } else if (event === 'SIGNED_OUT') {
+            console.log('User signed out');
             setUser(null);
           }
           
@@ -97,28 +104,40 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           }
         });
 
-        // Then check for existing session
-        const { data: { session }, error } = await supabase.auth.getSession();
-        
-        if (error) {
-          console.error("Session check failed:", error);
-        }
-        
-        if (mounted && session?.user) {
-          try {
-            const profile = await userApi.getUserProfile(session.user.id);
-            setUser({
-              id: session.user.id,
-              email: session.user.email,
-              ...profile,
-            });
-          } catch (error) {
-            console.error("Error fetching user profile:", error);
-            setUser({
-              id: session.user.id,
-              email: session.user.email,
-            });
+        // Then check for existing session with error handling
+        try {
+          const { data: { session }, error } = await supabase.auth.getSession();
+          
+          if (error) {
+            console.error("Session check failed:", error);
+            // Clear potentially corrupted session data
+            cleanupAuthState();
+          } else if (session?.user) {
+            console.log('Found existing session for user:', session.user.id);
+            try {
+              const profile = await userApi.getUserProfile(session.user.id);
+              if (mounted) {
+                setUser({
+                  id: session.user.id,
+                  email: session.user.email,
+                  ...profile,
+                });
+              }
+            } catch (error) {
+              console.error("Error fetching user profile:", error);
+              if (mounted) {
+                setUser({
+                  id: session.user.id,
+                  email: session.user.email,
+                });
+              }
+            }
+          } else {
+            console.log('No existing session found');
           }
+        } catch (sessionError) {
+          console.error("Critical session error:", sessionError);
+          cleanupAuthState();
         }
         
         if (mounted) {
