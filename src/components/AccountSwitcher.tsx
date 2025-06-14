@@ -11,14 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Users, Plus, Baby, User, Shield } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
-
-interface SubAccount {
-  id: string;
-  name: string;
-  avatar: string;
-  type: 'adult' | 'teen' | 'kids';
-  isActive: boolean;
-}
+import { SubAccount } from '@/types/user';
 
 export const AccountSwitcher = () => {
   const { user, updateProfile } = useAuth();
@@ -28,7 +21,9 @@ export const AccountSwitcher = () => {
   const [newAccountType, setNewAccountType] = useState<'adult' | 'teen' | 'kids'>('adult');
   
   // Get sub-accounts from user profile or default to empty array
-  const subAccounts: SubAccount[] = user?.sub_accounts || [];
+  const userSubAccounts = (user as any)?.sub_accounts || [];
+  const subAccounts: SubAccount[] = Array.isArray(userSubAccounts) ? userSubAccounts : [];
+  
   const activeAccount = subAccounts.find(acc => acc.isActive) || {
     id: 'main',
     name: user?.name || user?.username || 'Main Profile',
@@ -57,7 +52,10 @@ export const AccountSwitcher = () => {
 
     try {
       const updatedSubAccounts = [...subAccounts, newAccount];
-      await updateProfile({ sub_accounts: updatedSubAccounts });
+      await updateProfile({ 
+        sub_accounts: updatedSubAccounts,
+        active_account_type: newAccountType
+      } as any);
       
       setNewAccountName('');
       setNewAccountType('adult');
@@ -83,14 +81,18 @@ export const AccountSwitcher = () => {
         isActive: acc.id === accountId
       }));
       
+      const accountType = accountId === 'main' ? 'adult' : updatedSubAccounts.find(acc => acc.id === accountId)?.type || 'adult';
+      
       await updateProfile({ 
         sub_accounts: updatedSubAccounts,
-        active_account_type: accountId === 'main' ? 'adult' : updatedSubAccounts.find(acc => acc.id === accountId)?.type || 'adult'
-      });
+        active_account_type: accountType
+      } as any);
+      
+      const accountName = accountId === 'main' ? 'Main Profile' : updatedSubAccounts.find(acc => acc.id === accountId)?.name;
       
       toast({
         title: "Profile switched",
-        description: `Switched to ${accountId === 'main' ? 'Main Profile' : updatedSubAccounts.find(acc => acc.id === accountId)?.name}`,
+        description: `Switched to ${accountName}`,
       });
       
       // Refresh the page to apply content filtering
@@ -146,7 +148,7 @@ export const AccountSwitcher = () => {
           <Users className="h-4 w-4 ml-2" />
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent className="w-64" align="end">
+      <DropdownMenuContent className="w-64 bg-background border" align="end">
         {/* Main Account */}
         <DropdownMenuItem 
           onClick={() => handleSwitchAccount('main')}
@@ -195,7 +197,7 @@ export const AccountSwitcher = () => {
               Add New Profile
             </DropdownMenuItem>
           </DialogTrigger>
-          <DialogContent>
+          <DialogContent className="bg-background">
             <DialogHeader>
               <DialogTitle>Create New Profile</DialogTitle>
             </DialogHeader>

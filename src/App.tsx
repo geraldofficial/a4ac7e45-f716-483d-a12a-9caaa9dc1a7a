@@ -1,5 +1,4 @@
 
-
 import { Suspense, lazy } from "react";
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -34,39 +33,41 @@ const queryClient = new QueryClient({
   },
 });
 
-const App = () => (
-  <HelmetProvider>
-    <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        <Toaster />
+const App = () => {
+  return (
+    <HelmetProvider>
+      <QueryClientProvider client={queryClient}>
         <BrowserRouter>
           <AuthProvider>
-            <ScrollToTop />
-            <ErrorBoundary>
-              <Suspense fallback={<ProductionLoadingSpinner />}>
-                <Routes>
-                  <Route path="/" element={<Index />} />
-                  <Route path="/movie/:id" element={<DetailPage />} />
-                  <Route path="/tv/:id" element={<DetailPage />} />
-                  <Route path="/search" element={<Search />} />
-                  <Route path="/browse" element={<Browse />} />
-                  <Route path="/watchlist" element={<Watchlist />} />
-                  <Route path="/onboarding" element={<Onboarding />} />
-                  <Route path="/auth" element={<Auth />} />
-                  <Route path="/profile" element={<Profile />} />
-                  <Route path="/support" element={<Support />} />
-                  <Route path="/trending" element={<Trending />} />
-                  <Route path="/top-rated" element={<TopRated />} />
-                  <Route path="/history" element={<History />} />
-                  <Route path="*" element={<NotFound />} />
-                </Routes>
-              </Suspense>
-            </ErrorBoundary>
+            <TooltipProvider>
+              <ScrollToTop />
+              <ErrorBoundary>
+                <Suspense fallback={<ProductionLoadingSpinner />}>
+                  <Routes>
+                    <Route path="/" element={<Index />} />
+                    <Route path="/movie/:id" element={<DetailPage />} />
+                    <Route path="/tv/:id" element={<DetailPage />} />
+                    <Route path="/search" element={<Search />} />
+                    <Route path="/browse" element={<Browse />} />
+                    <Route path="/watchlist" element={<Watchlist />} />
+                    <Route path="/onboarding" element={<Onboarding />} />
+                    <Route path="/auth" element={<Auth />} />
+                    <Route path="/profile" element={<Profile />} />
+                    <Route path="/support" element={<Support />} />
+                    <Route path="/trending" element={<Trending />} />
+                    <Route path="/top-rated" element={<TopRated />} />
+                    <Route path="/history" element={<History />} />
+                    <Route path="*" element={<NotFound />} />
+                  </Routes>
+                </Suspense>
+              </ErrorBoundary>
+              <Toaster />
+            </TooltipProvider>
           </AuthProvider>
         </BrowserRouter>
-      </TooltipProvider>
-    </QueryClientProvider>
-  </HelmetProvider>
-);
+      </QueryClientProvider>
+    </HelmetProvider>
+  );
+};
 
 export default App;
