@@ -149,8 +149,17 @@ export const Navbar = () => {
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" className="relative h-8 w-8 rounded-full" style={{ touchAction: 'manipulation' }}>
                     <Avatar className="h-8 w-8">
-                      <AvatarImage src={user.avatar || user.avatar_url || user.image} alt={user.name || user.username || 'User'} />
-                      <AvatarFallback>{(user.name || user.username || 'U').charAt(0)}</AvatarFallback>
+                      <AvatarImage 
+                        src={user.avatar || user.avatar_url || user.image} 
+                        alt={user.name || user.username || 'User'} 
+                        onError={(e) => {
+                          // Fallback if image fails to load
+                          e.currentTarget.style.display = 'none';
+                        }}
+                      />
+                      <AvatarFallback>
+                        {(user.name || user.username || user.email || 'U').charAt(0).toUpperCase()}
+                      </AvatarFallback>
                     </Avatar>
                   </Button>
                 </DropdownMenuTrigger>
