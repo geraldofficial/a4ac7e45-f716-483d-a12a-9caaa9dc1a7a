@@ -6,18 +6,34 @@ import { tmdbApi, Movie } from '@/services/tmdb';
 import { useNavigate } from 'react-router-dom';
 
 interface SearchSuggestionsProps {
+  query?: string;
+  onSelect?: (item: Movie) => void;
   onClose?: () => void;
   className?: string;
+  isMobile?: boolean;
 }
 
-export const SearchSuggestions: React.FC<SearchSuggestionsProps> = ({ onClose, className }) => {
-  const [query, setQuery] = useState('');
+export const SearchSuggestions: React.FC<SearchSuggestionsProps> = ({ 
+  query: externalQuery,
+  onSelect,
+  onClose, 
+  className,
+  isMobile = false
+}) => {
+  const [query, setQuery] = useState(externalQuery || '');
   const [suggestions, setSuggestions] = useState<Movie[]>([]);
   const [loading, setLoading] = useState(false);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const navigate = useNavigate();
   const inputRef = useRef<HTMLInputElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+
+  // Update internal query when external query changes
+  useEffect(() => {
+    if (externalQuery !== undefined) {
+      setQuery(externalQuery);
+    }
+  }, [externalQuery]);
 
   // Haptic feedback function
   const triggerHaptic = () => {
@@ -61,8 +77,12 @@ export const SearchSuggestions: React.FC<SearchSuggestionsProps> = ({ onClose, c
 
   const handleSuggestionClick = (item: Movie) => {
     triggerHaptic();
-    const type = item.title ? 'movie' : 'tv';
-    navigate(`/${type}/${item.id}`);
+    if (onSelect) {
+      onSelect(item);
+    } else {
+      const type = item.title ? 'movie' : 'tv';
+      navigate(`/${type}/${item.id}`);
+    }
     setShowSuggestions(false);
     setQuery('');
     onClose?.();
@@ -84,6 +104,44 @@ export const SearchSuggestions: React.FC<SearchSuggestionsProps> = ({ onClose, c
       ? `https://image.tmdb.org/t/p/w92${posterPath}`
       : 'https://images.unsplash.com/photo-1489599904276-39c2bb2d7b64?w=92&h=138&fit=crop';
   };
+
+  // If external query is provided, don't show the input (controlled mode)
+  if (externalQuery !== undefined && showSuggestions) {
+    return (
+      <div className={`absolute top-full left-0 right-0 mt-2 bg-background/95 backdrop-blur-3xl border border-border/70 rounded-2xl shadow-2xl z-[99999] max-h-[60vh] overflow-y-auto ${isMobile ? 'mx-0' : ''}`}>
+        {loading ? (
+          <div className="p-4 text-center text-muted-foreground text-sm">Searching...</div>
+        ) : suggestions.length > 0 ? (
+          suggestions.slice(0, 8).map((item) => (
+            <button
+              key={item.id}
+              onClick={() => handleSuggestionClick(item)}
+              className="w-full flex items-center gap-3 p-4 hover:bg-background/70 transition-all duration-200 text-left first:rounded-t-2xl last:rounded-b-2xl min-h-[64px] backdrop-blur-sm"
+            >
+              <img
+                src={getPosterUrl(item.poster_path)}
+                alt={item.title || item.name}
+                className="w-12 h-16 object-cover rounded-lg flex-shrink-0 shadow-md"
+              />
+              <div className="flex-1 min-w-0">
+                <p className="text-foreground font-medium truncate text-sm">
+                  {item.title || item.name}
+                </p>
+                <p className="text-muted-foreground text-xs">
+                  {item.title ? 'Movie' : 'TV Show'} • {item.release_date || item.first_air_date ? new Date(item.release_date || item.first_air_date!).getFullYear() : 'N/A'}
+                </p>
+                <p className="text-muted-foreground text-xs">
+                  ⭐ {item.vote_average.toFixed(1)}
+                </p>
+              </div>
+            </button>
+          ))
+        ) : query && !loading ? (
+          <div className="p-4 text-center text-muted-foreground text-sm">No results found</div>
+        ) : null}
+      </div>
+    );
+  }
 
   return (
     <div ref={containerRef} className={`relative ${className}`}>
