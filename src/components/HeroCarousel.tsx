@@ -1,157 +1,153 @@
 
 import React, { useState, useEffect } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { tmdbApi } from '@/services/tmdb';
+import { Play, Plus, Info, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
-import { Play, Plus, Star, Info } from 'lucide-react';
-import { tmdbApi, Movie } from '@/services/tmdb';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
-import { useToast } from '@/hooks/use-toast';
 
 export const HeroCarousel = () => {
-  const [movies, setMovies] = useState<Movie[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [currentSlide, setCurrentSlide] = useState(0);
   const navigate = useNavigate();
   const { user, addToWatchlist, isInWatchlist } = useAuth();
-  const { toast } = useToast();
+
+  const { data: movies, isLoading } = useQuery({
+    queryKey: ['trending-movies'],
+    queryFn: () => tmdbApi.getTrending('movie', 'day'),
+    staleTime: 10 * 60 * 1000,
+  });
+
+  const featuredMovies = movies?.slice(0, 5) || [];
 
   useEffect(() => {
-    fetchPopularMovies();
-  }, []);
+    if (featuredMovies.length === 0) return;
 
-  const fetchPopularMovies = async () => {
-    try {
-      const popularMoviesResponse = await tmdbApi.getPopularMovies();
-      setMovies(popularMoviesResponse.results.slice(0, 5));
-    } catch (error) {
-      console.error('Error fetching popular movies:', error);
-    } finally {
-      setLoading(false);
-    }
+    const timer = setInterval(() => {
+      setCurrentSlide((prev) => (prev + 1) % featuredMovies.length);
+    }, 6000);
+
+    return () => clearInterval(timer);
+  }, [featuredMovies.length]);
+
+  const nextSlide = () => {
+    setCurrentSlide((prev) => (prev + 1) % featuredMovies.length);
   };
 
-  const handleWatchClick = (movie: Movie) => {
-    const type = movie.title ? 'movie' : 'tv';
-    navigate(`/${type}/${movie.id}`);
+  const prevSlide = () => {
+    setCurrentSlide((prev) => (prev - 1 + featuredMovies.length) % featuredMovies.length);
   };
 
-  const handleWatchlistClick = (movie: Movie) => {
+  const handleWatchMovie = (movieId: number) => {
+    navigate(`/movie/${movieId}`);
+  };
+
+  const handleAddToWatchlist = async (movieId: number) => {
     if (!user) {
-      toast({
-        title: "Sign in required",
-        description: "Please sign in to add items to your watchlist.",
-        variant: "destructive",
-      });
+      navigate('/auth');
       return;
     }
-
-    const title = movie.title || movie.name || 'Unknown Title';
-    addToWatchlist(movie.id);
-    toast({
-      title: "Added to watchlist",
-      description: `${title} has been added to your watchlist.`,
-    });
+    await addToWatchlist(movieId);
   };
 
-  if (loading) {
+  if (isLoading || featuredMovies.length === 0) {
     return (
-      <section className="relative w-full h-screen flex items-center justify-center bg-background">
-        <div className="text-foreground text-xl">Loading...</div>
-      </section>
+      <div className="relative h-[70vh] bg-gradient-to-r from-purple-900 to-blue-900 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white"></div>
+      </div>
     );
   }
 
-  return (
-    <section className="relative w-full h-screen overflow-hidden">
-      <Carousel className="w-full h-full" opts={{ align: "start", loop: true }}>
-        <CarouselContent className="h-full m-0">
-          {movies.map((movie) => {
-            const title = movie.title || movie.name || 'Unknown Title';
-            const backdropUrl = movie.backdrop_path 
-              ? `https://image.tmdb.org/t/p/original${movie.backdrop_path}`
-              : 'https://images.unsplash.com/photo-1489599904276-39c2bb2d7b64?w=1920&h=1080&fit=crop';
+  const currentMovie = featuredMovies[currentSlide];
 
-            return (
-              <CarouselItem key={movie.id} className="h-full p-0 basis-full">
-                <div className="relative w-full h-screen">
-                  <div 
-                    className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-                    style={{ backgroundImage: `url(${backdropUrl})` }}
-                  >
-                    <div className="absolute inset-0 bg-gradient-to-r from-black/90 via-black/60 to-black/20" />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
-                  </div>
-                  
-                  <div className="relative z-10 container mx-auto px-4 sm:px-6 lg:px-8 h-full flex items-center">
-                    <div className="max-w-4xl text-white pt-16 sm:pt-20">
-                      <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold mb-4 sm:mb-6 leading-tight animate-fade-in">
-                        {title}
-                      </h1>
-                      
-                      <div className="flex flex-wrap items-center gap-3 sm:gap-4 lg:gap-6 mb-4 sm:mb-6">
-                        <div className="flex items-center gap-2">
-                          <Star className="h-5 w-5 sm:h-6 sm:w-6 text-yellow-400 fill-current" />
-                          <span className="text-lg sm:text-xl font-semibold">{movie.vote_average.toFixed(1)}</span>
-                        </div>
-                        
-                        {(movie.release_date || movie.first_air_date) && (
-                          <span className="text-base sm:text-lg font-medium">
-                            {new Date(movie.release_date || movie.first_air_date || '').getFullYear()}
-                          </span>
-                        )}
-                        
-                        <span className="px-2 sm:px-3 py-1 bg-primary/20 backdrop-blur-sm rounded-full text-xs sm:text-sm font-medium border border-primary/30">
-                          {movie.title ? 'Movie' : 'TV Series'}
-                        </span>
-                      </div>
-                      
-                      <p className="text-gray-200 text-sm sm:text-base lg:text-lg leading-relaxed mb-6 sm:mb-8 max-w-2xl line-clamp-3">
-                        {movie.overview}
-                      </p>
-                      
-                      <div className="flex flex-col sm:flex-row flex-wrap gap-3 sm:gap-4 animate-fade-in">
-                        <Button 
-                          onClick={() => handleWatchClick(movie)}
-                          size="lg"
-                          className="bg-primary hover:bg-primary/90 text-primary-foreground px-6 sm:px-8 py-2 sm:py-3 text-base sm:text-lg font-semibold w-full sm:w-auto"
-                        >
-                          <Play className="h-5 w-5 sm:h-6 sm:w-6 mr-2 fill-current" />
-                          Watch Now
-                        </Button>
-                        
-                        <Button
-                          onClick={() => handleWatchClick(movie)}
-                          variant="outline"
-                          size="lg"
-                          className="border-white/30 text-white hover:bg-white/10 backdrop-blur-sm px-6 sm:px-8 py-2 sm:py-3 text-base sm:text-lg font-semibold w-full sm:w-auto"
-                        >
-                          <Info className="h-5 w-5 sm:h-6 sm:w-6 mr-2" />
-                          More Info
-                        </Button>
-                        
-                        {user && !isInWatchlist(movie.id) && (
-                          <Button
-                            onClick={() => handleWatchlistClick(movie)}
-                            variant="outline"
-                            size="lg"
-                            className="border-white/30 text-white hover:bg-white/10 backdrop-blur-sm px-6 sm:px-8 py-2 sm:py-3 text-base sm:text-lg font-semibold w-full sm:w-auto"
-                          >
-                            <Plus className="h-5 w-5 sm:h-6 sm:w-6 mr-2" />
-                            My List
-                          </Button>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </CarouselItem>
-            );
-          })}
-        </CarouselContent>
-        
-        <CarouselPrevious className="left-2 sm:left-6 h-10 w-10 sm:h-12 sm:w-12 border-white/30 text-white hover:bg-white/10 backdrop-blur-sm" />
-        <CarouselNext className="right-2 sm:right-6 h-10 w-10 sm:h-12 sm:w-12 border-white/30 text-white hover:bg-white/10 backdrop-blur-sm" />
-      </Carousel>
-    </section>
+  return (
+    <div className="relative h-[70vh] md:h-[80vh] overflow-hidden">
+      {/* Background Image */}
+      <div className="absolute inset-0">
+        <img
+          src={`https://image.tmdb.org/t/p/original${currentMovie.backdrop_path}`}
+          alt={currentMovie.title}
+          className="w-full h-full object-cover"
+        />
+        <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/40 to-transparent"></div>
+        <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
+      </div>
+
+      {/* Navigation Arrows */}
+      <button
+        onClick={prevSlide}
+        className="absolute left-4 top-1/2 transform -translate-y-1/2 z-10 p-2 rounded-full bg-black/50 hover:bg-black/70 transition-all"
+      >
+        <ChevronLeft className="h-6 w-6 text-white" />
+      </button>
+      <button
+        onClick={nextSlide}
+        className="absolute right-4 top-1/2 transform -translate-y-1/2 z-10 p-2 rounded-full bg-black/50 hover:bg-black/70 transition-all"
+      >
+        <ChevronRight className="h-6 w-6 text-white" />
+      </button>
+
+      {/* Content */}
+      <div className="relative z-10 h-full flex items-center">
+        <div className="container mx-auto px-4 md:px-8">
+          <div className="max-w-2xl space-y-6">
+            <h1 className="text-4xl md:text-6xl font-bold text-white leading-tight">
+              {currentMovie.title}
+            </h1>
+            <p className="text-lg md:text-xl text-white/90 leading-relaxed line-clamp-3">
+              {currentMovie.overview}
+            </p>
+            
+            <div className="flex items-center space-x-4 text-white/80">
+              <span className="bg-yellow-500 text-black px-2 py-1 rounded text-sm font-semibold">
+                ★ {currentMovie.vote_average?.toFixed(1)}
+              </span>
+              <span>{new Date(currentMovie.release_date).getFullYear()}</span>
+            </div>
+
+            <div className="flex flex-col sm:flex-row gap-4">
+              <Button
+                onClick={() => handleWatchMovie(currentMovie.id)}
+                className="bg-white text-black hover:bg-white/90 px-8 py-3 text-lg font-semibold"
+              >
+                <Play className="mr-2 h-5 w-5 fill-current" />
+                Watch Now
+              </Button>
+              
+              <Button
+                onClick={() => handleAddToWatchlist(currentMovie.id)}
+                variant="outline"
+                className="border-white/30 text-white hover:bg-white/10 px-8 py-3 text-lg"
+              >
+                <Plus className="mr-2 h-5 w-5" />
+                {user && isInWatchlist(currentMovie.id) ? 'In Watchlist' : 'Add to Watchlist'}
+              </Button>
+              
+              <Button
+                onClick={() => navigate(`/movie/${currentMovie.id}`)}
+                variant="outline"
+                className="border-white/30 text-white hover:bg-white/10 px-8 py-3 text-lg"
+              >
+                <Info className="mr-2 h-5 w-5" />
+                More Info
+              </Button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Slide Indicators */}
+      <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 flex space-x-2">
+        {featuredMovies.map((_, index) => (
+          <button
+            key={index}
+            onClick={() => setCurrentSlide(index)}
+            className={`w-3 h-3 rounded-full transition-all ${
+              index === currentSlide ? 'bg-white' : 'bg-white/40'
+            }`}
+          />
+        ))}
+      </div>
+    </div>
   );
 };

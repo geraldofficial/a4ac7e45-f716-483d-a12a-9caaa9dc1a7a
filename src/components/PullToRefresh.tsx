@@ -1,39 +1,97 @@
 
-import React from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { RefreshCw } from 'lucide-react';
-import { usePullToRefresh } from '@/hooks/usePullToRefresh';
 
 interface PullToRefreshProps {
-  onRefresh: () => Promise<void> | void;
+  onRefresh: () => Promise<void>;
   children: React.ReactNode;
-  className?: string;
+  threshold?: number;
 }
 
-export const PullToRefresh: React.FC<PullToRefreshProps> = ({ onRefresh, children, className = '' }) => {
-  const { bind, isPulling, isRefreshing, pullDistance, shouldRefresh } = usePullToRefresh({ onRefresh });
+export const PullToRefresh: React.FC<PullToRefreshProps> = ({
+  onRefresh,
+  children,
+  threshold = 80
+}) => {
+  const [isPulling, setIsPulling] = useState(false);
+  const [pullDistance, setPullDistance] = useState(0);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const startY = useRef(0);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+
+    let startY = 0;
+    let currentY = 0;
+
+    const handleTouchStart = (e: TouchEvent) => {
+      if (container.scrollTop === 0) {
+        startY = e.touches[0].clientY;
+        setIsPulling(true);
+      }
+    };
+
+    const handleTouchMove = (e: TouchEvent) => {
+      if (!isPulling || container.scrollTop > 0) return;
+
+      currentY = e.touches[0].clientY;
+      const distance = Math.max(0, (currentY - startY) * 0.5);
+      setPullDistance(distance);
+
+      if (distance > 0) {
+        e.preventDefault();
+      }
+    };
+
+    const handleTouchEnd = async () => {
+      if (!isPulling) return;
+
+      setIsPulling(false);
+
+      if (pullDistance > threshold) {
+        setIsRefreshing(true);
+        try {
+          await onRefresh();
+        } finally {
+          setIsRefreshing(false);
+        }
+      }
+
+      setPullDistance(0);
+    };
+
+    container.addEventListener('touchstart', handleTouchStart, { passive: true });
+    container.addEventListener('touchmove', handleTouchMove, { passive: false });
+    container.addEventListener('touchend', handleTouchEnd, { passive: true });
+
+    return () => {
+      container.removeEventListener('touchstart', handleTouchStart);
+      container.removeEventListener('touchmove', handleTouchMove);
+      container.removeEventListener('touchend', handleTouchEnd);
+    };
+  }, [isPulling, pullDistance, threshold, onRefresh]);
 
   return (
-    <div {...bind()} className={`relative ${className}`} style={{ touchAction: 'pan-y' }}>
-      {/* Pull to refresh indicator */}
-      <div 
-        className="absolute top-0 left-0 right-0 flex items-center justify-center transition-all duration-200 z-10"
-        style={{
-          transform: `translateY(${Math.min(pullDistance - 60, 0)}px)`,
-          opacity: isPulling ? 1 : 0
-        }}
-      >
-        <div className={`bg-background/90 backdrop-blur-sm border border-border rounded-full p-3 shadow-lg transition-all duration-200 ${shouldRefresh ? 'scale-110 bg-primary/10' : ''}`}>
-          <RefreshCw 
-            className={`h-5 w-5 transition-all duration-200 ${
-              isRefreshing ? 'animate-spin text-primary' : 
-              shouldRefresh ? 'text-primary scale-110' : 'text-muted-foreground'
-            }`} 
-          />
+    <div ref={containerRef} className="relative overflow-auto h-full">
+      {(isPulling || isRefreshing) && (
+        <div 
+          className="absolute top-0 left-0 right-0 flex items-center justify-center bg-background/90 backdrop-blur-sm z-10 transition-all duration-200"
+          style={{ 
+            height: `${Math.min(pullDistance, threshold)}px`,
+            transform: `translateY(-${Math.max(0, threshold - pullDistance)}px)`
+          }}
+        >
+          <div className="flex items-center space-x-2 text-primary">
+            <RefreshCw className={`h-5 w-5 ${isRefreshing ? 'animate-spin' : ''}`} />
+            <span className="text-sm font-medium">
+              {isRefreshing ? 'Refreshing...' : pullDistance > threshold ? 'Release to refresh' : 'Pull to refresh'}
+            </span>
+          </div>
         </div>
-      </div>
-
-      {/* Content */}
-      <div style={{ transform: `translateY(${isPulling ? Math.min(pullDistance * 0.5, 40) : 0}px)` }}>
+      )}
+      <div style={{ transform: `translateY(${Math.min(pullDistance, threshold)}px)` }}>
         {children}
       </div>
     </div>

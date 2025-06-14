@@ -1,243 +1,75 @@
 
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { tmdbApi } from '@/services/tmdb';
 import { Search } from 'lucide-react';
-import { Input } from '@/components/ui/input';
-import { tmdbApi, Movie } from '@/services/tmdb';
-import { useNavigate } from 'react-router-dom';
 
 interface SearchSuggestionsProps {
-  query?: string;
-  onSelect?: (item: Movie) => void;
-  onClose?: () => void;
-  className?: string;
+  query: string;
+  onSelect: (item: any) => void;
+  onClose: () => void;
   isMobile?: boolean;
 }
 
-export const SearchSuggestions: React.FC<SearchSuggestionsProps> = ({ 
-  query: externalQuery,
+export const SearchSuggestions: React.FC<SearchSuggestionsProps> = ({
+  query,
   onSelect,
-  onClose, 
-  className,
+  onClose,
   isMobile = false
 }) => {
-  const [query, setQuery] = useState(externalQuery || '');
-  const [suggestions, setSuggestions] = useState<Movie[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [showSuggestions, setShowSuggestions] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const navigate = useNavigate();
-  const inputRef = useRef<HTMLInputElement>(null);
-  const containerRef = useRef<HTMLDivElement>(null);
-  const debounceRef = useRef<NodeJS.Timeout>();
+  const { data: results, isLoading } = useQuery({
+    queryKey: ['search', query],
+    queryFn: () => tmdbApi.searchMulti(query),
+    enabled: query.length > 2,
+    staleTime: 2 * 60 * 1000,
+  });
 
-  // Update internal query when external query changes
-  useEffect(() => {
-    if (externalQuery !== undefined) {
-      setQuery(externalQuery);
-    }
-  }, [externalQuery]);
+  if (query.length <= 2) return null;
 
-  // Haptic feedback function with browser compatibility check
-  const triggerHaptic = useCallback(() => {
-    try {
-      if (navigator.vibrate && typeof navigator.vibrate === 'function') {
-        navigator.vibrate(30);
-      }
-    } catch (e) {
-      // Ignore vibration errors on unsupported browsers
-    }
-  }, []);
-
-  // Debounced search function
-  const debouncedSearch = useCallback(async (searchQuery: string) => {
-    if (!searchQuery.trim()) {
-      setSuggestions([]);
-      setShowSuggestions(false);
-      setError(null);
-      return;
-    }
-
-    setLoading(true);
-    setError(null);
-    
-    try {
-      const results = await tmdbApi.searchSuggestions(searchQuery);
-      setSuggestions(results);
-      setShowSuggestions(true);
-    } catch (error) {
-      console.error('Error fetching suggestions:', error);
-      setError('Failed to load suggestions');
-      setSuggestions([]);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    // Clear previous timeout
-    if (debounceRef.current) {
-      clearTimeout(debounceRef.current);
-    }
-
-    // Set new timeout
-    debounceRef.current = setTimeout(() => {
-      debouncedSearch(query);
-    }, 300);
-
-    return () => {
-      if (debounceRef.current) {
-        clearTimeout(debounceRef.current);
-      }
-    };
-  }, [query, debouncedSearch]);
-
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
-        setShowSuggestions(false);
-      }
-    };
-
-    const handleEscape = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') {
-        setShowSuggestions(false);
-        onClose?.();
-      }
-    };
-
-    document.addEventListener('mousedown', handleClickOutside);
-    document.addEventListener('keydown', handleEscape);
-    
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-      document.removeEventListener('keydown', handleEscape);
-    };
-  }, [onClose]);
-
-  const handleSuggestionClick = (item: Movie) => {
-    triggerHaptic();
-    if (onSelect) {
-      onSelect(item);
-    } else {
-      const type = item.title ? 'movie' : 'tv';
-      navigate(`/${type}/${item.id}`);
-    }
-    setShowSuggestions(false);
-    setQuery('');
-    onClose?.();
-  };
-
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    triggerHaptic();
-    if (query.trim()) {
-      navigate(`/search?q=${encodeURIComponent(query.trim())}`);
-      setShowSuggestions(false);
-      setQuery('');
-      onClose?.();
-    }
-  };
-
-  const getPosterUrl = (posterPath: string) => {
-    return posterPath 
-      ? `https://image.tmdb.org/t/p/w92${posterPath}`
-      : 'https://images.unsplash.com/photo-1489599904276-39c2bb2d7b64?w=92&h=138&fit=crop';
-  };
-
-  // If external query is provided, don't show the input (controlled mode)
-  if (externalQuery !== undefined && showSuggestions) {
-    return (
-      <div className={`absolute top-full left-0 right-0 mt-2 bg-background/95 backdrop-blur-3xl border border-border/70 rounded-2xl shadow-2xl z-[99999] max-h-[60vh] overflow-y-auto ${isMobile ? 'mx-0' : ''}`}>
-        {loading ? (
-          <div className="p-4 text-center text-muted-foreground text-sm">Searching...</div>
-        ) : error ? (
-          <div className="p-4 text-center text-red-500 text-sm">{error}</div>
-        ) : suggestions.length > 0 ? (
-          suggestions.slice(0, 8).map((item) => (
+  return (
+    <div className={`absolute z-50 w-full bg-background/95 backdrop-blur-3xl border border-border/50 rounded-xl shadow-2xl mt-2 max-h-96 overflow-y-auto ${isMobile ? 'mt-4' : ''}`}>
+      {isLoading ? (
+        <div className="p-4 text-center text-muted-foreground">
+          <div className="flex items-center justify-center space-x-2">
+            <div className="animate-spin h-4 w-4 border-2 border-primary/20 border-t-primary rounded-full"></div>
+            <span>Searching...</span>
+          </div>
+        </div>
+      ) : results && results.length > 0 ? (
+        <div className="py-2">
+          {results.slice(0, 8).map((item) => (
             <button
-              key={item.id}
-              onClick={() => handleSuggestionClick(item)}
-              className="w-full flex items-center gap-3 p-4 hover:bg-background/70 transition-all duration-200 text-left first:rounded-t-2xl last:rounded-b-2xl min-h-[64px] backdrop-blur-sm focus:bg-background/70 focus:outline-none"
-              tabIndex={0}
+              key={`${item.id}-${item.media_type}`}
+              onClick={() => onSelect(item)}
+              className="w-full px-4 py-3 text-left hover:bg-muted/50 transition-colors flex items-center space-x-3"
             >
-              <img
-                src={getPosterUrl(item.poster_path)}
-                alt={item.title || item.name}
-                className="w-12 h-16 object-cover rounded-lg flex-shrink-0 shadow-md"
-                loading="lazy"
-              />
+              <div className="flex-shrink-0">
+                {item.poster_path ? (
+                  <img
+                    src={`https://image.tmdb.org/t/p/w92${item.poster_path}`}
+                    alt={item.title || item.name}
+                    className="w-10 h-15 object-cover rounded"
+                  />
+                ) : (
+                  <div className="w-10 h-15 bg-muted rounded flex items-center justify-center">
+                    <Search className="h-4 w-4 text-muted-foreground" />
+                  </div>
+                )}
+              </div>
               <div className="flex-1 min-w-0">
-                <p className="text-foreground font-medium truncate text-sm">
+                <p className="font-medium text-foreground truncate">
                   {item.title || item.name}
                 </p>
-                <p className="text-muted-foreground text-xs">
-                  {item.title ? 'Movie' : 'TV Show'} • {item.release_date || item.first_air_date ? new Date(item.release_date || item.first_air_date!).getFullYear() : 'N/A'}
-                </p>
-                <p className="text-muted-foreground text-xs">
-                  ⭐ {item.vote_average ? item.vote_average.toFixed(1) : 'N/A'}
+                <p className="text-sm text-muted-foreground capitalize">
+                  {item.media_type} {item.release_date && `• ${new Date(item.release_date).getFullYear()}`}
                 </p>
               </div>
             </button>
-          ))
-        ) : query && !loading ? (
-          <div className="p-4 text-center text-muted-foreground text-sm">No results found</div>
-        ) : null}
-      </div>
-    );
-  }
-
-  return (
-    <div ref={containerRef} className={`relative ${className}`}>
-      <form onSubmit={handleSearch} className="relative">
-        <Search className="absolute left-2.5 top-1/2 transform -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground pointer-events-none" />
-        <Input
-          ref={inputRef}
-          placeholder="Search movies, TV shows..."
-          className="pl-8 pr-3 py-2 h-9 text-sm bg-background/60 backdrop-blur-3xl border-border/60 rounded-full text-foreground placeholder:text-muted-foreground focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all"
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          onFocus={() => query && setShowSuggestions(true)}
-          autoComplete="off"
-          spellCheck="false"
-        />
-      </form>
-
-      {showSuggestions && (
-        <div className="fixed inset-x-2 mt-2 bg-background/95 backdrop-blur-3xl border border-border/70 rounded-2xl shadow-2xl z-[99999] max-h-[60vh] overflow-y-auto">
-          {loading ? (
-            <div className="p-4 text-center text-muted-foreground text-sm">Searching...</div>
-          ) : error ? (
-            <div className="p-4 text-center text-red-500 text-sm">{error}</div>
-          ) : suggestions.length > 0 ? (
-            suggestions.slice(0, 8).map((item) => (
-              <button
-                key={item.id}
-                onClick={() => handleSuggestionClick(item)}
-                className="w-full flex items-center gap-3 p-4 hover:bg-background/70 transition-all duration-200 text-left first:rounded-t-2xl last:rounded-b-2xl min-h-[64px] backdrop-blur-sm focus:bg-background/70 focus:outline-none"
-                tabIndex={0}
-              >
-                <img
-                  src={getPosterUrl(item.poster_path)}
-                  alt={item.title || item.name}
-                  className="w-12 h-16 object-cover rounded-lg flex-shrink-0 shadow-md"
-                  loading="lazy"
-                />
-                <div className="flex-1 min-w-0">
-                  <p className="text-foreground font-medium truncate text-sm">
-                    {item.title || item.name}
-                  </p>
-                  <p className="text-muted-foreground text-xs">
-                    {item.title ? 'Movie' : 'TV Show'} • {item.release_date || item.first_air_date ? new Date(item.release_date || item.first_air_date!).getFullYear() : 'N/A'}
-                  </p>
-                  <p className="text-muted-foreground text-xs">
-                    ⭐ {item.vote_average ? item.vote_average.toFixed(1) : 'N/A'}
-                  </p>
-                </div>
-              </button>
-            ))
-          ) : query && !loading ? (
-            <div className="p-4 text-center text-muted-foreground text-sm">No results found</div>
-          ) : null}
+          ))}
+        </div>
+      ) : (
+        <div className="p-4 text-center text-muted-foreground">
+          No results found for "{query}"
         </div>
       )}
     </div>

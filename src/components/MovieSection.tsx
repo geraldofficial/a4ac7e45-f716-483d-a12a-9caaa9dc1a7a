@@ -1,192 +1,75 @@
 
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { tmdbApi } from '@/services/tmdb';
 import { MovieCard } from './MovieCard';
 import { LoadingSpinner } from './LoadingSpinner';
-import { tmdbApi, Movie } from '@/services/tmdb';
-import { getPersonalizedRecommendations, getRecommendationTitle } from '@/services/recommendations';
-import { useAuth } from '@/contexts/AuthContext';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 
-export const MovieSection = () => {
-  const [popularMovies, setPopularMovies] = useState<Movie[]>([]);
-  const [recommendedMovies, setRecommendedMovies] = useState<Movie[]>([]);
-  const [trendingMovies, setTrendingMovies] = useState<Movie[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [recommendedPage, setRecommendedPage] = useState(1);
-  const [hasMoreRecommended, setHasMoreRecommended] = useState(true);
-  const [loadingMore, setLoadingMore] = useState(false);
-  const { user } = useAuth();
-  
-  const observer = useRef<IntersectionObserver>();
-  const lastMovieElementRef = useCallback((node: HTMLDivElement) => {
-    if (loadingMore) return;
-    if (observer.current) observer.current.disconnect();
-    observer.current = new IntersectionObserver(entries => {
-      if (entries[0].isIntersecting && hasMoreRecommended) {
-        loadMoreRecommended();
-      }
-    });
-    if (node) observer.current.observe(node);
-  }, [loadingMore, hasMoreRecommended]);
+interface MovieSectionProps {
+  title?: string;
+  endpoint?: string;
+  category?: 'popular' | 'top_rated' | 'now_playing' | 'upcoming';
+}
 
-  useEffect(() => {
-    const fetchMovies = async () => {
-      try {
-        setLoading(true);
-        
-        // Fetch all sections in parallel
-        const [popularResponse, trendingResponse] = await Promise.all([
-          tmdbApi.getPopularMovies(1),
-          tmdbApi.getTrendingMovies(1)
-        ]);
+export const MovieSection: React.FC<MovieSectionProps> = ({ 
+  title = "Popular Movies",
+  category = 'popular'
+}) => {
+  const { data: movies, isLoading, error } = useQuery({
+    queryKey: ['movies', category],
+    queryFn: () => tmdbApi.getMovies(category),
+    staleTime: 5 * 60 * 1000,
+  });
 
-        setPopularMovies(popularResponse.results);
-        setTrendingMovies(trendingResponse.results);
-
-        // Fetch personalized recommendations if user has preferences
-        if (user && user.genre_preferences && user.genre_preferences.length > 0) {
-          const recommendedResponse = await getPersonalizedRecommendations(user.genre_preferences, 1);
-          setRecommendedMovies(recommendedResponse.results);
-          setHasMoreRecommended(recommendedResponse.total_pages > 1);
-        } else {
-          // Fallback to popular movies for non-authenticated users
-          setRecommendedMovies(popularResponse.results);
-          setHasMoreRecommended(false);
-        }
-      } catch (error) {
-        console.error('Error fetching movies:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchMovies();
-  }, [user]);
-
-  const loadMoreRecommended = async () => {
-    if (!user || !user.genre_preferences || loadingMore || !hasMoreRecommended) return;
-    
-    setLoadingMore(true);
-    try {
-      const nextPage = recommendedPage + 1;
-      const response = await getPersonalizedRecommendations(user.genre_preferences, nextPage);
-      
-      setRecommendedMovies(prev => [...prev, ...response.results]);
-      setRecommendedPage(nextPage);
-      setHasMoreRecommended(nextPage < response.total_pages);
-    } catch (error) {
-      console.error('Error loading more recommendations:', error);
-    } finally {
-      setLoadingMore(false);
-    }
-  };
-
-  const scrollSection = (sectionId: string, direction: 'left' | 'right') => {
-    const section = document.getElementById(sectionId);
-    if (section) {
-      const scrollAmount = window.innerWidth < 768 ? 200 : 400;
-      section.scrollBy({
+  const scrollContainer = (direction: 'left' | 'right') => {
+    const container = document.getElementById(`movie-section-${category}`);
+    if (container) {
+      const scrollAmount = 300;
+      container.scrollBy({
         left: direction === 'left' ? -scrollAmount : scrollAmount,
         behavior: 'smooth'
       });
     }
   };
 
-  const MovieRow = ({ 
-    title, 
-    movies, 
-    sectionId, 
-    showScrollButtons = true 
-  }: { 
-    title: string; 
-    movies: Movie[]; 
-    sectionId: string; 
-    showScrollButtons?: boolean;
-  }) => (
-    <section className="mb-8 md:mb-12">
-      <div className="flex items-center justify-between mb-4 md:mb-6 px-3 md:px-6">
-        <div className="flex items-center gap-2">
-          <div className="w-1 h-6 bg-gradient-to-b from-primary to-primary/50 rounded-full"></div>
-          <h2 className="text-lg md:text-2xl lg:text-3xl font-bold text-foreground bg-gradient-to-r from-foreground to-foreground/80 bg-clip-text">
-            {title}
-          </h2>
-        </div>
-        {showScrollButtons && (
-          <div className="hidden md:flex gap-2">
-            <button
-              onClick={() => scrollSection(sectionId, 'left')}
-              className="p-2 rounded-full bg-card/80 hover:bg-card border border-border hover:border-primary/50 transition-all duration-200 hover:scale-105 backdrop-blur-sm"
-            >
-              <ChevronLeft className="h-4 w-4 text-foreground" />
-            </button>
-            <button
-              onClick={() => scrollSection(sectionId, 'right')}
-              className="p-2 rounded-full bg-card/80 hover:bg-card border border-border hover:border-primary/50 transition-all duration-200 hover:scale-105 backdrop-blur-sm"
-            >
-              <ChevronRight className="h-4 w-4 text-foreground" />
-            </button>
-          </div>
-        )}
-      </div>
-      <div 
-        id={sectionId}
-        className="flex gap-3 md:gap-4 lg:gap-6 overflow-x-auto pb-4 px-3 md:px-6 scrollbar-hide scroll-smooth"
-        style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
-      >
-        {movies.map((movie, index) => (
-          <div 
-            key={movie.id} 
-            className="flex-shrink-0 w-32 sm:w-36 md:w-40 lg:w-48 xl:w-52"
-            ref={sectionId === 'recommended' && index === movies.length - 1 ? lastMovieElementRef : null}
-          >
-            <MovieCard movie={movie} />
-          </div>
-        ))}
-      </div>
-    </section>
-  );
-
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center py-16 md:py-24">
-        <LoadingSpinner size="lg" text="Loading amazing content..." />
-      </div>
-    );
-  }
-
-  const recommendationTitle = user && user.genre_preferences 
-    ? getRecommendationTitle(user.genre_preferences)
-    : 'Popular Movies';
+  if (isLoading) return <LoadingSpinner />;
+  if (error) return null;
+  if (!movies?.length) return null;
 
   return (
-    <div className="space-y-6 md:space-y-8 lg:space-y-12">
-      {/* Personalized Recommendations */}
-      <MovieRow
-        title={recommendationTitle}
-        movies={recommendedMovies}
-        sectionId="recommended"
-        showScrollButtons={false}
-      />
-
-      {/* Trending Movies */}
-      <MovieRow
-        title="Trending Now"
-        movies={trendingMovies}
-        sectionId="trending"
-      />
-
-      {/* Popular Movies */}
-      <MovieRow
-        title="Popular Movies"
-        movies={popularMovies}
-        sectionId="popular"
-      />
-
-      {loadingMore && (
-        <div className="text-center py-6">
-          <LoadingSpinner size="md" text="Loading more recommendations..." />
+    <section className="py-8 px-4">
+      <div className="container mx-auto">
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="text-2xl md:text-3xl font-bold text-foreground">{title}</h2>
+          <div className="flex space-x-2">
+            <button
+              onClick={() => scrollContainer('left')}
+              className="p-2 rounded-full bg-background/20 backdrop-blur-sm border border-border/20 hover:bg-background/40 transition-all"
+            >
+              <ChevronLeft className="h-5 w-5" />
+            </button>
+            <button
+              onClick={() => scrollContainer('right')}
+              className="p-2 rounded-full bg-background/20 backdrop-blur-sm border border-border/20 hover:bg-background/40 transition-all"
+            >
+              <ChevronRight className="h-5 w-5" />
+            </button>
+          </div>
         </div>
-      )}
-    </div>
+        
+        <div 
+          id={`movie-section-${category}`}
+          className="flex overflow-x-auto space-x-4 scrollbar-hide scroll-smooth pb-4"
+          style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+        >
+          {movies.map((movie) => (
+            <div key={movie.id} className="flex-shrink-0 w-48 md:w-56">
+              <MovieCard movie={movie} />
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
   );
 };
