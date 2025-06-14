@@ -7,7 +7,6 @@ import { HeroSection } from '@/components/HeroSection';
 import { NetflixMobileHero } from '@/components/NetflixMobileHero';
 import { ContinueWatching } from '@/components/ContinueWatching';
 import { RecentlyWatched } from '@/components/RecentlyWatched';
-import { PullToRefresh } from '@/components/PullToRefresh';
 import { Footer } from '@/components/Footer';
 import { BottomNavigation } from '@/components/BottomNavigation';
 import { EnhancedMovieSection } from '@/components/EnhancedMovieSection';
@@ -38,11 +37,6 @@ const Index = () => {
       navigate('/onboarding');
     }
   }, [user, loading, navigate]);
-
-  const handleRefresh = async () => {
-    await queryClient.invalidateQueries();
-    await new Promise(resolve => setTimeout(resolve, 500));
-  };
 
   return (
     <>
@@ -104,18 +98,16 @@ const Index = () => {
       
       <div className="min-h-screen bg-background dark overflow-x-hidden">
         <Navbar />
-        <PullToRefresh onRefresh={handleRefresh}>
-          <main className="relative safe-area-top pt-14 md:pt-16">
-            {/* Use Netflix mobile hero on mobile, regular hero on desktop */}
-            {isMobile ? <NetflixMobileHero /> : <HeroSection />}
-            
-            {/* Hide continue watching and recently watched on mobile to match Netflix */}
-            {!isMobile && user && <ContinueWatching />}
-            {!isMobile && user && <RecentlyWatched />}
-            
-            <EnhancedMovieSection />
-          </main>
-        </PullToRefresh>
+        <main className="relative safe-area-top pt-14 md:pt-16">
+          {/* Use Netflix mobile hero on mobile, regular hero on desktop */}
+          {isMobile ? <NetflixMobileHero /> : <HeroSection />}
+          
+          {/* Hide continue watching and recently watched on mobile to match Netflix */}
+          {!isMobile && user && <ContinueWatching />}
+          {!isMobile && user && <RecentlyWatched />}
+          
+          <EnhancedMovieSection />
+        </main>
         
         {/* Hide footer on mobile */}
         {!isMobile && <Footer />}

@@ -3,7 +3,6 @@ import React, { useState, useEffect } from 'react';
 import { Navbar } from '@/components/Navbar';
 import { MovieCard } from '@/components/MovieCard';
 import { Footer } from '@/components/Footer';
-import { PullToRefresh } from '@/components/PullToRefresh';
 import { tmdbApi, Movie } from '@/services/tmdb';
 import { Star } from 'lucide-react';
 
@@ -37,14 +36,10 @@ const TopRated = () => {
     fetchTopRated();
   }, []);
 
-  const handleRefresh = async () => {
-    await fetchTopRated();
-  };
-
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
-      <PullToRefresh onRefresh={handleRefresh} className="pt-20 pb-24 md:pb-8">
+      <div className="pt-20 pb-24 md:pb-8">
         <div className="container mx-auto px-3 md:px-4 py-3 md:py-8">
           <div className="flex items-center gap-2 md:gap-3 mb-4 md:mb-8">
             <div className="bg-primary/10 p-2 md:p-3 rounded-lg md:rounded-xl flex-shrink-0">
@@ -68,7 +63,7 @@ const TopRated = () => {
             </div>
           )}
         </div>
-      </PullToRefresh>
+      </div>
       <Footer />
     </div>
   );
