@@ -1,4 +1,3 @@
-
 import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
@@ -96,7 +95,7 @@ const Index = () => {
       <div className="min-h-screen bg-background dark overflow-x-hidden">
         <Navbar />
         <PullToRefresh onRefresh={handleRefresh}>
-          <main className="relative pt-14 md:pt-16 pb-mobile-nav">
+          <main className="relative safe-area-top pt-14 md:pt-16">
             <HeroSection />
             {user && <ContinueWatching />}
             {user && <RecentlyWatched />}

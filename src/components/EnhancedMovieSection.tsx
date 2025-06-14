@@ -114,29 +114,33 @@ export const EnhancedMovieSection = () => {
     showScrollButtons?: boolean;
     priority?: boolean;
   }) => (
-    <section className="mb-8 md:mb-12 movie-section">
-      <div className="flex items-center justify-between mb-4 md:mb-6 px-4 md:px-6">
-        <div className="flex items-center gap-2">
-          <div className="w-1 h-6 bg-gradient-to-b from-primary to-primary/50 rounded-full"></div>
-          <h2 className="text-xl md:text-2xl lg:text-3xl font-bold text-foreground bg-gradient-to-r from-foreground to-foreground/80 bg-clip-text">
-            {title}
-          </h2>
+    <section className="mobile-section">
+      {/* Mobile-optimized section header */}
+      <div className="flex items-center justify-between mb-4 px-4">
+        <div className="flex items-center gap-3">
+          <div className="w-1 h-6 bg-gradient-to-b from-primary to-primary/60 rounded-full"></div>
+          <div className="flex-1 min-w-0">
+            <h2 className="mobile-title text-foreground truncate">
+              {title}
+            </h2>
+          </div>
         </div>
-        <div className="flex items-center gap-2">
+        
+        {/* Desktop-only controls */}
+        <div className="hidden md:flex items-center gap-2">
           {sectionId === 'trending' && (
             <Button
               onClick={() => fetchMovies(true)}
               variant="outline"
               size="sm"
               disabled={refreshing}
-              className="hidden md:flex"
             >
               <RefreshCw className={`h-4 w-4 mr-2 ${refreshing ? 'animate-spin' : ''}`} />
               Refresh
             </Button>
           )}
           {showScrollButtons && (
-            <div className="hidden md:flex gap-2">
+            <div className="flex gap-2">
               <Button
                 onClick={() => scrollSection(sectionId, 'left')}
                 variant="outline"
@@ -157,14 +161,11 @@ export const EnhancedMovieSection = () => {
           )}
         </div>
       </div>
+
+      {/* Mobile-optimized horizontal scroll */}
       <div 
         id={sectionId}
-        className="flex overflow-x-auto overflow-y-hidden scroll-smooth gap-3 md:gap-4 px-4 md:px-6 pb-4 movie-row"
-        style={{
-          scrollbarWidth: 'none',
-          msOverflowStyle: 'none',
-          WebkitOverflowScrolling: 'touch'
-        }}
+        className="mobile-scroll-horizontal"
       >
         {movies.map((movie, index) => (
           <div 
@@ -185,7 +186,7 @@ export const EnhancedMovieSection = () => {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center py-16 md:py-24">
+      <div className="flex items-center justify-center py-16">
         <LoadingSpinner size="lg" text="Loading amazing content..." />
       </div>
     );
@@ -193,14 +194,14 @@ export const EnhancedMovieSection = () => {
 
   if (error) {
     return (
-      <div className="flex items-center justify-center py-16 md:py-24">
-        <Card className="w-full max-w-md mx-auto">
+      <div className="flex items-center justify-center py-16">
+        <Card className="w-full max-w-md mx-auto mobile-container">
           <CardHeader className="text-center">
-            <CardTitle className="text-destructive">Oops! Something went wrong</CardTitle>
-            <CardDescription>{error}</CardDescription>
+            <CardTitle className="text-destructive mobile-title">Oops! Something went wrong</CardTitle>
+            <CardDescription className="mobile-subtitle">{error}</CardDescription>
           </CardHeader>
           <CardContent className="text-center">
-            <Button onClick={() => fetchMovies()} variant="outline">
+            <Button onClick={() => fetchMovies()} variant="outline" className="touch-button">
               <RefreshCw className="h-4 w-4 mr-2" />
               Try Again
             </Button>
@@ -215,19 +216,19 @@ export const EnhancedMovieSection = () => {
     : 'Popular Movies';
 
   return (
-    <div className="space-y-6 md:space-y-8 lg:space-y-12 pb-24 md:pb-8">
-      {/* Email Subscription Section */}
-      <section className="px-4 md:px-6">
-        <div className="flex items-center gap-2 mb-6">
-          <div className="w-1 h-6 bg-gradient-to-b from-primary to-primary/50 rounded-full"></div>
-          <h2 className="text-xl md:text-2xl lg:text-3xl font-bold text-foreground">
+    <div className="content-with-bottom-nav">
+      {/* Email Subscription Section - mobile optimized */}
+      <section className="mobile-section px-4">
+        <div className="flex items-center gap-3 mb-4">
+          <div className="w-1 h-6 bg-gradient-to-b from-primary to-primary/60 rounded-full"></div>
+          <h2 className="mobile-title text-foreground">
             Stay Updated
           </h2>
         </div>
         <EmailSubscription />
       </section>
 
-      {/* Personalized Recommendations */}
+      {/* Movie sections */}
       <MovieRow
         title={recommendationTitle}
         movies={recommendedMovies}
@@ -236,7 +237,6 @@ export const EnhancedMovieSection = () => {
         priority={true}
       />
 
-      {/* Trending Movies */}
       <MovieRow
         title="Trending Now"
         movies={trendingMovies}
@@ -244,7 +244,6 @@ export const EnhancedMovieSection = () => {
         priority={false}
       />
 
-      {/* Popular Movies */}
       <MovieRow
         title="Popular Movies"
         movies={popularMovies}

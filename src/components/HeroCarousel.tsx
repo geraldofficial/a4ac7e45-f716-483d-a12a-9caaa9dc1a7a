@@ -82,7 +82,7 @@ export const HeroCarousel = () => {
   const currentMovie = featuredMovies[currentSlide];
 
   return (
-    <div className="relative h-[50vh] md:h-[70vh] lg:h-[80vh] overflow-hidden hero-carousel">
+    <div className="relative h-[50vh] md:h-[70vh] lg:h-[80vh] overflow-hidden">
       {/* Background Image */}
       <div className="absolute inset-0">
         <img
@@ -93,7 +93,7 @@ export const HeroCarousel = () => {
           onClick={() => handleImageClick(currentMovie.id)}
         />
         <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/40 to-transparent"></div>
-        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"></div>
+        <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent"></div>
       </div>
 
       {/* Navigation Arrows - Desktop Only */}
@@ -116,7 +116,7 @@ export const HeroCarousel = () => {
         </>
       )}
 
-      {/* Content - Desktop Only */}
+      {/* Desktop Content */}
       <div className="hidden md:block relative z-10 h-full">
         <div className="h-full flex items-center">
           <div className="container mx-auto px-4 md:px-8">
@@ -138,7 +138,7 @@ export const HeroCarousel = () => {
               <div className="flex flex-col sm:flex-row gap-3 md:gap-4">
                 <Button
                   onClick={() => handleWatchMovie(currentMovie.id)}
-                  className="bg-white text-black hover:bg-white/90 px-6 md:px-8 py-3 text-base md:text-lg font-semibold min-w-[140px] touch-target"
+                  className="touch-button bg-white text-black hover:bg-white/90 font-semibold"
                 >
                   <Play className="mr-2 h-4 w-4 md:h-5 md:w-5 fill-current" />
                   <span className="whitespace-nowrap">Play</span>
@@ -147,7 +147,7 @@ export const HeroCarousel = () => {
                 <Button
                   onClick={() => handleAddToWatchlist(currentMovie.id)}
                   variant="outline"
-                  className="border-white/30 text-white hover:bg-white/10 px-6 md:px-8 py-3 text-base md:text-lg min-w-[160px] touch-target"
+                  className="touch-button border-white/30 text-white hover:bg-white/10"
                 >
                   <Plus className="mr-2 h-4 w-4 md:h-5 md:w-5" />
                   <span className="whitespace-nowrap">
@@ -158,7 +158,7 @@ export const HeroCarousel = () => {
                 <Button
                   onClick={() => navigate(`/movie/${currentMovie.id}`)}
                   variant="outline"
-                  className="border-white/30 text-white hover:bg-white/10 px-6 md:px-8 py-3 text-base md:text-lg min-w-[140px] touch-target"
+                  className="touch-button border-white/30 text-white hover:bg-white/10"
                 >
                   <Info className="mr-2 h-4 w-4 md:h-5 md:w-5" />
                   <span className="whitespace-nowrap">More Info</span>
@@ -169,20 +169,41 @@ export const HeroCarousel = () => {
         </div>
       </div>
 
-      {/* Mobile Content Overlay */}
-      <div className="md:hidden absolute bottom-4 left-4 right-4 z-10">
-        <div className="bg-black/50 backdrop-blur-sm rounded-lg p-4">
-          <h2 className="text-white font-bold text-lg mb-2 line-clamp-1">{currentMovie.title}</h2>
-          <div className="flex items-center gap-2 text-white/80 text-sm">
-            <span className="bg-yellow-500 text-black px-2 py-1 rounded text-xs font-semibold">
-              ★ {currentMovie.vote_average?.toFixed(1)}
-            </span>
-            <span>{new Date(currentMovie.release_date).getFullYear()}</span>
+      {/* Mobile Content Overlay - Enhanced */}
+      <div className="md:hidden absolute bottom-0 left-0 right-0 z-10 p-4">
+        <div className="mobile-card bg-black/60 backdrop-blur-md p-4 space-y-3">
+          <div className="space-y-2">
+            <h2 className="text-white font-bold text-lg leading-tight line-clamp-2">{currentMovie.title}</h2>
+            <div className="flex items-center gap-3 text-white/80 text-sm">
+              <span className="bg-yellow-500 text-black px-2 py-1 rounded-full text-xs font-semibold">
+                ★ {currentMovie.vote_average?.toFixed(1)}
+              </span>
+              <span>{new Date(currentMovie.release_date).getFullYear()}</span>
+            </div>
+          </div>
+          
+          {/* Mobile action buttons */}
+          <div className="flex gap-2">
+            <Button
+              onClick={() => handleWatchMovie(currentMovie.id)}
+              className="touch-button-small bg-primary hover:bg-primary/90 text-primary-foreground font-semibold flex-1"
+            >
+              <Play className="mr-2 h-4 w-4 fill-current" />
+              Play
+            </Button>
+            
+            <Button
+              onClick={() => navigate(`/movie/${currentMovie.id}`)}
+              variant="outline"
+              className="touch-button-small border-white/30 bg-white/10 text-white hover:bg-white/20"
+            >
+              <Info className="h-4 w-4" />
+            </Button>
           </div>
         </div>
       </div>
 
-      {/* Slide Indicators */}
+      {/* Slide Indicators - Mobile optimized */}
       <div className="absolute bottom-4 md:bottom-8 left-1/2 transform -translate-x-1/2 flex space-x-2 z-20">
         {featuredMovies.map((_, index) => (
           <button
@@ -192,7 +213,7 @@ export const HeroCarousel = () => {
               setIsAutoPlaying(false);
               setTimeout(() => setIsAutoPlaying(true), 10000);
             }}
-            className={`w-2 h-2 md:w-3 md:h-3 rounded-full transition-all touch-target ${
+            className={`touch-button-small w-3 h-3 rounded-full transition-all ${
               index === currentSlide ? 'bg-white scale-125' : 'bg-white/40'
             }`}
             aria-label={`Go to slide ${index + 1}`}
