@@ -4,49 +4,71 @@ import { useNavigate } from 'react-router-dom';
 import { Navbar } from '@/components/Navbar';
 import { Footer } from '@/components/Footer';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { watchHistoryService, WatchHistoryItem } from '@/services/watchHistory';
-import { Clock, Play, Trash2, Calendar, Filter } from 'lucide-react';
+import { Clock, Play, Trash2, Calendar, Filter, Star, MoreHorizontal, Share, Heart } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { useAuth } from '@/contexts/AuthContext';
 
 const History = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { user } = useAuth();
   const [history, setHistory] = useState<WatchHistoryItem[]>([]);
   const [filter, setFilter] = useState<'all' | 'movie' | 'tv' | 'completed'>('all');
   const [sortBy, setSortBy] = useState<'lastWatched' | 'progress' | 'title'>('lastWatched');
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     loadHistory();
   }, [filter, sortBy]);
 
   const loadHistory = () => {
-    const options: any = {
-      sortBy,
-      sortOrder: 'desc' as const
-    };
+    setIsLoading(true);
+    try {
+      const options: any = {
+        sortBy,
+        sortOrder: 'desc' as const
+      };
 
-    if (filter === 'movie' || filter === 'tv') {
-      options.type = filter;
-    } else if (filter === 'completed') {
-      options.completed = true;
+      if (filter === 'movie' || filter === 'tv') {
+        options.type = filter;
+      } else if (filter === 'completed') {
+        options.completed = true;
+      }
+
+      const filteredHistory = watchHistoryService.getFilteredHistory(options);
+      setHistory(filteredHistory);
+    } catch (error) {
+      console.error('Error loading history:', error);
+      toast({
+        title: "Error loading history",
+        description: "Failed to load your watch history.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
     }
-
-    const filteredHistory = watchHistoryService.getFilteredHistory(options);
-    setHistory(filteredHistory);
   };
 
-  const handleWatch = (item: WatchHistoryItem) => {
+  const handleContinueWatching = (item: WatchHistoryItem) => {
+    // Navigate directly to the video player with resume parameter
+    const route = `/${item.type}/${item.tmdbId}?watch=true&resume=true${item.season && item.episode ? `&season=${item.season}&episode=${item.episode}` : ''}`;
+    navigate(route);
+  };
+
+  const handleViewDetails = (item: WatchHistoryItem) => {
     const route = `/${item.type}/${item.tmdbId}`;
     navigate(route);
   };
 
-  const handleRemove = (id: string) => {
+  const handleRemove = (id: string, title: string) => {
     watchHistoryService.removeFromHistory(id);
     loadHistory();
     toast({
       title: "Removed from history",
-      description: "Item has been removed from your watch history.",
+      description: `"${title}" has been removed from your watch history.`,
     });
   };
 
@@ -62,16 +84,14 @@ const History = () => {
   const formatProgress = (progress: number, duration?: number) => {
     const hours = Math.floor(progress / 3600);
     const minutes = Math.floor((progress % 3600) / 60);
-    const seconds = Math.floor(progress % 60);
     
     let timeString = '';
     if (hours > 0) timeString += `${hours}h `;
-    if (minutes > 0) timeString += `${minutes}m `;
-    if (hours === 0 && minutes === 0) timeString += `${seconds}s`;
+    timeString += `${minutes}m`;
     
     if (duration && duration > 0) {
       const percentage = Math.round((progress / duration) * 100);
-      timeString += ` (${percentage}%)`;
+      return `${timeString} (${percentage}%)`;
     }
     
     return timeString;
@@ -82,26 +102,62 @@ const History = () => {
     return Math.min((progress / duration) * 100, 100);
   };
 
+  const getProgressColor = (percentage: number) => {
+    if (percentage >= 90) return 'bg-green-500';
+    if (percentage >= 70) return 'bg-yellow-500';
+    return 'bg-primary';
+  };
+
+  const formatTimeRemaining = (progress: number, duration?: number) => {
+    if (!duration || duration <= progress) return '';
+    
+    const remaining = duration - progress;
+    const hours = Math.floor(remaining / 3600);
+    const minutes = Math.floor((remaining % 3600) / 60);
+    
+    if (hours > 0) return `${hours}h ${minutes}m left`;
+    return `${minutes}m left`;
+  };
+
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Navbar />
+        <div className="pt-24 pb-20 px-4">
+          <div className="container mx-auto text-center">
+            <h1 className="text-2xl font-bold mb-4">Sign in required</h1>
+            <p className="text-muted-foreground mb-6">Please sign in to view your watch history.</p>
+            <Button onClick={() => navigate('/auth')}>Sign In</Button>
+          </div>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
       
       <div className="pt-16 md:pt-24 pb-20 px-3 md:px-4">
         <div className="container mx-auto">
-          <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center justify-between mb-8">
             <div>
               <h1 className="text-2xl md:text-4xl font-bold text-foreground mb-2">
-                Watch History
+                My Watch History
               </h1>
               <p className="text-muted-foreground text-sm md:text-base">
-                Continue watching from where you left off
+                {history.length > 0 
+                  ? `${history.length} item${history.length === 1 ? '' : 's'} • Continue watching from where you left off`
+                  : 'Start watching to build your history'
+                }
               </p>
             </div>
             {history.length > 0 && (
               <Button 
                 variant="outline" 
                 onClick={handleClearAll}
-                className="text-xs md:text-sm"
+                className="text-xs md:text-sm hover:bg-destructive/10 hover:text-destructive hover:border-destructive"
               >
                 <Trash2 className="h-3 w-3 md:h-4 md:w-4 mr-1 md:mr-2" />
                 Clear All
@@ -109,15 +165,19 @@ const History = () => {
             )}
           </div>
 
-          {/* Filters */}
+          {/* Enhanced Filters */}
           {history.length > 0 && (
-            <div className="flex gap-3 mb-6 flex-wrap">
+            <div className="flex gap-3 mb-8 flex-wrap items-center">
+              <div className="flex items-center gap-2">
+                <Filter className="h-4 w-4 text-muted-foreground" />
+                <span className="text-sm text-muted-foreground">Filter:</span>
+              </div>
               <Select value={filter} onValueChange={(value: any) => setFilter(value)}>
                 <SelectTrigger className="w-32">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All</SelectItem>
+                  <SelectItem value="all">All Content</SelectItem>
                   <SelectItem value="movie">Movies</SelectItem>
                   <SelectItem value="tv">TV Shows</SelectItem>
                   <SelectItem value="completed">Completed</SelectItem>
@@ -125,106 +185,184 @@ const History = () => {
               </Select>
               
               <Select value={sortBy} onValueChange={(value: any) => setSortBy(value)}>
-                <SelectTrigger className="w-36">
+                <SelectTrigger className="w-40">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="lastWatched">Recently Watched</SelectItem>
                   <SelectItem value="progress">Progress</SelectItem>
-                  <SelectItem value="title">Title</SelectItem>
+                  <SelectItem value="title">Title A-Z</SelectItem>
                 </SelectContent>
               </Select>
+
+              <Badge variant="secondary" className="ml-auto">
+                {filter === 'all' ? 'All' : filter === 'movie' ? 'Movies' : filter === 'tv' ? 'TV Shows' : 'Completed'} • {history.length}
+              </Badge>
             </div>
           )}
 
-          {history.length === 0 ? (
-            <div className="text-center py-16">
-              <Clock className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
-              <h3 className="text-xl font-semibold text-foreground mb-2">No watch history</h3>
-              <p className="text-muted-foreground">
-                Start watching movies and TV shows to see your history here
-              </p>
-              <Button onClick={() => navigate('/')} className="mt-4">
-                Browse Content
-              </Button>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
-              {history.map((item) => (
-                <div
-                  key={item.id}
-                  className="bg-card/80 backdrop-blur-xl border border-border/50 rounded-2xl overflow-hidden hover:bg-card/90 transition-all duration-300"
-                >
-                  <div className="relative aspect-video">
-                    <img
-                      src={
-                        item.backdrop_path
-                          ? `https://image.tmdb.org/t/p/w500${item.backdrop_path}`
-                          : item.poster_path
-                          ? `https://image.tmdb.org/t/p/w500${item.poster_path}`
-                          : 'https://images.unsplash.com/photo-1489599904276-39c2bb2d7b64?w=500&h=281&fit=crop'
-                      }
-                      alt={item.title}
-                      className="w-full h-full object-cover"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-                    
-                    {/* Progress bar */}
-                    {item.duration && (
-                      <div className="absolute bottom-0 left-0 right-0 h-2 bg-black/30">
-                        <div 
-                          className="h-full bg-primary transition-all duration-300"
-                          style={{ width: `${getProgressPercentage(item.progress, item.duration)}%` }}
-                        />
-                      </div>
-                    )}
-                    
-                    <Button
-                      size="sm"
-                      onClick={() => handleWatch(item)}
-                      className="absolute bottom-3 right-3 bg-primary/90 backdrop-blur-sm hover:bg-primary"
-                    >
-                      <Play className="h-3 w-3 mr-1" />
-                      Continue
-                    </Button>
-                  </div>
-                  
-                  <div className="p-4">
-                    <h3 className="font-semibold text-foreground text-sm md:text-base mb-2 line-clamp-2">
-                      {item.title}
-                      {item.type === 'tv' && item.season && item.episode && (
-                        <span className="text-muted-foreground text-xs ml-2">
-                          S{item.season}E{item.episode}
-                        </span>
-                      )}
-                    </h3>
-                    
-                    <div className="flex items-center gap-2 text-xs text-muted-foreground mb-3">
-                      <Clock className="h-3 w-3" />
-                      <span>{formatProgress(item.progress, item.duration)}</span>
-                    </div>
-                    
-                    <div className="flex items-center gap-2 text-xs text-muted-foreground mb-3">
-                      <Calendar className="h-3 w-3" />
-                      <span>{new Date(item.lastWatched).toLocaleDateString()}</span>
-                    </div>
-                    
-                    {item.completed && (
-                      <div className="text-xs text-green-500 mb-2">✓ Completed</div>
-                    )}
-                    
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handleRemove(item.id)}
-                      className="w-full text-xs hover:bg-destructive/10 hover:text-destructive"
-                    >
-                      <Trash2 className="h-3 w-3 mr-1" />
-                      Remove
-                    </Button>
+          {isLoading ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {[...Array(6)].map((_, i) => (
+                <div key={i} className="bg-card/50 rounded-2xl overflow-hidden animate-pulse">
+                  <div className="aspect-video bg-muted" />
+                  <div className="p-4 space-y-3">
+                    <div className="h-4 bg-muted rounded w-3/4" />
+                    <div className="h-3 bg-muted rounded w-1/2" />
+                    <div className="h-3 bg-muted rounded w-1/3" />
                   </div>
                 </div>
               ))}
+            </div>
+          ) : history.length === 0 ? (
+            <div className="text-center py-20">
+              <div className="max-w-md mx-auto">
+                <Clock className="h-20 w-20 text-muted-foreground mx-auto mb-6" />
+                <h3 className="text-2xl font-semibold text-foreground mb-3">No watch history yet</h3>
+                <p className="text-muted-foreground mb-6">
+                  Start watching movies and TV shows to see your history here. Your progress will be automatically saved.
+                </p>
+                <div className="flex gap-3 justify-center">
+                  <Button onClick={() => navigate('/')} size="lg">
+                    Browse Movies
+                  </Button>
+                  <Button onClick={() => navigate('/trending')} variant="outline" size="lg">
+                    Trending Now
+                  </Button>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {history.map((item) => {
+                const progressPercentage = getProgressPercentage(item.progress, item.duration);
+                const progressColor = getProgressColor(progressPercentage);
+                
+                return (
+                  <div
+                    key={item.id}
+                    className="group bg-card/80 backdrop-blur-xl border border-border/50 rounded-2xl overflow-hidden hover:bg-card/90 hover:border-border transition-all duration-300 hover:shadow-lg hover:shadow-primary/10"
+                  >
+                    <div className="relative aspect-video cursor-pointer" onClick={() => handleViewDetails(item)}>
+                      <img
+                        src={
+                          item.backdrop_path
+                            ? `https://image.tmdb.org/t/p/w500${item.backdrop_path}`
+                            : item.poster_path
+                            ? `https://image.tmdb.org/t/p/w500${item.poster_path}`
+                            : 'https://images.unsplash.com/photo-1489599904276-39c2bb2d7b64?w=500&h=281&fit=crop'
+                        }
+                        alt={item.title}
+                        className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+                      
+                      {/* Enhanced Progress bar */}
+                      {item.duration && (
+                        <div className="absolute bottom-0 left-0 right-0 h-2 bg-black/40">
+                          <div 
+                            className={`h-full transition-all duration-300 ${progressColor}`}
+                            style={{ width: `${progressPercentage}%` }}
+                          />
+                        </div>
+                      )}
+
+                      {/* Content type badge */}
+                      <div className="absolute top-3 left-3">
+                        <Badge variant={item.type === 'movie' ? 'default' : 'secondary'} className="text-xs">
+                          {item.type === 'movie' ? 'Movie' : 'TV Show'}
+                        </Badge>
+                      </div>
+
+                      {/* Completion badge */}
+                      {item.completed && (
+                        <div className="absolute top-3 right-3">
+                          <Badge className="bg-green-500 text-white text-xs">
+                            ✓ Completed
+                          </Badge>
+                        </div>
+                      )}
+                      
+                      {/* Play overlay */}
+                      <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-black/20">
+                        <Button
+                          size="lg"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleContinueWatching(item);
+                          }}
+                          className="bg-primary/90 backdrop-blur-sm hover:bg-primary text-primary-foreground shadow-lg"
+                        >
+                          <Play className="h-5 w-5 mr-2" />
+                          Continue Watching
+                        </Button>
+                      </div>
+                    </div>
+                    
+                    <div className="p-5">
+                      <div className="flex items-start justify-between mb-3">
+                        <div className="flex-1 min-w-0">
+                          <h3 className="font-semibold text-foreground text-base line-clamp-2 mb-1 leading-tight">
+                            {item.title}
+                          </h3>
+                          {item.type === 'tv' && item.season && item.episode && (
+                            <p className="text-muted-foreground text-sm">
+                              Season {item.season}, Episode {item.episode}
+                            </p>
+                          )}
+                        </div>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-8 w-8 p-0 ml-2"
+                          onClick={() => handleRemove(item.id, item.title)}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                      
+                      {/* Progress information */}
+                      <div className="space-y-2 mb-4">
+                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                          <Clock className="h-4 w-4" />
+                          <span>{formatProgress(item.progress, item.duration)}</span>
+                        </div>
+                        
+                        {item.duration && !item.completed && (
+                          <div className="text-sm text-primary font-medium">
+                            {formatTimeRemaining(item.progress, item.duration)}
+                          </div>
+                        )}
+                        
+                        <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                          <Calendar className="h-3 w-3" />
+                          <span>Watched {new Date(item.lastWatched).toLocaleDateString()}</span>
+                        </div>
+                      </div>
+                      
+                      {/* Action buttons */}
+                      <div className="flex gap-2">
+                        <Button
+                          onClick={() => handleContinueWatching(item)}
+                          className="flex-1"
+                          size="sm"
+                        >
+                          <Play className="h-4 w-4 mr-2" />
+                          {item.completed ? 'Watch Again' : 'Continue'}
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleViewDetails(item)}
+                          className="px-3"
+                        >
+                          <MoreHorizontal className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           )}
         </div>

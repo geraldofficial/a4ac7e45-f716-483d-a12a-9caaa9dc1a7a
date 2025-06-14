@@ -13,7 +13,6 @@ interface VideoPlayerProps {
   poster_path?: string;
   backdrop_path?: string;
   duration?: number;
-  // New prop for resume functionality
   shouldResume?: boolean;
 }
 
@@ -31,8 +30,13 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = (props) => {
     
     if (resumeInfo.shouldResume) {
       resumeFrom = resumeInfo.progress;
+      console.log(`Resuming ${props.title} from ${Math.floor(resumeFrom)}s`);
     }
   }
 
-  return <EnhancedVideoPlayer {...props} resumeFrom={resumeFrom} />;
+  return (
+    <div className="w-full">
+      <EnhancedVideoPlayer {...props} resumeFrom={resumeFrom} />
+    </div>
+  );
 };
