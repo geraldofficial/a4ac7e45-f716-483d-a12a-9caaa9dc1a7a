@@ -1,5 +1,6 @@
 
-import React, { createContext, useState, useEffect, useContext } from 'react';
+import * as React from 'react';
+import { createContext, useState, useEffect, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from "@/components/ui/use-toast";
 import { authApi } from '@/services/auth';
@@ -50,6 +51,9 @@ const cleanupAuthState = () => {
 };
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  // Add console log to debug
+  console.log('AuthProvider initializing...');
+  
   const [user, setUser] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
