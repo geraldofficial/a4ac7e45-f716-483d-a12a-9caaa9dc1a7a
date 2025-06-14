@@ -8,12 +8,14 @@ interface LoadingWithTimeoutProps {
   timeout?: number;
   onTimeout?: () => void;
   text?: string;
+  fallback?: React.ReactNode;
 }
 
 export const LoadingWithTimeout: React.FC<LoadingWithTimeoutProps> = ({
   timeout = 10000, // 10 seconds default
   onTimeout,
-  text = "Loading FlickPick..."
+  text = "Loading FlickPick...",
+  fallback
 }) => {
   const [hasTimedOut, setHasTimedOut] = useState(false);
 
@@ -47,6 +49,10 @@ export const LoadingWithTimeout: React.FC<LoadingWithTimeoutProps> = ({
         </div>
       </div>
     );
+  }
+
+  if (fallback) {
+    return <>{fallback}</>;
   }
 
   return (
