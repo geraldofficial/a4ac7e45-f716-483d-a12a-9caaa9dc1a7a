@@ -1,5 +1,5 @@
 
-import { useCallback, useRef, useState } from 'react';
+import React, { useCallback, useRef, useState } from 'react';
 import { useGesture } from 'react-use-gesture';
 
 interface UsePullToRefreshOptions {
