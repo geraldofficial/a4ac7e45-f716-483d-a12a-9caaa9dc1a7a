@@ -1,5 +1,6 @@
 
-import React, { Suspense, lazy } from "react";
+
+import { Suspense, lazy } from "react";
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -33,41 +34,39 @@ const queryClient = new QueryClient({
   },
 });
 
-const App: React.FC = () => {
-  return (
-    <HelmetProvider>
-      <QueryClientProvider client={queryClient}>
+const App = () => (
+  <HelmetProvider>
+    <QueryClientProvider client={queryClient}>
+      <TooltipProvider>
+        <Toaster />
         <BrowserRouter>
           <AuthProvider>
-            <TooltipProvider>
-              <ScrollToTop />
-              <ErrorBoundary>
-                <Suspense fallback={<ProductionLoadingSpinner />}>
-                  <Routes>
-                    <Route path="/" element={<Index />} />
-                    <Route path="/movie/:id" element={<DetailPage />} />
-                    <Route path="/tv/:id" element={<DetailPage />} />
-                    <Route path="/search" element={<Search />} />
-                    <Route path="/browse" element={<Browse />} />
-                    <Route path="/watchlist" element={<Watchlist />} />
-                    <Route path="/onboarding" element={<Onboarding />} />
-                    <Route path="/auth" element={<Auth />} />
-                    <Route path="/profile" element={<Profile />} />
-                    <Route path="/support" element={<Support />} />
-                    <Route path="/trending" element={<Trending />} />
-                    <Route path="/top-rated" element={<TopRated />} />
-                    <Route path="/history" element={<History />} />
-                    <Route path="*" element={<NotFound />} />
-                  </Routes>
-                </Suspense>
-              </ErrorBoundary>
-              <Toaster />
-            </TooltipProvider>
+            <ScrollToTop />
+            <ErrorBoundary>
+              <Suspense fallback={<ProductionLoadingSpinner />}>
+                <Routes>
+                  <Route path="/" element={<Index />} />
+                  <Route path="/movie/:id" element={<DetailPage />} />
+                  <Route path="/tv/:id" element={<DetailPage />} />
+                  <Route path="/search" element={<Search />} />
+                  <Route path="/browse" element={<Browse />} />
+                  <Route path="/watchlist" element={<Watchlist />} />
+                  <Route path="/onboarding" element={<Onboarding />} />
+                  <Route path="/auth" element={<Auth />} />
+                  <Route path="/profile" element={<Profile />} />
+                  <Route path="/support" element={<Support />} />
+                  <Route path="/trending" element={<Trending />} />
+                  <Route path="/top-rated" element={<TopRated />} />
+                  <Route path="/history" element={<History />} />
+                  <Route path="*" element={<NotFound />} />
+                </Routes>
+              </Suspense>
+            </ErrorBoundary>
           </AuthProvider>
         </BrowserRouter>
-      </QueryClientProvider>
-    </HelmetProvider>
-  );
-};
+      </TooltipProvider>
+    </QueryClientProvider>
+  </HelmetProvider>
+);
 
 export default App;

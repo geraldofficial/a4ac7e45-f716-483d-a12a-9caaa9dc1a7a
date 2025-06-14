@@ -27,9 +27,8 @@ export const AccountSwitcher = () => {
   const [newAccountName, setNewAccountName] = useState('');
   const [newAccountType, setNewAccountType] = useState<'adult' | 'teen' | 'kids'>('adult');
   
-  const userSubAccounts = user?.sub_accounts || [];
-  const subAccounts: SubAccount[] = Array.isArray(userSubAccounts) ? userSubAccounts : [];
-  
+  // Get sub-accounts from user profile or default to empty array
+  const subAccounts: SubAccount[] = user?.sub_accounts || [];
   const activeAccount = subAccounts.find(acc => acc.isActive) || {
     id: 'main',
     name: user?.name || user?.username || 'Main Profile',
@@ -58,10 +57,7 @@ export const AccountSwitcher = () => {
 
     try {
       const updatedSubAccounts = [...subAccounts, newAccount];
-      await updateProfile({ 
-        sub_accounts: updatedSubAccounts,
-        active_account_type: newAccountType
-      });
+      await updateProfile({ sub_accounts: updatedSubAccounts });
       
       setNewAccountName('');
       setNewAccountType('adult');
@@ -87,20 +83,17 @@ export const AccountSwitcher = () => {
         isActive: acc.id === accountId
       }));
       
-      const accountType = accountId === 'main' ? 'adult' : updatedSubAccounts.find(acc => acc.id === accountId)?.type || 'adult';
-      
       await updateProfile({ 
         sub_accounts: updatedSubAccounts,
-        active_account_type: accountType
+        active_account_type: accountId === 'main' ? 'adult' : updatedSubAccounts.find(acc => acc.id === accountId)?.type || 'adult'
       });
-      
-      const accountName = accountId === 'main' ? 'Main Profile' : updatedSubAccounts.find(acc => acc.id === accountId)?.name;
       
       toast({
         title: "Profile switched",
-        description: `Switched to ${accountName}`,
+        description: `Switched to ${accountId === 'main' ? 'Main Profile' : updatedSubAccounts.find(acc => acc.id === accountId)?.name}`,
       });
       
+      // Refresh the page to apply content filtering
       window.location.reload();
     } catch (error) {
       toast({
@@ -153,7 +146,8 @@ export const AccountSwitcher = () => {
           <Users className="h-4 w-4 ml-2" />
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent className="w-64 bg-background border" align="end">
+      <DropdownMenuContent className="w-64" align="end">
+        {/* Main Account */}
         <DropdownMenuItem 
           onClick={() => handleSwitchAccount('main')}
           className={`flex items-center gap-3 p-3 ${activeAccount.id === 'main' ? 'bg-accent' : ''}`}
@@ -171,6 +165,7 @@ export const AccountSwitcher = () => {
           </div>
         </DropdownMenuItem>
 
+        {/* Sub Accounts */}
         {subAccounts.map((account) => (
           <DropdownMenuItem 
             key={account.id}
@@ -192,6 +187,7 @@ export const AccountSwitcher = () => {
 
         <DropdownMenuSeparator />
 
+        {/* Add New Profile */}
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
             <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
@@ -199,7 +195,7 @@ export const AccountSwitcher = () => {
               Add New Profile
             </DropdownMenuItem>
           </DialogTrigger>
-          <DialogContent className="bg-background">
+          <DialogContent>
             <DialogHeader>
               <DialogTitle>Create New Profile</DialogTitle>
             </DialogHeader>
