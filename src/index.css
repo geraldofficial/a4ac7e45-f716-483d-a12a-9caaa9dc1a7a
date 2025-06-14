@@ -121,7 +121,7 @@ button, [role="button"] {
   background: rgba(255, 255, 255, 0.3);
 }
 
-/* Mobile optimization for scrolling */
+/* Mobile optimization for scrolling - FIXED */
 @media (max-width: 768px) {
   /* Hide scrollbars on mobile */
   ::-webkit-scrollbar {
@@ -136,10 +136,12 @@ button, [role="button"] {
     padding-right: 1rem;
   }
   
-  /* Movie cards mobile optimization */
+  /* Movie cards mobile optimization - PREVENT ZOOM */
   .movie-card {
     touch-action: pan-y;
     -webkit-tap-highlight-color: transparent;
+    transform: none !important;
+    transition: none !important;
   }
   
   /* Hero section mobile optimization */
@@ -177,6 +179,22 @@ button, [role="button"] {
   .horizontal-scroll > * {
     scroll-snap-align: start;
     flex-shrink: 0;
+  }
+  
+  /* PREVENT ALL SCALING AND TRANSFORMS ON MOBILE */
+  .group:hover,
+  .movie-card:hover,
+  .hover\\:scale-\\[1\\.02\\]:hover,
+  .md\\:hover\\:scale-\\[1\\.02\\]:hover {
+    transform: none !important;
+  }
+  
+  /* Disable problematic transitions on mobile */
+  .group,
+  .movie-card,
+  .transition-all,
+  .transition-transform {
+    transition: none !important;
   }
 }
 
@@ -297,7 +315,7 @@ button, [role="button"] {
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   }
   
-  /* Desktop hover effects */
+  /* Desktop hover effects - ONLY ON DESKTOP */
   .movie-card:hover,
   .group:hover {
     transform: scale(1.02);
