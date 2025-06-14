@@ -77,6 +77,12 @@ export const Navbar = () => {
             >
               Top Rated
             </button>
+            <button 
+              onClick={() => navigate('/support')}
+              className="text-foreground hover:text-primary transition-colors font-medium"
+            >
+              Support
+            </button>
             {user && (
               <button 
                 onClick={() => navigate('/history')}
