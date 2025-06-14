@@ -9,6 +9,9 @@ interface VideoPlayerProps {
   season?: number;
   episode?: number;
   autoFullscreen?: boolean;
+  poster_path?: string;
+  backdrop_path?: string;
+  duration?: number;
 }
 
 export const VideoPlayer: React.FC<VideoPlayerProps> = (props) => {

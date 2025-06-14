@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { streamingSources, getStreamingUrl } from '@/services/streaming';
 import { watchHistoryService } from '@/services/watchHistory';
+import { tmdbApi } from '@/services/tmdb';
 import { SkipForward, Volume2, VolumeX, Maximize, RotateCcw } from 'lucide-react';
 
 interface EnhancedVideoPlayerProps {
@@ -36,6 +37,7 @@ export const EnhancedVideoPlayer: React.FC<EnhancedVideoPlayerProps> = ({
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [hasStartedWatching, setHasStartedWatching] = useState(false);
+  const [estimatedDuration, setEstimatedDuration] = useState(duration);
   
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -48,22 +50,77 @@ export const EnhancedVideoPlayer: React.FC<EnhancedVideoPlayerProps> = ({
   // Enhanced URL with better caching and performance parameters
   const enhancedUrl = `${currentUrl}&cache=1&preload=auto&buffer=30&quality=auto&timestamp=${Date.now()}`;
 
+  // Fetch duration information if not provided
+  useEffect(() => {
+    const fetchDurationInfo = async () => {
+      if (!estimatedDuration) {
+        try {
+          if (type === 'movie') {
+            const movieDetails = await tmdbApi.getMovieDetails(tmdbId);
+            if (movieDetails.runtime) {
+              setEstimatedDuration(movieDetails.runtime * 60); // Convert minutes to seconds
+            }
+          } else if (type === 'tv' && season && episode) {
+            const seasonDetails = await tmdbApi.getTVSeasonDetails(tmdbId, season);
+            const episodeInfo = seasonDetails.episodes?.find(ep => ep.episode_number === episode);
+            if (episodeInfo?.runtime) {
+              setEstimatedDuration(episodeInfo.runtime * 60); // Convert minutes to seconds
+            } else {
+              // Default TV episode duration
+              setEstimatedDuration(45 * 60); // 45 minutes
+            }
+          }
+        } catch (error) {
+          console.error('Error fetching duration info:', error);
+          // Set default durations
+          if (type === 'movie') {
+            setEstimatedDuration(120 * 60); // 2 hours
+          } else {
+            setEstimatedDuration(45 * 60); // 45 minutes
+          }
+        }
+      }
+    };
+
+    fetchDurationInfo();
+  }, [tmdbId, type, season, episode, estimatedDuration]);
+
   // Add to watch history when playback starts
-  const addToWatchHistory = () => {
+  const addToWatchHistory = async () => {
     if (!hasStartedWatching) {
-      watchHistoryService.addToHistory({
-        tmdbId,
-        type,
-        title,
-        poster_path,
-        backdrop_path,
-        season,
-        episode,
-        progress: 0,
-        duration
-      });
-      setHasStartedWatching(true);
-      console.log('Added to watch history:', title);
+      try {
+        let finalPosterPath = poster_path;
+        let finalBackdropPath = backdrop_path;
+
+        // Fetch poster and backdrop if not provided
+        if (!finalPosterPath || !finalBackdropPath) {
+          if (type === 'movie') {
+            const movieDetails = await tmdbApi.getMovieDetails(tmdbId);
+            finalPosterPath = finalPosterPath || movieDetails.poster_path;
+            finalBackdropPath = finalBackdropPath || movieDetails.backdrop_path;
+          } else {
+            const tvDetails = await tmdbApi.getTVDetails(tmdbId);
+            finalPosterPath = finalPosterPath || tvDetails.poster_path;
+            finalBackdropPath = finalBackdropPath || tvDetails.backdrop_path;
+          }
+        }
+
+        watchHistoryService.addToHistory({
+          tmdbId,
+          type,
+          title,
+          poster_path: finalPosterPath,
+          backdrop_path: finalBackdropPath,
+          season,
+          episode,
+          progress: 0,
+          duration: estimatedDuration
+        });
+        setHasStartedWatching(true);
+        console.log('Added to watch history:', title);
+      } catch (error) {
+        console.error('Error adding to watch history:', error);
+      }
     }
   };
 
@@ -78,7 +135,7 @@ export const EnhancedVideoPlayer: React.FC<EnhancedVideoPlayerProps> = ({
         Math.floor(progressSeconds),
         season,
         episode,
-        duration
+        estimatedDuration
       );
       lastProgressUpdateRef.current = now;
       console.log('Updated watch progress:', Math.floor(progressSeconds), 'seconds');
@@ -141,8 +198,8 @@ export const EnhancedVideoPlayer: React.FC<EnhancedVideoPlayerProps> = ({
               setIsPlaying(false);
               stopProgressTracking();
               // Mark as completed
-              if (duration) {
-                updateWatchProgress(duration);
+              if (estimatedDuration) {
+                updateWatchProgress(estimatedDuration);
               }
               break;
           }
@@ -157,7 +214,7 @@ export const EnhancedVideoPlayer: React.FC<EnhancedVideoPlayerProps> = ({
       window.removeEventListener('message', handleMessage);
       stopProgressTracking();
     };
-  }, [tmdbId, type, season, episode, duration, isPlaying]);
+  }, [tmdbId, type, season, episode, estimatedDuration, isPlaying]);
 
   // Simulate playback start after iframe loads (fallback if no iframe messages)
   useEffect(() => {
@@ -316,7 +373,7 @@ export const EnhancedVideoPlayer: React.FC<EnhancedVideoPlayerProps> = ({
           {hasStartedWatching && (
             <span className="text-white/60 text-xs">
               {isPlaying ? '▶️ Playing' : '⏸️ Paused'} • {formatTime(currentTime)}
-              {duration && ` / ${formatTime(duration)}`}
+              {estimatedDuration && ` / ${formatTime(estimatedDuration)}`}
             </span>
           )}
         </div>
@@ -418,12 +475,12 @@ export const EnhancedVideoPlayer: React.FC<EnhancedVideoPlayerProps> = ({
       </div>
 
       {/* Progress indicator (if duration is available) */}
-      {duration && hasStartedWatching && (
+      {estimatedDuration && hasStartedWatching && (
         <div className="absolute bottom-12 left-2 right-2 z-10">
           <div className="bg-black/50 rounded-full h-1">
             <div 
               className="bg-primary h-1 rounded-full transition-all duration-300"
-              style={{ width: `${Math.min((currentTime / duration) * 100, 100)}%` }}
+              style={{ width: `${Math.min((currentTime / estimatedDuration) * 100, 100)}%` }}
             />
           </div>
         </div>
