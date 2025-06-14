@@ -1,3 +1,4 @@
+
 import React, { useState, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -26,8 +27,6 @@ export const ImprovedMovieCard: React.FC<ImprovedMovieCardProps> = ({
   const navigate = useNavigate();
   const [imageLoaded, setImageLoaded] = useState(false);
   const [imageError, setImageError] = useState(false);
-  const [isHovered, setIsHovered] = useState(false);
-  const cardRef = useRef<HTMLDivElement>(null);
 
   const title = movie.title || movie.name || 'Unknown Title';
   const releaseDate = movie.release_date || movie.first_air_date || '';
@@ -40,7 +39,8 @@ export const ImprovedMovieCard: React.FC<ImprovedMovieCardProps> = ({
 
   const fallbackUrl = 'https://images.unsplash.com/photo-1489599904276-39c2bb2d7b64?w=400&h=600&fit=crop';
 
-  const handleWatch = () => {
+  const handleWatch = (e: React.MouseEvent) => {
+    e.stopPropagation();
     if (!user) {
       toast({
         title: "Sign in required",
@@ -123,11 +123,11 @@ export const ImprovedMovieCard: React.FC<ImprovedMovieCardProps> = ({
   const getVariantClasses = () => {
     switch (variant) {
       case 'compact':
-        return 'w-full max-w-[140px]';
+        return 'w-[160px] min-w-[160px]';
       case 'featured':
         return 'w-full max-w-lg';
       default:
-        return 'w-full';
+        return 'w-[180px] min-w-[180px] sm:w-[200px] sm:min-w-[200px]';
     }
   };
 
@@ -137,15 +137,12 @@ export const ImprovedMovieCard: React.FC<ImprovedMovieCardProps> = ({
 
   return (
     <div 
-      ref={cardRef}
       className={cn(
-        "group relative overflow-hidden rounded-xl bg-card/80 backdrop-blur-sm border border-border/50 transition-all duration-500 cursor-pointer mx-auto",
-        "hover:scale-[1.02] hover:shadow-2xl hover:border-primary/30",
-        "hover:z-10 hover:bg-card/90",
+        "group relative overflow-hidden rounded-xl bg-card/80 backdrop-blur-sm border border-border/50 transition-all duration-300 cursor-pointer",
+        // Remove hover effects on mobile to prevent scroll blocking
+        "md:hover:scale-[1.02] md:hover:shadow-2xl md:hover:border-primary/30 md:hover:z-10 md:hover:bg-card/90",
         getVariantClasses()
       )}
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
       onClick={handleMoreInfo}
     >
       <div className={cn("overflow-hidden relative bg-muted/20", getAspectRatio())}>
@@ -162,9 +159,10 @@ export const ImprovedMovieCard: React.FC<ImprovedMovieCardProps> = ({
             src={posterUrl}
             alt={title}
             className={cn(
-              "h-full w-full object-cover transition-all duration-700",
-              imageLoaded ? 'opacity-100 scale-100' : 'opacity-0 scale-105',
-              isHovered && "scale-110"
+              "h-full w-full object-cover transition-all duration-500",
+              imageLoaded ? 'opacity-100' : 'opacity-0',
+              // Remove scale effect on mobile
+              "md:group-hover:scale-110"
             )}
             onLoad={() => setImageLoaded(true)}
             onError={() => setImageError(true)}
@@ -182,7 +180,7 @@ export const ImprovedMovieCard: React.FC<ImprovedMovieCardProps> = ({
           />
         )}
 
-        {/* Gradient overlay */}
+        {/* Gradient overlay - Always visible on mobile, hover on desktop */}
         <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity duration-300" />
 
         {/* Rating badge */}
@@ -203,8 +201,8 @@ export const ImprovedMovieCard: React.FC<ImprovedMovieCardProps> = ({
           </Badge>
         </div>
 
-        {/* Action buttons - Always visible on mobile for better UX */}
-        <div className="absolute bottom-2 left-2 right-2 z-10 transition-all duration-300 space-y-2 opacity-100 md:opacity-0 md:group-hover:opacity-100 md:group-hover:translate-y-0 md:translate-y-2">
+        {/* Action buttons - Always visible on mobile, hover on desktop */}
+        <div className="absolute bottom-2 left-2 right-2 z-10 transition-all duration-300 space-y-2 opacity-100 md:opacity-0 md:group-hover:opacity-100">
           <div className="flex items-center justify-between mb-2">
             <div className="flex items-center gap-1">
               {year && (
@@ -218,21 +216,21 @@ export const ImprovedMovieCard: React.FC<ImprovedMovieCardProps> = ({
           <div className="flex gap-2">
             <Button 
               size="sm" 
-              className="bg-primary hover:bg-primary/90 text-primary-foreground font-medium transition-all duration-200 hover:scale-105 shadow-lg flex-1 h-10 text-sm rounded-lg touch-target"
-              onClick={(e) => {
-                e.stopPropagation();
-                handleWatch();
-              }}
+              className="bg-primary hover:bg-primary/90 text-primary-foreground font-medium transition-all duration-200 flex-1 h-10 text-sm rounded-lg min-h-[44px]"
+              onClick={handleWatch}
             >
               <Play className="h-4 w-4 mr-2 fill-current" />
-              Play
+              <span className="whitespace-nowrap">Play</span>
             </Button>
             
             <Button 
               size="sm" 
               variant="outline"
-              className="border-white/30 bg-white/10 backdrop-blur-sm text-white hover:bg-white/20 hover:border-white/50 transition-all duration-200 hover:scale-105 shadow-lg h-10 w-10 p-0 rounded-lg touch-target"
-              onClick={handleMoreInfo}
+              className="border-white/30 bg-white/10 backdrop-blur-sm text-white hover:bg-white/20 hover:border-white/50 transition-all duration-200 h-10 w-10 p-0 rounded-lg min-h-[44px] min-w-[44px]"
+              onClick={(e) => {
+                e.stopPropagation();
+                handleMoreInfo();
+              }}
             >
               <Info className="h-4 w-4" />
             </Button>
@@ -241,7 +239,7 @@ export const ImprovedMovieCard: React.FC<ImprovedMovieCardProps> = ({
               <Button 
                 size="sm" 
                 variant="outline" 
-                className="border-white/30 bg-white/10 backdrop-blur-sm text-white hover:bg-white/20 hover:border-white/50 transition-all duration-200 hover:scale-105 shadow-lg h-10 w-10 p-0 rounded-lg touch-target"
+                className="border-white/30 bg-white/10 backdrop-blur-sm text-white hover:bg-white/20 hover:border-white/50 transition-all duration-200 h-10 w-10 p-0 rounded-lg min-h-[44px] min-w-[44px]"
                 onClick={handleWatchlistToggle}
               >
                 {isInWatchlist(movie.id) ? <Check className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
@@ -251,7 +249,7 @@ export const ImprovedMovieCard: React.FC<ImprovedMovieCardProps> = ({
             <Button 
               size="sm" 
               variant="outline"
-              className="border-white/30 bg-white/10 backdrop-blur-sm text-white hover:bg-white/20 hover:border-white/50 transition-all duration-200 hover:scale-105 shadow-lg h-10 w-10 p-0 rounded-lg touch-target"
+              className="border-white/30 bg-white/10 backdrop-blur-sm text-white hover:bg-white/20 hover:border-white/50 transition-all duration-200 h-10 w-10 p-0 rounded-lg min-h-[44px] min-w-[44px]"
               onClick={handleShare}
             >
               <Share2 className="h-4 w-4" />
@@ -266,7 +264,9 @@ export const ImprovedMovieCard: React.FC<ImprovedMovieCardProps> = ({
         variant === 'compact' && "p-2"
       )}>
         <h3 className={cn(
-          "text-foreground font-semibold truncate group-hover:text-primary transition-colors",
+          "text-foreground font-semibold truncate transition-colors",
+          // Remove hover color change on mobile
+          "md:group-hover:text-primary",
           variant === 'compact' ? "text-xs mb-1" : "text-sm mb-1"
         )}>
           {title}

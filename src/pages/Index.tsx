@@ -4,7 +4,6 @@ import { useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { Navbar } from '@/components/Navbar';
 import { HeroSection } from '@/components/HeroSection';
-import { MovieSection } from '@/components/MovieSection';
 import { ContinueWatching } from '@/components/ContinueWatching';
 import { RecentlyWatched } from '@/components/RecentlyWatched';
 import { PullToRefresh } from '@/components/PullToRefresh';
@@ -29,7 +28,6 @@ const Index = () => {
 
   const handleRefresh = async () => {
     await queryClient.invalidateQueries();
-    // Add a small delay for better UX
     await new Promise(resolve => setTimeout(resolve, 500));
   };
 
@@ -45,7 +43,7 @@ const Index = () => {
         <meta property="og:description" content="Stream unlimited movies and TV series free on FlickPick. Premium subscribers enjoy ad-free viewing." />
         <meta property="og:type" content="website" />
         <meta property="og:url" content={window.location.href} />
-        <meta property="og:image" content="https://images.unsplash.com/photo-1489599904276-39c2bb2d7b64?w=1200&h=630&fit=crop" />
+        <meta property="og:image" content="https://images.unsplash.com/photo-1489599904276-39c2bb2d64?w=1200&h=630&fit=crop" />
         
         {/* Twitter Card */}
         <meta name="twitter:card" content="summary_large_image" />
@@ -95,10 +93,10 @@ const Index = () => {
         </script>
       </Helmet>
       
-      <div className="min-h-screen bg-background dark overflow-x-hidden scroll-container">
+      <div className="min-h-screen bg-background dark overflow-x-hidden">
         <Navbar />
         <PullToRefresh onRefresh={handleRefresh}>
-          <main className="relative pt-14 md:pt-16 pb-20 md:pb-8">
+          <main className="relative pt-14 md:pt-16 pb-mobile-nav">
             <HeroSection />
             {user && <ContinueWatching />}
             {user && <RecentlyWatched />}

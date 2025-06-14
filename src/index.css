@@ -136,10 +136,17 @@ button, [role="button"] {
     padding-right: 1rem;
   }
   
-  /* Movie cards touch optimization */
+  /* Movie cards touch optimization - Remove problematic hover effects */
   .movie-card {
     touch-action: pan-y;
     -webkit-tap-highlight-color: transparent;
+  }
+  
+  /* Disable hover effects on mobile to prevent scroll blocking */
+  .movie-card:hover,
+  .group:hover {
+    transform: none !important;
+    scale: 1 !important;
   }
   
   /* Hero section mobile optimization */
@@ -150,7 +157,7 @@ button, [role="button"] {
   
   /* Improve movie section spacing */
   .movie-section {
-    margin-bottom: 2rem;
+    margin-bottom: 1.5rem;
   }
   
   /* Better touch targets for mobile */
@@ -177,6 +184,17 @@ button, [role="button"] {
   .horizontal-scroll > * {
     scroll-snap-align: start;
     flex-shrink: 0;
+  }
+  
+  /* Prevent any transform or scale effects on mobile */
+  * {
+    transform: none !important;
+    transition: none !important;
+  }
+  
+  /* Allow only opacity and color transitions */
+  .safe-transition {
+    transition: opacity 0.3s ease, color 0.3s ease !important;
   }
 }
 
@@ -224,14 +242,12 @@ button, [role="button"] {
     -webkit-overflow-scrolling: touch;
   }
   
-  /* Fix iOS scroll momentum and prevent bounce */
   .scroll-container {
     -webkit-overflow-scrolling: touch;
     overflow-y: scroll;
     overscroll-behavior: contain;
   }
   
-  /* Hero carousel touch optimization for iOS */
   .hero-carousel {
     touch-action: pan-y;
     -webkit-transform: translateZ(0);
@@ -266,7 +282,7 @@ button, [role="button"] {
 @media (max-width: 640px) {
   /* Ensure proper bottom navigation spacing */
   .pb-mobile-nav {
-    padding-bottom: calc(96px + env(safe-area-inset-bottom, 0px)) !important;
+    padding-bottom: calc(80px + env(safe-area-inset-bottom, 0px)) !important;
   }
   
   /* Better hero section for mobile */
@@ -306,7 +322,9 @@ button, [role="button"] {
   user-select: none;
 }
 
-/* Smooth transitions for better UX */
-.smooth-transition {
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+/* Smooth transitions for better UX - Desktop only */
+@media (min-width: 769px) {
+  .smooth-transition {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
 }
