@@ -28,7 +28,7 @@ const handler = async (req: Request): Promise<Response> => {
     // Fetch trending movies if not provided
     let movies = trendingMovies;
     if (!movies) {
-      const tmdbResponse = await fetch(`https://api.themoviedb.org/3/trending/all/week?api_key=${Deno.env.get('TMDB_API_KEY')}`);
+      const tmdbResponse = await fetch(`https://api.themoviedb.org/3/trending/all/week?api_key=8265bd1679663a7ea12ac168da84d2e8`);
       const tmdbData = await tmdbResponse.json();
       movies = tmdbData.results?.slice(0, 6) || [];
     }
@@ -47,7 +47,7 @@ const handler = async (req: Request): Promise<Response> => {
     `).join('');
 
     const emailResponse = await resend.emails.send({
-      from: "FlickPick <trending@flickpick.com>",
+      from: "FlickPick <onboarding@resend.dev>",
       to: [email],
       subject: "🔥 This Week's Trending Movies & Shows on FlickPick",
       html: `
@@ -81,15 +81,15 @@ const handler = async (req: Request): Promise<Response> => {
               </div>
 
               <div style="text-align: center; margin: 30px 0;">
-                <a href="${req.headers.get('origin') || 'https://flickpick.com'}/trending" style="display: inline-block; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; text-decoration: none; padding: 15px 30px; border-radius: 50px; font-weight: bold; font-size: 16px; box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);">
+                <a href="${req.headers.get('origin') || 'https://flickpick.lovable.app'}/trending" style="display: inline-block; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; text-decoration: none; padding: 15px 30px; border-radius: 50px; font-weight: bold; font-size: 16px; box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);">
                   🍿 Watch Now
                 </a>
               </div>
 
               <div style="background: #f8f9ff; border-radius: 12px; padding: 20px; margin: 25px 0; text-align: center;">
-                <p style="color: #667eea; margin: 0; font-weight: bold;">💡 Personalized for You</p>
+                <p style="color: #667eea; margin: 0; font-weight: bold;">💡 Ad-Free Experience</p>
                 <p style="color: #666; margin: 10px 0 0 0; font-size: 14px;">
-                  Complete your profile to get recommendations based on your preferences!
+                  Enjoy all content without any interruptions - completely ad-free!
                 </p>
               </div>
             </div>
@@ -99,7 +99,7 @@ const handler = async (req: Request): Promise<Response> => {
               <p style="color: #666; margin: 0 0 15px 0; font-size: 14px;">
                 Need help or have questions?
               </p>
-              <a href="${req.headers.get('origin') || 'https://flickpick.com'}/support" style="color: #667eea; text-decoration: none; font-weight: bold; font-size: 14px;">
+              <a href="${req.headers.get('origin') || 'https://flickpick.lovable.app'}/support" style="color: #667eea; text-decoration: none; font-weight: bold; font-size: 14px;">
                 📞 Contact Support
               </a>
               <p style="color: #999; margin: 15px 0 0 0; font-size: 12px;">

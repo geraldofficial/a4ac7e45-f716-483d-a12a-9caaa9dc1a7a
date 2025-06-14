@@ -25,7 +25,7 @@ const handler = async (req: Request): Promise<Response> => {
     const userName = name || email.split('@')[0];
 
     const emailResponse = await resend.emails.send({
-      from: "FlickPick <welcome@flickpick.com>",
+      from: "FlickPick <onboarding@resend.dev>",
       to: [email],
       subject: "🎬 Welcome to FlickPick - Your Ultimate Streaming Experience!",
       html: `
@@ -61,11 +61,12 @@ const handler = async (req: Request): Promise<Response> => {
                   <li>HD streaming with smooth playback</li>
                   <li>Create your personal watchlist</li>
                   <li>Trending content updated daily</li>
+                  <li>Ad-free streaming experience</li>
                 </ul>
               </div>
 
               <div style="text-align: center; margin: 30px 0;">
-                <a href="${req.headers.get('origin') || 'https://flickpick.com'}" style="display: inline-block; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; text-decoration: none; padding: 15px 30px; border-radius: 50px; font-weight: bold; font-size: 16px; box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);">
+                <a href="${req.headers.get('origin') || 'https://flickpick.lovable.app'}" style="display: inline-block; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; text-decoration: none; padding: 15px 30px; border-radius: 50px; font-weight: bold; font-size: 16px; box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);">
                   🎬 Start Watching Now
                 </a>
               </div>
@@ -83,7 +84,7 @@ const handler = async (req: Request): Promise<Response> => {
               <p style="color: #666; margin: 0 0 15px 0; font-size: 14px;">
                 Need help? We're here for you!
               </p>
-              <a href="${req.headers.get('origin') || 'https://flickpick.com'}/support" style="color: #667eea; text-decoration: none; font-weight: bold; font-size: 14px;">
+              <a href="${req.headers.get('origin') || 'https://flickpick.lovable.app'}/support" style="color: #667eea; text-decoration: none; font-weight: bold; font-size: 14px;">
                 📞 Contact Support
               </a>
               <p style="color: #999; margin: 15px 0 0 0; font-size: 12px;">

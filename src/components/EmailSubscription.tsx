@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -8,7 +9,7 @@ import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
-import { Mail, Bell, Settings } from 'lucide-react';
+import { Mail, Bell, Settings, CheckCircle } from 'lucide-react';
 
 export const EmailSubscription = () => {
   const { user } = useAuth();
@@ -63,6 +64,8 @@ export const EmailSubscription = () => {
 
       if (error) {
         console.error('Error sending welcome email:', error);
+      } else {
+        console.log('Welcome email sent successfully');
       }
     } catch (error) {
       console.error('Error sending welcome email:', error);
@@ -80,6 +83,8 @@ export const EmailSubscription = () => {
 
       if (error) {
         console.error('Error sending trending email:', error);
+      } else {
+        console.log('Trending email sent successfully');
       }
     } catch (error) {
       console.error('Error sending trending email:', error);
@@ -219,11 +224,20 @@ export const EmailSubscription = () => {
     <Card className="w-full max-w-md mx-auto">
       <CardHeader className="text-center">
         <div className="mx-auto w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mb-4">
-          <Bell className="h-6 w-6 text-primary" />
+          {subscription && subscription.is_active ? (
+            <CheckCircle className="h-6 w-6 text-green-500" />
+          ) : (
+            <Bell className="h-6 w-6 text-primary" />
+          )}
         </div>
-        <CardTitle>Daily Trending Movies</CardTitle>
+        <CardTitle>
+          {subscription && subscription.is_active ? 'You\'re Subscribed!' : 'Daily Trending Movies'}
+        </CardTitle>
         <CardDescription>
-          Get the latest trending movies and shows delivered to your inbox
+          {subscription && subscription.is_active 
+            ? 'You\'ll receive ad-free trending movies and shows in your inbox'
+            : 'Get the latest trending movies and shows delivered to your inbox'
+          }
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -287,6 +301,13 @@ export const EmailSubscription = () => {
               ? new Date(subscription.last_sent_at).toLocaleDateString()
               : 'Never'
             }
+          </div>
+        )}
+
+        {subscription && subscription.is_active && (
+          <div className="bg-green-50 border border-green-200 rounded-lg p-3 text-center">
+            <p className="text-sm text-green-700 font-medium">✨ Ad-Free Experience Activated</p>
+            <p className="text-xs text-green-600 mt-1">You'll enjoy uninterrupted streaming without any ads!</p>
           </div>
         )}
       </CardContent>

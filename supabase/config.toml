@@ -1,5 +1,5 @@
 
-project_id = "mgbfglzofkqfmpckhneu"
+project_id = "ehqlkafauehdpqzrdkia"
 
 [functions.kesho-payment]
 verify_jwt = false
@@ -8,4 +8,10 @@ verify_jwt = false
 verify_jwt = false
 
 [functions.send-trending-email]
+verify_jwt = false
+
+[functions.send-daily-trending-batch]
+verify_jwt = false
+
+[functions.stream-proxy]
 verify_jwt = false
