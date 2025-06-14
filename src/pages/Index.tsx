@@ -8,6 +8,7 @@ import { ContinueWatching } from '@/components/ContinueWatching';
 import { RecentlyWatched } from '@/components/RecentlyWatched';
 import { PullToRefresh } from '@/components/PullToRefresh';
 import { Footer } from '@/components/Footer';
+import { BottomNavigation } from '@/components/BottomNavigation';
 import { useAuth } from '@/contexts/AuthContext';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 
@@ -57,6 +58,7 @@ const Index = () => {
         </main>
       </PullToRefresh>
       <Footer />
+      <BottomNavigation />
     </div>
   );
 };

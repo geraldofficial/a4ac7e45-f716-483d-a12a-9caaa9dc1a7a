@@ -1,4 +1,5 @@
 
+
 import { Suspense, lazy } from "react";
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -19,6 +20,10 @@ const Onboarding = lazy(() => import("./pages/Onboarding"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const Auth = lazy(() => import("./pages/Auth"));
 const Profile = lazy(() => import("./pages/Profile"));
+const Support = lazy(() => import("./pages/Support"));
+const Trending = lazy(() => import("./pages/Trending"));
+const TopRated = lazy(() => import("./pages/TopRated"));
+const History = lazy(() => import("./pages/History"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -49,6 +54,10 @@ const App = () => (
                   <Route path="/onboarding" element={<Onboarding />} />
                   <Route path="/auth" element={<Auth />} />
                   <Route path="/profile" element={<Profile />} />
+                  <Route path="/support" element={<Support />} />
+                  <Route path="/trending" element={<Trending />} />
+                  <Route path="/top-rated" element={<TopRated />} />
+                  <Route path="/history" element={<History />} />
                   <Route path="*" element={<NotFound />} />
                 </Routes>
               </Suspense>
