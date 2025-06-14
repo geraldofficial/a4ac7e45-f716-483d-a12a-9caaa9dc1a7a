@@ -1,11 +1,8 @@
 
-import { tmdbApi, Movie } from './tmdb';
+import { tmdbApi } from './tmdb';
 
-interface GenreMapping {
-  [key: number]: string;
-}
-
-const genreNames: GenreMapping = {
+// Genre mapping for recommendations
+const genreNames: { [key: number]: string } = {
   28: 'Action',
   12: 'Adventure',
   16: 'Animation',
@@ -27,79 +24,44 @@ const genreNames: GenreMapping = {
   37: 'Western'
 };
 
-export const getPersonalizedRecommendations = async (
-  genrePreferences: number[],
-  page: number = 1
-): Promise<{ results: Movie[]; total_pages: number; total_results: number }> => {
+export const getPersonalizedRecommendations = async (genrePreferences: number[], page: number = 1) => {
   try {
-    if (genrePreferences.length === 0) {
-      // Fallback to popular movies if no preferences
-      const results = await tmdbApi.getPopularMovies(page);
-      return {
-        results,
-        total_pages: 10,
-        total_results: results.length
-      };
-    }
-
-    // Get movies for each preferred genre and mix them
-    const genrePromises = genrePreferences.slice(0, 3).map(genreId =>
-      tmdbApi.getMoviesByGenre(genreId, page)
-    );
-
-    const genreResults = await Promise.all(genrePromises);
+    // Convert genre preferences to comma-separated string
+    const genreIds = genrePreferences.join(',');
     
-    // Combine and shuffle results
-    const allMovies: Movie[] = [];
-    const maxMoviesPerGenre = 7; // Limit per genre to create variety
+    // Get movies based on preferred genres
+    const movies = await tmdbApi.discoverMovies(genreIds, 'popularity.desc', page);
     
-    genreResults.forEach(result => {
-      if (Array.isArray(result)) {
-        allMovies.push(...result.slice(0, maxMoviesPerGenre));
-      }
-    });
-
-    // Remove duplicates based on movie ID
-    const uniqueMovies = allMovies.filter((movie, index, self) =>
-      index === self.findIndex(m => m.id === movie.id)
-    );
-
-    // Shuffle the array for variety
-    const shuffledMovies = uniqueMovies.sort(() => Math.random() - 0.5);
-
     return {
-      results: shuffledMovies.slice(0, 20), // Return top 20
-      total_pages: Math.ceil(shuffledMovies.length / 20),
-      total_results: shuffledMovies.length
+      results: movies,
+      total_pages: 20, // Reasonable default
+      page
     };
   } catch (error) {
     console.error('Error getting personalized recommendations:', error);
     // Fallback to popular movies
-    const results = await tmdbApi.getPopularMovies(page);
+    const fallback = await tmdbApi.getPopularMovies(page);
     return {
-      results,
-      total_pages: 10,
-      total_results: results.length
+      results: fallback,
+      total_pages: 20,
+      page
     };
   }
 };
 
-export const getGenreName = (genreId: number): string => {
-  return genreNames[genreId] || 'Unknown';
-};
-
 export const getRecommendationTitle = (genrePreferences: number[]): string => {
-  if (genrePreferences.length === 0) {
-    return 'Popular Movies';
+  if (!genrePreferences || genrePreferences.length === 0) {
+    return 'Recommended for You';
   }
   
-  if (genrePreferences.length === 1) {
-    return `Because you like ${getGenreName(genrePreferences[0])}`;
+  const primaryGenre = genreNames[genrePreferences[0]];
+  const secondaryGenre = genrePreferences.length > 1 ? genreNames[genrePreferences[1]] : null;
+  
+  if (secondaryGenre) {
+    return `${primaryGenre} & ${secondaryGenre} Picks`;
+  } else if (primaryGenre) {
+    return `${primaryGenre} Recommendations`;
   }
   
-  if (genrePreferences.length === 2) {
-    return `${getGenreName(genrePreferences[0])} & ${getGenreName(genrePreferences[1])} picks`;
-  }
-  
-  return `Personalized for you`;
+  return 'Recommended for You';
 };

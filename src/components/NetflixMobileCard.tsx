@@ -2,7 +2,8 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Movie } from '@/services/tmdb';
-import { Star } from 'lucide-react';
+import { useAuth } from '@/contexts/AuthContext';
+import { Plus, Check } from 'lucide-react';
 
 interface NetflixMobileCardProps {
   movie: Movie;
@@ -15,107 +16,87 @@ export const NetflixMobileCard: React.FC<NetflixMobileCardProps> = ({
   size = 'small',
   priority = false 
 }) => {
-  const [imageLoaded, setImageLoaded] = useState(false);
-  const [imageError, setImageError] = useState(false);
-  const [touchStart, setTouchStart] = useState<{ x: number; y: number } | null>(null);
-
   const navigate = useNavigate();
+  const { user, addToWatchlist, removeFromWatchlist, isInWatchlist } = useAuth();
+  const [isLoading, setIsLoading] = useState(false);
 
   const title = movie.title || movie.name || 'Unknown Title';
-  const releaseDate = movie.release_date || movie.first_air_date || '';
-  const type = movie.media_type || (movie.title ? 'movie' : 'tv');
+  const releaseDate = movie.release_date || movie.first_air_date;
   const year = releaseDate ? new Date(releaseDate).getFullYear() : '';
+  const mediaType = movie.media_type || (movie.title ? 'movie' : 'tv');
+  const inWatchlist = user ? isInWatchlist(movie.id) : false;
 
-  const posterUrl = movie.poster_path 
-    ? `https://image.tmdb.org/t/p/w500${movie.poster_path}`
-    : null;
+  const imageUrl = movie.poster_path 
+    ? `https://image.tmdb.org/t/p/w300${movie.poster_path}`
+    : '/placeholder-poster.jpg';
 
-  const fallbackUrl = 'https://images.unsplash.com/photo-1489599904276-39c2bb2d64?w=400&h=600&fit=crop';
-
-  const handleTouchStart = (e: React.TouchEvent) => {
-    const touch = e.touches[0];
-    setTouchStart({ x: touch.clientX, y: touch.clientY });
+  const handleClick = () => {
+    navigate(`/${mediaType}/${movie.id}`);
   };
 
-  const handleTouchEnd = (e: React.TouchEvent) => {
-    if (!touchStart) return;
+  const handleWatchlistToggle = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!user) return;
 
-    const touch = e.changedTouches[0];
-    const deltaX = Math.abs(touch.clientX - touchStart.x);
-    const deltaY = Math.abs(touch.clientY - touchStart.y);
-
-    // Only trigger click if it's a tap (minimal movement)
-    if (deltaX < 10 && deltaY < 10) {
-      handleNavigation();
-    }
-
-    setTouchStart(null);
-  };
-
-  const handleNavigation = () => {
+    setIsLoading(true);
     try {
-      navigate(`/${type}/${movie.id}`);
+      if (inWatchlist) {
+        await removeFromWatchlist(movie.id);
+      } else {
+        await addToWatchlist(movie.id);
+      }
     } catch (error) {
-      console.error('Navigation error:', error);
-      // Fallback to direct navigation
-      window.location.href = `/${type}/${movie.id}`;
+      console.error('Error updating watchlist:', error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  const cardClasses = size === 'large' 
-    ? 'netflix-mobile-card netflix-mobile-card-large' 
-    : 'netflix-mobile-card';
+  const cardClass = size === 'large' 
+    ? 'netflix-mobile-card-large' 
+    : 'netflix-mobile-card-small';
 
   return (
-    <div 
-      className={cardClasses}
-      onTouchStart={handleTouchStart}
-      onTouchEnd={handleTouchEnd}
-      onClick={handleNavigation}
-      style={{ touchAction: 'manipulation' }}
-    >
+    <div className={cardClass} onClick={handleClick}>
       <div className="relative">
-        {!imageLoaded && !imageError && (
-          <div className="netflix-mobile-card-image bg-gray-800 animate-pulse flex items-center justify-center">
-            <div className="w-6 h-6 border-2 border-gray-600 border-t-transparent rounded-full animate-spin"></div>
-          </div>
-        )}
-
-        {posterUrl && !imageError && (
-          <img
-            src={posterUrl}
-            alt={title}
-            className={`netflix-mobile-card-image ${imageLoaded ? 'opacity-100' : 'opacity-0'}`}
-            onLoad={() => setImageLoaded(true)}
-            onError={() => setImageError(true)}
-            loading={priority ? 'eager' : 'lazy'}
-            style={{ pointerEvents: 'none' }}
-          />
-        )}
-
-        {(imageError || !posterUrl) && (
-          <img
-            src={fallbackUrl}
-            alt={title}
-            className="netflix-mobile-card-image"
-            onLoad={() => setImageLoaded(true)}
-            style={{ pointerEvents: 'none' }}
-          />
-        )}
-
-        <div className="netflix-mobile-card-overlay">
-          <div className="netflix-mobile-card-title">{title}</div>
-          <div className="netflix-mobile-card-meta">
-            {movie.vote_average > 0 && (
-              <>
-                <Star className="h-3 w-3 text-yellow-400 fill-current" />
-                <span>{movie.vote_average.toFixed(1)}</span>
-              </>
+        <img
+          src={imageUrl}
+          alt={title}
+          className="w-full h-full object-cover rounded"
+          loading={priority ? 'eager' : 'lazy'}
+          onError={(e) => {
+            const target = e.target as HTMLImageElement;
+            target.src = '/placeholder-poster.jpg';
+          }}
+        />
+        
+        {user && (
+          <button
+            onClick={handleWatchlistToggle}
+            disabled={isLoading}
+            className="absolute top-2 right-2 bg-black/60 backdrop-blur-sm rounded-full p-1.5 
+                     hover:bg-black/80 transition-colors duration-200 disabled:opacity-50"
+            aria-label={inWatchlist ? 'Remove from watchlist' : 'Add to watchlist'}
+          >
+            {isLoading ? (
+              <div className="w-3 h-3 border border-white border-t-transparent rounded-full animate-spin" />
+            ) : inWatchlist ? (
+              <Check className="w-3 h-3 text-green-400" />
+            ) : (
+              <Plus className="w-3 h-3 text-white" />
             )}
-            {year && <span>{year}</span>}
-          </div>
-        </div>
+          </button>
+        )}
       </div>
+      
+      {size === 'large' && (
+        <div className="p-2">
+          <h3 className="text-white text-sm font-medium truncate">{title}</h3>
+          {year && (
+            <p className="text-gray-400 text-xs">{year}</p>
+          )}
+        </div>
+      )}
     </div>
   );
 };

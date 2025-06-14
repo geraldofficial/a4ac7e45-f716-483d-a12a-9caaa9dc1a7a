@@ -1,40 +1,35 @@
 
-import React, { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Check } from 'lucide-react';
+import React from 'react';
 
 interface GenrePreferenceSurveyProps {
   selectedGenres: number[];
   onGenresChange: (genres: number[]) => void;
-  className?: string;
 }
 
-const movieGenres = [
-  { id: 28, name: 'Action' },
-  { id: 12, name: 'Adventure' },
-  { id: 16, name: 'Animation' },
-  { id: 35, name: 'Comedy' },
-  { id: 80, name: 'Crime' },
-  { id: 99, name: 'Documentary' },
-  { id: 18, name: 'Drama' },
-  { id: 10751, name: 'Family' },
-  { id: 14, name: 'Fantasy' },
-  { id: 36, name: 'History' },
-  { id: 27, name: 'Horror' },
-  { id: 10402, name: 'Music' },
-  { id: 9648, name: 'Mystery' },
-  { id: 10749, name: 'Romance' },
-  { id: 878, name: 'Science Fiction' },
-  { id: 10770, name: 'TV Movie' },
-  { id: 53, name: 'Thriller' },
-  { id: 10752, name: 'War' },
-  { id: 37, name: 'Western' }
+const genres = [
+  { id: 28, name: 'Action', emoji: '🎬' },
+  { id: 12, name: 'Adventure', emoji: '🗺️' },
+  { id: 16, name: 'Animation', emoji: '🎨' },
+  { id: 35, name: 'Comedy', emoji: '😂' },
+  { id: 80, name: 'Crime', emoji: '🕵️' },
+  { id: 99, name: 'Documentary', emoji: '📹' },
+  { id: 18, name: 'Drama', emoji: '🎭' },
+  { id: 10751, name: 'Family', emoji: '👨‍👩‍👧‍👦' },
+  { id: 14, name: 'Fantasy', emoji: '🧙‍♂️' },
+  { id: 36, name: 'History', emoji: '📜' },
+  { id: 27, name: 'Horror', emoji: '👻' },
+  { id: 10402, name: 'Music', emoji: '🎵' },
+  { id: 9648, name: 'Mystery', emoji: '🔍' },
+  { id: 10749, name: 'Romance', emoji: '💕' },
+  { id: 878, name: 'Sci-Fi', emoji: '🚀' },
+  { id: 53, name: 'Thriller', emoji: '😱' },
+  { id: 10752, name: 'War', emoji: '⚔️' },
+  { id: 37, name: 'Western', emoji: '🤠' },
 ];
 
 export const GenrePreferenceSurvey: React.FC<GenrePreferenceSurveyProps> = ({
   selectedGenres,
   onGenresChange,
-  className = ''
 }) => {
   const toggleGenre = (genreId: number) => {
     if (selectedGenres.includes(genreId)) {
@@ -45,50 +40,44 @@ export const GenrePreferenceSurvey: React.FC<GenrePreferenceSurveyProps> = ({
   };
 
   return (
-    <div className={`space-y-6 ${className}`}>
-      <div className="text-center">
-        <h3 className="text-xl font-bold text-white mb-2">What are your favorite movie genres?</h3>
-        <p className="text-white/70 text-sm">Select at least 3 genres to get personalized recommendations</p>
+    <div className="space-y-4">
+      <div className="text-center mb-6">
+        <p className="text-white/70 text-sm">
+          Select at least 3 genres you enjoy watching
+        </p>
+        <p className="text-white/50 text-xs mt-1">
+          {selectedGenres.length}/3 minimum selected
+        </p>
       </div>
       
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-        {movieGenres.map((genre) => (
-          <button
-            key={genre.id}
-            onClick={() => toggleGenre(genre.id)}
-            className={`
-              relative p-4 rounded-xl border-2 text-sm font-medium transition-all duration-300
-              hover:scale-105 min-h-[60px] flex items-center justify-center
-              backdrop-blur-sm shadow-lg hover:shadow-xl
-              ${selectedGenres.includes(genre.id)
-                ? 'border-purple-400 bg-purple-500/30 text-white shadow-purple-500/25'
-                : 'border-white/20 bg-white/10 text-white hover:border-purple-400/50 hover:bg-white/15'
-              }
-            `}
-          >
-            {genre.name}
-            {selectedGenres.includes(genre.id) && (
-              <div className="absolute -top-2 -right-2 w-7 h-7 bg-purple-500 rounded-full flex items-center justify-center border-3 border-white shadow-lg animate-scale-in">
-                <Check className="w-4 h-4 text-white font-bold" strokeWidth={3} />
+      <div className="grid grid-cols-2 md:grid-cols-3 gap-3 max-h-64 overflow-y-auto">
+        {genres.map((genre) => {
+          const isSelected = selectedGenres.includes(genre.id);
+          
+          return (
+            <button
+              key={genre.id}
+              onClick={() => toggleGenre(genre.id)}
+              className={`p-3 rounded-lg border-2 transition-all duration-200 text-left ${
+                isSelected
+                  ? 'border-purple-500 bg-purple-500/20 text-white'
+                  : 'border-white/20 bg-white/5 text-white/70 hover:border-purple-500/50 hover:bg-purple-500/10'
+              }`}
+            >
+              <div className="flex items-center space-x-2">
+                <span className="text-lg">{genre.emoji}</span>
+                <span className="font-medium text-sm">{genre.name}</span>
               </div>
-            )}
-          </button>
-        ))}
+            </button>
+          );
+        })}
       </div>
-      
-      <div className="text-center">
-        <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm rounded-full px-4 py-2 border border-white/20">
-          <div className={`w-2 h-2 rounded-full ${selectedGenres.length >= 3 ? 'bg-green-400' : 'bg-yellow-400'}`}></div>
-          <span className="text-white text-sm font-medium">
-            Selected: {selectedGenres.length} genre{selectedGenres.length !== 1 ? 's' : ''}
-          </span>
-          {selectedGenres.length < 3 && (
-            <span className="text-yellow-300 text-sm">
-              (Need {3 - selectedGenres.length} more)
-            </span>
-          )}
+
+      {selectedGenres.length < 3 && (
+        <div className="text-center text-orange-400 text-sm">
+          Please select at least 3 genres to continue
         </div>
-      </div>
+      )}
     </div>
   );
 };

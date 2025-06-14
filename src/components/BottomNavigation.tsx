@@ -1,46 +1,51 @@
 
 import React from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
-import { Home, Heart, TrendingUp, Star } from 'lucide-react';
+import { Link, useLocation } from 'react-router-dom';
+import { Home, Search, Bookmark, User } from 'lucide-react';
+import { useAuth } from '@/contexts/AuthContext';
 
 export const BottomNavigation = () => {
-  const navigate = useNavigate();
   const location = useLocation();
+  const { user } = useAuth();
 
   const navItems = [
-    { icon: Home, label: 'Home', path: '/' },
-    { icon: TrendingUp, label: 'Trending', path: '/trending' },
-    { icon: Star, label: 'Top Rated', path: '/top-rated' },
-    { icon: Heart, label: 'Donate', path: '/support' }
+    { icon: Home, label: 'Home', to: '/' },
+    { icon: Search, label: 'Search', to: '/search' },
+    { icon: Bookmark, label: 'Watchlist', to: '/watchlist', requireAuth: true },
+    { icon: User, label: 'Profile', to: user ? '/profile' : '/auth' },
   ];
 
-  const isActive = (path: string) => location.pathname === path;
+  // Only show on mobile and hide on certain pages
+  const hiddenRoutes = ['/auth', '/onboarding'];
+  const shouldHide = hiddenRoutes.some(route => location.pathname.startsWith(route));
+
+  if (shouldHide) return null;
 
   return (
-    <nav className="mobile-nav md:hidden">
-      <div className="flex items-center justify-around">
-        {navItems.map((item) => {
-          const Icon = item.icon;
-          const active = isActive(item.path);
-          
+    <div className="fixed bottom-0 left-0 right-0 z-40 bg-black/95 backdrop-blur-md border-t border-gray-800 md:hidden">
+      <div className="flex items-center justify-around py-2">
+        {navItems.map(({ icon: Icon, label, to, requireAuth }) => {
+          // Skip watchlist if user not authenticated
+          if (requireAuth && !user) return null;
+
+          const isActive = location.pathname === to;
+
           return (
-            <button
-              key={item.path}
-              onClick={() => navigate(item.path)}
-              className={`mobile-nav-item ${
-                active 
-                  ? 'text-primary bg-primary/15 scale-105' 
-                  : 'text-muted-foreground active:text-foreground active:bg-accent/70'
-              }`}
+            <Link
+              key={to}
+              to={to}
+              className={`flex flex-col items-center justify-center py-2 px-3 min-w-0 flex-1 ${
+                isActive 
+                  ? 'text-white' 
+                  : 'text-gray-400 hover:text-white'
+              } transition-colors duration-200`}
             >
-              <Icon className={`h-6 w-6 mb-1 ${active ? 'stroke-2' : 'stroke-1.5'}`} />
-              <span className={`text-xs leading-none ${active ? 'font-semibold' : 'font-medium'}`}>
-                {item.label}
-              </span>
-            </button>
+              <Icon className={`h-5 w-5 ${isActive ? 'fill-current' : ''}`} />
+              <span className="text-xs mt-1 truncate">{label}</span>
+            </Link>
           );
         })}
       </div>
-    </nav>
+    </div>
   );
 };

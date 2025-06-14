@@ -1,168 +1,141 @@
 
 import React, { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Play, Plus, Check, Star, Info } from 'lucide-react';
-import { useAuth } from '@/contexts/AuthContext';
-import { useToast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
 import { Movie } from '@/services/tmdb';
+import { useAuth } from '@/contexts/AuthContext';
+import { Plus, Check, Star, Play } from 'lucide-react';
 
 interface MovieCardProps {
   movie: Movie;
+  showPlayButton?: boolean;
+  priority?: boolean;
 }
 
-export const MovieCard: React.FC<MovieCardProps> = ({ movie }) => {
-  const { user, addToWatchlist, removeFromWatchlist, isInWatchlist } = useAuth();
-  const { toast } = useToast();
+export const MovieCard: React.FC<MovieCardProps> = ({ 
+  movie, 
+  showPlayButton = false,
+  priority = false 
+}) => {
   const navigate = useNavigate();
-  const [imageLoaded, setImageLoaded] = useState(false);
+  const { user, addToWatchlist, removeFromWatchlist, isInWatchlist } = useAuth();
+  const [isLoading, setIsLoading] = useState(false);
+  const [imageError, setImageError] = useState(false);
 
-  // Handle optional title/name from TMDB API
   const title = movie.title || movie.name || 'Unknown Title';
-  const releaseDate = movie.release_date || movie.first_air_date || '';
-  
-  // Determine type from media_type or fallback to title/name check
-  const type = movie.media_type || (movie.title ? 'movie' : 'tv');
+  const releaseDate = movie.release_date || movie.first_air_date;
+  const year = releaseDate ? new Date(releaseDate).getFullYear() : '';
+  const mediaType = movie.media_type || (movie.title ? 'movie' : 'tv');
+  const inWatchlist = user ? isInWatchlist(movie.id) : false;
 
-  const posterUrl = movie.poster_path 
+  const imageUrl = movie.poster_path && !imageError
     ? `https://image.tmdb.org/t/p/w500${movie.poster_path}`
-    : 'https://images.unsplash.com/photo-1489599904276-39c2bb2d7b64?w=400&h=600&fit=crop';
+    : null;
 
-  const handleWatch = () => {
-    if (!user) {
-      toast({
-        title: "Sign in required",
-        description: "Please sign in to watch content.",
-        variant: "destructive",
-      });
-      return;
-    }
-    console.log('Navigating to:', `/${type}/${movie.id}`);
-    navigate(`/${type}/${movie.id}`);
-  };
-
-  const handleMoreInfo = () => {
-    console.log('Navigating to:', `/${type}/${movie.id}`);
-    navigate(`/${type}/${movie.id}`);
+  const handleClick = () => {
+    navigate(`/${mediaType}/${movie.id}`);
   };
 
   const handleWatchlistToggle = async (e: React.MouseEvent) => {
     e.stopPropagation();
-    if (!user) {
-      toast({
-        title: "Sign in required",
-        description: "Please sign in to add items to your watchlist.",
-        variant: "destructive",
-      });
-      return;
-    }
+    if (!user) return;
 
-    if (isInWatchlist(movie.id)) {
-      await removeFromWatchlist(movie.id);
-      toast({
-        title: "Removed from watchlist",
-        description: `${title} has been removed from your watchlist.`,
-      });
-    } else {
-      await addToWatchlist(movie.id);
-      toast({
-        title: "Added to watchlist",
-        description: `${title} has been added to your watchlist.`,
-      });
+    setIsLoading(true);
+    try {
+      if (inWatchlist) {
+        await removeFromWatchlist(movie.id);
+      } else {
+        await addToWatchlist(movie.id);
+      }
+    } catch (error) {
+      console.error('Error updating watchlist:', error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
+  const handleImageError = () => {
+    setImageError(true);
+  };
+
   return (
-    <div className="group relative overflow-hidden rounded-xl bg-card/80 backdrop-blur-sm border border-border/50 transition-all duration-300 hover:scale-[1.02] hover:shadow-2xl hover:border-primary/30 cursor-pointer w-full max-w-sm mx-auto">
-      <div className="aspect-[2/3] overflow-hidden relative bg-muted/20">
-        {!imageLoaded && (
-          <div className="absolute inset-0 bg-muted/30 animate-pulse flex items-center justify-center">
-            <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
-          </div>
-        )}
-        <img
-          src={posterUrl}
-          alt={title}
-          className={`h-full w-full object-cover transition-all duration-500 group-hover:scale-110 ${
-            imageLoaded ? 'opacity-100' : 'opacity-0'
-          }`}
-          onLoad={() => setImageLoaded(true)}
-          onError={(e) => {
-            e.currentTarget.src = 'https://images.unsplash.com/photo-1489599904276-39c2bb2d7b64?w=400&h=600&fit=crop';
-            setImageLoaded(true);
-          }}
-        />
-        
-        {/* Enhanced overlay with better gradient */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-all duration-300">
-          <div className="absolute bottom-2 left-2 right-2">
-            <div className="flex items-center justify-between mb-2">
-              <div className="flex items-center gap-1">
-                <div className="flex items-center gap-0.5 bg-black/40 backdrop-blur-sm rounded-full px-2 py-1">
-                  <Star className="h-3 w-3 text-yellow-400 fill-current" />
-                  <span className="text-white text-xs font-medium">{movie.vote_average.toFixed(1)}</span>
+    <div className="group cursor-pointer transition-all duration-300 hover:scale-105" onClick={handleClick}>
+      <div className="relative overflow-hidden rounded-lg bg-card border border-border">
+        <div className="aspect-[2/3] relative bg-muted">
+          {imageUrl ? (
+            <img
+              src={imageUrl}
+              alt={title}
+              className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
+              loading={priority ? 'eager' : 'lazy'}
+              onError={handleImageError}
+            />
+          ) : (
+            <div className="w-full h-full flex items-center justify-center bg-muted">
+              <div className="text-center p-4">
+                <div className="w-16 h-16 bg-primary/20 rounded-full flex items-center justify-center mx-auto mb-2">
+                  <Play className="w-8 h-8 text-primary" />
                 </div>
-                {releaseDate && (
-                  <div className="bg-black/40 backdrop-blur-sm rounded-full px-2 py-1">
-                    <span className="text-gray-200 text-xs font-medium">
-                      {new Date(releaseDate).getFullYear()}
-                    </span>
-                  </div>
-                )}
-              </div>
-              <div className="bg-primary/20 backdrop-blur-sm rounded-full px-2 py-1">
-                <span className="text-primary text-xs font-semibold uppercase tracking-wider">
-                  {type === 'tv' ? 'TV' : 'Movie'}
-                </span>
+                <p className="text-sm font-medium text-foreground line-clamp-2">{title}</p>
+                {year && <p className="text-xs text-muted-foreground mt-1">{year}</p>}
               </div>
             </div>
-            
-            <div className="flex gap-1.5">
-              <Button 
-                size="sm" 
-                className="bg-primary hover:bg-primary/90 text-primary-foreground font-medium transition-all duration-200 hover:scale-105 shadow-lg px-3 py-1.5 text-xs h-7 flex-1 rounded-full"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleWatch();
-                }}
-              >
-                <Play className="h-3 w-3 mr-1 fill-current" />
-                <span>Play</span>
-              </Button>
-              
-              <Button 
-                size="sm" 
-                variant="outline"
-                className="border-white/30 bg-white/10 backdrop-blur-sm text-white hover:bg-white/20 hover:border-white/50 transition-all duration-200 hover:scale-105 shadow-lg px-2 py-1.5 text-xs h-7 rounded-full"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleMoreInfo();
-                }}
-              >
-                <Info className="h-3 w-3" />
-              </Button>
-              
-              {user && (
-                <Button 
-                  size="sm" 
-                  variant="outline" 
-                  className="border-white/30 bg-white/10 backdrop-blur-sm text-white hover:bg-white/20 hover:border-white/50 transition-all duration-200 hover:scale-105 shadow-lg px-2 py-1.5 text-xs h-7 rounded-full"
-                  onClick={handleWatchlistToggle}
-                >
-                  {isInWatchlist(movie.id) ? <Check className="h-3 w-3" /> : <Plus className="h-3 w-3" />}
-                </Button>
+          )}
+          
+          {/* Overlay - only show if we have an image */}
+          {imageUrl && (
+            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+          )}
+          
+          {/* Rating - only show if we have an image and rating */}
+          {imageUrl && movie.vote_average > 0 && (
+            <div className="absolute top-2 left-2 bg-black/80 backdrop-blur-sm rounded-full px-2 py-1 flex items-center gap-1">
+              <Star className="w-3 h-3 text-yellow-400 fill-current" />
+              <span className="text-white text-xs font-medium">
+                {movie.vote_average.toFixed(1)}
+              </span>
+            </div>
+          )}
+          
+          {/* Watchlist Button */}
+          {user && (
+            <button
+              onClick={handleWatchlistToggle}
+              disabled={isLoading}
+              className="absolute top-2 right-2 bg-black/80 backdrop-blur-sm rounded-full p-2 
+                       hover:bg-black/90 transition-colors duration-200 disabled:opacity-50
+                       opacity-0 group-hover:opacity-100"
+              aria-label={inWatchlist ? 'Remove from watchlist' : 'Add to watchlist'}
+            >
+              {isLoading ? (
+                <div className="w-4 h-4 border border-white border-t-transparent rounded-full animate-spin" />
+              ) : inWatchlist ? (
+                <Check className="w-4 h-4 text-green-400" />
+              ) : (
+                <Plus className="w-4 h-4 text-white" />
               )}
+            </button>
+          )}
+
+          {/* Play Button */}
+          {showPlayButton && imageUrl && (
+            <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+              <div className="bg-primary rounded-full p-3 shadow-lg transform scale-75 group-hover:scale-100 transition-transform duration-300">
+                <Play className="w-6 h-6 text-primary-foreground fill-current" />
+              </div>
             </div>
-          </div>
+          )}
         </div>
-      </div>
-      
-      <div className="p-3 bg-gradient-to-b from-card to-card/80">
-        <h3 className="text-foreground font-semibold truncate mb-1 text-sm leading-tight group-hover:text-primary transition-colors">{title}</h3>
-        {releaseDate && (
-          <p className="text-muted-foreground text-xs">
-            {new Date(releaseDate).getFullYear()}
-          </p>
+        
+        {/* Content - only show if we have an image */}
+        {imageUrl && (
+          <div className="p-3">
+            <h3 className="text-foreground font-medium text-sm line-clamp-2 group-hover:text-primary transition-colors">
+              {title}
+            </h3>
+            {year && (
+              <p className="text-muted-foreground text-xs mt-1">{year}</p>
+            )}
+          </div>
         )}
       </div>
     </div>

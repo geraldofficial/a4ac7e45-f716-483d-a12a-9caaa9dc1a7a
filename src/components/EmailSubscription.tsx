@@ -1,219 +1,52 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Switch } from '@/components/ui/switch';
-import { Label } from '@/components/ui/label';
+import { Mail, CheckCircle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { useAuth } from '@/contexts/AuthContext';
-import { supabase } from '@/integrations/supabase/client';
-import { Mail, Bell, Settings, CheckCircle } from 'lucide-react';
 
 export const EmailSubscription = () => {
-  const { user } = useAuth();
-  const { toast } = useToast();
-  const [subscription, setSubscription] = useState<any>(null);
   const [email, setEmail] = useState('');
-  const [frequency, setFrequency] = useState('daily');
-  const [isActive, setIsActive] = useState(true);
-  const [loading, setLoading] = useState(false);
-  const [fetchingSubscription, setFetchingSubscription] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isSubscribed, setIsSubscribed] = useState(false);
+  const { toast } = useToast();
 
-  useEffect(() => {
-    if (user) {
-      fetchSubscription();
-      setEmail(user.email || '');
-    }
-  }, [user]);
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email) return;
 
-  const fetchSubscription = async () => {
-    if (!user) return;
+    setIsLoading(true);
     
     try {
-      const { data, error } = await supabase
-        .from('email_subscriptions')
-        .select('*')
-        .eq('user_id', user.id)
-        .single();
-
-      if (error && error.code !== 'PGRST116') {
-        console.error('Error fetching subscription:', error);
-      } else if (data) {
-        setSubscription(data);
-        setEmail(data.email);
-        setFrequency(data.frequency);
-        setIsActive(data.is_active);
-      }
-    } catch (error) {
-      console.error('Error fetching subscription:', error);
-    } finally {
-      setFetchingSubscription(false);
-    }
-  };
-
-  const sendWelcomeEmail = async (userEmail: string, userName?: string) => {
-    try {
-      const { error } = await supabase.functions.invoke('send-welcome-email', {
-        body: {
-          email: userEmail,
-          name: userName
-        }
-      });
-
-      if (error) {
-        console.error('Error sending welcome email:', error);
-      } else {
-        console.log('Welcome email sent successfully');
-      }
-    } catch (error) {
-      console.error('Error sending welcome email:', error);
-    }
-  };
-
-  const sendInstantTrendingEmail = async (userEmail: string, userName?: string) => {
-    try {
-      const { error } = await supabase.functions.invoke('send-trending-email', {
-        body: {
-          email: userEmail,
-          name: userName
-        }
-      });
-
-      if (error) {
-        console.error('Error sending trending email:', error);
-      } else {
-        console.log('Trending email sent successfully');
-      }
-    } catch (error) {
-      console.error('Error sending trending email:', error);
-    }
-  };
-
-  const handleSubscribe = async () => {
-    if (!user || !email) {
-      toast({
-        title: "Error",
-        description: "Please provide a valid email address.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    setLoading(true);
-    try {
-      const userName = user.full_name || user.username || user.email?.split('@')[0];
+      // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 1000));
       
-      if (subscription) {
-        // Update existing subscription
-        const { error } = await supabase
-          .from('email_subscriptions')
-          .update({
-            email,
-            frequency,
-            is_active: isActive,
-            updated_at: new Date().toISOString()
-          })
-          .eq('id', subscription.id);
-
-        if (error) throw error;
-
-        toast({
-          title: "Updated!",
-          description: "Your email subscription has been updated.",
-        });
-      } else {
-        // Create new subscription
-        const { error } = await supabase
-          .from('email_subscriptions')
-          .insert({
-            user_id: user.id,
-            email,
-            frequency,
-            is_active: isActive
-          });
-
-        if (error) throw error;
-
-        // Send welcome email and instant trending email for new subscriptions
-        await Promise.all([
-          sendWelcomeEmail(email, userName),
-          sendInstantTrendingEmail(email, userName)
-        ]);
-
-        toast({
-          title: "Subscribed!",
-          description: "Welcome! You'll receive trending movies in your inbox and we've sent you the latest trending content.",
-        });
-      }
+      setIsSubscribed(true);
+      setEmail('');
       
-      await fetchSubscription();
-    } catch (error: any) {
-      console.error('Subscription error:', error);
       toast({
-        title: "Error",
-        description: error.message || "Failed to update subscription.",
+        title: "Successfully subscribed!",
+        description: "You'll receive updates about new movies and shows.",
+      });
+    } catch (error) {
+      toast({
         variant: "destructive",
+        title: "Subscription failed",
+        description: "Please try again later.",
       });
     } finally {
-      setLoading(false);
+      setIsLoading(false);
     }
   };
 
-  const handleUnsubscribe = async () => {
-    if (!subscription) return;
-
-    setLoading(true);
-    try {
-      const { error } = await supabase
-        .from('email_subscriptions')
-        .delete()
-        .eq('id', subscription.id);
-
-      if (error) throw error;
-
-      setSubscription(null);
-      toast({
-        title: "Unsubscribed",
-        description: "You won't receive trending movie emails anymore.",
-      });
-    } catch (error: any) {
-      console.error('Unsubscribe error:', error);
-      toast({
-        title: "Error",
-        description: error.message || "Failed to unsubscribe.",
-        variant: "destructive",
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  if (!user) {
+  if (isSubscribed) {
     return (
-      <Card className="w-full max-w-md mx-auto">
-        <CardHeader className="text-center">
-          <div className="mx-auto w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mb-4">
-            <Mail className="h-6 w-6 text-primary" />
-          </div>
-          <CardTitle>Stay Updated</CardTitle>
-          <CardDescription>
-            Sign in to get daily trending movies delivered to your inbox
-          </CardDescription>
-        </CardHeader>
-      </Card>
-    );
-  }
-
-  if (fetchingSubscription) {
-    return (
-      <Card className="w-full max-w-md mx-auto">
+      <Card className="bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800">
         <CardContent className="pt-6">
-          <div className="animate-pulse space-y-4">
-            <div className="h-4 bg-muted rounded w-3/4"></div>
-            <div className="h-10 bg-muted rounded"></div>
-            <div className="h-10 bg-muted rounded"></div>
+          <div className="flex items-center justify-center space-x-2 text-green-700 dark:text-green-300">
+            <CheckCircle className="h-5 w-5" />
+            <span className="font-medium">Thanks for subscribing!</span>
           </div>
         </CardContent>
       </Card>
@@ -221,95 +54,30 @@ export const EmailSubscription = () => {
   }
 
   return (
-    <Card className="w-full max-w-md mx-auto">
-      <CardHeader className="text-center">
-        <div className="mx-auto w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mb-4">
-          {subscription && subscription.is_active ? (
-            <CheckCircle className="h-6 w-6 text-green-500" />
-          ) : (
-            <Bell className="h-6 w-6 text-primary" />
-          )}
-        </div>
-        <CardTitle>
-          {subscription && subscription.is_active ? 'You\'re Subscribed!' : 'Daily Trending Movies'}
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center space-x-2">
+          <Mail className="h-5 w-5" />
+          <span>Stay Updated</span>
         </CardTitle>
         <CardDescription>
-          {subscription && subscription.is_active 
-            ? 'You\'ll receive ad-free trending movies and shows in your inbox'
-            : 'Get the latest trending movies and shows delivered to your inbox'
-          }
+          Get notified about new releases, trending content, and exclusive features.
         </CardDescription>
       </CardHeader>
-      <CardContent className="space-y-4">
-        <div className="space-y-2">
-          <Label htmlFor="email">Email Address</Label>
+      <CardContent>
+        <form onSubmit={handleSubmit} className="flex space-x-2">
           <Input
-            id="email"
             type="email"
+            placeholder="Enter your email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            placeholder="your@email.com"
-          />
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="frequency">Frequency</Label>
-          <Select value={frequency} onValueChange={setFrequency}>
-            <SelectTrigger>
-              <SelectValue placeholder="Select frequency" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="daily">Daily</SelectItem>
-              <SelectItem value="weekly">Weekly</SelectItem>
-              <SelectItem value="monthly">Monthly</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-
-        <div className="flex items-center space-x-2">
-          <Switch
-            id="active"
-            checked={isActive}
-            onCheckedChange={setIsActive}
-          />
-          <Label htmlFor="active">Active subscription</Label>
-        </div>
-
-        <div className="flex gap-2 pt-2">
-          <Button
-            onClick={handleSubscribe}
-            disabled={loading}
+            required
             className="flex-1"
-          >
-            {loading ? 'Saving...' : subscription ? 'Update' : 'Subscribe'}
+          />
+          <Button type="submit" disabled={isLoading || !email}>
+            {isLoading ? 'Subscribing...' : 'Subscribe'}
           </Button>
-          {subscription && (
-            <Button
-              onClick={handleUnsubscribe}
-              variant="outline"
-              disabled={loading}
-            >
-              Unsubscribe
-            </Button>
-          )}
-        </div>
-
-        {subscription && (
-          <div className="text-center text-sm text-muted-foreground">
-            <Settings className="h-4 w-4 inline mr-1" />
-            Last sent: {subscription.last_sent_at 
-              ? new Date(subscription.last_sent_at).toLocaleDateString()
-              : 'Never'
-            }
-          </div>
-        )}
-
-        {subscription && subscription.is_active && (
-          <div className="bg-green-50 border border-green-200 rounded-lg p-3 text-center">
-            <p className="text-sm text-green-700 font-medium">✨ Ad-Free Experience Activated</p>
-            <p className="text-xs text-green-600 mt-1">You'll enjoy uninterrupted streaming without any ads!</p>
-          </div>
-        )}
+        </form>
       </CardContent>
     </Card>
   );

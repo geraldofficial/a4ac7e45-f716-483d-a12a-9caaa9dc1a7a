@@ -110,26 +110,35 @@ export const SimpleVideoPlayer: React.FC<SimpleVideoPlayerProps> = ({
       <div className="flex items-center justify-between p-4 bg-black/80 backdrop-blur-sm">
         <div className="flex items-center gap-3">
           <h1 className="text-white text-lg font-semibold">{getDisplayTitle()}</h1>
-          <span className="text-white/60 text-sm bg-primary px-2 py-1 rounded">
-            {currentSource.name}
-          </span>
+          <span className="text-gray-400 text-sm">via {currentSource.name}</span>
         </div>
         
         <div className="flex items-center gap-2">
           <Button
-            onClick={reloadPlayer}
+            onClick={switchSource}
+            variant="outline"
             size="sm"
-            variant="ghost"
-            className="text-white hover:bg-white/20"
+            className="bg-white/10 border-white/20 text-white hover:bg-white/20"
           >
-            <RotateCcw className="h-4 w-4" />
+            <SkipForward className="h-4 w-4 mr-2" />
+            Switch Source
+          </Button>
+          
+          <Button
+            onClick={reloadPlayer}
+            variant="outline"
+            size="sm"
+            className="bg-white/10 border-white/20 text-white hover:bg-white/20"
+          >
+            <RotateCcw className="h-4 w-4 mr-2" />
+            Reload
           </Button>
           
           <Button
             onClick={toggleFullscreen}
+            variant="outline"
             size="sm"
-            variant="ghost"
-            className="text-white hover:bg-white/20"
+            className="bg-white/10 border-white/20 text-white hover:bg-white/20"
           >
             <Maximize className="h-4 w-4" />
           </Button>
@@ -137,9 +146,9 @@ export const SimpleVideoPlayer: React.FC<SimpleVideoPlayerProps> = ({
           {onClose && (
             <Button
               onClick={onClose}
+              variant="outline"
               size="sm"
-              variant="ghost"
-              className="text-white hover:bg-white/20"
+              className="bg-white/10 border-white/20 text-white hover:bg-white/20"
             >
               <X className="h-4 w-4" />
             </Button>
@@ -147,72 +156,44 @@ export const SimpleVideoPlayer: React.FC<SimpleVideoPlayerProps> = ({
         </div>
       </div>
 
-      {/* Video Container */}
+      {/* Player Content */}
       <div className="flex-1 relative">
-        {/* Loading State */}
         {isLoading && (
-          <div className="absolute inset-0 flex items-center justify-center bg-black z-10">
-            <ProductionLoadingSpinner 
-              size="lg" 
-              text={`Loading ${getDisplayTitle()}...`}
-              showLogo={true}
-            />
+          <div className="absolute inset-0 flex items-center justify-center bg-black/80 z-10">
+            <ProductionLoadingSpinner />
           </div>
         )}
 
-        {/* Error State */}
-        {hasError && (
-          <div className="absolute inset-0 flex items-center justify-center bg-black z-10">
-            <div className="text-center max-w-md mx-auto p-6">
-              <p className="text-white mb-4 text-xl">Playback Error</p>
-              <p className="text-white/70 mb-6">Failed to load from {currentSource.name}</p>
-              <div className="flex gap-3 justify-center">
-                <Button onClick={switchSource} variant="default">
-                  <SkipForward className="h-4 w-4 mr-2" />
-                  Try Next Source
-                </Button>
+        {hasError ? (
+          <div className="absolute inset-0 flex items-center justify-center bg-black">
+            <div className="text-center text-white">
+              <h2 className="text-xl mb-4">Failed to load video</h2>
+              <p className="text-gray-400 mb-6">
+                There was an issue loading the video from {currentSource.name}
+              </p>
+              <div className="flex gap-4 justify-center">
                 <Button onClick={reloadPlayer} variant="outline">
                   <RotateCcw className="h-4 w-4 mr-2" />
-                  Retry
+                  Try Again
+                </Button>
+                <Button onClick={switchSource}>
+                  <SkipForward className="h-4 w-4 mr-2" />
+                  Switch Source
                 </Button>
               </div>
             </div>
           </div>
+        ) : (
+          <iframe
+            ref={iframeRef}
+            src={currentUrl}
+            className="w-full h-full border-0"
+            allowFullScreen
+            onLoad={handleIframeLoad}
+            onError={handleIframeError}
+            title={`Playing ${title}`}
+          />
         )}
-
-        {/* Video Iframe */}
-        <iframe
-          ref={iframeRef}
-          src={`${currentUrl}&t=${resumeFrom}`}
-          title={getDisplayTitle()}
-          className="w-full h-full"
-          allowFullScreen
-          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen"
-          onLoad={handleIframeLoad}
-          onError={handleIframeError}
-          referrerPolicy="no-referrer-when-downgrade"
-        />
-      </div>
-
-      {/* Source Selector */}
-      <div className="p-4 bg-black/80 backdrop-blur-sm">
-        <div className="flex gap-2 overflow-x-auto">
-          {streamingSources.slice(0, 8).map((source, index) => (
-            <Button
-              key={source.name}
-              onClick={() => setCurrentSourceIndex(index)}
-              size="sm"
-              variant={index === currentSourceIndex ? "default" : "outline"}
-              className={`flex-shrink-0 text-xs ${
-                index === currentSourceIndex 
-                  ? "bg-primary text-primary-foreground" 
-                  : "bg-black/50 text-white border-white/20 hover:bg-white/20"
-              }`}
-            >
-              {source.name}
-            </Button>
-          ))}
-        </div>
       </div>
     </div>
   );
