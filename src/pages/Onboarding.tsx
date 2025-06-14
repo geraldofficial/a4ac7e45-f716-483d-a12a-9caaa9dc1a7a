@@ -12,7 +12,7 @@ const Onboarding = () => {
   const [selectedAvatar, setSelectedAvatar] = useState('https://api.dicebear.com/7.x/avataaars/svg?seed=Felix');
   const [selectedGenres, setSelectedGenres] = useState<number[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const { user, completeOnboarding, loading } = useAuth();
+  const { user, completeOnboarding, updateProfile, loading } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -48,7 +48,10 @@ const Onboarding = () => {
 
     setIsLoading(true);
     try {
-      await completeOnboarding(selectedAvatar, selectedGenres);
+      // First update the avatar
+      await updateProfile({ avatar: selectedAvatar });
+      // Then complete onboarding with genre preferences
+      await completeOnboarding(selectedGenres);
       navigate('/');
     } catch (error) {
       console.error('Error completing onboarding:', error);
