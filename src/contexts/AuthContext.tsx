@@ -72,11 +72,29 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (event === 'SIGNED_IN' && session?.user) {
         try {
           const profile = await userApi.getUserProfile(session.user.id);
-          setUser({
+          const userData = {
             id: session.user.id,
             email: session.user.email,
             ...profile,
-          });
+          };
+          setUser(userData);
+          
+          // Send welcome email for new users
+          if (event === 'SIGNED_IN' && !profile?.email_welcomed) {
+            try {
+              await supabase.functions.invoke('send-welcome-email', {
+                body: {
+                  email: session.user.email,
+                  name: profile?.username || profile?.full_name
+                }
+              });
+              
+              // Mark user as welcomed
+              await userApi.updateUser({ email_welcomed: true });
+            } catch (emailError) {
+              console.error('Failed to send welcome email:', emailError);
+            }
+          }
         } catch (error) {
           console.error("Error fetching user profile:", error);
         }
@@ -118,10 +136,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  const login = async (email: string, password: string) => {
-    await signIn(email, password);
-  };
-
   const signUp = async (email: string, password: string, userData: any = {}) => {
     setLoading(true);
     try {
@@ -131,6 +145,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           title: "Sign up successful!",
           description: `Welcome to FlickPick!`,
         });
+        
+        // Send welcome email
+        try {
+          await supabase.functions.invoke('send-welcome-email', {
+            body: {
+              email: email,
+              name: userData.username || userData.full_name
+            }
+          });
+        } catch (emailError) {
+          console.error('Failed to send welcome email:', emailError);
+        }
+        
         navigate('/onboarding');
       }
     } catch (error: any) {

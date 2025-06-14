@@ -1,1 +1,11 @@
-project_id = "ehqlkafauehdpqzrdkia"
+
+project_id = "mgbfglzofkqfmpckhneu"
+
+[functions.kesho-payment]
+verify_jwt = false
+
+[functions.send-welcome-email]
+verify_jwt = false
+
+[functions.send-trending-email]
+verify_jwt = false
