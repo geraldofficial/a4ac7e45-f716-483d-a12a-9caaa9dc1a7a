@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { Download, X } from 'lucide-react';
+import { Download } from 'lucide-react';
 
 export const PWAInstallButton: React.FC = () => {
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
@@ -29,11 +29,6 @@ export const PWAInstallButton: React.FC = () => {
       setDeferredPrompt(null);
       setShowInstallPrompt(false);
     }
-  };
-
-  const handleDismiss = () => {
-    setShowInstallPrompt(false);
-    setDeferredPrompt(null);
   };
 
   if (!showInstallPrompt || !deferredPrompt) return null;

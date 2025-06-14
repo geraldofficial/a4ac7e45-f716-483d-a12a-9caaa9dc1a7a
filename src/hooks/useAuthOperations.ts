@@ -1,5 +1,6 @@
 
-import { useToast } from "@/hooks/use-toast";
+import React from 'react';
+import { toast } from '@/components/ui/sonner';
 import { authApi } from '@/services/auth';
 import { userApi } from '@/services/user';
 import { cleanupAuthState } from '@/utils/authUtils';
@@ -11,8 +12,6 @@ export const useAuthOperations = (
   setLoading: (loading: boolean) => void,
   user: UserProfile | null
 ) => {
-  const { toast } = useToast();
-
   const signIn = async (email: string, password: string) => {
     setLoading(true);
     try {
@@ -26,17 +25,14 @@ export const useAuthOperations = (
 
       const response = await authApi.signIn(email, password);
       if (response?.user) {
-        toast({
-          title: "Sign in successful!",
+        toast.success("Sign in successful!", {
           description: `Welcome back!`,
         });
         window.location.href = '/';
       }
     } catch (error: any) {
       console.error("Sign-in error:", error);
-      toast({
-        variant: "destructive",
-        title: "Sign in failed",
+      toast.error("Sign in failed", {
         description: error.message || "Invalid email or password.",
       });
     } finally {
@@ -51,8 +47,7 @@ export const useAuthOperations = (
       
       const response = await authApi.signUp(email, password, userData);
       if (response?.user) {
-        toast({
-          title: "Sign up successful!",
+        toast.success("Sign up successful!", {
           description: `Welcome to FlickPick! Please check your email to verify your account.`,
         });
         
@@ -60,9 +55,7 @@ export const useAuthOperations = (
       }
     } catch (error: any) {
       console.error("Sign-up error:", error);
-      toast({
-        variant: "destructive",
-        title: "Sign up failed",
+      toast.error("Sign up failed", {
         description: error.message || "An error occurred during sign up.",
       });
     } finally {
@@ -82,16 +75,12 @@ export const useAuthOperations = (
       }
       
       setUser(null);
-      toast({
-        description: "Signed out successfully!",
-      });
+      toast.success("Signed out successfully!");
       
       window.location.href = '/auth';
     } catch (error: any) {
       console.error("Sign-out error:", error);
-      toast({
-        variant: "destructive",
-        title: "Sign out failed",
+      toast.error("Sign out failed", {
         description: error.message || "An error occurred during sign out.",
       });
     } finally {
@@ -106,15 +95,12 @@ export const useAuthOperations = (
       const updatedUser = await userApi.updateUser(updates);
       const newUser: UserProfile = { ...user, ...updatedUser };
       setUser(newUser);
-      toast({
-        title: "Profile updated!",
+      toast.success("Profile updated!", {
         description: "Your profile has been updated successfully.",
       });
     } catch (error: any) {
       console.error("Profile update error:", error);
-      toast({
-        variant: "destructive",
-        title: "Profile update failed",
+      toast.error("Profile update failed", {
         description: error.message || "Failed to update profile.",
       });
     }
