@@ -1,4 +1,3 @@
-
 import { Suspense, lazy } from "react";
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -44,11 +43,6 @@ const queryClient = new QueryClient({
     mutations: {
       retry: false,
     },
-  },
-  logger: {
-    log: console.log,
-    warn: console.warn,
-    error: console.error,
   },
 });
 
