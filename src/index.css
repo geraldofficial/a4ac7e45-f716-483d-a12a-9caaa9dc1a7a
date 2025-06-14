@@ -37,23 +37,26 @@
   * {
     @apply border-border;
   }
-  body {
-    @apply bg-background text-foreground;
-    /* Prevent overscroll and improve mobile touch */
-    overscroll-behavior: none;
-    -webkit-overflow-scrolling: touch;
-  }
   
-  /* Ensure proper mobile viewport behavior */
   html, body {
     height: 100%;
     overflow-x: hidden;
+    scroll-behavior: smooth;
   }
   
-  /* Fix mobile scrolling issues */
+  body {
+    @apply bg-background text-foreground;
+    overscroll-behavior: none;
+    -webkit-overflow-scrolling: touch;
+    position: relative;
+    overflow-y: auto;
+  }
+  
   #root {
     min-height: 100vh;
     overflow-x: hidden;
+    display: flex;
+    flex-direction: column;
   }
 }
 
@@ -119,21 +122,75 @@ button, [role="button"] {
 
 /* Mobile optimization for scrolling */
 @media (max-width: 768px) {
-  ::-webkit-scrollbar {
-    width: 4px;
+  html {
+    /* Fix iOS bounce scrolling */
+    height: 100%;
+    position: fixed;
+    overflow: hidden;
+    width: 100%;
   }
   
-  /* Ensure mobile containers can scroll properly */
   body {
-    position: relative;
-    overflow-y: auto;
-    overflow-x: hidden;
+    height: 100%;
+    overflow: auto;
+    -webkit-overflow-scrolling: touch;
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
   }
   
-  /* Fix mobile hero section height issues */
+  #root {
+    height: 100%;
+    overflow: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  ::-webkit-scrollbar {
+    width: 0px;
+    background: transparent;
+  }
+  
+  /* Ensure movie cards are touch-friendly */
+  .movie-card {
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+  }
+  
+  /* Better mobile container spacing */
+  .container {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+  
+  /* Ensure proper spacing for mobile bottom navigation */
+  .pb-mobile-nav {
+    padding-bottom: calc(80px + env(safe-area-inset-bottom));
+  }
+  
+  /* Smooth horizontal scrolling for movie rows */
+  .movie-row {
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  /* Fix hero section for mobile */
   .hero-section {
-    max-height: 70vh;
-    min-height: 50vh;
+    max-height: 60vh;
+    min-height: 40vh;
+  }
+  
+  /* Improve movie section spacing */
+  .movie-section {
+    margin-bottom: 2rem;
+  }
+  
+  /* Better touch targets for mobile */
+  .mobile-touch-target {
+    min-height: 48px;
+    min-width: 48px;
+    padding: 12px;
   }
 }
 
@@ -143,6 +200,7 @@ button, [role="button"] {
 .z-dropdown { z-index: 9999; }
 .z-modal { z-index: 10000; }
 .z-tooltip { z-index: 5000; }
+.z-bottom-nav { z-index: 999; }
 
 /* Ensure search suggestions are always on top */
 [data-search-suggestions] {
@@ -169,27 +227,8 @@ button, [role="button"] {
 
 @media (max-width: 640px) {
   .responsive-grid {
-    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
     gap: 0.75rem;
-  }
-}
-
-/* Mobile-specific improvements */
-@media (max-width: 768px) {
-  .container {
-    padding-left: 1rem;
-    padding-right: 1rem;
-  }
-  
-  /* Ensure proper spacing for mobile bottom navigation */
-  .pb-mobile-nav {
-    padding-bottom: calc(80px + env(safe-area-inset-bottom));
-  }
-  
-  /* Fix potential scroll issues on mobile */
-  main {
-    overflow-x: hidden;
-    overflow-y: auto;
   }
 }
 
@@ -198,5 +237,47 @@ button, [role="button"] {
   /* iOS specific styles */
   body {
     -webkit-overflow-scrolling: touch;
+  }
+  
+  /* Fix iOS scroll momentum */
+  .scroll-container {
+    -webkit-overflow-scrolling: touch;
+    overflow-y: scroll;
+  }
+}
+
+/* Horizontal scroll improvements for mobile */
+.horizontal-scroll {
+  display: flex;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  gap: 0.75rem;
+  padding: 0 1rem;
+}
+
+.horizontal-scroll::-webkit-scrollbar {
+  display: none;
+}
+
+.horizontal-scroll > * {
+  flex-shrink: 0;
+}
+
+/* Mobile-specific movie card sizing */
+@media (max-width: 640px) {
+  .movie-card-mobile {
+    width: 120px;
+    min-width: 120px;
+  }
+}
+
+@media (min-width: 641px) and (max-width: 768px) {
+  .movie-card-mobile {
+    width: 140px;
+    min-width: 140px;
   }
 }

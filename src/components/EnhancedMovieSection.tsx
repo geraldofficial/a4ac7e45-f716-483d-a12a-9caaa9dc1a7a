@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { ImprovedMovieCard } from './ImprovedMovieCard';
 import { LoadingSpinner } from './LoadingSpinner';
@@ -93,7 +94,7 @@ export const EnhancedMovieSection = () => {
   const scrollSection = (sectionId: string, direction: 'left' | 'right') => {
     const section = document.getElementById(sectionId);
     if (section) {
-      const scrollAmount = window.innerWidth < 768 ? 200 : 400;
+      const scrollAmount = window.innerWidth < 768 ? 150 : 400;
       section.scrollBy({
         left: direction === 'left' ? -scrollAmount : scrollAmount,
         behavior: 'smooth'
@@ -114,7 +115,7 @@ export const EnhancedMovieSection = () => {
     showScrollButtons?: boolean;
     priority?: boolean;
   }) => (
-    <section className="mb-8 md:mb-12">
+    <section className="mb-6 md:mb-12 movie-section">
       <div className="flex items-center justify-between mb-4 md:mb-6 px-3 md:px-6">
         <div className="flex items-center gap-2">
           <div className="w-1 h-6 bg-gradient-to-b from-primary to-primary/50 rounded-full"></div>
@@ -159,13 +160,12 @@ export const EnhancedMovieSection = () => {
       </div>
       <div 
         id={sectionId}
-        className="flex gap-3 md:gap-4 lg:gap-6 overflow-x-auto pb-4 px-3 md:px-6 scrollbar-hide scroll-smooth"
-        style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+        className="horizontal-scroll movie-row"
       >
         {movies.map((movie, index) => (
           <div 
             key={movie.id} 
-            className="flex-shrink-0 w-32 sm:w-36 md:w-40 lg:w-48 xl:w-52"
+            className="movie-card-mobile md:w-40 lg:w-48 xl:w-52 movie-card"
             ref={sectionId === 'recommended' && index === movies.length - 1 ? lastMovieElementRef : null}
           >
             <ImprovedMovieCard 
@@ -211,7 +211,7 @@ export const EnhancedMovieSection = () => {
     : 'Popular Movies';
 
   return (
-    <div className="space-y-6 md:space-y-8 lg:space-y-12">
+    <div className="space-y-4 md:space-y-8 lg:space-y-12 pb-mobile-nav">
       {/* Email Subscription Section */}
       <section className="px-3 md:px-6">
         <div className="flex items-center gap-2 mb-6">

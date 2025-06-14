@@ -53,9 +53,10 @@ const Index = () => {
         <meta name="twitter:description" content="Stream unlimited movies and TV series free on FlickPick." />
         
         {/* Mobile optimization */}
-        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes, viewport-fit=cover" />
         <meta name="mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
         
         {/* Enhanced Structured Data */}
         <script type="application/ld+json">
@@ -94,7 +95,7 @@ const Index = () => {
         </script>
       </Helmet>
       
-      <div className="min-h-screen bg-background dark overflow-x-hidden">
+      <div className="min-h-screen bg-background dark overflow-x-hidden scroll-container">
         <Navbar />
         <PullToRefresh onRefresh={handleRefresh}>
           <main className="relative pt-14 md:pt-16 pb-20 md:pb-8">
