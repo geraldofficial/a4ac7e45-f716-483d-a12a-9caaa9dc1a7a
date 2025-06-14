@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Navbar } from '@/components/Navbar';
-import { MovieSection } from '@/components/MovieSection';
+import { EnhancedMovieSection } from '@/components/EnhancedMovieSection';
 import { Footer } from '@/components/Footer';
 
 const Browse = () => {
@@ -15,7 +15,7 @@ const Browse = () => {
             Discover thousands of movies and TV shows across all genres
           </p>
         </div>
-        <MovieSection />
+        <EnhancedMovieSection />
       </div>
       <Footer />
     </div>
