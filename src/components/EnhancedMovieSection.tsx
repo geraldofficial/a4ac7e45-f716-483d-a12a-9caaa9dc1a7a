@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { ImprovedMovieCard } from './ImprovedMovieCard';
 import { LoadingSpinner } from './LoadingSpinner';
@@ -45,11 +44,11 @@ export const EnhancedMovieSection = () => {
       
       const [popularResponse, trendingResponse] = await Promise.all([
         tmdbApi.getPopularMovies(1),
-        tmdbApi.getTrendingMovies(1)
+        tmdbApi.getTrendingMovies('day')
       ]);
 
-      setPopularMovies(popularResponse.results);
-      setTrendingMovies(trendingResponse.results);
+      setPopularMovies(popularResponse);
+      setTrendingMovies(trendingResponse);
 
       if (user && user.genre_preferences && user.genre_preferences.length > 0) {
         const recommendedResponse = await getPersonalizedRecommendations(user.genre_preferences, 1);
@@ -57,7 +56,7 @@ export const EnhancedMovieSection = () => {
         setHasMoreRecommended(recommendedResponse.total_pages > 1);
         setRecommendedPage(1);
       } else {
-        setRecommendedMovies(popularResponse.results);
+        setRecommendedMovies(popularResponse);
         setHasMoreRecommended(false);
       }
     } catch (error) {

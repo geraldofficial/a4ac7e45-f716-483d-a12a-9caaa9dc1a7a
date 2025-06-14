@@ -1,7 +1,7 @@
 
 import axios from 'axios';
 
-const API_KEY = import.meta.env.VITE_TMDB_API_KEY;
+const API_KEY = '9f4e225d07a52de06e5e1487f45837e0';
 const BASE_URL = 'https://api.themoviedb.org/3';
 
 const api = axios.create({
@@ -13,13 +13,17 @@ const api = axios.create({
 
 export interface Movie {
   id: number;
-  title: string;
+  title?: string;
+  name?: string; // For TV shows
   poster_path: string;
   overview: string;
-  release_date: string;
+  release_date?: string;
+  first_air_date?: string; // For TV shows
   vote_average: number;
   backdrop_path?: string;
   runtime?: number;
+  number_of_seasons?: number; // For TV shows
+  media_type?: 'movie' | 'tv' | 'person';
   genres?: Array<{ id: number; name: string }>;
   credits?: {
     cast: Array<{
@@ -61,12 +65,12 @@ export interface Person {
 export const tmdbApi = {
   async getMovies(category: 'popular' | 'top_rated' | 'now_playing' | 'upcoming', page: number = 1) {
     const response = await api.get(`/movie/${category}`, { params: { page } });
-    return response.data.results as Movie[];
+    return response.data;
   },
 
   async getTVShows(category: 'popular' | 'top_rated' | 'on_the_air', page: number = 1) {
     const response = await api.get(`/tv/${category}`, { params: { page } });
-    return response.data.results as TVShow[];
+    return response.data;
   },
 
   async getPeople(category: 'popular', page: number = 1) {
@@ -147,11 +151,13 @@ export const tmdbApi = {
   },
 
   async getPopularMovies(page: number = 1) {
-    return this.getMovies('popular', page);
+    const response = await this.getMovies('popular', page);
+    return response.results;
   },
 
   async getPopularTVShows(page: number = 1) {
-    return this.getTVShows('popular', page);
+    const response = await this.getTVShows('popular', page);
+    return response.results;
   },
 
   async getMoviesByGenre(genreId: number, page: number = 1) {
