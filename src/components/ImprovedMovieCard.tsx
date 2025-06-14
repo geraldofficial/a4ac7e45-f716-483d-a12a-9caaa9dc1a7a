@@ -8,6 +8,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
 import { Movie } from '@/services/tmdb';
 import { cn } from '@/lib/utils';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface ImprovedMovieCardProps {
   movie: Movie;
@@ -25,6 +26,7 @@ export const ImprovedMovieCard: React.FC<ImprovedMovieCardProps> = ({
   const { user, addToWatchlist, removeFromWatchlist, isInWatchlist } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
+  const isMobile = useIsMobile();
   const [imageLoaded, setImageLoaded] = useState(false);
   const [imageError, setImageError] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
@@ -125,12 +127,12 @@ export const ImprovedMovieCard: React.FC<ImprovedMovieCardProps> = ({
     <div 
       className={cn(
         "group relative overflow-hidden rounded-xl bg-card border border-border/50 cursor-pointer transition-all duration-300 w-full max-w-sm mx-auto",
-        // Desktop hover effects
-        "hover:scale-105 hover:shadow-2xl hover:border-primary/50 hover:z-10"
+        // Only apply hover effects on desktop
+        !isMobile && "hover:scale-105 hover:shadow-2xl hover:border-primary/50 hover:z-10"
       )}
       onClick={handleMoreInfo}
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
+      onMouseEnter={() => !isMobile && setIsHovered(true)}
+      onMouseLeave={() => !isMobile && setIsHovered(false)}
     >
       <div className="aspect-[2/3] overflow-hidden relative bg-muted/20">
         {/* Loading state */}
@@ -148,7 +150,8 @@ export const ImprovedMovieCard: React.FC<ImprovedMovieCardProps> = ({
             className={cn(
               "h-full w-full object-cover transition-all duration-500",
               imageLoaded ? 'opacity-100' : 'opacity-0',
-              "group-hover:scale-110"
+              // Only apply hover scale on desktop
+              !isMobile && "group-hover:scale-110"
             )}
             onLoad={() => setImageLoaded(true)}
             onError={() => setImageError(true)}
@@ -166,10 +169,11 @@ export const ImprovedMovieCard: React.FC<ImprovedMovieCardProps> = ({
           />
         )}
 
-        {/* Desktop overlay with enhanced design */}
+        {/* Desktop overlay with enhanced design - only show on desktop hover */}
         <div className={cn(
           "absolute inset-0 bg-gradient-to-t from-black/95 via-black/30 to-transparent transition-opacity duration-300",
-          "opacity-0 group-hover:opacity-100"
+          // Only show overlay on desktop hover
+          isMobile ? "opacity-0" : "opacity-0 group-hover:opacity-100"
         )}>
           {/* Rating badge */}
           <div className="absolute top-3 left-3">
@@ -263,7 +267,10 @@ export const ImprovedMovieCard: React.FC<ImprovedMovieCardProps> = ({
       
       {/* Bottom info section - always visible */}
       <div className="p-4 bg-gradient-to-b from-card to-card/90 border-t border-border/20">
-        <h3 className="text-foreground font-semibold text-sm leading-tight mb-1 line-clamp-1 group-hover:text-primary transition-colors">
+        <h3 className={cn(
+          "text-foreground font-semibold text-sm leading-tight mb-1 line-clamp-1 transition-colors",
+          !isMobile && "group-hover:text-primary"
+        )}>
           {title}
         </h3>
         <div className="flex items-center justify-between">
