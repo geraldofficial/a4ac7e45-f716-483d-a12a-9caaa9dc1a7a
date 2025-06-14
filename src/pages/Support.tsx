@@ -173,15 +173,13 @@ const Support = () => {
                     </div>
 
                     {/* KeshoPay Button Component */}
-                    <div className="flex justify-center">
-                      <KeshoPayButton
-                        amount={Math.round(selectedAmount * 130)} // Convert USD to KES
-                        reference={`FLICKPICK-${Date.now()}`}
-                        appId={KESHO_APP_ID}
-                        buttonText={`❤️ Donate $${selectedAmount}`}
-                        identifier={`flickpick-user-${Date.now()}`}
-                      />
-                    </div>
+                    <KeshoPayButton
+                      amount={Math.round(selectedAmount * 130)} // Convert USD to KES
+                      reference={`FLICKPICK-${Date.now()}`}
+                      appId={KESHO_APP_ID}
+                      buttonText={`❤️ Donate ${selectedAmount}`}
+                      identifier={`flickpick-user-${Date.now()}`}
+                    />
                   </div>
 
                   {/* KeshoPay Info */}
