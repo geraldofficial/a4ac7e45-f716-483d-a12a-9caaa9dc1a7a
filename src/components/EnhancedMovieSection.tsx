@@ -159,7 +159,7 @@ export const EnhancedMovieSection = () => {
       </div>
       <div 
         id={sectionId}
-        className="flex overflow-x-auto overflow-y-hidden scroll-smooth gap-3 md:gap-4 px-4 md:px-6 pb-4"
+        className="flex overflow-x-auto overflow-y-hidden scroll-smooth gap-3 md:gap-4 px-4 md:px-6 pb-4 movie-row"
         style={{
           scrollbarWidth: 'none',
           msOverflowStyle: 'none',
@@ -169,7 +169,7 @@ export const EnhancedMovieSection = () => {
         {movies.map((movie, index) => (
           <div 
             key={movie.id} 
-            className="flex-shrink-0 w-[160px] sm:w-[180px] md:w-48 lg:w-52 xl:w-56"
+            className="flex-shrink-0"
             ref={sectionId === 'recommended' && index === movies.length - 1 ? lastMovieElementRef : null}
           >
             <ImprovedMovieCard 

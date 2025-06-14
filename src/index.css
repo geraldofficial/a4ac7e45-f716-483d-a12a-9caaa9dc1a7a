@@ -136,17 +136,10 @@ button, [role="button"] {
     padding-right: 1rem;
   }
   
-  /* Movie cards touch optimization - Remove problematic hover effects */
+  /* Movie cards mobile optimization */
   .movie-card {
     touch-action: pan-y;
     -webkit-tap-highlight-color: transparent;
-  }
-  
-  /* Disable hover effects on mobile to prevent scroll blocking */
-  .movie-card:hover,
-  .group:hover {
-    transform: none !important;
-    scale: 1 !important;
   }
   
   /* Hero section mobile optimization */
@@ -184,17 +177,6 @@ button, [role="button"] {
   .horizontal-scroll > * {
     scroll-snap-align: start;
     flex-shrink: 0;
-  }
-  
-  /* Prevent any transform or scale effects on mobile */
-  * {
-    transform: none !important;
-    transition: none !important;
-  }
-  
-  /* Allow only opacity and color transitions */
-  .safe-transition {
-    transition: opacity 0.3s ease, color 0.3s ease !important;
   }
 }
 
@@ -292,25 +274,12 @@ button, [role="button"] {
     touch-action: pan-y;
   }
   
-  /* Improved movie card sizing */
-  .movie-card-mobile {
-    width: 160px;
-    min-width: 160px;
-  }
-  
   /* Better button spacing and sizing */
   .mobile-button {
     min-height: 44px;
     min-width: 44px;
     font-size: 14px;
     padding: 8px 16px;
-  }
-}
-
-@media (min-width: 641px) and (max-width: 768px) {
-  .movie-card-mobile {
-    width: 180px;
-    min-width: 180px;
   }
 }
 
@@ -326,5 +295,26 @@ button, [role="button"] {
 @media (min-width: 769px) {
   .smooth-transition {
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  
+  /* Desktop hover effects */
+  .movie-card:hover,
+  .group:hover {
+    transform: scale(1.02);
+  }
+}
+
+/* Mobile-specific movie card styles */
+@media (max-width: 768px) {
+  .movie-card-mobile {
+    width: 180px;
+    min-width: 180px;
+  }
+}
+
+@media (max-width: 480px) {
+  .movie-card-mobile {
+    width: 160px;
+    min-width: 160px;
   }
 }

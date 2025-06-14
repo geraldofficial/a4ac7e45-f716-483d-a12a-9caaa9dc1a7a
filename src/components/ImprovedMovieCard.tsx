@@ -123,11 +123,11 @@ export const ImprovedMovieCard: React.FC<ImprovedMovieCardProps> = ({
   const getVariantClasses = () => {
     switch (variant) {
       case 'compact':
-        return 'w-[160px] min-w-[160px]';
+        return 'w-[140px] min-w-[140px] sm:w-[160px] sm:min-w-[160px]';
       case 'featured':
         return 'w-full max-w-lg';
       default:
-        return 'w-[180px] min-w-[180px] sm:w-[200px] sm:min-w-[200px]';
+        return 'w-[180px] min-w-[180px] sm:w-[200px] sm:min-w-[200px] md:w-[220px] md:min-w-[220px]';
     }
   };
 
@@ -138,8 +138,7 @@ export const ImprovedMovieCard: React.FC<ImprovedMovieCardProps> = ({
   return (
     <div 
       className={cn(
-        "group relative overflow-hidden rounded-xl bg-card/80 backdrop-blur-sm border border-border/50 transition-all duration-300 cursor-pointer",
-        // Remove hover effects on mobile to prevent scroll blocking
+        "group relative overflow-hidden rounded-xl bg-card/80 backdrop-blur-sm border border-border/50 transition-all duration-300 cursor-pointer movie-card",
         "md:hover:scale-[1.02] md:hover:shadow-2xl md:hover:border-primary/30 md:hover:z-10 md:hover:bg-card/90",
         getVariantClasses()
       )}
@@ -161,7 +160,6 @@ export const ImprovedMovieCard: React.FC<ImprovedMovieCardProps> = ({
             className={cn(
               "h-full w-full object-cover transition-all duration-500",
               imageLoaded ? 'opacity-100' : 'opacity-0',
-              // Remove scale effect on mobile
               "md:group-hover:scale-110"
             )}
             onLoad={() => setImageLoaded(true)}
@@ -180,7 +178,7 @@ export const ImprovedMovieCard: React.FC<ImprovedMovieCardProps> = ({
           />
         )}
 
-        {/* Gradient overlay - Always visible on mobile, hover on desktop */}
+        {/* Gradient overlay */}
         <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity duration-300" />
 
         {/* Rating badge */}
@@ -201,9 +199,9 @@ export const ImprovedMovieCard: React.FC<ImprovedMovieCardProps> = ({
           </Badge>
         </div>
 
-        {/* Action buttons - Always visible on mobile, hover on desktop */}
-        <div className="absolute bottom-2 left-2 right-2 z-10 transition-all duration-300 space-y-2 opacity-100 md:opacity-0 md:group-hover:opacity-100">
-          <div className="flex items-center justify-between mb-2">
+        {/* Action buttons */}
+        <div className="absolute bottom-3 left-3 right-3 z-10 transition-all duration-300 space-y-3 opacity-100 md:opacity-0 md:group-hover:opacity-100">
+          <div className="flex items-center justify-between">
             <div className="flex items-center gap-1">
               {year && (
                 <Badge className="bg-white/20 text-white text-xs backdrop-blur-sm">
@@ -216,17 +214,17 @@ export const ImprovedMovieCard: React.FC<ImprovedMovieCardProps> = ({
           <div className="flex gap-2">
             <Button 
               size="sm" 
-              className="bg-primary hover:bg-primary/90 text-primary-foreground font-medium transition-all duration-200 flex-1 h-10 text-sm rounded-lg min-h-[44px]"
+              className="bg-primary hover:bg-primary/90 text-primary-foreground font-medium transition-all duration-200 flex-1 h-11 text-sm rounded-lg touch-target px-3"
               onClick={handleWatch}
             >
               <Play className="h-4 w-4 mr-2 fill-current" />
-              <span className="whitespace-nowrap">Play</span>
+              <span className="truncate">Play</span>
             </Button>
             
             <Button 
               size="sm" 
               variant="outline"
-              className="border-white/30 bg-white/10 backdrop-blur-sm text-white hover:bg-white/20 hover:border-white/50 transition-all duration-200 h-10 w-10 p-0 rounded-lg min-h-[44px] min-w-[44px]"
+              className="border-white/30 bg-white/10 backdrop-blur-sm text-white hover:bg-white/20 hover:border-white/50 transition-all duration-200 h-11 w-11 p-0 rounded-lg touch-target"
               onClick={(e) => {
                 e.stopPropagation();
                 handleMoreInfo();
@@ -239,7 +237,7 @@ export const ImprovedMovieCard: React.FC<ImprovedMovieCardProps> = ({
               <Button 
                 size="sm" 
                 variant="outline" 
-                className="border-white/30 bg-white/10 backdrop-blur-sm text-white hover:bg-white/20 hover:border-white/50 transition-all duration-200 h-10 w-10 p-0 rounded-lg min-h-[44px] min-w-[44px]"
+                className="border-white/30 bg-white/10 backdrop-blur-sm text-white hover:bg-white/20 hover:border-white/50 transition-all duration-200 h-11 w-11 p-0 rounded-lg touch-target"
                 onClick={handleWatchlistToggle}
               >
                 {isInWatchlist(movie.id) ? <Check className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
@@ -249,7 +247,7 @@ export const ImprovedMovieCard: React.FC<ImprovedMovieCardProps> = ({
             <Button 
               size="sm" 
               variant="outline"
-              className="border-white/30 bg-white/10 backdrop-blur-sm text-white hover:bg-white/20 hover:border-white/50 transition-all duration-200 h-10 w-10 p-0 rounded-lg min-h-[44px] min-w-[44px]"
+              className="border-white/30 bg-white/10 backdrop-blur-sm text-white hover:bg-white/20 hover:border-white/50 transition-all duration-200 h-11 w-11 p-0 rounded-lg touch-target"
               onClick={handleShare}
             >
               <Share2 className="h-4 w-4" />
@@ -264,9 +262,7 @@ export const ImprovedMovieCard: React.FC<ImprovedMovieCardProps> = ({
         variant === 'compact' && "p-2"
       )}>
         <h3 className={cn(
-          "text-foreground font-semibold truncate transition-colors",
-          // Remove hover color change on mobile
-          "md:group-hover:text-primary",
+          "text-foreground font-semibold truncate transition-colors md:group-hover:text-primary",
           variant === 'compact' ? "text-xs mb-1" : "text-sm mb-1"
         )}>
           {title}

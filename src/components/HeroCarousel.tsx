@@ -10,6 +10,7 @@ import { useAuth } from '@/contexts/AuthContext';
 export const HeroCarousel = () => {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isAutoPlaying, setIsAutoPlaying] = useState(true);
+  const [isMobile, setIsMobile] = useState(false);
   const navigate = useNavigate();
   const { user, addToWatchlist, isInWatchlist } = useAuth();
 
@@ -22,14 +23,25 @@ export const HeroCarousel = () => {
   const featuredMovies = movies?.slice(0, 5) || [];
 
   useEffect(() => {
-    if (featuredMovies.length === 0 || !isAutoPlaying) return;
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth <= 768);
+    };
+    
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
+  useEffect(() => {
+    // Disable auto-play on mobile to prevent scroll interference
+    if (featuredMovies.length === 0 || !isAutoPlaying || isMobile) return;
 
     const timer = setInterval(() => {
       setCurrentSlide((prev) => (prev + 1) % featuredMovies.length);
     }, 5000);
 
     return () => clearInterval(timer);
-  }, [featuredMovies.length, isAutoPlaying]);
+  }, [featuredMovies.length, isAutoPlaying, isMobile]);
 
   const nextSlide = () => {
     setIsAutoPlaying(false);
@@ -70,13 +82,13 @@ export const HeroCarousel = () => {
   const currentMovie = featuredMovies[currentSlide];
 
   return (
-    <div className="relative h-[50vh] md:h-[70vh] lg:h-[80vh] overflow-hidden">
+    <div className="relative h-[50vh] md:h-[70vh] lg:h-[80vh] overflow-hidden hero-carousel">
       {/* Background Image */}
       <div className="absolute inset-0">
         <img
           src={`https://image.tmdb.org/t/p/original${currentMovie.backdrop_path}`}
           alt={currentMovie.title}
-          className="w-full h-full object-cover"
+          className="w-full h-full object-cover cursor-pointer"
           loading="eager"
           onClick={() => handleImageClick(currentMovie.id)}
         />
@@ -85,20 +97,24 @@ export const HeroCarousel = () => {
       </div>
 
       {/* Navigation Arrows - Desktop Only */}
-      <button
-        onClick={prevSlide}
-        className="hidden md:block absolute left-4 top-1/2 transform -translate-y-1/2 z-10 p-3 rounded-full bg-black/50 hover:bg-black/70 transition-all"
-        aria-label="Previous slide"
-      >
-        <ChevronLeft className="h-6 w-6 text-white" />
-      </button>
-      <button
-        onClick={nextSlide}
-        className="hidden md:block absolute right-4 top-1/2 transform -translate-y-1/2 z-10 p-3 rounded-full bg-black/50 hover:bg-black/70 transition-all"
-        aria-label="Next slide"
-      >
-        <ChevronRight className="h-6 w-6 text-white" />
-      </button>
+      {!isMobile && (
+        <>
+          <button
+            onClick={prevSlide}
+            className="absolute left-4 top-1/2 transform -translate-y-1/2 z-10 p-3 rounded-full bg-black/50 hover:bg-black/70 transition-all touch-target"
+            aria-label="Previous slide"
+          >
+            <ChevronLeft className="h-6 w-6 text-white" />
+          </button>
+          <button
+            onClick={nextSlide}
+            className="absolute right-4 top-1/2 transform -translate-y-1/2 z-10 p-3 rounded-full bg-black/50 hover:bg-black/70 transition-all touch-target"
+            aria-label="Next slide"
+          >
+            <ChevronRight className="h-6 w-6 text-white" />
+          </button>
+        </>
+      )}
 
       {/* Content - Desktop Only */}
       <div className="hidden md:block relative z-10 h-full">
@@ -122,7 +138,7 @@ export const HeroCarousel = () => {
               <div className="flex flex-col sm:flex-row gap-3 md:gap-4">
                 <Button
                   onClick={() => handleWatchMovie(currentMovie.id)}
-                  className="bg-white text-black hover:bg-white/90 px-6 md:px-8 py-3 text-base md:text-lg font-semibold min-w-[140px]"
+                  className="bg-white text-black hover:bg-white/90 px-6 md:px-8 py-3 text-base md:text-lg font-semibold min-w-[140px] touch-target"
                 >
                   <Play className="mr-2 h-4 w-4 md:h-5 md:w-5 fill-current" />
                   <span className="whitespace-nowrap">Play</span>
@@ -131,7 +147,7 @@ export const HeroCarousel = () => {
                 <Button
                   onClick={() => handleAddToWatchlist(currentMovie.id)}
                   variant="outline"
-                  className="border-white/30 text-white hover:bg-white/10 px-6 md:px-8 py-3 text-base md:text-lg min-w-[160px]"
+                  className="border-white/30 text-white hover:bg-white/10 px-6 md:px-8 py-3 text-base md:text-lg min-w-[160px] touch-target"
                 >
                   <Plus className="mr-2 h-4 w-4 md:h-5 md:w-5" />
                   <span className="whitespace-nowrap">
@@ -142,7 +158,7 @@ export const HeroCarousel = () => {
                 <Button
                   onClick={() => navigate(`/movie/${currentMovie.id}`)}
                   variant="outline"
-                  className="border-white/30 text-white hover:bg-white/10 px-6 md:px-8 py-3 text-base md:text-lg min-w-[140px]"
+                  className="border-white/30 text-white hover:bg-white/10 px-6 md:px-8 py-3 text-base md:text-lg min-w-[140px] touch-target"
                 >
                   <Info className="mr-2 h-4 w-4 md:h-5 md:w-5" />
                   <span className="whitespace-nowrap">More Info</span>
@@ -167,7 +183,7 @@ export const HeroCarousel = () => {
       </div>
 
       {/* Slide Indicators */}
-      <div className="absolute bottom-4 md:bottom-8 left-1/2 transform -translate-x-1/2 flex space-x-2">
+      <div className="absolute bottom-4 md:bottom-8 left-1/2 transform -translate-x-1/2 flex space-x-2 z-20">
         {featuredMovies.map((_, index) => (
           <button
             key={index}
@@ -176,7 +192,7 @@ export const HeroCarousel = () => {
               setIsAutoPlaying(false);
               setTimeout(() => setIsAutoPlaying(true), 10000);
             }}
-            className={`w-2 h-2 md:w-3 md:h-3 rounded-full transition-all ${
+            className={`w-2 h-2 md:w-3 md:h-3 rounded-full transition-all touch-target ${
               index === currentSlide ? 'bg-white scale-125' : 'bg-white/40'
             }`}
             aria-label={`Go to slide ${index + 1}`}
