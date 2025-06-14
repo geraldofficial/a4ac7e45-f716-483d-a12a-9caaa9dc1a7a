@@ -12,13 +12,11 @@ import { BottomNavigation } from '@/components/BottomNavigation';
 import { EnhancedMovieSection } from '@/components/EnhancedMovieSection';
 import { OfflineBanner } from '@/components/OfflineBanner';
 import { useAuth } from '@/contexts/AuthContext';
-import { useQueryClient } from '@tanstack/react-query';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 
 const Index = () => {
   const { user, loading } = useAuth();
   const navigate = useNavigate();
-  const queryClient = useQueryClient();
   const [isMobile, setIsMobile] = React.useState(false);
 
   useEffect(() => {
@@ -30,18 +28,6 @@ const Index = () => {
     window.addEventListener('resize', checkMobile);
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
-
-  useEffect(() => {
-    if (loading) return;
-    
-    if (user && !user.onboarding_completed) {
-      try {
-        navigate('/onboarding');
-      } catch (error) {
-        console.error('Navigation error:', error);
-      }
-    }
-  }, [user, loading, navigate]);
 
   return (
     <>
@@ -64,41 +50,6 @@ const Index = () => {
         <meta name="mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-        
-        <script type="application/ld+json">
-          {JSON.stringify({
-            "@context": "https://schema.org",
-            "@type": "WebSite",
-            "name": "FlickPick",
-            "description": "Stream unlimited movies and TV series free on FlickPick",
-            "url": window.location.origin,
-            "inLanguage": "en-US",
-            "isAccessibleForFree": true,
-            "potentialAction": {
-              "@type": "SearchAction",
-              "target": {
-                "@type": "EntryPoint",
-                "urlTemplate": `${window.location.origin}/search?q={search_term_string}`
-              },
-              "query-input": "required name=search_term_string"
-            },
-            "publisher": {
-              "@type": "Organization",
-              "name": "FlickPick",
-              "logo": {
-                "@type": "ImageObject",
-                "url": `${window.location.origin}/favicon.ico`
-              }
-            },
-            "offers": {
-              "@type": "Offer",
-              "category": "Entertainment",
-              "availability": "https://schema.org/InStock",
-              "price": "0",
-              "priceCurrency": "USD"
-            }
-          })}
-        </script>
       </Helmet>
       
       <ErrorBoundary>
@@ -108,7 +59,6 @@ const Index = () => {
           </ErrorBoundary>
           
           <main className="relative safe-area-top pt-14 md:pt-16">
-            {/* Use Netflix mobile hero on mobile, regular hero on desktop */}
             <ErrorBoundary fallback={
               <div className="h-[50vh] bg-gradient-to-r from-purple-900 to-blue-900 flex items-center justify-center">
                 <p className="text-white text-xl">Hero content unavailable</p>
@@ -117,7 +67,6 @@ const Index = () => {
               {isMobile ? <NetflixMobileHero /> : <HeroSection />}
             </ErrorBoundary>
             
-            {/* Hide continue watching and recently watched on mobile to match Netflix */}
             {!isMobile && user && (
               <ErrorBoundary>
                 <ContinueWatching />
@@ -139,7 +88,6 @@ const Index = () => {
             </ErrorBoundary>
           </main>
           
-          {/* Hide footer on mobile */}
           {!isMobile && (
             <ErrorBoundary>
               <Footer />

@@ -1,49 +1,22 @@
 
-import React, { useState, useEffect } from 'react';
-import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { Search, Menu, X, User, LogOut, Settings } from 'lucide-react';
+import React, { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { useAuth } from '@/contexts/AuthContext';
 import { FlickPickLogo } from './FlickPickLogo';
+import { useAuth } from '@/contexts/AuthContext';
+import { Search, Menu, X, User, LogOut, History, Star } from 'lucide-react';
 
 export const Navbar = () => {
-  const [isSearchOpen, setIsSearchOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
-  const location = useLocation();
-
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (searchQuery.trim()) {
-      navigate(`/search?q=${encodeURIComponent(searchQuery.trim())}`);
-      setSearchQuery('');
-      setIsSearchOpen(false);
-      setIsMobileMenuOpen(false);
-    }
-  };
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
 
   const handleSignOut = async () => {
-    try {
-      await signOut();
-    } catch (error) {
-      console.error('Error signing out:', error);
-    }
+    await signOut();
+    navigate('/');
+    setIsUserMenuOpen(false);
   };
-
-  // Close mobile menu when route changes
-  useEffect(() => {
-    setIsMobileMenuOpen(false);
-  }, [location.pathname]);
 
   const navLinks = [
     { to: '/', label: 'Home' },
@@ -53,11 +26,11 @@ export const Navbar = () => {
   ];
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 bg-black/95 backdrop-blur-md border-b border-gray-800">
+    <nav className="fixed top-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-xl border-b border-border">
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
-          <Link to="/" className="flex items-center space-x-2">
+          <Link to="/" className="flex-shrink-0">
             <FlickPickLogo />
           </Link>
 
@@ -67,148 +40,127 @@ export const Navbar = () => {
               <Link
                 key={link.to}
                 to={link.to}
-                className="text-gray-300 hover:text-white transition-colors duration-200 text-sm font-medium"
+                className="text-foreground hover:text-primary transition-colors text-sm font-medium"
               >
                 {link.label}
               </Link>
             ))}
           </div>
 
-          {/* Search and User Actions */}
-          <div className="flex items-center space-x-4">
-            {/* Desktop Search */}
-            <div className="hidden md:block">
-              {isSearchOpen ? (
-                <form onSubmit={handleSearch} className="flex items-center">
-                  <Input
-                    type="text"
-                    placeholder="Search movies, TV shows..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-64 bg-gray-800 border-gray-700 text-white placeholder-gray-400"
-                    autoFocus
-                  />
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setIsSearchOpen(false)}
-                    className="ml-2 text-gray-400 hover:text-white"
-                  >
-                    <X className="h-4 w-4" />
-                  </Button>
-                </form>
-              ) : (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setIsSearchOpen(true)}
-                  className="text-gray-400 hover:text-white"
-                >
-                  <Search className="h-4 w-4" />
-                </Button>
-              )}
-            </div>
-
-            {/* Mobile Search */}
-            <Button
-              variant="ghost"
-              size="sm"
-              className="md:hidden text-gray-400 hover:text-white"
-              onClick={() => setIsSearchOpen(!isSearchOpen)}
-            >
+          {/* Desktop Actions */}
+          <div className="hidden md:flex items-center space-x-4">
+            <Button variant="ghost" size="sm">
               <Search className="h-4 w-4" />
             </Button>
-
-            {/* User Menu */}
+            
             {user ? (
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="sm" className="text-gray-400 hover:text-white">
-                    {user.avatar ? (
-                      <img 
-                        src={user.avatar} 
-                        alt="Profile" 
-                        className="h-6 w-6 rounded-full"
-                      />
-                    ) : (
-                      <User className="h-4 w-4" />
-                    )}
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-48">
-                  <DropdownMenuItem onClick={() => navigate('/profile')}>
-                    <Settings className="h-4 w-4 mr-2" />
-                    Profile
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => navigate('/watchlist')}>
-                    <User className="h-4 w-4 mr-2" />
-                    My Watchlist
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={handleSignOut}>
-                    <LogOut className="h-4 w-4 mr-2" />
-                    Sign Out
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
+              <div className="relative">
+                <Button 
+                  variant="ghost" 
+                  size="sm"
+                  onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
+                  className="flex items-center space-x-2"
+                >
+                  <User className="h-4 w-4" />
+                  <span className="text-sm">{user.email?.split('@')[0]}</span>
+                </Button>
+                
+                {isUserMenuOpen && (
+                  <div className="absolute right-0 mt-2 w-48 bg-background border border-border rounded-lg shadow-lg py-1 z-50">
+                    <Link
+                      to="/history"
+                      className="flex items-center px-4 py-2 text-sm text-foreground hover:bg-accent"
+                      onClick={() => setIsUserMenuOpen(false)}
+                    >
+                      <History className="h-4 w-4 mr-2" />
+                      Watch History
+                    </Link>
+                    <button
+                      onClick={handleSignOut}
+                      className="flex items-center w-full px-4 py-2 text-sm text-foreground hover:bg-accent"
+                    >
+                      <LogOut className="h-4 w-4 mr-2" />
+                      Sign Out
+                    </button>
+                  </div>
+                )}
+              </div>
             ) : (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => navigate('/auth')}
-                className="border-gray-700 text-white hover:bg-gray-800"
-              >
-                Sign In
+              <Button asChild variant="default" size="sm">
+                <Link to="/auth">Sign In</Link>
               </Button>
             )}
+          </div>
 
-            {/* Mobile Menu Toggle */}
+          {/* Mobile Menu Button */}
+          <div className="md:hidden">
             <Button
               variant="ghost"
               size="sm"
-              className="md:hidden text-gray-400 hover:text-white"
-              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              onClick={() => setIsMenuOpen(!isMenuOpen)}
             >
-              {isMobileMenuOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
+              {isMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
             </Button>
           </div>
         </div>
 
-        {/* Mobile Search */}
-        {isSearchOpen && (
-          <div className="md:hidden py-4 border-t border-gray-800">
-            <form onSubmit={handleSearch}>
-              <Input
-                type="text"
-                placeholder="Search movies, TV shows..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full bg-gray-800 border-gray-700 text-white placeholder-gray-400"
-                autoFocus
-              />
-            </form>
-          </div>
-        )}
-
         {/* Mobile Menu */}
-        {isMobileMenuOpen && (
-          <div className="md:hidden py-4 border-t border-gray-800">
-            <div className="space-y-4">
+        {isMenuOpen && (
+          <div className="md:hidden border-t border-border">
+            <div className="py-4 space-y-2">
               {navLinks.map((link) => (
                 <Link
                   key={link.to}
                   to={link.to}
-                  className="block text-gray-300 hover:text-white transition-colors duration-200 text-sm font-medium"
-                  onClick={() => setIsMobileMenuOpen(false)}
+                  className="block px-4 py-2 text-foreground hover:bg-accent rounded-lg"
+                  onClick={() => setIsMenuOpen(false)}
                 >
                   {link.label}
                 </Link>
               ))}
+              
+              <div className="border-t border-border pt-2 mt-2">
+                {user ? (
+                  <>
+                    <Link
+                      to="/history"
+                      className="block px-4 py-2 text-foreground hover:bg-accent rounded-lg"
+                      onClick={() => setIsMenuOpen(false)}
+                    >
+                      Watch History
+                    </Link>
+                    <button
+                      onClick={() => {
+                        handleSignOut();
+                        setIsMenuOpen(false);
+                      }}
+                      className="block w-full text-left px-4 py-2 text-foreground hover:bg-accent rounded-lg"
+                    >
+                      Sign Out
+                    </button>
+                  </>
+                ) : (
+                  <Link
+                    to="/auth"
+                    className="block px-4 py-2 text-foreground hover:bg-accent rounded-lg"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    Sign In
+                  </Link>
+                )}
+              </div>
             </div>
           </div>
         )}
       </div>
+      
+      {/* Click outside to close user menu */}
+      {isUserMenuOpen && (
+        <div 
+          className="fixed inset-0 z-40" 
+          onClick={() => setIsUserMenuOpen(false)}
+        />
+      )}
     </nav>
   );
 };

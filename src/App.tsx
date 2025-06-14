@@ -1,91 +1,61 @@
 
-import React, { Suspense, lazy } from "react";
-import { Toaster } from "@/components/ui/sonner";
+import { Suspense, lazy } from "react";
+import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { HelmetProvider } from 'react-helmet-async';
-import { AuthProvider } from "./contexts/AuthContext";
-import { ScrollToTop } from "./components/ScrollToTop";
-import { ErrorBoundary } from "./components/ErrorBoundary";
-import { ProductionLoadingSpinner } from "./components/ProductionLoadingSpinner";
+import { AuthProvider } from "@/contexts/AuthContext";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 
+// Lazy load pages for better performance
 const Index = lazy(() => import("./pages/Index"));
-const DetailPage = lazy(() => import("./pages/DetailPage"));
-const Search = lazy(() => import("./pages/Search"));
-const Browse = lazy(() => import("./pages/Browse"));
-const Watchlist = lazy(() => import("./pages/Watchlist"));
-const Onboarding = lazy(() => import("./pages/Onboarding"));
-const NotFound = lazy(() => import("./pages/NotFound"));
 const Auth = lazy(() => import("./pages/Auth"));
-const Profile = lazy(() => import("./pages/Profile"));
-const Support = lazy(() => import("./pages/Support"));
+const DetailPage = lazy(() => import("./pages/DetailPage"));
+const History = lazy(() => import("./pages/History"));
+const Browse = lazy(() => import("./pages/Browse"));
 const Trending = lazy(() => import("./pages/Trending"));
 const TopRated = lazy(() => import("./pages/TopRated"));
-const History = lazy(() => import("./pages/History"));
-const Terms = lazy(() => import("./pages/Terms"));
-const Privacy = lazy(() => import("./pages/Privacy"));
-const Contact = lazy(() => import("./pages/Contact"));
-const Help = lazy(() => import("./pages/Help"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      staleTime: 1000 * 60 * 5, // 5 minutes
-      retry: (failureCount, error) => {
-        // Don't retry on 4xx errors
-        if (error && typeof error === 'object' && 'status' in error) {
-          const status = error.status as number;
-          if (status >= 400 && status < 500) {
-            return false;
-          }
-        }
-        return failureCount < 2;
-      },
-      refetchOnWindowFocus: false,
-      refetchOnMount: true,
-    },
-    mutations: {
-      retry: false,
+      staleTime: 5 * 60 * 1000, // 5 minutes
+      retry: 1,
     },
   },
 });
 
-const App: React.FC = () => {
+function App() {
   return (
     <ErrorBoundary>
       <HelmetProvider>
         <QueryClientProvider client={queryClient}>
           <TooltipProvider>
-            <Toaster />
             <BrowserRouter>
               <ErrorBoundary>
                 <AuthProvider>
-                  <ScrollToTop />
-                  <ErrorBoundary>
-                    <Suspense fallback={<ProductionLoadingSpinner />}>
-                      <Routes>
-                        <Route path="/" element={<Index />} />
-                        <Route path="/movie/:id" element={<DetailPage />} />
-                        <Route path="/tv/:id" element={<DetailPage />} />
-                        <Route path="/search" element={<Search />} />
-                        <Route path="/browse" element={<Browse />} />
-                        <Route path="/watchlist" element={<Watchlist />} />
-                        <Route path="/onboarding" element={<Onboarding />} />
-                        <Route path="/auth" element={<Auth />} />
-                        <Route path="/profile" element={<Profile />} />
-                        <Route path="/support" element={<Support />} />
-                        <Route path="/trending" element={<Trending />} />
-                        <Route path="/top-rated" element={<TopRated />} />
-                        <Route path="/history" element={<History />} />
-                        <Route path="/terms" element={<Terms />} />
-                        <Route path="/privacy" element={<Privacy />} />
-                        <Route path="/contact" element={<Contact />} />
-                        <Route path="/help" element={<Help />} />
-                        <Route path="*" element={<NotFound />} />
-                      </Routes>
-                    </Suspense>
-                  </ErrorBoundary>
+                  <div className="min-h-screen bg-background text-foreground">
+                    <ErrorBoundary>
+                      <Suspense fallback={
+                        <div className="min-h-screen flex items-center justify-center">
+                          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+                        </div>
+                      }>
+                        <Routes>
+                          <Route path="/" element={<Index />} />
+                          <Route path="/auth" element={<Auth />} />
+                          <Route path="/movie/:id" element={<DetailPage />} />
+                          <Route path="/tv/:id" element={<DetailPage />} />
+                          <Route path="/history" element={<History />} />
+                          <Route path="/browse" element={<Browse />} />
+                          <Route path="/trending" element={<Trending />} />
+                          <Route path="/top-rated" element={<TopRated />} />
+                        </Routes>
+                      </Suspense>
+                    </ErrorBoundary>
+                    <Toaster />
+                  </div>
                 </AuthProvider>
               </ErrorBoundary>
             </BrowserRouter>
@@ -94,6 +64,6 @@ const App: React.FC = () => {
       </HelmetProvider>
     </ErrorBoundary>
   );
-};
+}
 
 export default App;
