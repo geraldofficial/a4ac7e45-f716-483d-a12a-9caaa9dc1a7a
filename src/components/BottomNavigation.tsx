@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Home, Search, TrendingUp, Star, User, Clock } from 'lucide-react';
+import { Home, Heart, TrendingUp, Star, User, Clock } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 
 export const BottomNavigation = () => {
@@ -11,7 +11,7 @@ export const BottomNavigation = () => {
 
   const navItems = [
     { icon: Home, label: 'Home', path: '/' },
-    { icon: Search, label: 'Search', path: '/search' },
+    { icon: Heart, label: 'Support', path: '/support' },
     { icon: TrendingUp, label: 'Trending', path: '/trending' },
     { icon: Star, label: 'Top Rated', path: '/top-rated' },
     ...(user ? [{ icon: Clock, label: 'History', path: '/history' }] : []),
