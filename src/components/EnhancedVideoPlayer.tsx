@@ -63,12 +63,9 @@ export const EnhancedVideoPlayer: React.FC<EnhancedVideoPlayerProps> = ({
           } else if (type === 'tv' && season && episode) {
             const seasonDetails = await tmdbApi.getTVSeasonDetails(tmdbId, season);
             const episodeInfo = seasonDetails.episodes?.find(ep => ep.episode_number === episode);
-            if (episodeInfo?.runtime) {
-              setEstimatedDuration(episodeInfo.runtime * 60); // Convert minutes to seconds
-            } else {
-              // Default TV episode duration
-              setEstimatedDuration(45 * 60); // 45 minutes
-            }
+            // Note: TV episodes from TMDB API don't always have runtime information
+            // So we'll use a default duration for TV episodes
+            setEstimatedDuration(45 * 60); // 45 minutes default for TV episodes
           }
         } catch (error) {
           console.error('Error fetching duration info:', error);
