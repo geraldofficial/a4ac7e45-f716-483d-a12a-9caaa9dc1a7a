@@ -1,3 +1,4 @@
+
 import React, { createContext, useState, useEffect, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from "@/components/ui/use-toast";
@@ -39,128 +40,137 @@ export interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+// Cleanup function to clear auth state
+const cleanupAuthState = () => {
+  Object.keys(localStorage).forEach((key) => {
+    if (key.startsWith('supabase.auth.') || key.includes('sb-')) {
+      localStorage.removeItem(key);
+    }
+  });
+};
+
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
   const { toast } = useToast();
 
   useEffect(() => {
     let mounted = true;
     
-    const checkAuth = async () => {
+    const initializeAuth = async () => {
       try {
-        setError(null);
-        const session = await authApi.getSession();
-        
-        if (!mounted) return;
-        
-        if (session?.user) {
-          // Get user profile from profiles table
-          const profile = await userApi.getUserProfile(session.user.id);
+        // Set up auth state listener first
+        const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+          console.log('Auth state changed:', event, session?.user?.id);
+          
+          if (!mounted) return;
+          
+          if (event === 'SIGNED_IN' && session?.user) {
+            // Use setTimeout to prevent deadlock
+            setTimeout(async () => {
+              try {
+                const profile = await userApi.getUserProfile(session.user.id);
+                if (mounted) {
+                  setUser({
+                    id: session.user.id,
+                    email: session.user.email,
+                    ...profile,
+                  });
+                }
+              } catch (error) {
+                console.error("Error fetching user profile:", error);
+                if (mounted) {
+                  setUser({
+                    id: session.user.id,
+                    email: session.user.email,
+                  });
+                }
+              }
+            }, 0);
+          } else if (event === 'SIGNED_OUT') {
+            setUser(null);
+          }
+          
           if (mounted) {
+            setLoading(false);
+          }
+        });
+
+        // Then check for existing session
+        const { data: { session }, error } = await supabase.auth.getSession();
+        
+        if (error) {
+          console.error("Session check failed:", error);
+        }
+        
+        if (mounted && session?.user) {
+          try {
+            const profile = await userApi.getUserProfile(session.user.id);
             setUser({
               id: session.user.id,
               email: session.user.email,
               ...profile,
             });
+          } catch (error) {
+            console.error("Error fetching user profile:", error);
+            setUser({
+              id: session.user.id,
+              email: session.user.email,
+            });
           }
         }
-      } catch (error) {
-        console.error("Authentication check failed", error);
+        
         if (mounted) {
-          setError("Failed to authenticate. Please try again.");
+          setLoading(false);
         }
-      } finally {
+
+        return () => {
+          subscription.unsubscribe();
+        };
+      } catch (error) {
+        console.error("Auth initialization failed:", error);
         if (mounted) {
           setLoading(false);
         }
       }
     };
 
-    // Add a minimum loading time to prevent flashing
-    const minLoadingTime = new Promise(resolve => setTimeout(resolve, 1000));
-    
-    Promise.all([checkAuth(), minLoadingTime]).then(() => {
-      if (mounted) {
-        setLoading(false);
-      }
-    });
-
-    // Listen for auth state changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      if (!mounted) return;
-      
-      console.log('Auth state changed:', event);
-      
-      if (event === 'SIGNED_IN' && session?.user) {
-        try {
-          const profile = await userApi.getUserProfile(session.user.id);
-          const userData = {
-            id: session.user.id,
-            email: session.user.email,
-            ...profile,
-          };
-          setUser(userData);
-          setError(null);
-          
-          // Send welcome email for new users
-          if (event === 'SIGNED_IN' && !profile?.email_welcomed) {
-            try {
-              await supabase.functions.invoke('send-welcome-email', {
-                body: {
-                  email: session.user.email,
-                  name: profile?.username || profile?.full_name
-                }
-              });
-              
-              // Mark user as welcomed
-              await userApi.updateUser({ email_welcomed: true });
-            } catch (emailError) {
-              console.error('Failed to send welcome email:', emailError);
-            }
-          }
-        } catch (error) {
-          console.error("Error fetching user profile:", error);
-          setError("Failed to load user profile");
-        }
-      } else if (event === 'SIGNED_OUT') {
-        setUser(null);
-        setError(null);
-      }
-      setLoading(false);
-    });
+    initializeAuth();
 
     return () => {
       mounted = false;
-      subscription.unsubscribe();
     };
   }, []);
 
   const signIn = async (email: string, password: string) => {
     setLoading(true);
     try {
+      // Clean up existing state first
+      cleanupAuthState();
+      
+      // Attempt global sign out first
+      try {
+        await supabase.auth.signOut({ scope: 'global' });
+      } catch (err) {
+        // Continue even if this fails
+      }
+
       const response = await authApi.signIn(email, password);
       if (response?.user) {
-        const profile = await userApi.getUserProfile(response.user.id);
-        setUser({
-          id: response.user.id,
-          email: response.user.email,
-          ...profile,
-        });
         toast({
           title: "Sign in successful!",
           description: `Welcome back!`,
         });
-        navigate('/');
+        // Force page reload for clean state
+        window.location.href = '/';
       }
     } catch (error: any) {
       console.error("Sign-in error:", error);
       toast({
         variant: "destructive",
         title: "Sign in failed",
-        description: error.message || "An error occurred during sign in.",
+        description: error.message || "Invalid email or password.",
       });
     } finally {
       setLoading(false);
@@ -174,26 +184,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const signUp = async (email: string, password: string, userData: any = {}) => {
     setLoading(true);
     try {
+      // Clean up existing state first
+      cleanupAuthState();
+      
       const response = await authApi.signUp(email, password, userData);
       if (response?.user) {
         toast({
           title: "Sign up successful!",
-          description: `Welcome to FlickPick!`,
+          description: `Welcome to FlickPick! Please check your email to verify your account.`,
         });
         
-        // Send welcome email
-        try {
-          await supabase.functions.invoke('send-welcome-email', {
-            body: {
-              email: email,
-              name: userData.username || userData.full_name
-            }
-          });
-        } catch (emailError) {
-          console.error('Failed to send welcome email:', emailError);
-        }
-        
-        navigate('/onboarding');
+        // Force page reload for clean state
+        window.location.href = '/onboarding';
       }
     } catch (error: any) {
       console.error("Sign-up error:", error);
@@ -214,12 +216,21 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const signOut = async () => {
     setLoading(true);
     try {
-      await authApi.signOut();
+      cleanupAuthState();
+      
+      try {
+        await supabase.auth.signOut({ scope: 'global' });
+      } catch (err) {
+        // Continue even if this fails
+      }
+      
       setUser(null);
       toast({
         description: "Signed out successfully!",
       });
-      navigate('/auth');
+      
+      // Force page reload for clean state
+      window.location.href = '/auth';
     } catch (error: any) {
       console.error("Sign-out error:", error);
       toast({
@@ -233,7 +244,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const updateProfile = async (updates: Partial<UserProfile>) => {
-    setLoading(true);
+    if (!user) return;
+    
     try {
       const updatedUser = await userApi.updateUser(updates);
       setUser((prevUser) => {
@@ -250,8 +262,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         title: "Profile update failed",
         description: error.message || "Failed to update profile.",
       });
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -292,8 +302,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     signUp,
     signOut,
     updateProfile,
-    login: signIn, // Alias for signIn
-    signup: signUp, // Alias for signUp
+    login,
+    signup,
     addToWatchlist,
     removeFromWatchlist,
     isInWatchlist,

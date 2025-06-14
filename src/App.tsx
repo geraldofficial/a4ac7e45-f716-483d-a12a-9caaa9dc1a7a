@@ -51,7 +51,7 @@ const AppContent: React.FC = () => {
   if (loading) {
     return (
       <LoadingWithTimeout 
-        timeout={15000} 
+        timeout={10000}
         onTimeout={() => {
           console.warn('App loading timed out');
         }}
