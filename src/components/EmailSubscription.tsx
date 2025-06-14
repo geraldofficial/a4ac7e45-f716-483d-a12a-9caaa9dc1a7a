@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -99,7 +98,7 @@ export const EmailSubscription = () => {
 
     setLoading(true);
     try {
-      const userName = user.user_metadata?.full_name || user.user_metadata?.username || user.email?.split('@')[0];
+      const userName = user.full_name || user.username || user.email?.split('@')[0];
       
       if (subscription) {
         // Update existing subscription
