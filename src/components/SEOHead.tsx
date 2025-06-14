@@ -17,12 +17,12 @@ export const SEOHead: React.FC<SEOHeadProps> = ({ content, type, season, episode
   
   // Create SEO-optimized title
   const seoTitle = episode && season 
-    ? `${title} Season ${season} Episode ${episode} - Watch Online | FlickPick`
-    : `${title} ${year ? `(${year})` : ''} - Watch Online | FlickPick`;
+    ? `${title} Season ${season} Episode ${episode} - Watch Online Free | FlickPick`
+    : `${title} ${year ? `(${year})` : ''} - Watch Online Free | FlickPick`;
   
   const description = content.overview 
-    ? `Watch ${title} ${year ? `(${year})` : ''} online. ${content.overview.substring(0, 150)}...`
-    : `Watch ${title} ${year ? `(${year})` : ''} online on FlickPick - Your ultimate streaming destination.`;
+    ? `Watch ${title} ${year ? `(${year})` : ''} online free. ${content.overview.substring(0, 140)}... Stream now on FlickPick.`
+    : `Watch ${title} ${year ? `(${year})` : ''} online free on FlickPick - Your ultimate streaming destination with no ads for subscribers.`;
 
   const imageUrl = content.poster_path 
     ? `https://image.tmdb.org/t/p/w500${content.poster_path}`
@@ -32,7 +32,7 @@ export const SEOHead: React.FC<SEOHeadProps> = ({ content, type, season, episode
     ? `https://image.tmdb.org/t/p/original${content.backdrop_path}`
     : imageUrl;
 
-  // Structured data for search engines
+  // Enhanced structured data for better SEO
   const structuredData = {
     "@context": "https://schema.org",
     "@type": type === 'movie' ? "Movie" : "TVSeries",
@@ -44,11 +44,15 @@ export const SEOHead: React.FC<SEOHeadProps> = ({ content, type, season, episode
       "@type": "AggregateRating",
       "ratingValue": content.vote_average,
       "bestRating": 10,
-      "worstRating": 0
+      "worstRating": 0,
+      "ratingCount": content.vote_count || 100
     },
     "genre": content.genres?.map(g => g.name) || [],
     "duration": content.runtime ? `PT${content.runtime}M` : undefined,
     "numberOfSeasons": content.number_of_seasons,
+    "contentRating": "PG-13",
+    "inLanguage": "en-US",
+    "isAccessibleForFree": true,
     "potentialAction": {
       "@type": "WatchAction",
       "target": {
@@ -56,14 +60,23 @@ export const SEOHead: React.FC<SEOHeadProps> = ({ content, type, season, episode
         "urlTemplate": window.location.href,
         "actionPlatform": [
           "http://schema.org/DesktopWebPlatform",
-          "http://schema.org/MobileWebPlatform"
+          "http://schema.org/MobileWebPlatform",
+          "http://schema.org/IOSPlatform",
+          "http://schema.org/AndroidPlatform"
         ]
       }
     },
     "offers": {
       "@type": "Offer",
       "availability": "https://schema.org/InStock",
-      "category": "Streaming"
+      "category": "Streaming",
+      "price": "0",
+      "priceCurrency": "USD"
+    },
+    "provider": {
+      "@type": "Organization",
+      "name": "FlickPick",
+      "url": "https://flickpick.com"
     }
   };
 
@@ -74,13 +87,40 @@ export const SEOHead: React.FC<SEOHeadProps> = ({ content, type, season, episode
     }
   });
 
+  // Keywords for better discoverability
+  const keywords = [
+    title,
+    `watch ${title} online`,
+    `${title} free streaming`,
+    type === 'movie' ? 'movie' : 'tv show',
+    'free movies',
+    'streaming',
+    'watch online',
+    'no ads',
+    year.toString(),
+    ...(content.genres?.map(g => g.name.toLowerCase()) || [])
+  ].filter(Boolean).join(', ');
+
   return (
     <Helmet>
       {/* Primary Meta Tags */}
       <title>{seoTitle}</title>
       <meta name="title" content={seoTitle} />
       <meta name="description" content={description} />
-      <meta name="keywords" content={`${title}, watch online, stream, movie, ${content.genres?.map(g => g.name).join(', ')}, ${year}`} />
+      <meta name="keywords" content={keywords} />
+      <meta name="author" content="FlickPick" />
+      <meta name="publisher" content="FlickPick" />
+      <meta name="copyright" content="FlickPick" />
+      <meta name="language" content="English" />
+      <meta name="revisit-after" content="7 days" />
+      <meta name="distribution" content="global" />
+      <meta name="rating" content="general" />
+      
+      {/* Mobile Optimization */}
+      <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes" />
+      <meta name="mobile-web-app-capable" content="yes" />
+      <meta name="apple-mobile-web-app-capable" content="yes" />
+      <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
       
       {/* Open Graph / Facebook */}
       <meta property="og:type" content="video.movie" />
@@ -89,22 +129,26 @@ export const SEOHead: React.FC<SEOHeadProps> = ({ content, type, season, episode
       <meta property="og:image" content={backdropUrl} />
       <meta property="og:image:width" content="1920" />
       <meta property="og:image:height" content="1080" />
+      <meta property="og:image:alt" content={`${title} poster`} />
       <meta property="og:url" content={window.location.href} />
       <meta property="og:site_name" content="FlickPick" />
+      <meta property="og:locale" content="en_US" />
       
       {/* Twitter */}
       <meta name="twitter:card" content="summary_large_image" />
       <meta name="twitter:title" content={seoTitle} />
       <meta name="twitter:description" content={description} />
       <meta name="twitter:image" content={backdropUrl} />
+      <meta name="twitter:image:alt" content={`${title} poster`} />
+      <meta name="twitter:site" content="@FlickPick" />
+      <meta name="twitter:creator" content="@FlickPick" />
       
-      {/* Additional Meta Tags */}
-      <meta name="robots" content="index, follow" />
-      <meta name="author" content="FlickPick" />
-      <meta name="publisher" content="FlickPick" />
-      <meta name="copyright" content="FlickPick" />
+      {/* Additional Meta Tags for SEO */}
+      <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+      <meta name="googlebot" content="index, follow" />
+      <meta name="bingbot" content="index, follow" />
       
-      {/* Movie-specific meta tags */}
+      {/* Movie/TV specific meta tags */}
       {releaseDate && <meta name="video:release_date" content={releaseDate} />}
       {content.runtime && <meta name="video:duration" content={content.runtime.toString()} />}
       {content.genres && content.genres.length > 0 && (
@@ -113,6 +157,10 @@ export const SEOHead: React.FC<SEOHeadProps> = ({ content, type, season, episode
       
       {/* Canonical URL */}
       <link rel="canonical" href={window.location.href} />
+      
+      {/* Preconnect for performance */}
+      <link rel="preconnect" href="https://image.tmdb.org" />
+      <link rel="dns-prefetch" href="https://image.tmdb.org" />
       
       {/* Structured Data */}
       <script type="application/ld+json">
