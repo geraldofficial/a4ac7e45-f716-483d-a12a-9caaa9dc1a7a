@@ -2,6 +2,7 @@
 import React from 'react';
 import { SimpleVideoPlayer } from './SimpleVideoPlayer';
 import { watchHistoryService } from '@/services/watchHistory';
+import { ErrorBoundary } from './ErrorBoundary';
 
 interface VideoPlayerProps {
   title: string;
@@ -22,20 +23,34 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = (props) => {
   let resumeFrom = 0;
   
   if (props.shouldResume) {
-    const resumeInfo = watchHistoryService.getResumeInfo(
-      props.tmdbId, 
-      props.type, 
-      props.season, 
-      props.episode
-    );
-    
-    if (resumeInfo.shouldResume) {
-      resumeFrom = resumeInfo.progress;
-      console.log(`Resuming ${props.title} from ${Math.floor(resumeFrom)}s`);
+    try {
+      const resumeInfo = watchHistoryService.getResumeInfo(
+        props.tmdbId, 
+        props.type, 
+        props.season, 
+        props.episode
+      );
+      
+      if (resumeInfo.shouldResume) {
+        resumeFrom = resumeInfo.progress;
+        console.log(`Resuming ${props.title} from ${Math.floor(resumeFrom)}s`);
+      }
+    } catch (error) {
+      console.error('Error getting resume info:', error);
+      resumeFrom = 0;
     }
   }
 
   return (
-    <SimpleVideoPlayer {...props} resumeFrom={resumeFrom} />
+    <ErrorBoundary fallback={
+      <div className="w-full h-64 bg-black flex items-center justify-center">
+        <div className="text-center text-white">
+          <p className="text-lg mb-2">Video player unavailable</p>
+          <p className="text-sm text-gray-400">Please try refreshing the page</p>
+        </div>
+      </div>
+    }>
+      <SimpleVideoPlayer {...props} resumeFrom={resumeFrom} />
+    </ErrorBoundary>
   );
 };

@@ -4,10 +4,11 @@ import { Navbar } from '@/components/Navbar';
 import { EnhancedMovieSection } from '@/components/EnhancedMovieSection';
 import { Footer } from '@/components/Footer';
 import { Helmet } from 'react-helmet-async';
+import { ErrorBoundary } from '@/components/ErrorBoundary';
 
 const Browse = () => {
   return (
-    <>
+    <ErrorBoundary>
       <Helmet>
         <title>Browse Movies & TV Shows - FlickPick | Unlimited Streaming</title>
         <meta name="description" content="Browse thousands of movies and TV shows across all genres. Discover new content, trending titles, and hidden gems on FlickPick - your ultimate streaming destination." />
@@ -42,7 +43,10 @@ const Browse = () => {
       </Helmet>
       
       <div className="min-h-screen bg-background">
-        <Navbar />
+        <ErrorBoundary>
+          <Navbar />
+        </ErrorBoundary>
+        
         <div className="pt-16 md:pt-20">
           <div className="container mx-auto px-4 py-6 md:py-8">
             <div className="text-center md:text-left">
@@ -55,11 +59,21 @@ const Browse = () => {
               </p>
             </div>
           </div>
-          <EnhancedMovieSection />
+          
+          <ErrorBoundary fallback={
+            <div className="container mx-auto px-4 py-8 text-center">
+              <p className="text-muted-foreground">Unable to load content sections</p>
+            </div>
+          }>
+            <EnhancedMovieSection />
+          </ErrorBoundary>
         </div>
-        <Footer />
+        
+        <ErrorBoundary>
+          <Footer />
+        </ErrorBoundary>
       </div>
-    </>
+    </ErrorBoundary>
   );
 };
 
