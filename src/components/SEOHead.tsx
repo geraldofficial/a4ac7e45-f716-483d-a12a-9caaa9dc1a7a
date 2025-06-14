@@ -45,7 +45,7 @@ export const SEOHead: React.FC<SEOHeadProps> = ({ content, type, season, episode
       "ratingValue": content.vote_average,
       "bestRating": 10,
       "worstRating": 0,
-      "ratingCount": content.vote_count || 100
+      "ratingCount": 100 // Fixed: Use a default value instead of content.vote_count
     },
     "genre": content.genres?.map(g => g.name) || [],
     "duration": content.runtime ? `PT${content.runtime}M` : undefined,
