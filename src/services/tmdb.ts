@@ -16,6 +16,7 @@ export interface Movie {
   genres?: Genre[];
   runtime?: number;
   number_of_seasons?: number;
+  seasons?: Season[];
   media_type?: 'movie' | 'tv';
   credits?: {
     cast: Actor[];
@@ -34,6 +35,28 @@ export interface Actor {
   profile_path?: string;
 }
 
+export interface Season {
+  id: number;
+  name: string;
+  season_number: number;
+  episode_count: number;
+  episodes?: Episode[];
+}
+
+export interface Episode {
+  id: number;
+  name: string;
+  episode_number: number;
+  air_date: string;
+  overview: string;
+}
+
+export interface SearchResult {
+  results: Movie[];
+  total_pages: number;
+  total_results: number;
+}
+
 class TMDBApi {
   private apiKey = TMDB_API_KEY;
   private baseUrl = TMDB_BASE_URL;
@@ -47,7 +70,7 @@ class TMDBApi {
       return await response.json();
     } catch (error) {
       console.error('TMDB API error:', error);
-      return { results: [] };
+      return { results: [], total_pages: 1, total_results: 0 };
     }
   }
 
@@ -58,6 +81,11 @@ class TMDBApi {
 
   async getPopularMovies(page: number = 1): Promise<Movie[]> {
     const data = await this.fetchFromTMDB(`/movie/popular?page=${page}`);
+    return data.results || [];
+  }
+
+  async getMovies(category: string, page: number = 1): Promise<Movie[]> {
+    const data = await this.fetchFromTMDB(`/movie/${category}?page=${page}`);
     return data.results || [];
   }
 
@@ -81,14 +109,18 @@ class TMDBApi {
     return data;
   }
 
-  async getTVSeasonDetails(id: number, season: number): Promise<any> {
+  async getTVSeasonDetails(id: number, season: number): Promise<Season> {
     const data = await this.fetchFromTMDB(`/tv/${id}/season/${season}`);
     return data;
   }
 
-  async searchMulti(query: string): Promise<Movie[]> {
-    const data = await this.fetchFromTMDB(`/search/multi?query=${encodeURIComponent(query)}`);
-    return data.results || [];
+  async searchMulti(query: string, page: number = 1): Promise<SearchResult> {
+    const data = await this.fetchFromTMDB(`/search/multi?query=${encodeURIComponent(query)}&page=${page}`);
+    return {
+      results: data.results || [],
+      total_pages: data.total_pages || 1,
+      total_results: data.total_results || 0
+    };
   }
 }
 

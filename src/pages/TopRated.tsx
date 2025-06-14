@@ -17,7 +17,7 @@ const TopRated = () => {
         tmdbApi.getPopularTVShows()
       ]);
       
-      const moviesWithType = moviesResponse.results.map(movie => ({ ...movie, media_type: 'movie' as const }));
+      const moviesWithType = moviesResponse.map(movie => ({ ...movie, media_type: 'movie' as const }));
       const tvWithType = tvShows.map(tv => ({ ...tv, media_type: 'tv' as const }));
       
       const combined = [...moviesWithType, ...tvWithType]

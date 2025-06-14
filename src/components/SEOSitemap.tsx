@@ -6,8 +6,8 @@ export const generateSitemap = async () => {
   try {
     // Get popular movies and TV shows for sitemap
     const [popularMovies, popularTVShows] = await Promise.all([
-      tmdbApi.getPopularMovies(1),
-      tmdbApi.getPopularTVShows(1)
+      tmdbApi.getPopularMovies(),
+      tmdbApi.getPopularTVShows()
     ]);
 
     const baseUrl = window.location.origin;

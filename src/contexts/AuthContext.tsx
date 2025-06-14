@@ -1,7 +1,17 @@
 
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import { User, Session } from '@supabase/supabase-js';
+import { User as SupabaseUser, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
+import { userApi } from '@/services/user';
+
+// Extended User type with our custom properties
+interface User extends SupabaseUser {
+  genre_preferences?: number[];
+  onboarding_completed?: boolean;
+  username?: string;
+  avatar?: string;
+  watchlist?: number[];
+}
 
 interface AuthContextType {
   user: User | null;
@@ -11,6 +21,7 @@ interface AuthContextType {
   signUp: (email: string, password: string, userData?: any) => Promise<{ error: any }>;
   signOut: () => Promise<void>;
   updateProfile: (updates: any) => Promise<{ error: any }>;
+  completeOnboarding: (genrePreferences: number[]) => Promise<void>;
   addToWatchlist: (tmdbId: number) => void;
   removeFromWatchlist: (tmdbId: number) => void;
   isInWatchlist: (tmdbId: number) => boolean;
@@ -23,11 +34,36 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
 
+  const loadUserProfile = async (userId: string) => {
+    try {
+      const profile = await userApi.getUserProfile(userId);
+      return profile;
+    } catch (error) {
+      console.error('Error loading user profile:', error);
+      return null;
+    }
+  };
+
   useEffect(() => {
     // Get initial session
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
       setSession(session);
-      setUser(session?.user ?? null);
+      
+      if (session?.user) {
+        const profile = await loadUserProfile(session.user.id);
+        const extendedUser: User = {
+          ...session.user,
+          genre_preferences: profile?.genre_preferences || [],
+          onboarding_completed: profile?.onboarding_completed || false,
+          username: profile?.username || session.user.email?.split('@')[0],
+          avatar: profile?.avatar || '👤',
+          watchlist: profile?.watchlist || []
+        };
+        setUser(extendedUser);
+      } else {
+        setUser(null);
+      }
+      
       setLoading(false);
     });
 
@@ -35,7 +71,24 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         setSession(session);
-        setUser(session?.user ?? null);
+        
+        if (session?.user) {
+          setTimeout(async () => {
+            const profile = await loadUserProfile(session.user.id);
+            const extendedUser: User = {
+              ...session.user,
+              genre_preferences: profile?.genre_preferences || [],
+              onboarding_completed: profile?.onboarding_completed || false,
+              username: profile?.username || session.user.email?.split('@')[0],
+              avatar: profile?.avatar || '👤',
+              watchlist: profile?.watchlist || []
+            };
+            setUser(extendedUser);
+          }, 0);
+        } else {
+          setUser(null);
+        }
+        
         setLoading(false);
       }
     );
@@ -70,27 +123,61 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const updateProfile = async (updates: any) => {
     if (!user) return { error: new Error('No user') };
     
-    const { error } = await supabase
-      .from('profiles')
-      .update(updates)
-      .eq('id', user.id);
+    try {
+      const updatedProfile = await userApi.updateUser(updates);
+      
+      // Update local user state
+      setUser(prev => prev ? {
+        ...prev,
+        ...updates,
+        username: updates.username || prev.username,
+        avatar: updates.avatar || prev.avatar,
+        genre_preferences: updates.genre_preferences || prev.genre_preferences,
+        watchlist: updates.watchlist || prev.watchlist
+      } : null);
+      
+      return { error: null };
+    } catch (error) {
+      return { error };
+    }
+  };
+
+  const completeOnboarding = async (genrePreferences: number[]) => {
+    if (!user) return;
     
-    return { error };
+    try {
+      await userApi.updateUser({
+        genre_preferences: genrePreferences,
+        onboarding_completed: true
+      });
+      
+      setUser(prev => prev ? {
+        ...prev,
+        genre_preferences: genrePreferences,
+        onboarding_completed: true
+      } : null);
+    } catch (error) {
+      console.error('Error completing onboarding:', error);
+      throw error;
+    }
   };
 
-  const addToWatchlist = (tmdbId: number) => {
-    // Implementation for adding to watchlist
-    console.log('Added to watchlist:', tmdbId);
+  const addToWatchlist = async (tmdbId: number) => {
+    if (!user) return;
+    
+    const updatedWatchlist = [...(user.watchlist || []), tmdbId];
+    await updateProfile({ watchlist: updatedWatchlist });
   };
 
-  const removeFromWatchlist = (tmdbId: number) => {
-    // Implementation for removing from watchlist
-    console.log('Removed from watchlist:', tmdbId);
+  const removeFromWatchlist = async (tmdbId: number) => {
+    if (!user) return;
+    
+    const updatedWatchlist = (user.watchlist || []).filter(id => id !== tmdbId);
+    await updateProfile({ watchlist: updatedWatchlist });
   };
 
   const isInWatchlist = (tmdbId: number) => {
-    // Implementation for checking if in watchlist
-    return false;
+    return user?.watchlist?.includes(tmdbId) || false;
   };
 
   return (
@@ -102,6 +189,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       signUp,
       signOut,
       updateProfile,
+      completeOnboarding,
       addToWatchlist,
       removeFromWatchlist,
       isInWatchlist,

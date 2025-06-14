@@ -32,3 +32,19 @@ export const useToast = () => {
 
   return { toast, toasts };
 };
+
+// Export toast function directly
+export const toast = ({ title, description, variant = 'default' }: Omit<Toast, 'id'>) => {
+  const id = Math.random().toString(36).substr(2, 9);
+  const newToast = { id, title, description, variant };
+  
+  toasts.push(newToast);
+  
+  // Auto remove after 5 seconds
+  setTimeout(() => {
+    const index = toasts.findIndex(t => t.id === id);
+    if (index > -1) {
+      toasts.splice(index, 1);
+    }
+  }, 5000);
+};
