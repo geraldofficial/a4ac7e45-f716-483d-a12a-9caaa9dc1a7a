@@ -5,14 +5,33 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.ico" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>FlickPick - Stream Movies & TV Shows</title>
-    <meta name="description" content="Stream unlimited movies and TV series with FlickPick - Your ultimate entertainment destination with the best content from around the world" />
-    <meta name="keywords" content="movies, tv shows, streaming, entertainment, watch online, FlickPick" />
+    <title>FlickPick - Stream Movies & TV Shows Online | Watch Free</title>
+    <meta name="description" content="Stream unlimited movies and TV series with FlickPick - Your ultimate entertainment destination with the best content from around the world. Watch movies online free." />
+    <meta name="keywords" content="movies, tv shows, streaming, entertainment, watch online, FlickPick, free movies, stream movies, watch series" />
     
     <!-- Open Graph Meta Tags -->
-    <meta property="og:title" content="FlickPick - Stream Movies & TV Shows" />
-    <meta property="og:description" content="Stream unlimited movies and TV series with FlickPick - Your ultimate entertainment destination with the best content from around the world" />
+    <meta property="og:title" content="FlickPick - Stream Movies & TV Shows Online | Watch Free" />
+    <meta property="og:description" content="Stream unlimited movies and TV series with FlickPick - Your ultimate entertainment destination with the best content from around the world. Watch movies online free." />
     <meta property="og:type" content="website" />
+    <meta property="og:image" content="https://images.unsplash.com/photo-1489599904276-39c2bb2d7b64?w=1200&h=630&fit=crop" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    
+    <!-- Twitter Meta Tags -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="FlickPick - Stream Movies & TV Shows Online" />
+    <meta name="twitter:description" content="Stream unlimited movies and TV series with FlickPick - Your ultimate entertainment destination." />
+    <meta name="twitter:image" content="https://images.unsplash.com/photo-1489599904276-39c2bb2d7b64?w=1200&h=630&fit=crop" />
+    
+    <!-- SEO Meta Tags -->
+    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+    <meta name="author" content="FlickPick" />
+    <meta name="publisher" content="FlickPick" />
+    <meta name="copyright" content="FlickPick" />
+    <meta name="language" content="English" />
+    <meta name="revisit-after" content="1 days" />
+    <meta name="distribution" content="global" />
+    <meta name="rating" content="general" />
     
     <!-- PWA Manifest -->
     <link rel="manifest" href="/manifest.json" />
@@ -29,6 +48,35 @@
     <!-- Preconnect to improve performance -->
     <link rel="preconnect" href="https://api.themoviedb.org" />
     <link rel="preconnect" href="https://image.tmdb.org" />
+    <link rel="dns-prefetch" href="https://api.themoviedb.org" />
+    <link rel="dns-prefetch" href="https://image.tmdb.org" />
+    
+    <!-- Structured Data for Organization -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      "name": "FlickPick",
+      "description": "Stream unlimited movies and TV series with FlickPick - Your ultimate entertainment destination",
+      "url": "https://flickpick.com",
+      "potentialAction": {
+        "@type": "SearchAction",
+        "target": {
+          "@type": "EntryPoint",
+          "urlTemplate": "https://flickpick.com/search?q={search_term_string}"
+        },
+        "query-input": "required name=search_term_string"
+      },
+      "publisher": {
+        "@type": "Organization",
+        "name": "FlickPick",
+        "logo": {
+          "@type": "ImageObject",
+          "url": "https://flickpick.com/favicon.ico"
+        }
+      }
+    }
+    </script>
   </head>
   <body>
     <div id="root"></div>

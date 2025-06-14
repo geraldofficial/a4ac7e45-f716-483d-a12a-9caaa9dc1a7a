@@ -1,110 +1,58 @@
-
-import React from 'react';
-import { Toaster } from "@/components/ui/toaster";
-import { Toaster as Sonner } from "@/components/ui/sonner";
+import { Suspense, lazy } from "react";
+import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { AuthProvider, useAuth } from "@/contexts/AuthContext";
-import { BottomNavigation } from "@/components/BottomNavigation";
-import { ErrorBoundary } from "@/components/ErrorBoundary";
-import { LoadingWithTimeout } from "@/components/LoadingWithTimeout";
-import Index from "./pages/Index";
-import Auth from "./pages/Auth";
-import Onboarding from "./pages/Onboarding";
-import Search from "./pages/Search";
-import Watchlist from "./pages/Watchlist";
-import Browse from "./pages/Browse";
-import Trending from "./pages/Trending";
-import TopRated from "./pages/TopRated";
-import Help from "./pages/Help";
-import Contact from "./pages/Contact";
-import Privacy from "./pages/Privacy";
-import Terms from "./pages/Terms";
-import NotFound from "./pages/NotFound";
-import DetailPage from "./pages/DetailPage";
-import Profile from "./pages/Profile";
-import History from "./pages/History";
-import Support from "./pages/Support";
+import { HelmetProvider } from 'react-helmet-async';
+import { AuthProvider } from "./contexts/AuthContext";
 import { ScrollToTop } from "./components/ScrollToTop";
+import { ErrorBoundary } from "./components/ErrorBoundary";
+import { ProductionLoadingSpinner } from "./components/ProductionLoadingSpinner";
+
+const Index = lazy(() => import("./pages/Index"));
+const DetailPage = lazy(() => import("./pages/DetailPage"));
+const Search = lazy(() => import("./pages/Search"));
+const Browse = lazy(() => import("./pages/Browse"));
+const Watchlist = lazy(() => import("./pages/Watchlist"));
+const Onboarding = lazy(() => import("./pages/Onboarding"));
+const NotFound = lazy(() => import("./pages/NotFound"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      retry: (failureCount, error) => {
-        // Don't retry on 4xx errors
-        if (error && typeof error === 'object' && 'status' in error) {
-          const status = (error as any).status;
-          if (status >= 400 && status < 500) return false;
-        }
-        return failureCount < 2; // Retry up to 2 times
-      },
-      refetchOnWindowFocus: false,
-      staleTime: 5 * 60 * 1000, // 5 minutes
+      staleTime: 1000 * 60 * 5, // 5 minutes
+      retry: 1,
     },
   },
 });
 
-const AppContent: React.FC = () => {
-  const { loading } = useAuth();
-
-  if (loading) {
-    return (
-      <LoadingWithTimeout 
-        timeout={10000}
-        onTimeout={() => {
-          console.warn('App loading timed out');
-        }}
-      />
-    );
-  }
-
-  return (
-    <ErrorBoundary>
-      <div className="min-h-screen">
-        <ScrollToTop />
-        <Routes>
-          <Route path="/" element={<Index />} />
-          <Route path="/auth" element={<Auth />} />
-          <Route path="/onboarding" element={<Onboarding />} />
-          <Route path="/search" element={<Search />} />
-          <Route path="/watchlist" element={<Watchlist />} />
-          <Route path="/browse" element={<Browse />} />
-          <Route path="/trending" element={<Trending />} />
-          <Route path="/top-rated" element={<TopRated />} />
-          <Route path="/profile" element={<Profile />} />
-          <Route path="/history" element={<History />} />
-          <Route path="/support" element={<Support />} />
-          <Route path="/help" element={<Help />} />
-          <Route path="/contact" element={<Contact />} />
-          <Route path="/privacy" element={<Privacy />} />
-          <Route path="/terms" element={<Terms />} />
-          <Route path="/movie/:id" element={<DetailPage />} />
-          <Route path="/tv/:id" element={<DetailPage />} />
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-        <BottomNavigation />
-      </div>
-    </ErrorBoundary>
-  );
-};
-
-const App: React.FC = () => {
-  return (
-    <ErrorBoundary>
-      <QueryClientProvider client={queryClient}>
+const App = () => (
+  <HelmetProvider>
+    <QueryClientProvider client={queryClient}>
+      <AuthProvider>
         <TooltipProvider>
           <Toaster />
-          <Sonner />
           <BrowserRouter>
-            <AuthProvider>
-              <AppContent />
-            </AuthProvider>
+            <ScrollToTop />
+            <ErrorBoundary>
+              <Suspense fallback={<ProductionLoadingSpinner />}>
+                <Routes>
+                  <Route path="/" element={<Index />} />
+                  <Route path="/movie/:id" element={<DetailPage />} />
+                  <Route path="/tv/:id" element={<DetailPage />} />
+                  <Route path="/search" element={<Search />} />
+                  <Route path="/browse" element={<Browse />} />
+                  <Route path="/watchlist" element={<Watchlist />} />
+                  <Route path="/onboarding" element={<Onboarding />} />
+                  <Route path="*" element={<NotFound />} />
+                </Routes>
+              </Suspense>
+            </ErrorBoundary>
           </BrowserRouter>
         </TooltipProvider>
-      </QueryClientProvider>
-    </ErrorBoundary>
-  );
-};
+      </AuthProvider>
+    </QueryClientProvider>
+  </HelmetProvider>
+);
 
 export default App;
