@@ -1,275 +1,166 @@
+import React, { createContext, useState, useEffect, useContext } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useToast } from "@/components/ui/use-toast";
+import { authApi } from '@/services/auth';
+import { userApi } from '@/services/user';
 
-import React, { createContext, useContext, useEffect, useState } from 'react';
-import { supabase } from '@/integrations/supabase/client';
-import { User, Session } from '@supabase/supabase-js';
-
-interface UserProfile {
+export interface UserProfile {
   id: string;
-  username: string;
-  email: string;
-  avatar: string;
-  genre_preferences: number[];
-  onboarding_completed: boolean;
-  watchlist: number[];
+  email?: string;
+  name?: string;
+  image?: string;
+  avatar_url?: string;
+  username?: string;
+  full_name?: string;
+  created_at?: string;
+  updated_at?: string;
 }
 
-interface AuthContextType {
+export interface AuthContextType {
   user: UserProfile | null;
-  session: Session | null;
   loading: boolean;
-  login: (email: string, password: string) => Promise<boolean>;
-  signup: (email: string, password: string, username: string) => Promise<boolean>;
-  logout: () => Promise<void>;
+  signIn: (email: string, password: string) => Promise<void>;
+  signUp: (email: string, password: string, userData?: any) => Promise<void>;
+  signOut: () => Promise<void>;
   updateProfile: (updates: Partial<UserProfile>) => Promise<void>;
-  completeOnboarding: (avatar: string, genres: number[]) => Promise<void>;
-  addToWatchlist: (movieId: number) => Promise<void>;
-  removeFromWatchlist: (movieId: number) => Promise<void>;
-  isInWatchlist: (movieId: number) => boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-export const useAuth = () => {
-  const context = useContext(AuthContext);
-  if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider');
-  }
-  return context;
-};
-
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<UserProfile | null>(null);
-  const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
+  const { toast } = useToast();
 
   useEffect(() => {
-    // Get initial session
-    const getSession = async () => {
+    const checkAuth = async () => {
       try {
-        const { data: { session } } = await supabase.auth.getSession();
-        setSession(session);
-        
+        const session = await authApi.getSession();
         if (session?.user) {
-          await loadUserProfile(session.user);
+          setUser(session.user);
         }
       } catch (error) {
-        console.error('Error getting session:', error);
+        console.error("Authentication check failed", error);
       } finally {
         setLoading(false);
       }
     };
 
-    getSession();
-
-    // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      console.log('Auth state changed:', event, session);
-      setSession(session);
-      
-      if (event === 'SIGNED_IN' && session?.user) {
-        setTimeout(async () => {
-          await loadUserProfile(session.user);
-          setLoading(false);
-        }, 0);
-      } else if (event === 'SIGNED_OUT') {
-        setUser(null);
-        setLoading(false);
-      }
-    });
-
-    return () => subscription.unsubscribe();
+    checkAuth();
   }, []);
 
-  const loadUserProfile = async (authUser: User) => {
+  const signIn = async (email: string, password: string) => {
+    setLoading(true);
     try {
-      const { data: profile, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', authUser.id)
-        .single();
-
-      if (error) {
-        console.error('Error loading profile:', error);
-        return;
-      }
-
-      if (profile) {
-        setUser({
-          id: profile.id,
-          username: profile.username,
-          email: authUser.email || '',
-          avatar: profile.avatar || '👤',
-          genre_preferences: profile.genre_preferences || [],
-          onboarding_completed: profile.onboarding_completed || false,
-          watchlist: profile.watchlist || []
+      const response = await authApi.signIn(email, password);
+      if (response?.user) {
+        setUser(response.user);
+        toast({
+          title: "Sign in successful!",
+          description: `Welcome back, ${response.user.name || response.user.email}!`,
+        });
+        navigate('/');
+      } else {
+        toast({
+          variant: "destructive",
+          title: "Sign in failed",
+          description: "Invalid credentials. Please try again.",
         });
       }
-    } catch (error) {
-      console.error('Error in loadUserProfile:', error);
-    }
-  };
-
-  const login = async (email: string, password: string): Promise<boolean> => {
-    try {
-      // Clean up any existing state
-      await supabase.auth.signOut({ scope: 'global' });
-      
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
+    } catch (error: any) {
+      console.error("Sign-in error:", error);
+      toast({
+        variant: "destructive",
+        title: "Sign in failed",
+        description: error.message || "An error occurred during sign in.",
       });
-
-      if (error) throw error;
-      
-      if (data.user) {
-        window.location.href = '/';
-        return true;
-      }
-      return false;
-    } catch (error) {
-      console.error('Login error:', error);
-      throw error;
+    } finally {
+      setLoading(false);
     }
   };
 
-  const signup = async (email: string, password: string, username: string): Promise<boolean> => {
+  const signUp = async (email: string, password: string, userData: any = {}) => {
+    setLoading(true);
     try {
-      const { data, error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          data: {
-            username,
-          },
-        },
+      const response = await authApi.signUp(email, password, userData);
+      if (response?.user) {
+        setUser(response.user);
+        toast({
+          title: "Sign up successful!",
+          description: `Welcome to FlickPick, ${response.user.name || response.user.email}!`,
+        });
+        navigate('/onboarding');
+      } else {
+        toast({
+          variant: "destructive",
+          title: "Sign up failed",
+          description: "Could not create account. Please try again.",
+        });
+      }
+    } catch (error: any) {
+      console.error("Sign-up error:", error);
+      toast({
+        variant: "destructive",
+        title: "Sign up failed",
+        description: error.message || "An error occurred during sign up.",
       });
-
-      if (error) throw error;
-      
-      if (data.user) {
-        window.location.href = '/onboarding';
-        return true;
-      }
-      return false;
-    } catch (error) {
-      console.error('Signup error:', error);
-      throw error;
+    } finally {
+      setLoading(false);
     }
   };
 
-  const logout = async () => {
+  const signOut = async () => {
+    setLoading(true);
     try {
-      await supabase.auth.signOut({ scope: 'global' });
+      await authApi.signOut();
       setUser(null);
-      setSession(null);
-      window.location.href = '/auth';
-    } catch (error) {
-      console.error('Logout error:', error);
-      throw error;
+      toast({
+        description: "Signed out successfully!",
+      });
+      navigate('/auth');
+    } catch (error: any) {
+      console.error("Sign-out error:", error);
+      toast({
+        variant: "destructive",
+        title: "Sign out failed",
+        description: error.message || "An error occurred during sign out.",
+      });
+    } finally {
+      setLoading(false);
     }
   };
 
   const updateProfile = async (updates: Partial<UserProfile>) => {
-    if (!user) return;
-
+    setLoading(true);
     try {
-      const { error } = await supabase
-        .from('profiles')
-        .update(updates)
-        .eq('id', user.id);
-
-      if (error) throw error;
-
-      setUser({ ...user, ...updates });
-    } catch (error) {
-      console.error('Error updating profile:', error);
-      throw error;
-    }
-  };
-
-  const completeOnboarding = async (avatar: string, genres: number[]) => {
-    if (!user) return;
-
-    try {
-      const { error } = await supabase
-        .from('profiles')
-        .update({
-          avatar,
-          genre_preferences: genres,
-          onboarding_completed: true
-        })
-        .eq('id', user.id);
-
-      if (error) throw error;
-
-      setUser({
-        ...user,
-        avatar,
-        genre_preferences: genres,
-        onboarding_completed: true
+      const updatedUser = await userApi.updateUser(updates);
+        setUser((prevUser) => {
+          return prevUser ? { ...prevUser, ...updatedUser } : updatedUser as UserProfile
+        });
+      toast({
+        title: "Profile updated!",
+        description: "Your profile has been updated successfully.",
       });
-    } catch (error) {
-      console.error('Error completing onboarding:', error);
-      throw error;
+    } catch (error: any) {
+      console.error("Profile update error:", error);
+      toast({
+        variant: "destructive",
+        title: "Profile update failed",
+        description: error.message || "Failed to update profile.",
+      });
+    } finally {
+      setLoading(false);
     }
-  };
-
-  const addToWatchlist = async (movieId: number) => {
-    if (!user) return;
-
-    try {
-      const updatedWatchlist = [...user.watchlist, movieId];
-      
-      const { error } = await supabase
-        .from('profiles')
-        .update({ watchlist: updatedWatchlist })
-        .eq('id', user.id);
-
-      if (error) throw error;
-
-      setUser({ ...user, watchlist: updatedWatchlist });
-    } catch (error) {
-      console.error('Error adding to watchlist:', error);
-      throw error;
-    }
-  };
-
-  const removeFromWatchlist = async (movieId: number) => {
-    if (!user) return;
-
-    try {
-      const updatedWatchlist = user.watchlist.filter(id => id !== movieId);
-      
-      const { error } = await supabase
-        .from('profiles')
-        .update({ watchlist: updatedWatchlist })
-        .eq('id', user.id);
-
-      if (error) throw error;
-
-      setUser({ ...user, watchlist: updatedWatchlist });
-    } catch (error) {
-      console.error('Error removing from watchlist:', error);
-      throw error;
-    }
-  };
-
-  const isInWatchlist = (movieId: number): boolean => {
-    return user?.watchlist.includes(movieId) || false;
   };
 
   const value: AuthContextType = {
     user,
-    session,
     loading,
-    login,
-    signup,
-    logout,
+    signIn,
+    signUp,
+    signOut,
     updateProfile,
-    completeOnboarding,
-    addToWatchlist,
-    removeFromWatchlist,
-    isInWatchlist,
   };
 
   return (
@@ -277,4 +168,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       {children}
     </AuthContext.Provider>
   );
+};
+
+export const useAuth = () => {
+  const context = useContext(AuthContext);
+  if (context === undefined) {
+    throw new Error("useAuth must be used within an AuthProvider");
+  }
+  return context;
 };

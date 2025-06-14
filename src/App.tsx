@@ -21,6 +21,8 @@ import Terms from "./pages/Terms";
 import NotFound from "./pages/NotFound";
 import DetailPage from "./pages/DetailPage";
 import Profile from "./pages/Profile";
+import History from "./pages/History";
+import Support from "./pages/Support";
 import { ScrollToTop } from "./components/ScrollToTop";
 
 const queryClient = new QueryClient({

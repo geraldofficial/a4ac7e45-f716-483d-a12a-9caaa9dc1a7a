@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -45,7 +46,6 @@ export const CustomVideoPlayer: React.FC<CustomVideoPlayerProps> = ({
   const [episodes, setEpisodes] = useState<Episode[]>([]);
   const [loading, setLoading] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(autoFullscreen);
-  const [showControls, setShowControls] = useState(true);
   const [showSourceMenu, setShowSourceMenu] = useState(false);
   const playerRef = useRef<HTMLDivElement>(null);
   const iframeRef = useRef<HTMLIFrameElement>(null);
@@ -85,6 +85,20 @@ export const CustomVideoPlayer: React.FC<CustomVideoPlayerProps> = ({
     addToHistory();
   }, [tmdbId, type, title, currentSeason, currentEpisode]);
 
+  // Fetch seasons for TV shows
+  useEffect(() => {
+    if (type === 'tv') {
+      fetchSeasons();
+    }
+  }, [tmdbId, type]);
+
+  // Fetch episodes when season changes
+  useEffect(() => {
+    if (type === 'tv' && currentSeason) {
+      fetchEpisodes(currentSeason);
+    }
+  }, [tmdbId, type, currentSeason]);
+
   // Handle fullscreen changes
   useEffect(() => {
     const handleFullscreenChange = () => {
@@ -104,6 +118,30 @@ export const CustomVideoPlayer: React.FC<CustomVideoPlayerProps> = ({
       }, 1000);
     }
   }, [autoFullscreen]);
+
+  const fetchSeasons = async () => {
+    try {
+      setLoading(true);
+      const details = await tmdbApi.getTVDetails(tmdbId);
+      setSeasons(details.seasons || []);
+    } catch (error) {
+      console.error('Error fetching seasons:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchEpisodes = async (seasonNumber: number) => {
+    try {
+      setLoading(true);
+      const seasonDetails = await tmdbApi.getTVSeasonDetails(tmdbId, seasonNumber);
+      setEpisodes(seasonDetails.episodes || []);
+    } catch (error) {
+      console.error('Error fetching episodes:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const enterFullscreen = async () => {
     if (playerRef.current && !document.fullscreenElement) {
@@ -135,47 +173,9 @@ export const CustomVideoPlayer: React.FC<CustomVideoPlayerProps> = ({
     }
   };
 
-  // Haptic feedback function
   const triggerHaptic = () => {
     if ('vibrate' in navigator) {
       navigator.vibrate(50);
-    }
-  };
-
-  useEffect(() => {
-    if (type === 'tv') {
-      fetchSeasons();
-    }
-  }, [type, tmdbId]);
-
-  useEffect(() => {
-    if (type === 'tv' && currentSeason) {
-      fetchEpisodes(currentSeason);
-    }
-  }, [currentSeason, type, tmdbId]);
-
-  const fetchSeasons = async () => {
-    try {
-      const tvDetails = await tmdbApi.getTVDetails(tmdbId);
-      if (tvDetails.seasons) {
-        setSeasons(tvDetails.seasons.filter(s => s.season_number > 0));
-      }
-    } catch (error) {
-      console.error('Error fetching seasons:', error);
-    }
-  };
-
-  const fetchEpisodes = async (seasonNumber: number) => {
-    setLoading(true);
-    try {
-      const seasonDetails = await tmdbApi.getTVSeasonDetails(tmdbId, seasonNumber);
-      if (seasonDetails.episodes) {
-        setEpisodes(seasonDetails.episodes);
-      }
-    } catch (error) {
-      console.error('Error fetching episodes:', error);
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -257,67 +257,48 @@ export const CustomVideoPlayer: React.FC<CustomVideoPlayerProps> = ({
 
         {/* Source Selection */}
         {showSourceMenu && (
-          <div className="bg-background/70 backdrop-blur-2xl border border-border/50 rounded-xl p-3">
-            <div className="flex items-center gap-2 mb-2">
-              <Monitor className="h-4 w-4 text-muted-foreground" />
-              <span className="text-foreground text-sm font-medium">Video Sources:</span>
-            </div>
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
-              {streamingSources.map((source, index) => (
-                <Button
-                  key={source.name}
-                  variant={currentSource === index ? "default" : "outline"}
-                  size="sm"
-                  onClick={() => handleSourceChange(index)}
-                  className={`h-8 text-xs transition-all ${
-                    currentSource === index 
-                      ? "bg-primary text-primary-foreground shadow-lg" 
-                      : "bg-background/50 backdrop-blur-xl border-border/50 hover:bg-background/70"
-                  }`}
-                >
-                  {source.name}
-                </Button>
-              ))}
-            </div>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+            {streamingSources.map((source, index) => (
+              <Button
+                key={index}
+                variant={currentSource === index ? "default" : "outline"}
+                size="sm"
+                onClick={() => handleSourceChange(index)}
+                className="text-xs"
+              >
+                {source.name}
+              </Button>
+            ))}
           </div>
         )}
 
         {/* TV Show Controls */}
-        {type === 'tv' && seasons.length > 0 && (
-          <div className="flex gap-4 flex-wrap items-center">
-            <div className="flex items-center gap-2">
-              <span className="text-foreground text-sm">Season:</span>
-              <Select value={currentSeason.toString()} onValueChange={handleSeasonChange}>
-                <SelectTrigger className="w-32 h-8 bg-background/50 backdrop-blur-xl border-border/50">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent className="bg-background/95 backdrop-blur-3xl border-border/60">
-                  {seasons.map((season) => (
-                    <SelectItem key={season.id} value={season.season_number.toString()}>
-                      Season {season.season_number}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            {episodes.length > 0 && (
-              <div className="flex items-center gap-2">
-                <span className="text-foreground text-sm">Episode:</span>
-                <Select value={currentEpisode.toString()} onValueChange={handleEpisodeChange}>
-                  <SelectTrigger className="w-40 h-8 bg-background/50 backdrop-blur-xl border-border/50">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent className="bg-background/95 backdrop-blur-3xl border-border/60 max-h-48">
-                    {episodes.map((ep) => (
-                      <SelectItem key={ep.id} value={ep.episode_number.toString()}>
-                        {ep.episode_number}. {ep.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            )}
+        {type === 'tv' && (
+          <div className="flex gap-3 flex-wrap">
+            <Select value={currentSeason.toString()} onValueChange={handleSeasonChange}>
+              <SelectTrigger className="w-32 h-8 bg-background/50 backdrop-blur-xl border-border/50">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {seasons.map((s) => (
+                  <SelectItem key={s.id} value={s.season_number.toString()}>
+                    Season {s.season_number}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Select value={currentEpisode.toString()} onValueChange={handleEpisodeChange}>
+              <SelectTrigger className="w-32 h-8 bg-background/50 backdrop-blur-xl border-border/50">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {episodes.map((ep) => (
+                  <SelectItem key={ep.id} value={ep.episode_number.toString()}>
+                    Episode {ep.episode_number}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
         )}
       </div>
@@ -340,34 +321,21 @@ export const CustomVideoPlayer: React.FC<CustomVideoPlayerProps> = ({
 
       {/* Episode Grid for TV Shows - only show when not in fullscreen */}
       {!isFullscreen && type === 'tv' && episodes.length > 0 && (
-        <div className="mt-4 bg-background/95 backdrop-blur-3xl border border-border/60 rounded-2xl p-4">
-          <h4 className="text-foreground font-medium mb-3 flex items-center gap-2">
-            <Smartphone className="h-4 w-4" />
-            Episodes
-          </h4>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2 max-h-64 overflow-y-auto">
+        <div className="bg-card/80 backdrop-blur-xl border border-border/50 rounded-b-2xl p-4 max-h-64 overflow-y-auto">
+          <h4 className="text-foreground font-medium mb-3 text-sm">Episodes</h4>
+          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-2">
             {episodes.map((ep) => (
               <Button
                 key={ep.id}
                 variant={currentEpisode === ep.episode_number ? "default" : "outline"}
                 size="sm"
-                onClick={() => {
-                  triggerHaptic();
-                  setCurrentEpisode(ep.episode_number);
-                }}
-                className={`justify-start text-left h-auto p-3 transition-all ${
-                  currentEpisode === ep.episode_number
-                    ? "bg-primary text-primary-foreground shadow-lg"
-                    : "bg-background/50 backdrop-blur-xl border-border/50 hover:bg-background/70"
-                }`}
+                onClick={() => setCurrentEpisode(ep.episode_number)}
+                className="h-auto p-2 flex flex-col items-start text-left"
               >
-                <div className="w-full">
-                  <div className="font-medium text-sm">Ep {ep.episode_number}</div>
-                  <div className="text-xs opacity-80 truncate">{ep.name}</div>
-                  {ep.air_date && (
-                    <div className="text-xs opacity-60">{new Date(ep.air_date).getFullYear()}</div>
-                  )}
-                </div>
+                <span className="text-xs font-medium">Ep {ep.episode_number}</span>
+                <span className="text-xs text-muted-foreground truncate w-full">
+                  {ep.name}
+                </span>
               </Button>
             ))}
           </div>

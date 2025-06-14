@@ -1,24 +1,43 @@
-import React, { useState } from 'react';
-import { MagnifyingGlass, Menu, User, X } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import { useAuth } from '@/contexts/AuthContext';
+
+import React, { useState, useRef } from 'react';
+import { Search, Menu, X, User, LogOut } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { Button } from '@/components/ui/button';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { FlickPickLogo } from './FlickPickLogo';
+import { SearchSuggestions } from './SearchSuggestions';
+import { useAuth } from '@/contexts/AuthContext';
 
 export const Navbar = () => {
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [isSearchOpen, setIsSearchOpen] = useState(false);
-  const { user, signOut } = useAuth();
   const navigate = useNavigate();
+  const { user, signOut } = useAuth();
+  const [searchQuery, setSearchQuery] = useState('');
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const searchInputRef = useRef<HTMLInputElement>(null);
+
+  const handleLogoClick = () => {
+    navigate('/');
+  };
+
+  const handleSignOut = async () => {
+    try {
+      await signOut();
+      navigate('/');
+    } catch (error) {
+      console.error('Error signing out:', error);
+    }
+  };
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (searchQuery.trim()) {
+      navigate(`/search?q=${encodeURIComponent(searchQuery.trim())}`);
+      setSearchQuery('');
+      setIsSearchOpen(false);
+    }
+  };
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-3xl border-b border-border/50">
@@ -26,7 +45,9 @@ export const Navbar = () => {
         <div className="flex items-center justify-between h-14 md:h-16">
           {/* Logo */}
           <div className="flex items-center">
-            <FlickPickLogo onClick={() => navigate('/')} className="cursor-pointer" />
+            <div onClick={handleLogoClick} className="cursor-pointer">
+              <FlickPickLogo />
+            </div>
           </div>
 
           {/* Desktop Navigation */}
@@ -65,65 +86,92 @@ export const Navbar = () => {
             )}
           </div>
 
-          {/* Search & Mobile Menu */}
-          <div className="flex items-center space-x-4">
-            {/* Search Icon (Mobile) */}
+          {/* Search & User Controls */}
+          <div className="flex items-center space-x-2 md:space-x-4">
+            {/* Desktop Search */}
+            <div className="hidden md:block relative">
+              <form onSubmit={handleSearch} className="relative">
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <input
+                    ref={searchInputRef}
+                    type="text"
+                    placeholder="Search movies, TV shows..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="w-64 pl-10 pr-4 py-2 bg-background/60 backdrop-blur-xl border border-border/50 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary/50 transition-all"
+                  />
+                </div>
+              </form>
+              {searchQuery && (
+                <SearchSuggestions
+                  query={searchQuery}
+                  onSelect={(item) => {
+                    navigate(`/${item.media_type}/${item.id}`);
+                    setSearchQuery('');
+                  }}
+                  onClose={() => setSearchQuery('')}
+                />
+              )}
+            </div>
+
+            {/* Mobile Search Button */}
             <Button
               variant="ghost"
               size="sm"
               onClick={() => setIsSearchOpen(true)}
-              className="md:hidden text-foreground hover:bg-accent p-1"
+              className="md:hidden p-2 hover:bg-background/60"
             >
-              <MagnifyingGlass className="h-4 w-4" />
+              <Search className="h-5 w-5" />
             </Button>
 
-            {/* User Menu / Auth Buttons */}
+            {/* User Menu or Auth Buttons */}
             {user ? (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" className="h-8 w-8 p-0 rounded-full">
+                  <Button variant="ghost" className="relative h-8 w-8 rounded-full">
                     <Avatar className="h-8 w-8">
-                      <AvatarImage src={user.image} alt={user.name || "Avatar"} />
-                      <AvatarFallback>{user.name?.charAt(0).toUpperCase() || "U"}</AvatarFallback>
+                      <AvatarImage src={user.image || user.avatar_url} alt={user.name || user.username || 'User'} />
+                      <AvatarFallback>{(user.name || user.username || 'U').charAt(0)}</AvatarFallback>
                     </Avatar>
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent className="w-56" align="end" forceMount>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={() => navigate('/profile')}>
+                <DropdownMenuContent className="w-56 bg-background/95 backdrop-blur-3xl border-border/50" align="end">
+                  <DropdownMenuItem onClick={() => navigate('/profile')} className="cursor-pointer">
+                    <User className="mr-2 h-4 w-4" />
                     Profile
                   </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => navigate('/watchlist')}>
+                  <DropdownMenuItem onClick={() => navigate('/watchlist')} className="cursor-pointer">
+                    <User className="mr-2 h-4 w-4" />
                     Watchlist
                   </DropdownMenuItem>
-                   <DropdownMenuItem onClick={() => navigate('/history')}>
-                    History
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={() => signOut()}>
-                    Sign Out
+                  <DropdownMenuItem onClick={handleSignOut} className="cursor-pointer">
+                    <LogOut className="mr-2 h-4 w-4" />
+                    Sign out
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
             ) : (
               <div className="hidden md:flex items-center space-x-2">
-                <Button variant="outline" size="sm" onClick={() => navigate('/auth')}>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => navigate('/auth')}
+                  className="bg-background/50 backdrop-blur-xl border border-border/50 hover:bg-background/70"
+                >
                   Sign In
-                </Button>
-                <Button size="sm" onClick={() => navigate('/auth')}>
-                  Sign Up
                 </Button>
               </div>
             )}
 
-            {/* Mobile Menu Icon */}
+            {/* Mobile Menu Button */}
             <Button
               variant="ghost"
               size="sm"
               onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className="md:hidden text-foreground hover:bg-accent p-1"
+              className="md:hidden p-2 hover:bg-background/60"
             >
-              {isMenuOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
+              {isMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
             </Button>
           </div>
         </div>
@@ -165,16 +213,15 @@ export const Navbar = () => {
                 </button>
               )}
               
-              {/* Mobile Auth Buttons */}
               {!user && (
-                <>
-                  <Button variant="outline" size="sm" onClick={() => { navigate('/auth'); setIsMenuOpen(false); }}>
+                <div className="pt-2 border-t border-border/50">
+                  <Button
+                    onClick={() => { navigate('/auth'); setIsMenuOpen(false); }}
+                    className="w-full"
+                  >
                     Sign In
                   </Button>
-                  <Button size="sm" onClick={() => { navigate('/auth'); setIsMenuOpen(false); }}>
-                    Sign Up
-                  </Button>
-                </>
+                </div>
               )}
             </div>
           </div>
@@ -182,20 +229,44 @@ export const Navbar = () => {
 
         {/* Mobile Search Overlay */}
         {isSearchOpen && (
-          <div className="fixed top-0 left-0 w-full h-full bg-background/95 backdrop-blur-3xl z-50 flex items-center justify-center">
-            <div className="relative w-full max-w-md px-4">
-              <Input
-                placeholder="Search for movies or TV shows..."
-                className="rounded-full shadow-md"
-              />
+          <div className="md:hidden fixed inset-0 bg-background/95 backdrop-blur-3xl z-50 flex flex-col">
+            <div className="flex items-center justify-between p-4 border-b border-border/50">
+              <h3 className="text-lg font-semibold text-foreground">Search</h3>
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={() => setIsSearchOpen(false)}
-                className="absolute top-1/2 right-2 -translate-y-1/2 text-foreground hover:bg-accent p-1"
+                className="p-2"
               >
                 <X className="h-5 w-5" />
               </Button>
+            </div>
+            <div className="p-4 flex-1">
+              <form onSubmit={handleSearch} className="relative">
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                  <input
+                    type="text"
+                    placeholder="Search movies, TV shows..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="w-full pl-10 pr-4 py-3 bg-background/60 backdrop-blur-xl border border-border/50 rounded-xl text-base focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary/50 transition-all"
+                    autoFocus
+                  />
+                </div>
+              </form>
+              {searchQuery && (
+                <SearchSuggestions
+                  query={searchQuery}
+                  onSelect={(item) => {
+                    navigate(`/${item.media_type}/${item.id}`);
+                    setSearchQuery('');
+                    setIsSearchOpen(false);
+                  }}
+                  onClose={() => setSearchQuery('')}
+                  isMobile={true}
+                />
+              )}
             </div>
           </div>
         )}
