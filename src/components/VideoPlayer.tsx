@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { EnhancedVideoPlayer } from './EnhancedVideoPlayer';
+import { SimpleVideoPlayer } from './SimpleVideoPlayer';
 import { watchHistoryService } from '@/services/watchHistory';
 
 interface VideoPlayerProps {
@@ -14,6 +14,7 @@ interface VideoPlayerProps {
   backdrop_path?: string;
   duration?: number;
   shouldResume?: boolean;
+  onClose?: () => void;
 }
 
 export const VideoPlayer: React.FC<VideoPlayerProps> = (props) => {
@@ -35,8 +36,6 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = (props) => {
   }
 
   return (
-    <div className="w-full">
-      <EnhancedVideoPlayer {...props} resumeFrom={resumeFrom} />
-    </div>
+    <SimpleVideoPlayer {...props} resumeFrom={resumeFrom} />
   );
 };

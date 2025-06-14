@@ -5,6 +5,7 @@ import { Navbar } from '@/components/Navbar';
 import { HeroSection } from '@/components/HeroSection';
 import { MovieSection } from '@/components/MovieSection';
 import { ContinueWatching } from '@/components/ContinueWatching';
+import { RecentlyWatched } from '@/components/RecentlyWatched';
 import { Footer } from '@/components/Footer';
 import { useAuth } from '@/contexts/AuthContext';
 
@@ -26,6 +27,7 @@ const Index = () => {
       <main className="relative pt-0 md:pt-24 pb-24 md:pb-8">
         <HeroSection />
         <ContinueWatching />
+        <RecentlyWatched />
         <MovieSection />
       </main>
       <Footer />
