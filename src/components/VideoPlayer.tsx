@@ -1,6 +1,7 @@
 
 import React from 'react';
 import { EnhancedVideoPlayer } from './EnhancedVideoPlayer';
+import { watchHistoryService } from '@/services/watchHistory';
 
 interface VideoPlayerProps {
   title: string;
@@ -12,8 +13,26 @@ interface VideoPlayerProps {
   poster_path?: string;
   backdrop_path?: string;
   duration?: number;
+  // New prop for resume functionality
+  shouldResume?: boolean;
 }
 
 export const VideoPlayer: React.FC<VideoPlayerProps> = (props) => {
-  return <EnhancedVideoPlayer {...props} />;
+  // Get resume information if shouldResume is true
+  let resumeFrom = 0;
+  
+  if (props.shouldResume) {
+    const resumeInfo = watchHistoryService.getResumeInfo(
+      props.tmdbId, 
+      props.type, 
+      props.season, 
+      props.episode
+    );
+    
+    if (resumeInfo.shouldResume) {
+      resumeFrom = resumeInfo.progress;
+    }
+  }
+
+  return <EnhancedVideoPlayer {...props} resumeFrom={resumeFrom} />;
 };

@@ -5,7 +5,7 @@ import { Footer } from '@/components/Footer';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Heart, Coffee, Star, Users, Zap, Shield, CheckCircle, XCircle, DollarSign, TrendingUp } from 'lucide-react';
+import { Heart, Coffee, Star, Users, Zap, Shield, CheckCircle, XCircle, DollarSign, TrendingUp, X } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { KeshoPayButton } from 'keshopay-v1';
 
@@ -14,6 +14,7 @@ const Support = () => {
   const [selectedAmount, setSelectedAmount] = useState(5);
   const [selectedCurrency, setSelectedCurrency] = useState('USD');
   const [paymentStatus, setPaymentStatus] = useState(null);
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
 
   // Exchange rate: 1 USD = 130 KES (approximate)
   const EXCHANGE_RATE = 130;
@@ -68,6 +69,182 @@ const Support = () => {
     setSelectedCurrency(currency);
     setSelectedAmount(donationAmounts[currency][0]);
   };
+
+  const openPaymentModal = () => {
+    setShowPaymentModal(true);
+  };
+
+  const closePaymentModal = () => {
+    setShowPaymentModal(false);
+  };
+
+  // Fullscreen Payment Modal Component
+  const PaymentModal = () => (
+    <div className="fixed inset-0 z-50 bg-background/95 backdrop-blur-3xl">
+      <div className="flex flex-col h-full">
+        {/* Header */}
+        <div className="flex items-center justify-between p-4 border-b border-border/50">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-primary/10 rounded-full">
+              <Heart className="h-6 w-6 text-primary" />
+            </div>
+            <div>
+              <h2 className="text-xl font-bold text-foreground">Support FlickPick</h2>
+              <p className="text-sm text-muted-foreground">Choose your donation amount</p>
+            </div>
+          </div>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={closePaymentModal}
+            className="hover:bg-muted/50"
+          >
+            <X className="h-5 w-5" />
+          </Button>
+        </div>
+
+        {/* Content */}
+        <div className="flex-1 overflow-y-auto p-4">
+          <div className="max-w-2xl mx-auto">
+            {/* Payment Status Display */}
+            {paymentStatus && (
+              <div className={`p-6 rounded-xl text-center border-2 mb-6 ${
+                paymentStatus === 'success' 
+                  ? 'bg-green-50 border-green-200 text-green-800 dark:bg-green-900/20 dark:border-green-800 dark:text-green-400' 
+                  : 'bg-red-50 border-red-200 text-red-800 dark:bg-red-900/20 dark:border-red-800 dark:text-red-400'
+              }`}>
+                <div className="flex items-center justify-center mb-3">
+                  {paymentStatus === 'success' ? (
+                    <CheckCircle className="h-8 w-8 mr-3" />
+                  ) : (
+                    <XCircle className="h-8 w-8 mr-3" />
+                  )}
+                  <span className="text-xl font-semibold">
+                    {paymentStatus === 'success' ? 'Payment Successful!' : 'Payment Failed'}
+                  </span>
+                </div>
+                {paymentStatus === 'success' && (
+                  <Button
+                    variant="outline"
+                    onClick={resetPaymentStatus}
+                    className="mt-3 bg-white/50 hover:bg-white/70"
+                  >
+                    Make Another Donation
+                  </Button>
+                )}
+              </div>
+            )}
+
+            {!paymentStatus && (
+              <>
+                {/* Currency Selection */}
+                <Card className="mb-6 bg-card/60 backdrop-blur-xl border-border/50">
+                  <CardHeader className="text-center pb-4">
+                    <CardTitle className="text-lg">Select Currency</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="flex justify-center">
+                      <Select value={selectedCurrency} onValueChange={handleCurrencyChange}>
+                        <SelectTrigger className="w-64 bg-background/80 border-border/50">
+                          <div className="flex items-center gap-2">
+                            <DollarSign className="h-4 w-4" />
+                            <SelectValue />
+                          </div>
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="USD">🇺🇸 USD - US Dollar</SelectItem>
+                          <SelectItem value="KSH">🇰🇪 KSH - Kenyan Shilling</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Donation Amounts */}
+                <Card className="mb-6 bg-card/60 backdrop-blur-xl border-border/50">
+                  <CardHeader className="text-center pb-4">
+                    <CardTitle className="text-lg">Choose Amount ({selectedCurrency})</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
+                      {currentAmounts.map((amount) => (
+                        <Button
+                          key={amount}
+                          variant={selectedAmount === amount ? "default" : "outline"}
+                          onClick={() => setSelectedAmount(amount)}
+                          className="h-16 text-lg font-semibold bg-background/50 border-border/50 hover:bg-primary/10 hover:border-primary/50 transition-all"
+                        >
+                          {formatCurrency(amount, selectedCurrency)}
+                        </Button>
+                      ))}
+                    </div>
+
+                    {/* Custom Amount */}
+                    <div className="text-center mb-6">
+                      <p className="text-sm text-muted-foreground mb-4">Or enter a custom amount</p>
+                      <div className="flex justify-center">
+                        <div className="relative">
+                          <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground font-medium">
+                            {selectedCurrency === 'USD' ? '$' : 'KSh'}
+                          </span>
+                          <input
+                            type="number"
+                            min="1"
+                            value={selectedAmount}
+                            onChange={(e) => setSelectedAmount(parseInt(e.target.value) || 0)}
+                            className="pl-12 pr-4 py-3 w-64 bg-background/80 border border-border/50 rounded-lg text-center text-lg focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary/50 transition-all"
+                            placeholder="Amount"
+                          />
+                        </div>
+                      </div>
+
+                      {/* Exchange Rate Display */}
+                      {selectedCurrency === 'USD' && (
+                        <p className="text-sm text-muted-foreground mt-4">
+                          ≈ KSh {getConvertedAmount(selectedAmount).toLocaleString()} (at current exchange rates)
+                        </p>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Payment Button */}
+                <Card className="bg-gradient-to-br from-primary/10 to-primary/5 border-primary/20">
+                  <CardContent className="pt-6">
+                    <div className="text-center">
+                      <div className="flex justify-center mb-6">
+                        <KeshoPayButton
+                          amount={getConvertedAmount(selectedAmount)}
+                          reference={`FLICKPICK-${Date.now()}`}
+                          appId={KESHO_APP_ID}
+                          buttonText={`❤️ Donate ${formatCurrency(selectedAmount, selectedCurrency)}`}
+                          identifier={`flickpick-user-${Date.now()}`}
+                        />
+                      </div>
+
+                      {/* KeshoPay Info */}
+                      <div className="text-sm text-muted-foreground bg-muted/20 rounded-lg p-4">
+                        <div className="flex items-center justify-center gap-2 mb-2">
+                          <Shield className="h-4 w-4" />
+                          <span className="font-semibold">Secured by KeshoPay</span>
+                        </div>
+                        <p className="mb-2">
+                          Safe and secure payment processing with M-Pesa, Airtel Money, and international card payments.
+                        </p>
+                        <p className="text-xs opacity-75">
+                          All payments are processed in Kenyan Shillings (KES) at current exchange rates.
+                        </p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20">
@@ -152,7 +329,7 @@ const Support = () => {
             </Card>
           </div>
 
-          {/* Donation Section */}
+          {/* Donation CTA */}
           <Card className="bg-gradient-to-br from-card/90 to-card/60 backdrop-blur-xl border-border/50 shadow-2xl">
             <CardHeader className="text-center pb-6">
               <div className="mx-auto mb-4 p-4 bg-gradient-to-br from-primary/20 to-primary/10 rounded-full">
@@ -160,134 +337,21 @@ const Support = () => {
               </div>
               <CardTitle className="text-2xl md:text-3xl">Buy Us a Coffee</CardTitle>
               <CardDescription className="text-lg">
-                Choose your preferred currency and amount to support our work
+                Support our work with a donation and help keep FlickPick free for everyone
               </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-8">
-              {/* Payment Status Display */}
-              {paymentStatus && (
-                <div className={`p-6 rounded-xl text-center border-2 ${
-                  paymentStatus === 'success' 
-                    ? 'bg-green-50 border-green-200 text-green-800 dark:bg-green-900/20 dark:border-green-800 dark:text-green-400' 
-                    : 'bg-red-50 border-red-200 text-red-800 dark:bg-red-900/20 dark:border-red-800 dark:text-red-400'
-                }`}>
-                  <div className="flex items-center justify-center mb-3">
-                    {paymentStatus === 'success' ? (
-                      <CheckCircle className="h-8 w-8 mr-3" />
-                    ) : (
-                      <XCircle className="h-8 w-8 mr-3" />
-                    )}
-                    <span className="text-xl font-semibold">
-                      {paymentStatus === 'success' ? 'Payment Successful!' : 'Payment Failed'}
-                    </span>
-                  </div>
-                  {paymentStatus === 'success' && (
-                    <Button
-                      variant="outline"
-                      onClick={resetPaymentStatus}
-                      className="mt-3 bg-white/50 hover:bg-white/70"
-                    >
-                      Make Another Donation
-                    </Button>
-                  )}
-                </div>
-              )}
-
-              {!paymentStatus && (
-                <>
-                  {/* Currency Selection */}
-                  <div className="text-center">
-                    <label className="text-sm font-medium text-muted-foreground mb-3 block">
-                      Select Currency
-                    </label>
-                    <div className="flex justify-center">
-                      <Select value={selectedCurrency} onValueChange={handleCurrencyChange}>
-                        <SelectTrigger className="w-48 bg-background/80 border-border/50">
-                          <div className="flex items-center gap-2">
-                            <DollarSign className="h-4 w-4" />
-                            <SelectValue />
-                          </div>
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="USD">🇺🇸 USD - US Dollar</SelectItem>
-                          <SelectItem value="KSH">🇰🇪 KSH - Kenyan Shilling</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </div>
-
-                  {/* Donation Amounts */}
-                  <div>
-                    <label className="text-sm font-medium text-muted-foreground mb-4 block text-center">
-                      Choose Amount ({selectedCurrency})
-                    </label>
-                    <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-                      {currentAmounts.map((amount) => (
-                        <Button
-                          key={amount}
-                          variant={selectedAmount === amount ? "default" : "outline"}
-                          onClick={() => setSelectedAmount(amount)}
-                          className="h-14 text-lg font-semibold bg-background/50 border-border/50 hover:bg-primary/10 hover:border-primary/50 transition-all"
-                        >
-                          {formatCurrency(amount, selectedCurrency)}
-                        </Button>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Custom Amount */}
-                  <div className="text-center">
-                    <p className="text-sm text-muted-foreground mb-4">Or enter a custom amount</p>
-                    <div className="flex justify-center gap-3 mb-8">
-                      <div className="relative">
-                        <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground font-medium">
-                          {selectedCurrency === 'USD' ? '$' : 'KSh'}
-                        </span>
-                        <input
-                          type="number"
-                          min="1"
-                          value={selectedAmount}
-                          onChange={(e) => setSelectedAmount(parseInt(e.target.value) || 0)}
-                          className="pl-12 pr-4 py-3 w-48 bg-background/80 border border-border/50 rounded-lg text-center text-lg focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary/50 transition-all"
-                          placeholder="Amount"
-                        />
-                      </div>
-                    </div>
-
-                    {/* Exchange Rate Display */}
-                    {selectedCurrency === 'USD' && (
-                      <p className="text-sm text-muted-foreground mb-6">
-                        ≈ KSh {getConvertedAmount(selectedAmount).toLocaleString()} (at current exchange rates)
-                      </p>
-                    )}
-
-                    {/* KeshoPay Button Component */}
-                    <div className="flex justify-center">
-                      <KeshoPayButton
-                        amount={getConvertedAmount(selectedAmount)}
-                        reference={`FLICKPICK-${Date.now()}`}
-                        appId={KESHO_APP_ID}
-                        buttonText={`❤️ Donate ${formatCurrency(selectedAmount, selectedCurrency)}`}
-                        identifier={`flickpick-user-${Date.now()}`}
-                      />
-                    </div>
-                  </div>
-
-                  {/* KeshoPay Info */}
-                  <div className="text-center text-sm text-muted-foreground bg-muted/20 rounded-lg p-6">
-                    <div className="flex items-center justify-center gap-2 mb-3">
-                      <Shield className="h-5 w-5" />
-                      <span className="font-semibold text-base">Secured by KeshoPay</span>
-                    </div>
-                    <p className="mb-2">
-                      Safe and secure payment processing with M-Pesa, Airtel Money, and international card payments.
-                    </p>
-                    <p className="text-xs opacity-75">
-                      All payments are processed in Kenyan Shillings (KES) at current exchange rates.
-                    </p>
-                  </div>
-                </>
-              )}
+            <CardContent className="text-center">
+              <Button 
+                onClick={openPaymentModal}
+                size="lg"
+                className="bg-primary hover:bg-primary/90 text-primary-foreground px-8 py-4 text-lg font-semibold"
+              >
+                <Heart className="h-5 w-5 mr-2" />
+                Make a Donation
+              </Button>
+              <p className="text-sm text-muted-foreground mt-4">
+                Choose between USD and KSH • Secure payments via KeshoPay
+              </p>
             </CardContent>
           </Card>
 
@@ -331,6 +395,9 @@ const Support = () => {
       </div>
       
       <Footer />
+
+      {/* Fullscreen Payment Modal */}
+      {showPaymentModal && <PaymentModal />}
     </div>
   );
 };

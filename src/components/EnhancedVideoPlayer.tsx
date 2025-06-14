@@ -16,6 +16,8 @@ interface EnhancedVideoPlayerProps {
   poster_path?: string;
   backdrop_path?: string;
   duration?: number; // Duration in seconds
+  // New prop for resume functionality
+  resumeFrom?: number; // Resume from specific time
 }
 
 export const EnhancedVideoPlayer: React.FC<EnhancedVideoPlayerProps> = ({
@@ -27,7 +29,8 @@ export const EnhancedVideoPlayer: React.FC<EnhancedVideoPlayerProps> = ({
   autoFullscreen = false,
   poster_path,
   backdrop_path,
-  duration
+  duration,
+  resumeFrom = 0
 }) => {
   const [currentSourceIndex, setCurrentSourceIndex] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
@@ -35,9 +38,10 @@ export const EnhancedVideoPlayer: React.FC<EnhancedVideoPlayerProps> = ({
   const [isMuted, setIsMuted] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
-  const [currentTime, setCurrentTime] = useState(0);
+  const [currentTime, setCurrentTime] = useState(resumeFrom);
   const [hasStartedWatching, setHasStartedWatching] = useState(false);
   const [estimatedDuration, setEstimatedDuration] = useState(duration);
+  const [hasResumed, setHasResumed] = useState(false);
   
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -47,8 +51,24 @@ export const EnhancedVideoPlayer: React.FC<EnhancedVideoPlayerProps> = ({
   const currentUrl = getStreamingUrl(tmdbId, type, currentSourceIndex, season, episode);
   const currentSource = streamingSources[currentSourceIndex];
 
-  // Enhanced URL with better caching and performance parameters
-  const enhancedUrl = `${currentUrl}&cache=1&preload=auto&buffer=30&quality=auto&timestamp=${Date.now()}`;
+  // Enhanced URL with resume functionality
+  const enhancedUrl = `${currentUrl}&cache=1&preload=auto&buffer=30&quality=auto&t=${resumeFrom}&timestamp=${Date.now()}`;
+
+  // Check for existing watch history and resume information
+  useEffect(() => {
+    const resumeInfo = watchHistoryService.getResumeInfo(tmdbId, type, season, episode);
+    if (resumeInfo.shouldResume && !hasResumed && resumeFrom === 0) {
+      setCurrentTime(resumeInfo.progress);
+      // Try to set the source to the last used one
+      if (resumeInfo.source) {
+        const sourceIndex = streamingSources.findIndex(s => s.name === resumeInfo.source);
+        if (sourceIndex >= 0) {
+          setCurrentSourceIndex(sourceIndex);
+        }
+      }
+      setHasResumed(true);
+    }
+  }, [tmdbId, type, season, episode, resumeFrom, hasResumed]);
 
   // Fetch duration information if not provided
   useEffect(() => {
@@ -110,11 +130,12 @@ export const EnhancedVideoPlayer: React.FC<EnhancedVideoPlayerProps> = ({
           backdrop_path: finalBackdropPath,
           season,
           episode,
-          progress: 0,
-          duration: estimatedDuration
+          progress: Math.max(currentTime, resumeFrom),
+          duration: estimatedDuration,
+          lastSource: currentSource.name
         });
         setHasStartedWatching(true);
-        console.log('Added to watch history:', title);
+        console.log('Added to watch history:', title, 'Resume from:', Math.max(currentTime, resumeFrom));
       } catch (error) {
         console.error('Error adding to watch history:', error);
       }
@@ -124,18 +145,19 @@ export const EnhancedVideoPlayer: React.FC<EnhancedVideoPlayerProps> = ({
   // Update progress in watch history (throttled to avoid too many updates)
   const updateWatchProgress = (progressSeconds: number) => {
     const now = Date.now();
-    // Only update every 10 seconds to avoid spam
-    if (now - lastProgressUpdateRef.current > 10000) {
+    // Only update every 30 seconds to avoid spam but ensure accuracy
+    if (now - lastProgressUpdateRef.current > 30000) {
       watchHistoryService.updateProgress(
         tmdbId,
         type,
         Math.floor(progressSeconds),
         season,
         episode,
-        estimatedDuration
+        estimatedDuration,
+        currentSource.name
       );
       lastProgressUpdateRef.current = now;
-      console.log('Updated watch progress:', Math.floor(progressSeconds), 'seconds');
+      console.log('Updated watch progress:', Math.floor(progressSeconds), 'seconds via', currentSource.name);
     }
   };
 
@@ -148,16 +170,16 @@ export const EnhancedVideoPlayer: React.FC<EnhancedVideoPlayerProps> = ({
     // Add to history when playback starts
     addToWatchHistory();
 
-    // Update progress every 5 seconds while playing
+    // Update progress every 10 seconds while playing for better accuracy
     progressIntervalRef.current = setInterval(() => {
       if (isPlaying) {
         setCurrentTime(prev => {
-          const newTime = prev + 5;
+          const newTime = prev + 10;
           updateWatchProgress(newTime);
           return newTime;
         });
       }
-    }, 5000);
+    }, 10000);
   };
 
   // Stop progress tracking
@@ -184,6 +206,10 @@ export const EnhancedVideoPlayer: React.FC<EnhancedVideoPlayerProps> = ({
             case 'video-pause':
               setIsPlaying(false);
               stopProgressTracking();
+              // Save progress when paused
+              if (hasStartedWatching && currentTime > 0) {
+                updateWatchProgress(currentTime);
+              }
               break;
             case 'video-timeupdate':
               if (data.currentTime) {
@@ -211,7 +237,7 @@ export const EnhancedVideoPlayer: React.FC<EnhancedVideoPlayerProps> = ({
       window.removeEventListener('message', handleMessage);
       stopProgressTracking();
     };
-  }, [tmdbId, type, season, episode, estimatedDuration, isPlaying]);
+  }, [tmdbId, type, season, episode, estimatedDuration, isPlaying, hasStartedWatching, currentTime]);
 
   // Simulate playback start after iframe loads (fallback if no iframe messages)
   useEffect(() => {
@@ -284,8 +310,8 @@ export const EnhancedVideoPlayer: React.FC<EnhancedVideoPlayerProps> = ({
     stopProgressTracking();
     
     if (iframeRef.current) {
-      // Force reload with new timestamp to bypass cache
-      const reloadUrl = `${currentUrl}&cache=1&preload=auto&buffer=30&quality=auto&timestamp=${Date.now()}`;
+      // Force reload with new timestamp and current time to resume
+      const reloadUrl = `${currentUrl}&cache=1&preload=auto&buffer=30&quality=auto&t=${Math.floor(currentTime)}&timestamp=${Date.now()}`;
       iframeRef.current.src = reloadUrl;
     }
   };
@@ -314,7 +340,8 @@ export const EnhancedVideoPlayer: React.FC<EnhancedVideoPlayerProps> = ({
       setHasError(false);
       setIsPlaying(false);
       stopProgressTracking();
-      iframeRef.current.src = enhancedUrl;
+      const urlWithResume = `${getStreamingUrl(tmdbId, type, currentSourceIndex, season, episode)}&cache=1&preload=auto&buffer=30&quality=auto&t=${Math.floor(currentTime)}&timestamp=${Date.now()}`;
+      iframeRef.current.src = urlWithResume;
     }
   }, [currentSourceIndex]);
 
@@ -373,6 +400,12 @@ export const EnhancedVideoPlayer: React.FC<EnhancedVideoPlayerProps> = ({
               {estimatedDuration && ` / ${formatTime(estimatedDuration)}`}
             </span>
           )}
+          {/* Show resume indicator */}
+          {resumeFrom > 0 && (
+            <span className="text-green-400 text-xs bg-green-900/50 px-2 py-1 rounded">
+              Resumed from {formatTime(resumeFrom)}
+            </span>
+          )}
         </div>
         
         <div className="flex items-center gap-2">
@@ -412,6 +445,9 @@ export const EnhancedVideoPlayer: React.FC<EnhancedVideoPlayerProps> = ({
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mb-4"></div>
             <p className="text-white">Loading {title}...</p>
             <p className="text-white/60 text-sm">Source: {currentSource.name}</p>
+            {resumeFrom > 0 && (
+              <p className="text-green-400 text-sm">Resuming from {formatTime(resumeFrom)}</p>
+            )}
           </div>
         </div>
       )}

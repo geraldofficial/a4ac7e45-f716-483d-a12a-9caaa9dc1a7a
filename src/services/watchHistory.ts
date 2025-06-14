@@ -1,3 +1,4 @@
+
 export interface WatchHistoryItem {
   id: string;
   tmdbId: number;
@@ -14,11 +15,15 @@ export interface WatchHistoryItem {
   watchCount?: number; // Track how many times watched
   completed?: boolean; // Mark as completed when progress >= 90%
   rating?: number; // User rating (1-5 stars)
+  // New fields for better tracking
+  lastSource?: string; // Which streaming source was used
+  playbackPosition?: number; // Exact playback position for resume
 }
 
 const WATCH_HISTORY_KEY = 'flickpick_watch_history';
-const MAX_HISTORY_ITEMS = 50;
+const MAX_HISTORY_ITEMS = 100; // Increased for better tracking
 const COMPLETION_THRESHOLD = 0.9; // 90% completion
+const PROGRESS_UPDATE_INTERVAL = 30; // Update every 30 seconds
 
 export const watchHistoryService = {
   getHistory(): WatchHistoryItem[] {
@@ -27,6 +32,25 @@ export const watchHistoryService = {
       return history ? JSON.parse(history) : [];
     } catch (error) {
       console.error('Error loading watch history:', error);
+      return [];
+    }
+  },
+
+  // Enhanced: Get continue watching items (items with progress > 5 minutes and < 90% completion)
+  getContinueWatching(limit: number = 6): WatchHistoryItem[] {
+    try {
+      const history = this.getHistory();
+      return history
+        .filter(item => {
+          const hasProgress = item.progress > 300; // More than 5 minutes
+          const notCompleted = !item.completed;
+          const hasValidDuration = item.duration && item.duration > 0;
+          return hasProgress && notCompleted && hasValidDuration;
+        })
+        .sort((a, b) => new Date(b.lastWatched).getTime() - new Date(a.lastWatched).getTime())
+        .slice(0, limit);
+    } catch (error) {
+      console.error('Error getting continue watching items:', error);
       return [];
     }
   },
@@ -94,7 +118,8 @@ export const watchHistoryService = {
         id: `${item.tmdbId}-${item.type}-${item.season || 0}-${item.episode || 0}`,
         lastWatched: new Date().toISOString(),
         watchCount: 1,
-        completed: item.duration ? (item.progress / item.duration) >= COMPLETION_THRESHOLD : false
+        completed: item.duration ? (item.progress / item.duration) >= COMPLETION_THRESHOLD : false,
+        playbackPosition: item.progress // Set initial playback position
       };
 
       if (existingIndex >= 0) {
@@ -120,7 +145,16 @@ export const watchHistoryService = {
     }
   },
 
-  updateProgress(tmdbId: number, type: 'movie' | 'tv', progress: number, season?: number, episode?: number, duration?: number): void {
+  // Enhanced: Update progress with better tracking
+  updateProgress(
+    tmdbId: number, 
+    type: 'movie' | 'tv', 
+    progress: number, 
+    season?: number, 
+    episode?: number, 
+    duration?: number,
+    source?: string
+  ): void {
     try {
       const history = this.getHistory();
       const itemIndex = history.findIndex(
@@ -133,11 +167,17 @@ export const watchHistoryService = {
       if (itemIndex >= 0) {
         const item = history[itemIndex];
         item.progress = progress;
+        item.playbackPosition = progress; // Update exact playback position
         item.lastWatched = new Date().toISOString();
         
         // Update duration if provided
         if (duration) {
           item.duration = duration;
+        }
+
+        // Update source if provided
+        if (source) {
+          item.lastSource = source;
         }
         
         // Update completion status
@@ -145,10 +185,45 @@ export const watchHistoryService = {
           item.completed = (progress / item.duration) >= COMPLETION_THRESHOLD;
         }
 
+        // Move to front of history when updated
+        const updatedItem = history.splice(itemIndex, 1)[0];
+        history.unshift(updatedItem);
+
         localStorage.setItem(WATCH_HISTORY_KEY, JSON.stringify(history));
+        console.log(`Updated watch progress: ${Math.floor(progress)}s for ${item.title}`);
       }
     } catch (error) {
       console.error('Error updating watch progress:', error);
+    }
+  },
+
+  // New: Get resume information for a specific item
+  getResumeInfo(tmdbId: number, type: 'movie' | 'tv', season?: number, episode?: number): {
+    shouldResume: boolean;
+    progress: number;
+    source?: string;
+  } {
+    try {
+      const history = this.getHistory();
+      const item = history.find(
+        h => h.tmdbId === tmdbId && 
+             h.type === type && 
+             h.season === season && 
+             h.episode === episode
+      );
+
+      if (item && item.playbackPosition && item.playbackPosition > 300) { // More than 5 minutes
+        return {
+          shouldResume: true,
+          progress: item.playbackPosition,
+          source: item.lastSource
+        };
+      }
+
+      return { shouldResume: false, progress: 0 };
+    } catch (error) {
+      console.error('Error getting resume info:', error);
+      return { shouldResume: false, progress: 0 };
     }
   },
 

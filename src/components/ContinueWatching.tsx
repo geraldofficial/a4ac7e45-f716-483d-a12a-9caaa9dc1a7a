@@ -12,20 +12,14 @@ export const ContinueWatching: React.FC = () => {
   const [recentItems, setRecentItems] = useState<WatchHistoryItem[]>([]);
 
   useEffect(() => {
-    if (user) {
-      // Get the most recent 6 items that have some progress
-      const history = watchHistoryService.getFilteredHistory({
-        sortBy: 'lastWatched',
-        sortOrder: 'desc',
-        limit: 6
-      }).filter(item => item.progress > 0);
-      
-      setRecentItems(history);
-    }
-  }, [user]);
+    // Get continue watching items (items with progress but not completed)
+    const continueWatchingItems = watchHistoryService.getContinueWatching(6);
+    setRecentItems(continueWatchingItems);
+  }, []);
 
   const handleContinueWatching = (item: WatchHistoryItem) => {
-    const route = `/${item.type}/${item.tmdbId}`;
+    // Navigate to the detail page with resume information
+    const route = `/${item.type}/${item.tmdbId}${item.season && item.episode ? `?season=${item.season}&episode=${item.episode}` : ''}&resume=true`;
     navigate(route);
   };
 
@@ -38,6 +32,17 @@ export const ContinueWatching: React.FC = () => {
     const minutes = Math.floor((progress % 3600) / 60);
     if (hours > 0) return `${hours}h ${minutes}m`;
     return `${minutes}m`;
+  };
+
+  const formatTimeRemaining = (progress: number, duration?: number) => {
+    if (!duration || duration <= progress) return '';
+    
+    const remaining = duration - progress;
+    const hours = Math.floor(remaining / 3600);
+    const minutes = Math.floor((remaining % 3600) / 60);
+    
+    if (hours > 0) return `${hours}h ${minutes}m left`;
+    return `${minutes}m left`;
   };
 
   if (!user || recentItems.length === 0) {
@@ -64,7 +69,7 @@ export const ContinueWatching: React.FC = () => {
           {recentItems.map((item) => (
             <div
               key={item.id}
-              className="bg-card/80 backdrop-blur-xl border border-border/50 rounded-xl overflow-hidden hover:bg-card/90 transition-all duration-300 cursor-pointer"
+              className="bg-card/80 backdrop-blur-xl border border-border/50 rounded-xl overflow-hidden hover:bg-card/90 transition-all duration-300 cursor-pointer group"
               onClick={() => handleContinueWatching(item)}
             >
               <div className="relative aspect-[3/4]">
@@ -81,9 +86,9 @@ export const ContinueWatching: React.FC = () => {
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
                 
-                {/* Progress bar */}
+                {/* Enhanced Progress bar */}
                 {item.duration && (
-                  <div className="absolute bottom-0 left-0 right-0 h-1 bg-black/30">
+                  <div className="absolute bottom-0 left-0 right-0 h-1.5 bg-black/40">
                     <div 
                       className="h-full bg-primary transition-all duration-300"
                       style={{ width: `${Math.min((item.progress / item.duration) * 100, 100)}%` }}
@@ -91,12 +96,20 @@ export const ContinueWatching: React.FC = () => {
                   </div>
                 )}
 
-                <Button
-                  size="sm"
-                  className="absolute bottom-2 right-2 bg-primary/90 backdrop-blur-sm hover:bg-primary h-6 px-2"
-                >
-                  <Play className="h-3 w-3" />
-                </Button>
+                {/* Play button with hover effect */}
+                <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-black/20">
+                  <Button
+                    size="sm"
+                    className="bg-primary/90 backdrop-blur-sm hover:bg-primary h-12 w-12 rounded-full p-0"
+                  >
+                    <Play className="h-6 w-6" />
+                  </Button>
+                </div>
+
+                {/* Continue watching badge */}
+                <div className="absolute top-2 left-2 bg-primary/90 backdrop-blur-sm text-white text-xs px-2 py-1 rounded">
+                  Continue
+                </div>
               </div>
               
               <div className="p-2">
@@ -109,10 +122,17 @@ export const ContinueWatching: React.FC = () => {
                   )}
                 </h3>
                 
-                <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                <div className="flex items-center gap-1 text-xs text-muted-foreground mb-1">
                   <Clock className="h-3 w-3" />
                   <span>{formatProgress(item.progress, item.duration)}</span>
                 </div>
+
+                {/* Time remaining */}
+                {item.duration && (
+                  <div className="text-xs text-green-600 font-medium">
+                    {formatTimeRemaining(item.progress, item.duration)}
+                  </div>
+                )}
               </div>
             </div>
           ))}
