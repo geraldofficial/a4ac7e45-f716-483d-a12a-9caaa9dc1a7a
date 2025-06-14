@@ -1,5 +1,5 @@
 
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 import { authApi } from '@/services/auth';
 import { userApi } from '@/services/user';
 import { cleanupAuthState } from '@/utils/authUtils';
@@ -104,9 +104,8 @@ export const useAuthOperations = (
     
     try {
       const updatedUser = await userApi.updateUser(updates);
-      setUser((prevUser) => {
-        return prevUser ? { ...prevUser, ...updatedUser } : updatedUser as UserProfile
-      });
+      const newUser: UserProfile = { ...user, ...updatedUser };
+      setUser(newUser);
       toast({
         title: "Profile updated!",
         description: "Your profile has been updated successfully.",

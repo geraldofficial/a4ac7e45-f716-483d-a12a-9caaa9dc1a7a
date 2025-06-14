@@ -10,11 +10,18 @@ export const OfflineBanner = () => {
 
   return (
     <div
-      className={`fixed top-0 left-0 right-0 z-50 px-4 py-2 text-center text-sm font-medium transition-all duration-300 ${
+      className={`fixed top-0 left-0 right-0 z-[9999] px-4 py-2 text-center text-sm font-medium transition-all duration-300 ${
         isOffline
           ? 'bg-red-600 text-white'
           : 'bg-green-600 text-white'
       }`}
+      style={{ 
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        zIndex: 9999
+      }}
     >
       <div className="flex items-center justify-center gap-2">
         {isOffline ? (

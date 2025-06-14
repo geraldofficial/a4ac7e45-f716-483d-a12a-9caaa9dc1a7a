@@ -13,10 +13,12 @@ import { BottomNavigation } from '@/components/BottomNavigation';
 import { EnhancedMovieSection } from '@/components/EnhancedMovieSection';
 import { OfflineBanner } from '@/components/OfflineBanner';
 import { useAuth } from '@/contexts/AuthContext';
+import { useOffline } from '@/hooks/useOffline';
 import { useQueryClient } from '@tanstack/react-query';
 
 const Index = () => {
   const { user, loading } = useAuth();
+  const { isOffline, wasOffline } = useOffline();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [isMobile, setIsMobile] = React.useState(false);
@@ -46,6 +48,10 @@ const Index = () => {
 
   // App logo URL for social media sharing
   const logoUrl = `${window.location.origin}/favicon.ico`;
+
+  // Calculate top padding based on offline banner visibility
+  const showOfflineBanner = isOffline || wasOffline;
+  const topPadding = showOfflineBanner ? 'pt-20 md:pt-20' : 'pt-14 md:pt-16';
 
   return (
     <>
@@ -108,10 +114,12 @@ const Index = () => {
         </script>
       </Helmet>
       
+      <OfflineBanner />
+      
       <div className="min-h-screen bg-background dark overflow-x-hidden">
         <Navbar />
         <PullToRefresh onRefresh={handleRefresh}>
-          <main className="relative safe-area-top pt-14 md:pt-16">
+          <main className={`relative safe-area-top ${topPadding}`}>
             {/* Use Netflix mobile hero on mobile, regular hero on desktop */}
             {isMobile ? <NetflixMobileHero /> : <HeroSection />}
             
