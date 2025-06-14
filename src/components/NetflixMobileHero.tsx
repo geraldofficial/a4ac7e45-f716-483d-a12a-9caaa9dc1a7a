@@ -8,6 +8,7 @@ import { useAuth } from '@/contexts/AuthContext';
 
 export const NetflixMobileHero = () => {
   const [featuredMovie, setFeaturedMovie] = useState<any>(null);
+  const [touchStart, setTouchStart] = useState<{ x: number; y: number } | null>(null);
   const navigate = useNavigate();
   const { user } = useAuth();
 
@@ -25,7 +26,8 @@ export const NetflixMobileHero = () => {
     }
   }, [movies]);
 
-  const handlePlay = () => {
+  const handlePlay = (e: React.MouseEvent | React.TouchEvent) => {
+    e.stopPropagation();
     if (!user) {
       navigate('/auth');
       return;
@@ -35,10 +37,33 @@ export const NetflixMobileHero = () => {
     }
   };
 
-  const handleMoreInfo = () => {
+  const handleMoreInfo = (e: React.MouseEvent | React.TouchEvent) => {
+    e.stopPropagation();
     if (featuredMovie) {
       navigate(`/movie/${featuredMovie.id}`);
     }
+  };
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    const touch = e.touches[0];
+    setTouchStart({ x: touch.clientX, y: touch.clientY });
+  };
+
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    if (!touchStart) return;
+
+    const touch = e.changedTouches[0];
+    const deltaX = Math.abs(touch.clientX - touchStart.x);
+    const deltaY = Math.abs(touch.clientY - touchStart.y);
+
+    // Only navigate if it's a tap on the background (not buttons)
+    if (deltaX < 10 && deltaY < 10 && e.target === e.currentTarget) {
+      if (featuredMovie) {
+        navigate(`/movie/${featuredMovie.id}`);
+      }
+    }
+
+    setTouchStart(null);
   };
 
   if (isLoading || !featuredMovie) {
@@ -56,7 +81,10 @@ export const NetflixMobileHero = () => {
         backgroundImage: `url(https://image.tmdb.org/t/p/original${featuredMovie.backdrop_path})`,
         backgroundSize: 'cover',
         backgroundPosition: 'center',
+        touchAction: 'pan-y', // Allow vertical scrolling
       }}
+      onTouchStart={handleTouchStart}
+      onTouchEnd={handleTouchEnd}
     >
       <div className="absolute inset-0 bg-gradient-to-t from-black via-black/60 to-transparent" />
       
@@ -83,6 +111,8 @@ export const NetflixMobileHero = () => {
           <button 
             className="netflix-mobile-play-btn"
             onClick={handlePlay}
+            onTouchEnd={handlePlay}
+            style={{ touchAction: 'manipulation' }}
           >
             <Play className="h-6 w-6 fill-current" />
             Play
@@ -91,6 +121,8 @@ export const NetflixMobileHero = () => {
           <button 
             className="netflix-mobile-info-btn"
             onClick={handleMoreInfo}
+            onTouchEnd={handleMoreInfo}
+            style={{ touchAction: 'manipulation' }}
           >
             <Info className="h-6 w-6" />
             More Info

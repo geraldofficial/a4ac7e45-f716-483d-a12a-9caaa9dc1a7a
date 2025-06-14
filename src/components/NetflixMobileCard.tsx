@@ -18,6 +18,7 @@ export const NetflixMobileCard: React.FC<NetflixMobileCardProps> = ({
   const navigate = useNavigate();
   const [imageLoaded, setImageLoaded] = useState(false);
   const [imageError, setImageError] = useState(false);
+  const [touchStart, setTouchStart] = useState<{ x: number; y: number } | null>(null);
 
   const title = movie.title || movie.name || 'Unknown Title';
   const releaseDate = movie.release_date || movie.first_air_date || '';
@@ -30,8 +31,24 @@ export const NetflixMobileCard: React.FC<NetflixMobileCardProps> = ({
 
   const fallbackUrl = 'https://images.unsplash.com/photo-1489599904276-39c2bb2d64?w=400&h=600&fit=crop';
 
-  const handleClick = () => {
-    navigate(`/${type}/${movie.id}`);
+  const handleTouchStart = (e: React.TouchEvent) => {
+    const touch = e.touches[0];
+    setTouchStart({ x: touch.clientX, y: touch.clientY });
+  };
+
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    if (!touchStart) return;
+
+    const touch = e.changedTouches[0];
+    const deltaX = Math.abs(touch.clientX - touchStart.x);
+    const deltaY = Math.abs(touch.clientY - touchStart.y);
+
+    // Only trigger click if it's a tap (minimal movement)
+    if (deltaX < 10 && deltaY < 10) {
+      navigate(`/${type}/${movie.id}`);
+    }
+
+    setTouchStart(null);
   };
 
   const cardClasses = size === 'large' 
@@ -41,7 +58,9 @@ export const NetflixMobileCard: React.FC<NetflixMobileCardProps> = ({
   return (
     <div 
       className={cardClasses}
-      onClick={handleClick}
+      onTouchStart={handleTouchStart}
+      onTouchEnd={handleTouchEnd}
+      style={{ touchAction: 'manipulation' }}
     >
       <div className="relative">
         {!imageLoaded && !imageError && (
@@ -58,6 +77,7 @@ export const NetflixMobileCard: React.FC<NetflixMobileCardProps> = ({
             onLoad={() => setImageLoaded(true)}
             onError={() => setImageError(true)}
             loading={priority ? 'eager' : 'lazy'}
+            style={{ pointerEvents: 'none' }}
           />
         )}
 
@@ -67,6 +87,7 @@ export const NetflixMobileCard: React.FC<NetflixMobileCardProps> = ({
             alt={title}
             className="netflix-mobile-card-image"
             onLoad={() => setImageLoaded(true)}
+            style={{ pointerEvents: 'none' }}
           />
         )}
 
