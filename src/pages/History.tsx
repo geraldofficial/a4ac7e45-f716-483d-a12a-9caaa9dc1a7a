@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Navbar } from '@/components/Navbar';
@@ -6,7 +5,7 @@ import { Footer } from '@/components/Footer';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { watchHistoryService, WatchHistoryItem } from '@/services/watchHistory';
-import { Clock, Play, Trash2, Calendar, Filter, Star, MoreHorizontal, Share, Heart } from 'lucide-react';
+import { Clock, Play, Trash2, Calendar, Filter, MoreHorizontal } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useAuth } from '@/contexts/AuthContext';
