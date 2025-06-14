@@ -1,16 +1,17 @@
+
 export interface StreamingSource {
   name: string;
   getUrl: (tmdbId: number, type: 'movie' | 'tv', season?: number, episode?: number) => string;
 }
 
-// Enhanced ad blocking parameters
-const adBlockParams = '&adblock=1&nopop=1&noads=1&block_ads=true&popup=0&adsblock=true&adsblocker=1';
+// Enhanced parameters for better playback without sandboxing restrictions
+const playbackParams = '&autoplay=1&muted=0&controls=1&preload=auto&buffer=30&quality=auto';
 
 export const streamingSources: StreamingSource[] = [
   {
     name: 'VidSrc Me',
     getUrl: (tmdbId, type, season, episode) => {
-      const baseUrl = `https://vidsrc.me/embed/${type}?tmdb=${tmdbId}&autoplay=1${adBlockParams}`;
+      const baseUrl = `https://vidsrc.me/embed/${type}?tmdb=${tmdbId}${playbackParams}`;
       if (type === 'tv' && season && episode) {
         return `${baseUrl}&season=${season}&episode=${episode}`;
       }
@@ -22,9 +23,9 @@ export const streamingSources: StreamingSource[] = [
     getUrl: (tmdbId, type, season, episode) => {
       const baseUrl = `https://vidsrc.to/embed/${type}/${tmdbId}`;
       if (type === 'tv' && season && episode) {
-        return `${baseUrl}/${season}/${episode}?autoplay=1${adBlockParams}`;
+        return `${baseUrl}/${season}/${episode}${playbackParams}`;
       }
-      return `${baseUrl}?autoplay=1${adBlockParams}`;
+      return `${baseUrl}${playbackParams}`;
     }
   },
   {
@@ -32,24 +33,24 @@ export const streamingSources: StreamingSource[] = [
     getUrl: (tmdbId, type, season, episode) => {
       const baseUrl = `https://vidsrc.pro/embed/${type}/${tmdbId}`;
       if (type === 'tv' && season && episode) {
-        return `${baseUrl}/${season}/${episode}?autoplay=1${adBlockParams}`;
+        return `${baseUrl}/${season}/${episode}${playbackParams}`;
       }
-      return `${baseUrl}?autoplay=1${adBlockParams}`;
+      return `${baseUrl}${playbackParams}`;
     }
   },
   {
     name: 'MoviesAPI',
     getUrl: (tmdbId, type, season, episode) => {
       if (type === 'tv' && season && episode) {
-        return `https://moviesapi.club/tv/${tmdbId}-${season}-${episode}?autoplay=1${adBlockParams}`;
+        return `https://moviesapi.club/tv/${tmdbId}-${season}-${episode}${playbackParams}`;
       }
-      return `https://moviesapi.club/${type}/${tmdbId}?autoplay=1${adBlockParams}`;
+      return `https://moviesapi.club/${type}/${tmdbId}${playbackParams}`;
     }
   },
   {
     name: 'SuperEmbed',
     getUrl: (tmdbId, type, season, episode) => {
-      const baseUrl = `https://multiembed.mov/?video_id=${tmdbId}&tmdb=1&autoplay=1${adBlockParams}`;
+      const baseUrl = `https://multiembed.mov/?video_id=${tmdbId}&tmdb=1${playbackParams}`;
       if (type === 'tv' && season && episode) {
         return `${baseUrl}&s=${season}&e=${episode}`;
       }
@@ -61,9 +62,9 @@ export const streamingSources: StreamingSource[] = [
     getUrl: (tmdbId, type, season, episode) => {
       const baseUrl = `https://embed.su/embed/${type}/${tmdbId}`;
       if (type === 'tv' && season && episode) {
-        return `${baseUrl}/${season}/${episode}?autoplay=1${adBlockParams}`;
+        return `${baseUrl}/${season}/${episode}${playbackParams}`;
       }
-      return `${baseUrl}?autoplay=1${adBlockParams}`;
+      return `${baseUrl}${playbackParams}`;
     }
   },
   {
@@ -71,15 +72,15 @@ export const streamingSources: StreamingSource[] = [
     getUrl: (tmdbId, type, season, episode) => {
       const baseUrl = `https://vidlink.pro/movie/${tmdbId}`;
       if (type === 'tv' && season && episode) {
-        return `https://vidlink.pro/tv/${tmdbId}/${season}/${episode}?autoplay=1${adBlockParams}`;
+        return `https://vidlink.pro/tv/${tmdbId}/${season}/${episode}${playbackParams}`;
       }
-      return `${baseUrl}?autoplay=1${adBlockParams}`;
+      return `${baseUrl}${playbackParams}`;
     }
   },
   {
     name: 'VidCloud',
     getUrl: (tmdbId, type, season, episode) => {
-      const baseUrl = `https://embed.smashystream.com/playere.php?tmdb=${tmdbId}&autoplay=1${adBlockParams}`;
+      const baseUrl = `https://embed.smashystream.com/playere.php?tmdb=${tmdbId}${playbackParams}`;
       if (type === 'tv' && season && episode) {
         return `${baseUrl}&season=${season}&episode=${episode}`;
       }
@@ -91,18 +92,18 @@ export const streamingSources: StreamingSource[] = [
     getUrl: (tmdbId, type, season, episode) => {
       const baseUrl = `https://player.autoembed.cc/embed/${type}/${tmdbId}`;
       if (type === 'tv' && season && episode) {
-        return `${baseUrl}/${season}/${episode}?autoplay=1${adBlockParams}`;
+        return `${baseUrl}/${season}/${episode}${playbackParams}`;
       }
-      return `${baseUrl}?autoplay=1${adBlockParams}`;
+      return `${baseUrl}${playbackParams}`;
     }
   },
   {
     name: 'DbGo',
     getUrl: (tmdbId, type, season, episode) => {
       if (type === 'tv' && season && episode) {
-        return `https://www.dbgo.fun/tv/${tmdbId}/${season}/${episode}?autoplay=1${adBlockParams}`;
+        return `https://www.dbgo.fun/tv/${tmdbId}/${season}/${episode}${playbackParams}`;
       }
-      return `https://www.dbgo.fun/movie/${tmdbId}?autoplay=1${adBlockParams}`;
+      return `https://www.dbgo.fun/movie/${tmdbId}${playbackParams}`;
     }
   }
 ];

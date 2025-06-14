@@ -22,15 +22,21 @@ const DetailPage = () => {
   // Determine type from the current route
   const type = location.pathname.startsWith('/movie/') ? 'movie' : 'tv';
 
+  // Parse URL parameters for series/episode information and resume functionality
+  const urlParams = new URLSearchParams(location.search);
+  const season = urlParams.get('season') ? parseInt(urlParams.get('season')!) : undefined;
+  const episode = urlParams.get('episode') ? parseInt(urlParams.get('episode')!) : undefined;
+  const shouldResume = urlParams.get('resume') === 'true';
+
   useEffect(() => {
     if (id) {
-      console.log('Fetching content for:', { type, id });
+      console.log('Fetching content for:', { type, id, season, episode, shouldResume });
       fetchContent();
     } else {
       console.log('Missing id:', { type, id });
       setLoading(false);
     }
-  }, [type, id]);
+  }, [type, id, season, episode]);
 
   const fetchContent = async () => {
     if (!id) {
@@ -137,6 +143,14 @@ const DetailPage = () => {
     ? `https://image.tmdb.org/t/p/original${content.backdrop_path}`
     : 'https://images.unsplash.com/photo-1489599904276-39c2bb2d7b64?w=1920&h=1080&fit=crop';
 
+  // Get display title with episode info for TV shows
+  const getDisplayTitle = () => {
+    if (type === 'tv' && season && episode) {
+      return `${title} - Season ${season} Episode ${episode}`;
+    }
+    return title;
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
@@ -164,8 +178,22 @@ const DetailPage = () => {
               </Button>
               
               <h1 className="text-2xl md:text-5xl lg:text-7xl font-bold text-foreground mb-2 md:mb-6 leading-tight">
-                {title}
+                {getDisplayTitle()}
               </h1>
+
+              {/* Show episode/season info for TV shows */}
+              {type === 'tv' && season && episode && (
+                <div className="mb-3 md:mb-4">
+                  <span className="bg-primary/20 text-primary px-3 py-1 rounded-full text-sm">
+                    S{season}E{episode}
+                  </span>
+                  {shouldResume && (
+                    <span className="ml-2 bg-green-600/20 text-green-400 px-3 py-1 rounded-full text-sm">
+                      Continue Watching
+                    </span>
+                  )}
+                </div>
+              )}
               
               <div className="flex items-center gap-2 md:gap-6 text-foreground mb-2 md:mb-6 flex-wrap">
                 <div className="flex items-center gap-1">
@@ -206,7 +234,7 @@ const DetailPage = () => {
                   className="bg-primary hover:bg-primary/90 px-3 md:px-8 text-xs md:text-base"
                 >
                   <Play className="h-3 w-3 md:h-5 md:w-5 mr-1 md:mr-2" />
-                  Watch Now
+                  {shouldResume ? 'Continue Watching' : 'Watch Now'}
                 </Button>
                 
                 {user && (
@@ -241,10 +269,16 @@ const DetailPage = () => {
           <div className="bg-card py-4 md:py-8">
             <div className="container mx-auto px-3 md:px-4">
               <VideoPlayer
-                title={title}
+                title={getDisplayTitle()}
                 tmdbId={content.id}
                 type={type}
+                season={season}
+                episode={episode}
                 autoFullscreen={true}
+                poster_path={content.poster_path}
+                backdrop_path={content.backdrop_path}
+                duration={content.runtime ? content.runtime * 60 : undefined}
+                shouldResume={shouldResume}
               />
             </div>
           </div>
