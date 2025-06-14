@@ -44,6 +44,9 @@ const Index = () => {
     await new Promise(resolve => setTimeout(resolve, 500));
   };
 
+  // App logo URL for social media sharing
+  const logoUrl = `${window.location.origin}/favicon.ico`;
+
   return (
     <>
       <Helmet>
@@ -55,11 +58,14 @@ const Index = () => {
         <meta property="og:description" content="Stream unlimited movies and TV series free on FlickPick. Premium subscribers enjoy ad-free viewing." />
         <meta property="og:type" content="website" />
         <meta property="og:url" content={window.location.href} />
-        <meta property="og:image" content="https://images.unsplash.com/photo-1489599904276-39c2bb2d64?w=1200&h=630&fit=crop" />
+        <meta property="og:image" content={logoUrl} />
+        <meta property="og:image:width" content="512" />
+        <meta property="og:image:height" content="512" />
         
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content="FlickPick - Stream Movies & TV Shows Online Free" />
         <meta name="twitter:description" content="Stream unlimited movies and TV series free on FlickPick." />
+        <meta name="twitter:image" content={logoUrl} />
         
         <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes, viewport-fit=cover" />
         <meta name="mobile-web-app-capable" content="yes" />
@@ -88,7 +94,7 @@ const Index = () => {
               "name": "FlickPick",
               "logo": {
                 "@type": "ImageObject",
-                "url": `${window.location.origin}/favicon.ico`
+                "url": logoUrl
               }
             },
             "offers": {
@@ -117,8 +123,8 @@ const Index = () => {
           </main>
         </PullToRefresh>
         
-        {/* Hide footer on mobile */}
-        {!isMobile && <Footer />}
+        {/* Always show footer */}
+        <Footer />
         <BottomNavigation />
       </div>
     </>
