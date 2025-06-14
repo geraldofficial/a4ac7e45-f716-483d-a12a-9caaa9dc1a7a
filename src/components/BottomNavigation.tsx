@@ -3,7 +3,7 @@ import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Home, Heart, TrendingUp, Star } from 'lucide-react';
 
-export const BottomNavigation: React.FC = () => {
+export const BottomNavigation = () => {
   const navigate = useNavigate();
   const location = useLocation();
 

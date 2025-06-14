@@ -1,59 +1,54 @@
 
 import React, { useState, useEffect } from 'react';
-import { Download } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-
-interface BeforeInstallPromptEvent extends Event {
-  prompt(): Promise<void>;
-  userChoice: Promise<{ outcome: 'accepted' | 'dismissed' }>;
-}
+import { Download, X } from 'lucide-react';
 
 export const PWAInstallButton: React.FC = () => {
-  const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
-  const [showInstallButton, setShowInstallButton] = useState(false);
+  const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
+  const [showInstallPrompt, setShowInstallPrompt] = useState(false);
 
   useEffect(() => {
-    const handleBeforeInstallPrompt = (e: Event) => {
+    const handler = (e: Event) => {
       e.preventDefault();
-      setDeferredPrompt(e as BeforeInstallPromptEvent);
-      setShowInstallButton(true);
+      setDeferredPrompt(e);
+      setShowInstallPrompt(true);
     };
 
-    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+    window.addEventListener('beforeinstallprompt', handler);
 
-    return () => {
-      window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
-    };
+    return () => window.removeEventListener('beforeinstallprompt', handler);
   }, []);
 
-  const handleInstallClick = async () => {
+  const handleInstall = async () => {
     if (!deferredPrompt) return;
 
     deferredPrompt.prompt();
     const { outcome } = await deferredPrompt.userChoice;
     
     if (outcome === 'accepted') {
-      console.log('User accepted the install prompt');
-    } else {
-      console.log('User dismissed the install prompt');
+      setDeferredPrompt(null);
+      setShowInstallPrompt(false);
     }
-    
-    setDeferredPrompt(null);
-    setShowInstallButton(false);
   };
 
-  if (!showInstallButton) return null;
+  const handleDismiss = () => {
+    setShowInstallPrompt(false);
+    setDeferredPrompt(null);
+  };
+
+  if (!showInstallPrompt || !deferredPrompt) return null;
 
   return (
-    <Button
-      variant="ghost"
-      size="sm"
-      onClick={handleInstallClick}
-      className="hidden md:flex items-center gap-2 bg-background/50 backdrop-blur-xl border border-border/50 hover:bg-background/70"
-      style={{ touchAction: 'manipulation' }}
-    >
-      <Download className="h-4 w-4" />
-      Install
-    </Button>
+    <div className="hidden md:block">
+      <Button
+        variant="outline"
+        size="sm"
+        onClick={handleInstall}
+        className="bg-primary/10 border-primary/20 hover:bg-primary/20 text-primary"
+      >
+        <Download className="h-4 w-4 mr-2" />
+        Install App
+      </Button>
+    </div>
   );
 };
