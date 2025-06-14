@@ -8,7 +8,6 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { FlickPickLogo } from './FlickPickLogo';
 import { SearchSuggestions } from './SearchSuggestions';
 import { PWAInstallButton } from './PWAInstallButton';
-import { AccountSwitcher } from './AccountSwitcher';
 import { useAuth } from '@/contexts/AuthContext';
 
 export const Navbar = () => {
@@ -146,35 +145,30 @@ export const Navbar = () => {
 
             {/* User Menu or Auth Buttons */}
             {user ? (
-              <div className="flex items-center gap-2">
-                {/* Account Switcher for multiple profiles */}
-                <AccountSwitcher />
-                
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" className="relative h-8 w-8 rounded-full" style={{ touchAction: 'manipulation' }}>
-                      <Avatar className="h-8 w-8">
-                        <AvatarImage src={user.avatar || user.avatar_url || user.image} alt={user.name || user.username || 'User'} />
-                        <AvatarFallback>{(user.name || user.username || 'U').charAt(0)}</AvatarFallback>
-                      </Avatar>
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent className="w-56 bg-background/95 backdrop-blur-3xl border-border/50" align="end">
-                    <DropdownMenuItem onClick={() => navigate('/profile')} className="cursor-pointer">
-                      <User className="mr-2 h-4 w-4" />
-                      Profile
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => navigate('/watchlist')} className="cursor-pointer">
-                      <User className="mr-2 h-4 w-4" />
-                      Watchlist
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={handleSignOut} className="cursor-pointer">
-                      <LogOut className="mr-2 h-4 w-4" />
-                      Sign out
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </div>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" className="relative h-8 w-8 rounded-full" style={{ touchAction: 'manipulation' }}>
+                    <Avatar className="h-8 w-8">
+                      <AvatarImage src={user.avatar || user.avatar_url || user.image} alt={user.name || user.username || 'User'} />
+                      <AvatarFallback>{(user.name || user.username || 'U').charAt(0)}</AvatarFallback>
+                    </Avatar>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="w-56 bg-background/95 backdrop-blur-3xl border-border/50" align="end">
+                  <DropdownMenuItem onClick={() => navigate('/profile')} className="cursor-pointer">
+                    <User className="mr-2 h-4 w-4" />
+                    Profile
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => navigate('/watchlist')} className="cursor-pointer">
+                    <User className="mr-2 h-4 w-4" />
+                    Watchlist
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={handleSignOut} className="cursor-pointer">
+                    <LogOut className="mr-2 h-4 w-4" />
+                    Sign out
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             ) : (
               <div className="hidden md:flex items-center space-x-2">
                 <Button
@@ -229,6 +223,7 @@ export const Navbar = () => {
           </div>
         )}
 
+        {/* Mobile Search Overlay */}
         {isSearchOpen && (
           <div 
             className="md:hidden fixed inset-0 bg-background/95 backdrop-blur-3xl z-50 flex flex-col"

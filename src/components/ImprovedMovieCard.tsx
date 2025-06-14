@@ -96,41 +96,23 @@ export const ImprovedMovieCard: React.FC<ImprovedMovieCardProps> = ({
   const handleShare = async (e: React.MouseEvent) => {
     e.stopPropagation();
     const url = `${window.location.origin}/${type}/${movie.id}`;
-    const logoUrl = `${window.location.origin}/favicon.ico`;
     
     if (navigator.share) {
       try {
         await navigator.share({
-          title: `${title} - FlickPick`,
-          text: `Check out ${title} on FlickPick! Stream it now for free.`,
+          title: title,
+          text: `Check out ${title} on FlickPick!`,
           url: url,
         });
-        toast({
-          title: "Shared successfully!",
-          description: `${title} has been shared.`,
-        });
       } catch (error) {
-        // User cancelled share, copy to clipboard as fallback
-        await navigator.clipboard.writeText(url);
-        toast({
-          title: "Link copied!",
-          description: "Movie link has been copied to your clipboard.",
-        });
+        // User cancelled share
       }
     } else {
-      try {
-        await navigator.clipboard.writeText(url);
-        toast({
-          title: "Link copied!",
-          description: "Movie link has been copied to your clipboard.",
-        });
-      } catch (error) {
-        toast({
-          title: "Sharing failed",
-          description: "Unable to share or copy link.",
-          variant: "destructive",
-        });
-      }
+      await navigator.clipboard.writeText(url);
+      toast({
+        title: "Link copied!",
+        description: "Movie link has been copied to your clipboard.",
+      });
     }
   };
 
