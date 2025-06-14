@@ -34,7 +34,12 @@ export const getPersonalizedRecommendations = async (
   try {
     if (genrePreferences.length === 0) {
       // Fallback to popular movies if no preferences
-      return await tmdbApi.getPopularMovies(page);
+      const results = await tmdbApi.getPopularMovies(page);
+      return {
+        results,
+        total_pages: 10,
+        total_results: results.length
+      };
     }
 
     // Get movies for each preferred genre and mix them
@@ -49,7 +54,9 @@ export const getPersonalizedRecommendations = async (
     const maxMoviesPerGenre = 7; // Limit per genre to create variety
     
     genreResults.forEach(result => {
-      allMovies.push(...result.results.slice(0, maxMoviesPerGenre));
+      if (Array.isArray(result)) {
+        allMovies.push(...result.slice(0, maxMoviesPerGenre));
+      }
     });
 
     // Remove duplicates based on movie ID
@@ -68,7 +75,12 @@ export const getPersonalizedRecommendations = async (
   } catch (error) {
     console.error('Error getting personalized recommendations:', error);
     // Fallback to popular movies
-    return await tmdbApi.getPopularMovies(page);
+    const results = await tmdbApi.getPopularMovies(page);
+    return {
+      results,
+      total_pages: 10,
+      total_results: results.length
+    };
   }
 };
 

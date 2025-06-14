@@ -1,6 +1,7 @@
+
 import axios from 'axios';
 
-const API_KEY = process.env.NEXT_PUBLIC_TMDB_API_KEY;
+const API_KEY = import.meta.env.VITE_TMDB_API_KEY;
 const BASE_URL = 'https://api.themoviedb.org/3';
 
 const api = axios.create({
@@ -10,25 +11,47 @@ const api = axios.create({
   },
 });
 
-interface Movie {
+export interface Movie {
   id: number;
   title: string;
   poster_path: string;
   overview: string;
   release_date: string;
   vote_average: number;
+  backdrop_path?: string;
+  runtime?: number;
+  genres?: Array<{ id: number; name: string }>;
+  credits?: {
+    cast: Array<{
+      id: number;
+      name: string;
+      character: string;
+      profile_path: string | null;
+    }>;
+  };
 }
 
-interface TVShow {
+export interface TVShow {
   id: number;
   name: string;
   poster_path: string;
   overview: string;
   first_air_date: string;
   vote_average: number;
+  backdrop_path?: string;
+  number_of_seasons?: number;
+  genres?: Array<{ id: number; name: string }>;
+  credits?: {
+    cast: Array<{
+      id: number;
+      name: string;
+      character: string;
+      profile_path: string | null;
+    }>;
+  };
 }
 
-interface Person {
+export interface Person {
   id: number;
   name: string;
   profile_path: string;
@@ -52,12 +75,26 @@ export const tmdbApi = {
   },
 
   async getMovieDetails(id: number) {
-    const response = await api.get(`/movie/${id}`);
+    const response = await api.get(`/movie/${id}`, {
+      params: { append_to_response: 'credits' }
+    });
     return response.data;
   },
 
   async getTVShowDetails(id: number) {
-    const response = await api.get(`/tv/${id}`);
+    const response = await api.get(`/tv/${id}`, {
+      params: { append_to_response: 'credits' }
+    });
+    return response.data;
+  },
+
+  // Alias for backward compatibility
+  async getTVDetails(id: number) {
+    return this.getTVShowDetails(id);
+  },
+
+  async getTVSeasonDetails(tvId: number, seasonNumber: number) {
+    const response = await api.get(`/tv/${tvId}/season/${seasonNumber}`);
     return response.data;
   },
 
@@ -71,9 +108,9 @@ export const tmdbApi = {
     return response.data;
   },
 
-  async searchMulti(query: string) {
+  async searchMulti(query: string, page: number = 1) {
     const response = await api.get('/search/multi', {
-      params: { query, page: 1 }
+      params: { query, page }
     });
     return response.data.results;
   },
@@ -81,6 +118,10 @@ export const tmdbApi = {
   async getTrending(mediaType: 'movie' | 'tv' | 'person' = 'movie', timeWindow: 'day' | 'week' = 'day') {
     const response = await api.get(`/trending/${mediaType}/${timeWindow}`);
     return response.data.results;
+  },
+
+  async getTrendingMovies(timeWindow: 'day' | 'week' = 'day') {
+    return this.getTrending('movie', timeWindow);
   },
 
   async discoverMovies(genres: string = '', sortBy: string = 'popularity.desc', page: number = 1) {
@@ -103,5 +144,17 @@ export const tmdbApi = {
       }
     });
     return response.data.results;
+  },
+
+  async getPopularMovies(page: number = 1) {
+    return this.getMovies('popular', page);
+  },
+
+  async getPopularTVShows(page: number = 1) {
+    return this.getTVShows('popular', page);
+  },
+
+  async getMoviesByGenre(genreId: number, page: number = 1) {
+    return this.discoverMovies(genreId.toString(), 'popularity.desc', page);
   },
 };
