@@ -43,6 +43,18 @@
     overscroll-behavior: none;
     -webkit-overflow-scrolling: touch;
   }
+  
+  /* Ensure proper mobile viewport behavior */
+  html, body {
+    height: 100%;
+    overflow-x: hidden;
+  }
+  
+  /* Fix mobile scrolling issues */
+  #root {
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
 }
 
 /* Enhanced glassmorphism styles */
@@ -110,6 +122,19 @@ button, [role="button"] {
   ::-webkit-scrollbar {
     width: 4px;
   }
+  
+  /* Ensure mobile containers can scroll properly */
+  body {
+    position: relative;
+    overflow-y: auto;
+    overflow-x: hidden;
+  }
+  
+  /* Fix mobile hero section height issues */
+  .hero-section {
+    max-height: 70vh;
+    min-height: 50vh;
+  }
 }
 
 /* Z-index hierarchy */
@@ -159,5 +184,19 @@ button, [role="button"] {
   /* Ensure proper spacing for mobile bottom navigation */
   .pb-mobile-nav {
     padding-bottom: calc(80px + env(safe-area-inset-bottom));
+  }
+  
+  /* Fix potential scroll issues on mobile */
+  main {
+    overflow-x: hidden;
+    overflow-y: auto;
+  }
+}
+
+/* Ensure proper mobile scrolling behavior */
+@supports (-webkit-touch-callout: none) {
+  /* iOS specific styles */
+  body {
+    -webkit-overflow-scrolling: touch;
   }
 }

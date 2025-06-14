@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Home, Heart, TrendingUp, Star, Search } from 'lucide-react';
+import { Home, Heart, TrendingUp, Star } from 'lucide-react';
 
 export const BottomNavigation = () => {
   const navigate = useNavigate();
@@ -9,7 +9,6 @@ export const BottomNavigation = () => {
 
   const navItems = [
     { icon: Home, label: 'Home', path: '/' },
-    { icon: Search, label: 'Search', path: '/search' },
     { icon: TrendingUp, label: 'Trending', path: '/trending' },
     { icon: Star, label: 'Top Rated', path: '/top-rated' },
     { icon: Heart, label: 'Donate', path: '/support' }

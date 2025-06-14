@@ -97,7 +97,7 @@ const Index = () => {
       <div className="min-h-screen bg-background dark overflow-x-hidden">
         <Navbar />
         <PullToRefresh onRefresh={handleRefresh}>
-          <main className="relative pt-0 md:pt-24 pb-24 md:pb-8">
+          <main className="relative pt-14 md:pt-16 pb-20 md:pb-8">
             <HeroSection />
             {user && <ContinueWatching />}
             {user && <RecentlyWatched />}
