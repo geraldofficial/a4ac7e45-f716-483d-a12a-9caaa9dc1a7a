@@ -6,12 +6,14 @@ interface PullToRefreshProps {
   onRefresh: () => Promise<void>;
   children: React.ReactNode;
   threshold?: number;
+  className?: string;
 }
 
 export const PullToRefresh: React.FC<PullToRefreshProps> = ({
   onRefresh,
   children,
-  threshold = 80
+  threshold = 80,
+  className = ""
 }) => {
   const [isPulling, setIsPulling] = useState(false);
   const [pullDistance, setPullDistance] = useState(0);
@@ -74,7 +76,7 @@ export const PullToRefresh: React.FC<PullToRefreshProps> = ({
   }, [isPulling, pullDistance, threshold, onRefresh]);
 
   return (
-    <div ref={containerRef} className="relative overflow-auto h-full">
+    <div ref={containerRef} className={`relative overflow-auto h-full ${className}`}>
       {(isPulling || isRefreshing) && (
         <div 
           className="absolute top-0 left-0 right-0 flex items-center justify-center bg-background/90 backdrop-blur-sm z-10 transition-all duration-200"
