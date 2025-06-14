@@ -20,6 +20,7 @@ export interface UserProfile {
   watchlist?: number[];
   genre_preferences?: number[];
   onboarding_completed?: boolean;
+  email_welcomed?: boolean;
 }
 
 export interface AuthContextType {
@@ -134,6 +135,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     } finally {
       setLoading(false);
     }
+  };
+
+  const login = async (email: string, password: string) => {
+    await signIn(email, password);
   };
 
   const signUp = async (email: string, password: string, userData: any = {}) => {
