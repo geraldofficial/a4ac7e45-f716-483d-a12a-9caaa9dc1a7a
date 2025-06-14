@@ -1,103 +1,142 @@
 
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Github, Twitter, Youtube, Instagram, Heart } from 'lucide-react';
 import { FlickPickLogo } from './FlickPickLogo';
+import { useNavigate } from 'react-router-dom';
 
 export const Footer = () => {
-  const currentYear = new Date().getFullYear();
-
-  const footerLinks = {
-    company: [
-      { label: 'About Us', to: '/about' },
-      { label: 'Contact', to: '/contact' },
-      { label: 'Support', to: '/support' },
-      { label: 'Help Center', to: '/help' },
-    ],
-    legal: [
-      { label: 'Terms of Service', to: '/terms' },
-      { label: 'Privacy Policy', to: '/privacy' },
-      { label: 'Cookie Policy', to: '/cookies' },
-    ],
-    content: [
-      { label: 'Browse Movies', to: '/browse' },
-      { label: 'Trending', to: '/trending' },
-      { label: 'Top Rated', to: '/top-rated' },
-      { label: 'My Watchlist', to: '/watchlist' },
-    ],
-  };
+  const navigate = useNavigate();
 
   return (
-    <footer className="bg-gray-900 border-t border-gray-800 mt-auto">
-      <div className="container mx-auto px-4 py-12">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-          {/* Logo and Description */}
-          <div className="md:col-span-1">
-            <FlickPickLogo />
-            <p className="text-gray-400 text-sm mt-4 leading-relaxed">
-              Stream unlimited movies and TV shows free. Premium subscribers enjoy ad-free viewing.
+    <footer className="bg-background border-t border-border/50 py-16">
+      <div className="container mx-auto px-4">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-12">
+          {/* Logo & Description */}
+          <div className="col-span-1 md:col-span-2">
+            <FlickPickLogo className="mb-6" />
+            <p className="text-muted-foreground max-w-md leading-relaxed">
+              Your ultimate destination for streaming movies and TV series. 
+              Discover, watch, and enjoy unlimited entertainment with FlickPick's 
+              curated collection of the best content from around the world.
             </p>
           </div>
 
-          {/* Company Links */}
+          {/* Quick Links */}
           <div>
-            <h3 className="text-white font-semibold mb-4">Company</h3>
-            <ul className="space-y-2">
-              {footerLinks.company.map((link) => (
-                <li key={link.to}>
-                  <Link
-                    to={link.to}
-                    className="text-gray-400 hover:text-white transition-colors duration-200 text-sm"
-                  >
-                    {link.label}
-                  </Link>
-                </li>
-              ))}
+            <h3 className="text-foreground font-semibold mb-6 text-lg">Quick Links</h3>
+            <ul className="space-y-3">
+              <li>
+                <button 
+                  onClick={() => navigate('/')} 
+                  className="text-muted-foreground hover:text-primary transition-colors"
+                >
+                  Home
+                </button>
+              </li>
+              <li>
+                <button 
+                  onClick={() => navigate('/browse')} 
+                  className="text-muted-foreground hover:text-primary transition-colors"
+                >
+                  Browse
+                </button>
+              </li>
+              <li>
+                <button 
+                  onClick={() => navigate('/trending')} 
+                  className="text-muted-foreground hover:text-primary transition-colors"
+                >
+                  Trending
+                </button>
+              </li>
+              <li>
+                <button 
+                  onClick={() => navigate('/top-rated')} 
+                  className="text-muted-foreground hover:text-primary transition-colors"
+                >
+                  Top Rated
+                </button>
+              </li>
+              <li>
+                <button 
+                  onClick={() => navigate('/history')} 
+                  className="text-muted-foreground hover:text-primary transition-colors"
+                >
+                  Watch History
+                </button>
+              </li>
             </ul>
           </div>
 
-          {/* Content Links */}
+          {/* Support */}
           <div>
-            <h3 className="text-white font-semibold mb-4">Content</h3>
-            <ul className="space-y-2">
-              {footerLinks.content.map((link) => (
-                <li key={link.to}>
-                  <Link
-                    to={link.to}
-                    className="text-gray-400 hover:text-white transition-colors duration-200 text-sm"
-                  >
-                    {link.label}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          {/* Legal Links */}
-          <div>
-            <h3 className="text-white font-semibold mb-4">Legal</h3>
-            <ul className="space-y-2">
-              {footerLinks.legal.map((link) => (
-                <li key={link.to}>
-                  <Link
-                    to={link.to}
-                    className="text-gray-400 hover:text-white transition-colors duration-200 text-sm"
-                  >
-                    {link.label}
-                  </Link>
-                </li>
-              ))}
+            <h3 className="text-foreground font-semibold mb-6 text-lg">Support</h3>
+            <ul className="space-y-3">
+              <li>
+                <button 
+                  onClick={() => navigate('/support')} 
+                  className="text-muted-foreground hover:text-primary transition-colors flex items-center gap-2"
+                >
+                  <Heart className="h-4 w-4" />
+                  Support Us
+                </button>
+              </li>
+              <li>
+                <button 
+                  onClick={() => navigate('/help')} 
+                  className="text-muted-foreground hover:text-primary transition-colors"
+                >
+                  Help Center
+                </button>
+              </li>
+              <li>
+                <button 
+                  onClick={() => navigate('/contact')} 
+                  className="text-muted-foreground hover:text-primary transition-colors"
+                >
+                  Contact Us
+                </button>
+              </li>
+              <li>
+                <button 
+                  onClick={() => navigate('/privacy')} 
+                  className="text-muted-foreground hover:text-primary transition-colors"
+                >
+                  Privacy Policy
+                </button>
+              </li>
+              <li>
+                <button 
+                  onClick={() => navigate('/terms')} 
+                  className="text-muted-foreground hover:text-primary transition-colors"
+                >
+                  Terms of Service
+                </button>
+              </li>
             </ul>
           </div>
         </div>
 
         {/* Bottom Bar */}
-        <div className="border-t border-gray-800 mt-8 pt-8 flex flex-col md:flex-row justify-between items-center">
-          <p className="text-gray-400 text-sm">
-            © {currentYear} FlickPick. All rights reserved.
+        <div className="border-t border-border/50 mt-12 pt-8 flex flex-col md:flex-row items-center justify-between">
+          <p className="text-muted-foreground text-sm">
+            © 2025 FlickPick. made by Gerald all rights reserved.
           </p>
-          <p className="text-gray-400 text-sm mt-2 md:mt-0">
-            Made with ❤️ for movie lovers
-          </p>
+          
+          <div className="flex items-center space-x-6 mt-4 md:mt-0">
+            <a href="https://www.youtube.com/watch?v=6s0OVdoo4Q4" className="text-muted-foreground hover:text-primary transition-colors">
+              <Twitter className="h-5 w-5" />
+            </a>
+            <a href="https://www.youtube.com/watch?v=6s0OVdoo4Q4" className="text-muted-foreground hover:text-primary transition-colors">
+              <Youtube className="h-5 w-5" />
+            </a>
+            <a href="https://www.youtube.com/watch?v=6s0OVdoo4Q4" className="text-muted-foreground hover:text-primary transition-colors">
+              <Instagram className="h-5 w-5" />
+            </a>
+            <a href="https://www.youtube.com/watch?v=6s0OVdoo4Q4" className="text-muted-foreground hover:text-primary transition-colors">
+              <Github className="h-5 w-5" />
+            </a>
+          </div>
         </div>
       </div>
     </footer>

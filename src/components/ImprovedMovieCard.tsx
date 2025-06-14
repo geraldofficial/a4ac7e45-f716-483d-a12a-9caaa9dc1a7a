@@ -1,136 +1,313 @@
 
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Play, Plus, Check, Star, Info, Heart, Share2 } from 'lucide-react';
+import { useAuth } from '@/contexts/AuthContext';
+import { useToast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
 import { Movie } from '@/services/tmdb';
-import { useAuth } from '@/contexts/AuthContext';
-import { Plus, Check, Star } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 interface ImprovedMovieCardProps {
   movie: Movie;
-  variant?: 'default' | 'compact' | 'detailed';
   priority?: boolean;
+  showGenres?: boolean;
+  variant?: 'default' | 'compact' | 'featured';
 }
 
 export const ImprovedMovieCard: React.FC<ImprovedMovieCardProps> = ({ 
   movie, 
-  variant = 'default',
-  priority = false 
+  priority = false,
+  showGenres = false,
+  variant = 'default'
 }) => {
-  const navigate = useNavigate();
   const { user, addToWatchlist, removeFromWatchlist, isInWatchlist } = useAuth();
-  const [isLoading, setIsLoading] = useState(false);
+  const { toast } = useToast();
+  const navigate = useNavigate();
+  const [imageLoaded, setImageLoaded] = useState(false);
+  const [imageError, setImageError] = useState(false);
+  const [isHovered, setIsHovered] = useState(false);
+  const cardRef = useRef<HTMLDivElement>(null);
 
   const title = movie.title || movie.name || 'Unknown Title';
-  const releaseDate = movie.release_date || movie.first_air_date;
+  const releaseDate = movie.release_date || movie.first_air_date || '';
+  const type = movie.media_type || (movie.title ? 'movie' : 'tv');
   const year = releaseDate ? new Date(releaseDate).getFullYear() : '';
-  const mediaType = movie.media_type || (movie.title ? 'movie' : 'tv');
-  const inWatchlist = user ? isInWatchlist(movie.id) : false;
 
-  const imageUrl = movie.poster_path 
-    ? `https://image.tmdb.org/t/p/w500${movie.poster_path}`
-    : '/placeholder-poster.jpg';
+  const posterUrl = movie.poster_path 
+    ? `https://image.tmdb.org/t/p/${variant === 'featured' ? 'w780' : 'w500'}${movie.poster_path}`
+    : null;
 
-  const handleClick = () => {
-    navigate(`/${mediaType}/${movie.id}`);
+  const backdropUrl = movie.backdrop_path 
+    ? `https://image.tmdb.org/t/p/w1280${movie.backdrop_path}`
+    : null;
+
+  const fallbackUrl = 'https://images.unsplash.com/photo-1489599904276-39c2bb2d7b64?w=400&h=600&fit=crop';
+
+  const handleWatch = () => {
+    if (!user) {
+      toast({
+        title: "Sign in required",
+        description: "Please sign in to watch content.",
+        variant: "destructive",
+      });
+      return;
+    }
+    navigate(`/${type}/${movie.id}`);
+  };
+
+  const handleMoreInfo = () => {
+    navigate(`/${type}/${movie.id}`);
   };
 
   const handleWatchlistToggle = async (e: React.MouseEvent) => {
     e.stopPropagation();
-    if (!user) return;
+    if (!user) {
+      toast({
+        title: "Sign in required",
+        description: "Please sign in to add items to your watchlist.",
+        variant: "destructive",
+      });
+      return;
+    }
 
-    setIsLoading(true);
     try {
-      if (inWatchlist) {
+      if (isInWatchlist(movie.id)) {
         await removeFromWatchlist(movie.id);
+        toast({
+          title: "Removed from watchlist",
+          description: `${title} has been removed from your watchlist.`,
+        });
       } else {
         await addToWatchlist(movie.id);
+        toast({
+          title: "Added to watchlist",
+          description: `${title} has been added to your watchlist.`,
+        });
       }
     } catch (error) {
-      console.error('Error updating watchlist:', error);
-    } finally {
-      setIsLoading(false);
+      toast({
+        title: "Error",
+        description: "Failed to update watchlist. Please try again.",
+        variant: "destructive",
+      });
     }
   };
 
-  const baseClasses = "group cursor-pointer transition-all duration-300 hover:scale-105";
-  const variantClasses = {
-    default: "w-48",
-    compact: "w-40",
-    detailed: "w-56"
+  const handleShare = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    const url = `${window.location.origin}/${type}/${movie.id}`;
+    
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: title,
+          text: `Check out ${title} on FlickPick!`,
+          url: url,
+        });
+      } catch (error) {
+        // User cancelled share
+      }
+    } else {
+      await navigator.clipboard.writeText(url);
+      toast({
+        title: "Link copied!",
+        description: "Movie link has been copied to your clipboard.",
+      });
+    }
+  };
+
+  const getRatingColor = (rating: number) => {
+    if (rating >= 8) return 'text-green-400 bg-green-400/20';
+    if (rating >= 7) return 'text-yellow-400 bg-yellow-400/20';
+    if (rating >= 6) return 'text-orange-400 bg-orange-400/20';
+    return 'text-red-400 bg-red-400/20';
+  };
+
+  const getVariantClasses = () => {
+    switch (variant) {
+      case 'compact':
+        return 'w-full max-w-[140px]';
+      case 'featured':
+        return 'w-full max-w-lg';
+      default:
+        return 'w-full max-w-sm';
+    }
+  };
+
+  const getAspectRatio = () => {
+    return variant === 'featured' ? 'aspect-[16/9]' : 'aspect-[2/3]';
   };
 
   return (
-    <div className={`${baseClasses} ${variantClasses[variant]}`} onClick={handleClick}>
-      <div className="relative overflow-hidden rounded-lg bg-gray-800">
-        <div className="aspect-[2/3] relative">
+    <div 
+      ref={cardRef}
+      className={cn(
+        "group relative overflow-hidden rounded-xl bg-card/80 backdrop-blur-sm border border-border/50 transition-all duration-500 cursor-pointer mx-auto",
+        "hover:scale-[1.02] hover:shadow-2xl hover:border-primary/30",
+        "hover:z-10 hover:bg-card/90",
+        getVariantClasses()
+      )}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+      onClick={handleMoreInfo}
+    >
+      <div className={cn("overflow-hidden relative bg-muted/20", getAspectRatio())}>
+        {/* Loading state */}
+        {!imageLoaded && !imageError && (
+          <div className="absolute inset-0 bg-muted/30 animate-pulse flex items-center justify-center">
+            <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
+          </div>
+        )}
+
+        {/* Main image */}
+        {posterUrl && !imageError && (
           <img
-            src={imageUrl}
+            src={posterUrl}
             alt={title}
-            className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
+            className={cn(
+              "h-full w-full object-cover transition-all duration-700",
+              imageLoaded ? 'opacity-100 scale-100' : 'opacity-0 scale-105',
+              isHovered && "scale-110"
+            )}
+            onLoad={() => setImageLoaded(true)}
+            onError={() => setImageError(true)}
             loading={priority ? 'eager' : 'lazy'}
-            onError={(e) => {
-              const target = e.target as HTMLImageElement;
-              target.src = '/placeholder-poster.jpg';
-            }}
           />
-          
-          {/* Overlay */}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-          
-          {/* Rating */}
-          {movie.vote_average > 0 && (
-            <div className="absolute top-2 left-2 bg-black/80 backdrop-blur-sm rounded-full px-2 py-1 flex items-center gap-1">
-              <Star className="w-3 h-3 text-yellow-400 fill-current" />
-              <span className="text-white text-xs font-medium">
-                {movie.vote_average.toFixed(1)}
-              </span>
-            </div>
-          )}
-          
-          {/* Watchlist Button */}
-          {user && (
-            <button
-              onClick={handleWatchlistToggle}
-              disabled={isLoading}
-              className="absolute top-2 right-2 bg-black/80 backdrop-blur-sm rounded-full p-2 
-                       hover:bg-black/90 transition-colors duration-200 disabled:opacity-50
-                       opacity-0 group-hover:opacity-100"
-              aria-label={inWatchlist ? 'Remove from watchlist' : 'Add to watchlist'}
-            >
-              {isLoading ? (
-                <div className="w-4 h-4 border border-white border-t-transparent rounded-full animate-spin" />
-              ) : inWatchlist ? (
-                <Check className="w-4 h-4 text-green-400" />
-              ) : (
-                <Plus className="w-4 h-4 text-white" />
-              )}
-            </button>
-          )}
+        )}
+
+        {/* Fallback image */}
+        {(imageError || !posterUrl) && (
+          <img
+            src={fallbackUrl}
+            alt={title}
+            className="h-full w-full object-cover"
+            onLoad={() => setImageLoaded(true)}
+          />
+        )}
+
+        {/* Gradient overlay */}
+        <div className={cn(
+          "absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent transition-opacity duration-300",
+          variant === 'compact' ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'
+        )} />
+
+        {/* Rating badge */}
+        <div className="absolute top-2 left-2 z-10">
+          <Badge className={cn(
+            "px-2 py-1 text-xs font-bold border-0 backdrop-blur-sm",
+            getRatingColor(movie.vote_average)
+          )}>
+            <Star className="h-3 w-3 mr-1 fill-current" />
+            {movie.vote_average.toFixed(1)}
+          </Badge>
         </div>
-        
-        {/* Content */}
-        <div className="p-3">
-          <h3 className="text-foreground font-medium text-sm line-clamp-2 group-hover:text-primary transition-colors">
-            {title}
-          </h3>
-          
-          {variant === 'detailed' && (
+
+        {/* Type badge */}
+        <div className="absolute top-2 right-2 z-10">
+          <Badge variant="secondary" className="bg-black/50 text-white backdrop-blur-sm border-0">
+            {type === 'tv' ? 'TV' : 'Movie'}
+          </Badge>
+        </div>
+
+        {/* Action buttons */}
+        <div className={cn(
+          "absolute bottom-2 left-2 right-2 z-10 transition-all duration-300 space-y-2",
+          variant === 'compact' ? 'opacity-100' : 'opacity-0 group-hover:opacity-100 group-hover:translate-y-0 translate-y-2'
+        )}>
+          {variant !== 'compact' && (
             <>
-              {year && (
-                <p className="text-muted-foreground text-xs mt-1">{year}</p>
-              )}
-              {movie.overview && (
-                <p className="text-muted-foreground text-xs mt-2 line-clamp-3">
-                  {movie.overview}
-                </p>
-              )}
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center gap-1">
+                  {year && (
+                    <Badge className="bg-white/20 text-white text-xs">
+                      {year}
+                    </Badge>
+                  )}
+                </div>
+              </div>
+              
+              <div className="flex gap-1.5">
+                <Button 
+                  size="sm" 
+                  className="bg-primary hover:bg-primary/90 text-primary-foreground font-medium transition-all duration-200 hover:scale-105 shadow-lg flex-1 h-8 text-xs rounded-full"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleWatch();
+                  }}
+                >
+                  <Play className="h-3 w-3 mr-1 fill-current" />
+                  Play
+                </Button>
+                
+                <Button 
+                  size="sm" 
+                  variant="outline"
+                  className="border-white/30 bg-white/10 backdrop-blur-sm text-white hover:bg-white/20 hover:border-white/50 transition-all duration-200 hover:scale-105 shadow-lg h-8 w-8 p-0 rounded-full"
+                  onClick={handleMoreInfo}
+                >
+                  <Info className="h-3 w-3" />
+                </Button>
+                
+                {user && (
+                  <Button 
+                    size="sm" 
+                    variant="outline" 
+                    className="border-white/30 bg-white/10 backdrop-blur-sm text-white hover:bg-white/20 hover:border-white/50 transition-all duration-200 hover:scale-105 shadow-lg h-8 w-8 p-0 rounded-full"
+                    onClick={handleWatchlistToggle}
+                  >
+                    {isInWatchlist(movie.id) ? <Check className="h-3 w-3" /> : <Plus className="h-3 w-3" />}
+                  </Button>
+                )}
+
+                <Button 
+                  size="sm" 
+                  variant="outline"
+                  className="border-white/30 bg-white/10 backdrop-blur-sm text-white hover:bg-white/20 hover:border-white/50 transition-all duration-200 hover:scale-105 shadow-lg h-8 w-8 p-0 rounded-full"
+                  onClick={handleShare}
+                >
+                  <Share2 className="h-3 w-3" />
+                </Button>
+              </div>
             </>
           )}
-          
-          {variant !== 'detailed' && year && (
-            <p className="text-muted-foreground text-xs mt-1">{year}</p>
-          )}
         </div>
+      </div>
+      
+      {/* Content area */}
+      <div className={cn(
+        "p-3 bg-gradient-to-b from-card to-card/80",
+        variant === 'compact' && "p-2"
+      )}>
+        <h3 className={cn(
+          "text-foreground font-semibold truncate group-hover:text-primary transition-colors",
+          variant === 'compact' ? "text-xs mb-1" : "text-sm mb-1"
+        )}>
+          {title}
+        </h3>
+        
+        {variant !== 'compact' && (
+          <>
+            {year && (
+              <p className="text-muted-foreground text-xs mb-2">
+                {year}
+              </p>
+            )}
+            
+            {movie.overview && (
+              <p className="text-muted-foreground text-xs line-clamp-2 leading-relaxed">
+                {movie.overview}
+              </p>
+            )}
+          </>
+        )}
+
+        {variant === 'compact' && year && (
+          <p className="text-muted-foreground text-xs">
+            {year}
+          </p>
+        )}
       </div>
     </div>
   );

@@ -5,7 +5,6 @@ import { Navbar } from '@/components/Navbar';
 import { Footer } from '@/components/Footer';
 import { Button } from '@/components/ui/button';
 import { VideoPlayer } from '@/components/VideoPlayer';
-import { SEOHead } from '@/components/SEOHead';
 import { tmdbApi, Movie } from '@/services/tmdb';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
@@ -163,9 +162,6 @@ const DetailPage = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* SEO Head */}
-      <SEOHead content={content} type={type} season={season} episode={episode} />
-      
       {/* Video Player - Full Screen Overlay */}
       {isPlaying && (
         <VideoPlayer

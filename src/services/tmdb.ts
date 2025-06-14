@@ -1,26 +1,56 @@
 
-const TMDB_API_KEY = '8c0d5c4c8f7e4c4a9c8c8c8c8c8c8c8c'; // Public demo key
-const TMDB_BASE_URL = 'https://api.themoviedb.org/3';
+const API_KEY = '8265bd1679663a7ea12ac168da84d2e8';
+const BASE_URL = 'https://api.themoviedb.org/3';
 
 export interface Movie {
   id: number;
   title?: string;
   name?: string;
   overview: string;
-  poster_path?: string;
-  backdrop_path?: string;
+  poster_path: string;
+  backdrop_path: string;
   release_date?: string;
   first_air_date?: string;
   vote_average: number;
   genre_ids?: number[];
-  genres?: Genre[];
+  popularity?: number;
+  media_type?: 'movie' | 'tv';
   runtime?: number;
   number_of_seasons?: number;
-  seasons?: Season[];
-  media_type?: 'movie' | 'tv';
+  genres?: { id: number; name: string; }[];
   credits?: {
-    cast: Actor[];
+    cast: {
+      id: number;
+      name: string;
+      character: string;
+      profile_path: string;
+    }[];
   };
+  seasons?: {
+    id: number;
+    name: string;
+    season_number: number;
+    episode_count: number;
+  }[];
+}
+
+export interface TVSeasonDetails {
+  id: number;
+  name: string;
+  season_number: number;
+  episodes: {
+    id: number;
+    name: string;
+    episode_number: number;
+    air_date: string;
+    overview: string;
+  }[];
+}
+
+export interface SearchResults {
+  results: Movie[];
+  total_pages: number;
+  total_results: number;
 }
 
 export interface Genre {
@@ -28,75 +58,75 @@ export interface Genre {
   name: string;
 }
 
-export interface Actor {
-  id: number;
-  name: string;
-  character: string;
-  profile_path?: string;
-}
-
-export interface Season {
-  id: number;
-  name: string;
-  season_number: number;
-  episode_count: number;
-  episodes?: Episode[];
-}
-
-export interface Episode {
-  id: number;
-  name: string;
-  episode_number: number;
-  air_date: string;
-  overview: string;
-}
-
-export interface SearchResult {
-  results: Movie[];
-  total_pages: number;
-  total_results: number;
-}
-
 class TMDBApi {
-  private apiKey = TMDB_API_KEY;
-  private baseUrl = TMDB_BASE_URL;
-
-  private async fetchFromTMDB(endpoint: string): Promise<any> {
-    try {
-      const response = await fetch(`${this.baseUrl}${endpoint}?api_key=${this.apiKey}`);
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      return await response.json();
-    } catch (error) {
-      console.error('TMDB API error:', error);
-      return { results: [], total_pages: 1, total_results: 0 };
+  private async fetchFromTMDB(endpoint: string) {
+    const url = `${BASE_URL}${endpoint}${endpoint.includes('?') ? '&' : '?'}api_key=${API_KEY}`;
+    console.log('Fetching from TMDB:', url);
+    
+    const response = await fetch(url);
+    if (!response.ok) {
+      throw new Error(`TMDB API error: ${response.status}`);
     }
+    
+    const data = await response.json();
+    console.log('TMDB response:', data);
+    return data;
   }
 
-  async getTrendingMovies(timeWindow: 'day' | 'week' = 'day'): Promise<Movie[]> {
-    const data = await this.fetchFromTMDB(`/trending/movie/${timeWindow}`);
-    return data.results || [];
-  }
-
-  async getPopularMovies(page: number = 1): Promise<Movie[]> {
+  async getPopularMovies(page: number = 1): Promise<SearchResults> {
     const data = await this.fetchFromTMDB(`/movie/popular?page=${page}`);
-    return data.results || [];
-  }
-
-  async getMovies(category: string, page: number = 1): Promise<Movie[]> {
-    const data = await this.fetchFromTMDB(`/movie/${category}?page=${page}`);
-    return data.results || [];
+    return {
+      results: data.results,
+      total_pages: data.total_pages,
+      total_results: data.total_results
+    };
   }
 
   async getPopularTVShows(): Promise<Movie[]> {
     const data = await this.fetchFromTMDB('/tv/popular');
-    return data.results || [];
+    return data.results;
   }
 
   async getTrending(): Promise<Movie[]> {
-    const data = await this.fetchFromTMDB('/trending/all/day');
-    return data.results || [];
+    const data = await this.fetchFromTMDB('/trending/all/week');
+    return data.results;
+  }
+
+  async getTrendingMovies(page: number = 1): Promise<SearchResults> {
+    const data = await this.fetchFromTMDB(`/trending/all/week?page=${page}`);
+    return {
+      results: data.results,
+      total_pages: data.total_pages,
+      total_results: data.total_results
+    };
+  }
+
+  async getMoviesByGenre(genreId: number, page: number = 1): Promise<SearchResults> {
+    const data = await this.fetchFromTMDB(`/discover/movie?with_genres=${genreId}&page=${page}`);
+    return {
+      results: data.results,
+      total_pages: data.total_pages,
+      total_results: data.total_results
+    };
+  }
+
+  async searchMulti(query: string, page: number = 1): Promise<SearchResults> {
+    const data = await this.fetchFromTMDB(`/search/multi?query=${encodeURIComponent(query)}&page=${page}`);
+    return {
+      results: data.results.filter((item: any) => item.media_type === 'movie' || item.media_type === 'tv'),
+      total_pages: data.total_pages,
+      total_results: data.total_results
+    };
+  }
+
+  async search(query: string): Promise<Movie[]> {
+    const data = await this.searchMulti(query);
+    return data.results;
+  }
+
+  async searchSuggestions(query: string): Promise<Movie[]> {
+    const data = await this.searchMulti(query, 1);
+    return data.results.slice(0, 8); // Limit to 8 suggestions
   }
 
   async getMovieDetails(id: number): Promise<Movie> {
@@ -109,17 +139,49 @@ class TMDBApi {
     return data;
   }
 
-  async getTVSeasonDetails(id: number, season: number): Promise<Season> {
-    const data = await this.fetchFromTMDB(`/tv/${id}/season/${season}`);
+  async getTVSeasonDetails(tvId: number, seasonNumber: number): Promise<TVSeasonDetails> {
+    const data = await this.fetchFromTMDB(`/tv/${tvId}/season/${seasonNumber}`);
     return data;
   }
 
-  async searchMulti(query: string, page: number = 1): Promise<SearchResult> {
-    const data = await this.fetchFromTMDB(`/search/multi?query=${encodeURIComponent(query)}&page=${page}`);
+  async getMovieGenres(): Promise<Genre[]> {
+    const data = await this.fetchFromTMDB('/genre/movie/list');
+    return data.genres;
+  }
+
+  async getTVGenres(): Promise<Genre[]> {
+    const data = await this.fetchFromTMDB('/genre/tv/list');
+    return data.genres;
+  }
+
+  async discoverContent(params: {
+    type: 'movie' | 'tv';
+    genre?: number;
+    year?: number;
+    sortBy?: string;
+    page?: number;
+  }): Promise<SearchResults> {
+    const { type, genre, year, sortBy = 'popularity.desc', page = 1 } = params;
+    
+    let endpoint = `/${type === 'movie' ? 'discover/movie' : 'discover/tv'}?page=${page}&sort_by=${sortBy}`;
+    
+    if (genre) {
+      endpoint += `&with_genres=${genre}`;
+    }
+    
+    if (year) {
+      if (type === 'movie') {
+        endpoint += `&year=${year}`;
+      } else {
+        endpoint += `&first_air_date_year=${year}`;
+      }
+    }
+    
+    const data = await this.fetchFromTMDB(endpoint);
     return {
-      results: data.results || [],
-      total_pages: data.total_pages || 1,
-      total_results: data.total_results || 0
+      results: data.results,
+      total_pages: data.total_pages,
+      total_results: data.total_results
     };
   }
 }

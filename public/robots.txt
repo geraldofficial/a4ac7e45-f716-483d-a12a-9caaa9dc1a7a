@@ -1,91 +1,14 @@
-
-User-agent: *
-Allow: /
-
-# Enhanced SEO optimization
-Sitemap: https://flickpick.com/sitemap.xml
-
-# Crawl-delay for being respectful to search engines
-Crawl-delay: 1
-
-# Allow all major search engine bots with specific instructions
 User-agent: Googlebot
 Allow: /
-Crawl-delay: 1
 
 User-agent: Bingbot
-Allow: /
-Crawl-delay: 1
-
-User-agent: Slurp
-Allow: /
-Crawl-delay: 1
-
-User-agent: DuckDuckBot
-Allow: /
-Crawl-delay: 1
-
-User-agent: Baiduspider
-Allow: /
-Crawl-delay: 2
-
-User-agent: YandexBot
-Allow: /
-Crawl-delay: 1
-
-User-agent: facebookexternalhit
 Allow: /
 
 User-agent: Twitterbot
 Allow: /
 
-User-agent: LinkedInBot
+User-agent: facebookexternalhit
 Allow: /
 
-User-agent: WhatsApp
+User-agent: *
 Allow: /
-
-User-agent: TelegramBot
-Allow: /
-
-User-agent: Applebot
-Allow: /
-
-User-agent: ia_archiver
-Allow: /
-
-# Disallow admin or sensitive areas (if any)
-# Disallow: /admin/
-# Disallow: /api/
-
-# Allow access to important files and assets
-Allow: /favicon.ico
-Allow: /manifest.json
-Allow: /sitemap.xml
-Allow: /*.css
-Allow: /*.js
-Allow: /*.png
-Allow: /*.jpg
-Allow: /*.jpeg
-Allow: /*.gif
-Allow: /*.svg
-Allow: /*.webp
-Allow: /*.mp4
-Allow: /*.webm
-
-# Optimize for mobile crawlers
-User-agent: Googlebot-Mobile
-Allow: /
-
-User-agent: Bingbot-Mobile
-Allow: /
-
-# Block unwanted crawlers
-User-agent: AhrefsBot
-Disallow: /
-
-User-agent: MJ12bot
-Disallow: /
-
-User-agent: DotBot
-Disallow: /

@@ -1,54 +1,69 @@
 
 import React, { useState, useEffect } from 'react';
+import { Download } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Download, X } from 'lucide-react';
 
-export const PWAInstallButton: React.FC = () => {
-  const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
-  const [showInstallPrompt, setShowInstallPrompt] = useState(false);
+interface BeforeInstallPromptEvent extends Event {
+  prompt(): Promise<void>;
+  userChoice: Promise<{ outcome: 'accepted' | 'dismissed' }>;
+}
+
+export const PWAInstallButton = () => {
+  const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
+  const [showInstallButton, setShowInstallButton] = useState(false);
 
   useEffect(() => {
-    const handler = (e: Event) => {
+    const handleBeforeInstallPrompt = (e: Event) => {
       e.preventDefault();
-      setDeferredPrompt(e);
-      setShowInstallPrompt(true);
+      setDeferredPrompt(e as BeforeInstallPromptEvent);
+      setShowInstallButton(true);
     };
 
-    window.addEventListener('beforeinstallprompt', handler);
+    const handleAppInstalled = () => {
+      setShowInstallButton(false);
+      setDeferredPrompt(null);
+    };
 
-    return () => window.removeEventListener('beforeinstallprompt', handler);
+    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+    window.addEventListener('appinstalled', handleAppInstalled);
+
+    // Check if app is already installed
+    if (window.matchMedia('(display-mode: standalone)').matches) {
+      setShowInstallButton(false);
+    }
+
+    return () => {
+      window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+      window.removeEventListener('appinstalled', handleAppInstalled);
+    };
   }, []);
 
-  const handleInstall = async () => {
-    if (!deferredPrompt) return;
-
-    deferredPrompt.prompt();
-    const { outcome } = await deferredPrompt.userChoice;
-    
-    if (outcome === 'accepted') {
+  const handleInstallClick = async () => {
+    if (deferredPrompt) {
+      deferredPrompt.prompt();
+      const { outcome } = await deferredPrompt.userChoice;
+      
+      if (outcome === 'accepted') {
+        setShowInstallButton(false);
+      }
+      
       setDeferredPrompt(null);
-      setShowInstallPrompt(false);
     }
   };
 
-  const handleDismiss = () => {
-    setShowInstallPrompt(false);
-    setDeferredPrompt(null);
-  };
-
-  if (!showInstallPrompt || !deferredPrompt) return null;
+  if (!showInstallButton) {
+    return null;
+  }
 
   return (
-    <div className="hidden md:block">
-      <Button
-        variant="outline"
-        size="sm"
-        onClick={handleInstall}
-        className="bg-primary/10 border-primary/20 hover:bg-primary/20 text-primary"
-      >
-        <Download className="h-4 w-4 mr-2" />
-        Install App
-      </Button>
-    </div>
+    <Button
+      onClick={handleInstallClick}
+      variant="ghost"
+      size="sm"
+      className="hidden md:flex items-center gap-2 bg-background/50 backdrop-blur-xl border border-border/50 hover:bg-background/70"
+    >
+      <Download className="h-4 w-4" />
+      Install App
+    </Button>
   );
 };

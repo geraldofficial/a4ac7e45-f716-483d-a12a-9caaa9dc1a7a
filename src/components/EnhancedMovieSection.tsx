@@ -1,7 +1,6 @@
 
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { ImprovedMovieCard } from './ImprovedMovieCard';
-import { NetflixMobileCard } from './NetflixMobileCard';
 import { LoadingSpinner } from './LoadingSpinner';
 import { EmailSubscription } from './EmailSubscription';
 import { tmdbApi, Movie } from '@/services/tmdb';
@@ -10,7 +9,6 @@ import { useAuth } from '@/contexts/AuthContext';
 import { ChevronLeft, ChevronRight, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { ErrorBoundary } from './ErrorBoundary';
 
 export const EnhancedMovieSection = () => {
   const [popularMovies, setPopularMovies] = useState<Movie[]>([]);
@@ -22,7 +20,6 @@ export const EnhancedMovieSection = () => {
   const [recommendedPage, setRecommendedPage] = useState(1);
   const [hasMoreRecommended, setHasMoreRecommended] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
-  const [isMobile, setIsMobile] = useState(false);
   const { user } = useAuth();
   
   const observer = useRef<IntersectionObserver>();
@@ -37,16 +34,6 @@ export const EnhancedMovieSection = () => {
     if (node) observer.current.observe(node);
   }, [loadingMore, hasMoreRecommended]);
 
-  useEffect(() => {
-    const checkMobile = () => {
-      setIsMobile(window.innerWidth <= 768);
-    };
-    
-    checkMobile();
-    window.addEventListener('resize', checkMobile);
-    return () => window.removeEventListener('resize', checkMobile);
-  }, []);
-
   const fetchMovies = useCallback(async (isRefresh = false) => {
     try {
       if (isRefresh) {
@@ -58,11 +45,11 @@ export const EnhancedMovieSection = () => {
       
       const [popularResponse, trendingResponse] = await Promise.all([
         tmdbApi.getPopularMovies(1),
-        tmdbApi.getTrendingMovies('day')
+        tmdbApi.getTrendingMovies(1)
       ]);
 
-      setPopularMovies(popularResponse);
-      setTrendingMovies(trendingResponse);
+      setPopularMovies(popularResponse.results);
+      setTrendingMovies(trendingResponse.results);
 
       if (user && user.genre_preferences && user.genre_preferences.length > 0) {
         const recommendedResponse = await getPersonalizedRecommendations(user.genre_preferences, 1);
@@ -70,7 +57,7 @@ export const EnhancedMovieSection = () => {
         setHasMoreRecommended(recommendedResponse.total_pages > 1);
         setRecommendedPage(1);
       } else {
-        setRecommendedMovies(popularResponse);
+        setRecommendedMovies(popularResponse.results);
         setHasMoreRecommended(false);
       }
     } catch (error) {
@@ -115,76 +102,7 @@ export const EnhancedMovieSection = () => {
     }
   };
 
-  // Netflix-style mobile row component with enhanced error handling
-  const NetflixMobileRow = ({ 
-    title, 
-    movies, 
-    sectionId, 
-    priority = false,
-    size = 'small'
-  }: { 
-    title: string; 
-    movies: Movie[]; 
-    sectionId: string; 
-    priority?: boolean;
-    size?: 'small' | 'large';
-  }) => {
-    if (!movies || movies.length === 0) {
-      return (
-        <div className="netflix-mobile-section">
-          <h2 className="netflix-mobile-title">{title}</h2>
-          <div className="p-4 text-center text-gray-500">
-            No content available
-          </div>
-        </div>
-      );
-    }
-
-    return (
-      <ErrorBoundary
-        fallback={
-          <div className="netflix-mobile-section">
-            <h2 className="netflix-mobile-title">{title}</h2>
-            <div className="p-4 text-center text-gray-500">
-              Failed to load content
-            </div>
-          </div>
-        }
-      >
-        <div className="netflix-mobile-section">
-          <h2 className="netflix-mobile-title">{title}</h2>
-          <div className="netflix-mobile-row">
-            <div 
-              id={sectionId}
-              className="netflix-mobile-scroll"
-            >
-              {movies.map((movie, index) => {
-                if (!movie || !movie.id) return null;
-                
-                return (
-                  <div 
-                    key={`${movie.id}-${index}`}
-                    ref={sectionId === 'recommended' && index === movies.length - 1 ? lastMovieElementRef : null}
-                  >
-                    <ErrorBoundary fallback={<div className="w-32 h-48 bg-gray-800 rounded" />}>
-                      <NetflixMobileCard 
-                        movie={movie} 
-                        size={size}
-                        priority={priority && index < 6}
-                      />
-                    </ErrorBoundary>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        </div>
-      </ErrorBoundary>
-    );
-  };
-
-  // Desktop row component with error handling
-  const DesktopMovieRow = ({ 
+  const MovieRow = ({ 
     title, 
     movies, 
     sectionId, 
@@ -196,97 +114,75 @@ export const EnhancedMovieSection = () => {
     sectionId: string; 
     showScrollButtons?: boolean;
     priority?: boolean;
-  }) => {
-    if (!movies || movies.length === 0) {
-      return (
-        <section className="mobile-section">
-          <div className="p-4 text-center text-gray-500">
-            No content available
-          </div>
-        </section>
-      );
-    }
-
-    return (
-      <ErrorBoundary>
-        <section className="mobile-section">
-          <div className="flex items-center justify-between mb-4 px-4">
-            <div className="flex items-center gap-3">
-              <div className="w-1 h-6 bg-gradient-to-b from-primary to-primary/60 rounded-full"></div>
-              <div className="flex-1 min-w-0">
-                <h2 className="mobile-title text-foreground truncate">
-                  {title}
-                </h2>
-              </div>
+  }) => (
+    <section className="mb-8 md:mb-12">
+      <div className="flex items-center justify-between mb-4 md:mb-6 px-3 md:px-6">
+        <div className="flex items-center gap-2">
+          <div className="w-1 h-6 bg-gradient-to-b from-primary to-primary/50 rounded-full"></div>
+          <h2 className="text-lg md:text-2xl lg:text-3xl font-bold text-foreground bg-gradient-to-r from-foreground to-foreground/80 bg-clip-text">
+            {title}
+          </h2>
+        </div>
+        <div className="flex items-center gap-2">
+          {sectionId === 'trending' && (
+            <Button
+              onClick={() => fetchMovies(true)}
+              variant="outline"
+              size="sm"
+              disabled={refreshing}
+              className="hidden md:flex"
+            >
+              <RefreshCw className={`h-4 w-4 mr-2 ${refreshing ? 'animate-spin' : ''}`} />
+              Refresh
+            </Button>
+          )}
+          {showScrollButtons && (
+            <div className="hidden md:flex gap-2">
+              <Button
+                onClick={() => scrollSection(sectionId, 'left')}
+                variant="outline"
+                size="sm"
+                className="h-8 w-8 p-0"
+              >
+                <ChevronLeft className="h-4 w-4" />
+              </Button>
+              <Button
+                onClick={() => scrollSection(sectionId, 'right')}
+                variant="outline"
+                size="sm"
+                className="h-8 w-8 p-0"
+              >
+                <ChevronRight className="h-4 w-4" />
+              </Button>
             </div>
-            
-            <div className="hidden md:flex items-center gap-2">
-              {sectionId === 'trending' && (
-                <Button
-                  onClick={() => fetchMovies(true)}
-                  variant="outline"
-                  size="sm"
-                  disabled={refreshing}
-                >
-                  <RefreshCw className={`h-4 w-4 mr-2 ${refreshing ? 'animate-spin' : ''}`} />
-                  Refresh
-                </Button>
-              )}
-              {showScrollButtons && (
-                <div className="flex gap-2">
-                  <Button
-                    onClick={() => scrollSection(sectionId, 'left')}
-                    variant="outline"
-                    size="sm"
-                    className="h-8 w-8 p-0"
-                  >
-                    <ChevronLeft className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    onClick={() => scrollSection(sectionId, 'right')}
-                    variant="outline"
-                    size="sm"
-                    className="h-8 w-8 p-0"
-                  >
-                    <ChevronRight className="h-4 w-4" />
-                  </Button>
-                </div>
-              )}
-            </div>
-          </div>
-
+          )}
+        </div>
+      </div>
+      <div 
+        id={sectionId}
+        className="flex gap-3 md:gap-4 lg:gap-6 overflow-x-auto pb-4 px-3 md:px-6 scrollbar-hide scroll-smooth"
+        style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+      >
+        {movies.map((movie, index) => (
           <div 
-            id={sectionId}
-            className="mobile-scroll-horizontal"
+            key={movie.id} 
+            className="flex-shrink-0 w-32 sm:w-36 md:w-40 lg:w-48 xl:w-52"
+            ref={sectionId === 'recommended' && index === movies.length - 1 ? lastMovieElementRef : null}
           >
-            {movies.map((movie, index) => {
-              if (!movie || !movie.id) return null;
-              
-              return (
-                <div 
-                  key={`${movie.id}-${index}`} 
-                  className="flex-shrink-0"
-                  ref={sectionId === 'recommended' && index === movies.length - 1 ? lastMovieElementRef : null}
-                >
-                  <ErrorBoundary fallback={<div className="w-48 h-72 bg-gray-800 rounded" />}>
-                    <ImprovedMovieCard 
-                      movie={movie} 
-                      priority={priority && index < 6}
-                      variant="default"
-                    />
-                  </ErrorBoundary>
-                </div>
-              );
-            })}
+            <ImprovedMovieCard 
+              movie={movie} 
+              priority={priority && index < 6}
+              variant="default"
+            />
           </div>
-        </section>
-      </ErrorBoundary>
-    );
-  };
+        ))}
+      </div>
+    </section>
+  );
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center py-16">
+      <div className="flex items-center justify-center py-16 md:py-24">
         <LoadingSpinner size="lg" text="Loading amazing content..." />
       </div>
     );
@@ -294,14 +190,14 @@ export const EnhancedMovieSection = () => {
 
   if (error) {
     return (
-      <div className="flex items-center justify-center py-16">
-        <Card className="w-full max-w-md mx-auto mobile-container">
+      <div className="flex items-center justify-center py-16 md:py-24">
+        <Card className="w-full max-w-md mx-auto">
           <CardHeader className="text-center">
-            <CardTitle className="text-destructive mobile-title">Oops! Something went wrong</CardTitle>
-            <CardDescription className="mobile-subtitle">{error}</CardDescription>
+            <CardTitle className="text-destructive">Oops! Something went wrong</CardTitle>
+            <CardDescription>{error}</CardDescription>
           </CardHeader>
           <CardContent className="text-center">
-            <Button onClick={() => fetchMovies()} variant="outline" className="touch-button">
+            <Button onClick={() => fetchMovies()} variant="outline">
               <RefreshCw className="h-4 w-4 mr-2" />
               Try Again
             </Button>
@@ -316,84 +212,48 @@ export const EnhancedMovieSection = () => {
     : 'Popular Movies';
 
   return (
-    <ErrorBoundary>
-      <div className={isMobile ? 'netflix-mobile-container' : 'content-with-bottom-nav'}>
-        {/* Netflix-style mobile layout */}
-        {isMobile ? (
-          <>
-            <NetflixMobileRow
-              title={recommendationTitle}
-              movies={recommendedMovies}
-              sectionId="recommended"
-              priority={true}
-              size="large"
-            />
+    <div className="space-y-6 md:space-y-8 lg:space-y-12">
+      {/* Email Subscription Section */}
+      <section className="px-3 md:px-6">
+        <div className="flex items-center gap-2 mb-6">
+          <div className="w-1 h-6 bg-gradient-to-b from-primary to-primary/50 rounded-full"></div>
+          <h2 className="text-lg md:text-2xl lg:text-3xl font-bold text-foreground">
+            Stay Updated
+          </h2>
+        </div>
+        <EmailSubscription />
+      </section>
 
-            <NetflixMobileRow
-              title="Trending Now"
-              movies={trendingMovies}
-              sectionId="trending"
-              priority={false}
-            />
+      {/* Personalized Recommendations */}
+      <MovieRow
+        title={recommendationTitle}
+        movies={recommendedMovies}
+        sectionId="recommended"
+        showScrollButtons={false}
+        priority={true}
+      />
 
-            <NetflixMobileRow
-              title="Popular Movies"
-              movies={popularMovies}
-              sectionId="popular"
-              priority={false}
-            />
+      {/* Trending Movies */}
+      <MovieRow
+        title="Trending Now"
+        movies={trendingMovies}
+        sectionId="trending"
+        priority={false}
+      />
 
-            {loadingMore && (
-              <div className="text-center py-6">
-                <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin mx-auto"></div>
-              </div>
-            )}
-          </>
-        ) : (
-          /* Desktop layout */
-          <>
-            <section className="mobile-section px-4">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="w-1 h-6 bg-gradient-to-b from-primary to-primary/60 rounded-full"></div>
-                <h2 className="mobile-title text-foreground">
-                  Stay Updated
-                </h2>
-              </div>
-              <ErrorBoundary>
-                <EmailSubscription />
-              </ErrorBoundary>
-            </section>
+      {/* Popular Movies */}
+      <MovieRow
+        title="Popular Movies"
+        movies={popularMovies}
+        sectionId="popular"
+        priority={false}
+      />
 
-            <DesktopMovieRow
-              title={recommendationTitle}
-              movies={recommendedMovies}
-              sectionId="recommended"
-              showScrollButtons={false}
-              priority={true}
-            />
-
-            <DesktopMovieRow
-              title="Trending Now"
-              movies={trendingMovies}
-              sectionId="trending"
-              priority={false}
-            />
-
-            <DesktopMovieRow
-              title="Popular Movies"
-              movies={popularMovies}
-              sectionId="popular"
-              priority={false}
-            />
-
-            {loadingMore && (
-              <div className="text-center py-6">
-                <LoadingSpinner size="md" text="Loading more recommendations..." />
-              </div>
-            )}
-          </>
-        )}
-      </div>
-    </ErrorBoundary>
+      {loadingMore && (
+        <div className="text-center py-6">
+          <LoadingSpinner size="md" text="Loading more recommendations..." />
+        </div>
+      )}
+    </div>
   );
 };
