@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Github, Twitter, Youtube, Instagram, Heart } from 'lucide-react';
 import { FlickPickLogo } from './FlickPickLogo';
