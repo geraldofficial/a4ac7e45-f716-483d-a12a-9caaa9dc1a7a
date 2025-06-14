@@ -15,10 +15,21 @@ export const NetflixMobileCard: React.FC<NetflixMobileCardProps> = ({
   size = 'small',
   priority = false 
 }) => {
-  const navigate = useNavigate();
   const [imageLoaded, setImageLoaded] = useState(false);
   const [imageError, setImageError] = useState(false);
   const [touchStart, setTouchStart] = useState<{ x: number; y: number } | null>(null);
+
+  // Safe navigation hook usage with error boundary
+  let navigate: ReturnType<typeof useNavigate>;
+  try {
+    navigate = useNavigate();
+  } catch (error) {
+    console.error('Navigation context not available:', error);
+    // Fallback navigation function
+    navigate = (path: string) => {
+      window.location.href = path;
+    };
+  }
 
   const title = movie.title || movie.name || 'Unknown Title';
   const releaseDate = movie.release_date || movie.first_air_date || '';
@@ -45,7 +56,12 @@ export const NetflixMobileCard: React.FC<NetflixMobileCardProps> = ({
 
     // Only trigger click if it's a tap (minimal movement)
     if (deltaX < 10 && deltaY < 10) {
-      navigate(`/${type}/${movie.id}`);
+      try {
+        navigate(`/${type}/${movie.id}`);
+      } catch (error) {
+        console.error('Navigation error:', error);
+        window.location.href = `/${type}/${movie.id}`;
+      }
     }
 
     setTouchStart(null);

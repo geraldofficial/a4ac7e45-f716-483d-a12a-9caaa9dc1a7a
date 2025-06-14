@@ -113,7 +113,7 @@ export const EnhancedMovieSection = () => {
     }
   };
 
-  // Netflix-style mobile row component
+  // Netflix-style mobile row component with error boundary
   const NetflixMobileRow = ({ 
     title, 
     movies, 
@@ -126,30 +126,51 @@ export const EnhancedMovieSection = () => {
     sectionId: string; 
     priority?: boolean;
     size?: 'small' | 'large';
-  }) => (
-    <div className="netflix-mobile-section">
-      <h2 className="netflix-mobile-title">{title}</h2>
-      <div className="netflix-mobile-row">
-        <div 
-          id={sectionId}
-          className="netflix-mobile-scroll"
-        >
-          {movies.map((movie, index) => (
+  }) => {
+    try {
+      return (
+        <div className="netflix-mobile-section">
+          <h2 className="netflix-mobile-title">{title}</h2>
+          <div className="netflix-mobile-row">
             <div 
-              key={movie.id}
-              ref={sectionId === 'recommended' && index === movies.length - 1 ? lastMovieElementRef : null}
+              id={sectionId}
+              className="netflix-mobile-scroll"
             >
-              <NetflixMobileCard 
-                movie={movie} 
-                size={size}
-                priority={priority && index < 6}
-              />
+              {movies.map((movie, index) => {
+                try {
+                  return (
+                    <div 
+                      key={movie.id}
+                      ref={sectionId === 'recommended' && index === movies.length - 1 ? lastMovieElementRef : null}
+                    >
+                      <NetflixMobileCard 
+                        movie={movie} 
+                        size={size}
+                        priority={priority && index < 6}
+                      />
+                    </div>
+                  );
+                } catch (error) {
+                  console.error('Error rendering movie card:', error, movie);
+                  return null;
+                }
+              })}
             </div>
-          ))}
+          </div>
         </div>
-      </div>
-    </div>
-  );
+      );
+    } catch (error) {
+      console.error('Error rendering NetflixMobileRow:', error);
+      return (
+        <div className="netflix-mobile-section">
+          <h2 className="netflix-mobile-title">{title}</h2>
+          <div className="p-4 text-center text-gray-500">
+            Failed to load content
+          </div>
+        </div>
+      );
+    }
+  };
 
   // Desktop row component (unchanged)
   const DesktopMovieRow = ({ 
