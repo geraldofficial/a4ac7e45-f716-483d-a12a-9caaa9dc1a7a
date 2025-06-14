@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { streamingSources, getStreamingUrl } from '@/services/streaming';
@@ -112,8 +111,8 @@ export const EnhancedVideoPlayer: React.FC<EnhancedVideoPlayerProps> = ({
               try {
                 const seasonDetails = await tmdbApi.getTVSeasonDetails(tmdbId, season);
                 const episodeInfo = seasonDetails.episodes?.find(ep => ep.episode_number === episode);
-                // Check if episode has runtime property, otherwise use default
-                if (episodeInfo && 'runtime' in episodeInfo && episodeInfo.runtime) {
+                // Check if episode has runtime property and it's a number
+                if (episodeInfo && 'runtime' in episodeInfo && typeof episodeInfo.runtime === 'number' && episodeInfo.runtime > 0) {
                   setEstimatedDuration(episodeInfo.runtime * 60);
                 } else {
                   setEstimatedDuration(45 * 60); // Default 45 minutes for TV episodes
