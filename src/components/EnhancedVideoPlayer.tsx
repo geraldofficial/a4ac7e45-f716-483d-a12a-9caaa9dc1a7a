@@ -112,7 +112,8 @@ export const EnhancedVideoPlayer: React.FC<EnhancedVideoPlayerProps> = ({
               try {
                 const seasonDetails = await tmdbApi.getTVSeasonDetails(tmdbId, season);
                 const episodeInfo = seasonDetails.episodes?.find(ep => ep.episode_number === episode);
-                if (episodeInfo?.runtime) {
+                // Check if episode has runtime property, otherwise use default
+                if (episodeInfo && 'runtime' in episodeInfo && episodeInfo.runtime) {
                   setEstimatedDuration(episodeInfo.runtime * 60);
                 } else {
                   setEstimatedDuration(45 * 60); // Default 45 minutes for TV episodes
