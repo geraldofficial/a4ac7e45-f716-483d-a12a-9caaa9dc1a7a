@@ -61,7 +61,7 @@ const TopRated = () => {
           {loading ? (
             <div className="text-center text-muted-foreground text-sm md:text-xl py-12">Loading top rated content...</div>
           ) : (
-            <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-7 gap-2 md:gap-4 lg:gap-6">
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-3 md:gap-4 lg:gap-6">
               {topRated.map((item) => (
                 <MovieCard key={`${item.id}-${item.media_type}`} movie={item} />
               ))}

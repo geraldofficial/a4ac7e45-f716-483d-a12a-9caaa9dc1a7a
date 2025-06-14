@@ -7,6 +7,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { FlickPickLogo } from './FlickPickLogo';
 import { SearchSuggestions } from './SearchSuggestions';
+import { PWAInstallButton } from './PWAInstallButton';
 import { useAuth } from '@/contexts/AuthContext';
 
 export const Navbar = () => {
@@ -105,7 +106,7 @@ export const Navbar = () => {
               </form>
               {searchQuery && (
                 <SearchSuggestions
-                  query={searchQuery}
+                  searchQuery={searchQuery}
                   onSelect={(item) => {
                     navigate(`/${item.media_type}/${item.id}`);
                     setSearchQuery('');
@@ -114,6 +115,9 @@ export const Navbar = () => {
                 />
               )}
             </div>
+
+            {/* PWA Install Button */}
+            <PWAInstallButton />
 
             {/* Mobile Search Button */}
             <Button
@@ -131,7 +135,7 @@ export const Navbar = () => {
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" className="relative h-8 w-8 rounded-full">
                     <Avatar className="h-8 w-8">
-                      <AvatarImage src={user.image || user.avatar_url} alt={user.name || user.username || 'User'} />
+                      <AvatarImage src={user.avatar || user.avatar_url || user.image} alt={user.name || user.username || 'User'} />
                       <AvatarFallback>{(user.name || user.username || 'U').charAt(0)}</AvatarFallback>
                     </Avatar>
                   </Button>
@@ -176,42 +180,16 @@ export const Navbar = () => {
           </div>
         </div>
 
-        {/* Mobile Navigation Menu */}
+        {/* Mobile Navigation Menu - Hidden since we'll use bottom nav */}
         {isMenuOpen && (
           <div className="md:hidden border-t border-border/50 py-4">
             <div className="flex flex-col space-y-4">
-              <button 
-                onClick={() => { navigate('/'); setIsMenuOpen(false); }}
-                className="text-left text-foreground hover:text-primary transition-colors font-medium"
-              >
-                Home
-              </button>
               <button 
                 onClick={() => { navigate('/browse'); setIsMenuOpen(false); }}
                 className="text-left text-foreground hover:text-primary transition-colors font-medium"
               >
                 Browse
               </button>
-              <button 
-                onClick={() => { navigate('/trending'); setIsMenuOpen(false); }}
-                className="text-left text-foreground hover:text-primary transition-colors font-medium"
-              >
-                Trending
-              </button>
-              <button 
-                onClick={() => { navigate('/top-rated'); setIsMenuOpen(false); }}
-                className="text-left text-foreground hover:text-primary transition-colors font-medium"
-              >
-                Top Rated
-              </button>
-              {user && (
-                <button 
-                  onClick={() => { navigate('/history'); setIsMenuOpen(false); }}
-                  className="text-left text-foreground hover:text-primary transition-colors font-medium"
-                >
-                  History
-                </button>
-              )}
               
               {!user && (
                 <div className="pt-2 border-t border-border/50">
@@ -257,7 +235,7 @@ export const Navbar = () => {
               </form>
               {searchQuery && (
                 <SearchSuggestions
-                  query={searchQuery}
+                  searchQuery={searchQuery}
                   onSelect={(item) => {
                     navigate(`/${item.media_type}/${item.id}`);
                     setSearchQuery('');

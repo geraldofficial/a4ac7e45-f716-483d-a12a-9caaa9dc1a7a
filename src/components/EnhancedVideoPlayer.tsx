@@ -1,0 +1,215 @@
+
+import React, { useState, useEffect, useRef } from 'react';
+import { Button } from '@/components/ui/button';
+import { streamingSources, getStreamingUrl } from '@/services/streaming';
+import { SkipForward, Volume2, VolumeX, Maximize, RotateCcw } from 'lucide-react';
+
+interface EnhancedVideoPlayerProps {
+  title: string;
+  tmdbId: number;
+  type: 'movie' | 'tv';
+  season?: number;
+  episode?: number;
+  autoFullscreen?: boolean;
+}
+
+export const EnhancedVideoPlayer: React.FC<EnhancedVideoPlayerProps> = ({
+  title,
+  tmdbId,
+  type,
+  season,
+  episode,
+  autoFullscreen = false
+}) => {
+  const [currentSourceIndex, setCurrentSourceIndex] = useState(0);
+  const [isLoading, setIsLoading] = useState(true);
+  const [hasError, setHasError] = useState(false);
+  const [isMuted, setIsMuted] = useState(false);
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const iframeRef = useRef<HTMLIFrameElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  const currentUrl = getStreamingUrl(tmdbId, type, currentSourceIndex, season, episode);
+  const currentSource = streamingSources[currentSourceIndex];
+
+  // Enhanced URL with better caching and performance parameters
+  const enhancedUrl = `${currentUrl}&cache=1&preload=auto&buffer=30&quality=auto`;
+
+  const switchSource = () => {
+    const nextIndex = (currentSourceIndex + 1) % streamingSources.length;
+    setCurrentSourceIndex(nextIndex);
+    setHasError(false);
+    setIsLoading(true);
+  };
+
+  const toggleMute = () => {
+    setIsMuted(!isMuted);
+    if (iframeRef.current) {
+      try {
+        iframeRef.current.contentWindow?.postMessage(
+          { action: isMuted ? 'unmute' : 'mute' }, 
+          '*'
+        );
+      } catch (error) {
+        console.log('Could not control iframe audio');
+      }
+    }
+  };
+
+  const toggleFullscreen = () => {
+    if (!isFullscreen) {
+      if (containerRef.current?.requestFullscreen) {
+        containerRef.current.requestFullscreen();
+      }
+    } else {
+      if (document.exitFullscreen) {
+        document.exitFullscreen();
+      }
+    }
+  };
+
+  const reloadPlayer = () => {
+    setIsLoading(true);
+    setHasError(false);
+    if (iframeRef.current) {
+      iframeRef.current.src = enhancedUrl;
+    }
+  };
+
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      setIsFullscreen(!!document.fullscreenElement);
+    };
+
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
+  }, []);
+
+  useEffect(() => {
+    if (autoFullscreen && containerRef.current && !isFullscreen) {
+      setTimeout(() => {
+        toggleFullscreen();
+      }, 1000);
+    }
+  }, [autoFullscreen]);
+
+  const handleIframeLoad = () => {
+    setIsLoading(false);
+    setHasError(false);
+  };
+
+  const handleIframeError = () => {
+    setIsLoading(false);
+    setHasError(true);
+  };
+
+  return (
+    <div ref={containerRef} className="relative w-full bg-black rounded-lg overflow-hidden">
+      {/* Video Controls Overlay */}
+      <div className="absolute top-4 left-4 right-4 z-10 flex items-center justify-between bg-black/50 backdrop-blur-sm rounded-lg p-2">
+        <div className="flex items-center gap-2">
+          <span className="text-white text-sm font-medium bg-primary px-2 py-1 rounded">
+            {currentSource.name}
+          </span>
+          <span className="text-white/80 text-xs">
+            {type === 'tv' && season && episode ? `S${season}E${episode}` : 'Movie'}
+          </span>
+        </div>
+        
+        <div className="flex items-center gap-2">
+          <Button
+            onClick={reloadPlayer}
+            size="sm"
+            variant="ghost"
+            className="text-white hover:bg-white/20"
+          >
+            <RotateCcw className="h-4 w-4" />
+          </Button>
+          
+          <Button
+            onClick={toggleMute}
+            size="sm"
+            variant="ghost"
+            className="text-white hover:bg-white/20"
+          >
+            {isMuted ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
+          </Button>
+          
+          <Button
+            onClick={toggleFullscreen}
+            size="sm"
+            variant="ghost"
+            className="text-white hover:bg-white/20"
+          >
+            <Maximize className="h-4 w-4" />
+          </Button>
+        </div>
+      </div>
+
+      {/* Loading State */}
+      {isLoading && (
+        <div className="absolute inset-0 flex items-center justify-center bg-black/80 z-20">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mb-4"></div>
+            <p className="text-white">Loading {title}...</p>
+            <p className="text-white/60 text-sm">Source: {currentSource.name}</p>
+          </div>
+        </div>
+      )}
+
+      {/* Error State */}
+      {hasError && (
+        <div className="absolute inset-0 flex items-center justify-center bg-black/80 z-20">
+          <div className="text-center max-w-md mx-auto p-6">
+            <p className="text-white mb-4">Failed to load from {currentSource.name}</p>
+            <div className="flex gap-2 justify-center">
+              <Button onClick={switchSource} variant="default">
+                <SkipForward className="h-4 w-4 mr-2" />
+                Try Next Source
+              </Button>
+              <Button onClick={reloadPlayer} variant="outline">
+                <RotateCcw className="h-4 w-4 mr-2" />
+                Retry
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Video Iframe */}
+      <iframe
+        ref={iframeRef}
+        src={enhancedUrl}
+        title={title}
+        className="w-full aspect-video"
+        style={{ minHeight: '400px' }}
+        allowFullScreen
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+        onLoad={handleIframeLoad}
+        onError={handleIframeError}
+        sandbox="allow-same-origin allow-scripts allow-forms allow-popups allow-presentation allow-top-navigation allow-downloads"
+      />
+
+      {/* Source Selector */}
+      <div className="absolute bottom-4 left-4 right-4 z-10">
+        <div className="flex gap-2 overflow-x-auto pb-2">
+          {streamingSources.map((source, index) => (
+            <Button
+              key={source.name}
+              onClick={() => setCurrentSourceIndex(index)}
+              size="sm"
+              variant={index === currentSourceIndex ? "default" : "outline"}
+              className={`flex-shrink-0 text-xs ${
+                index === currentSourceIndex 
+                  ? "bg-primary text-primary-foreground" 
+                  : "bg-black/50 text-white border-white/20 hover:bg-white/20"
+              }`}
+            >
+              {source.name}
+            </Button>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+};

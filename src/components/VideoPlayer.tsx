@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { CustomVideoPlayer } from './CustomVideoPlayer';
+import { EnhancedVideoPlayer } from './EnhancedVideoPlayer';
 
 interface VideoPlayerProps {
   title: string;
@@ -12,5 +12,5 @@ interface VideoPlayerProps {
 }
 
 export const VideoPlayer: React.FC<VideoPlayerProps> = (props) => {
-  return <CustomVideoPlayer {...props} />;
+  return <EnhancedVideoPlayer {...props} />;
 };
