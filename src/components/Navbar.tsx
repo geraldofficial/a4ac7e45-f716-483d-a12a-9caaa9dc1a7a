@@ -106,7 +106,7 @@ export const Navbar = () => {
               </form>
               {searchQuery && (
                 <SearchSuggestions
-                  searchQuery={searchQuery}
+                  query={searchQuery}
                   onSelect={(item) => {
                     navigate(`/${item.media_type}/${item.id}`);
                     setSearchQuery('');
@@ -235,7 +235,7 @@ export const Navbar = () => {
               </form>
               {searchQuery && (
                 <SearchSuggestions
-                  searchQuery={searchQuery}
+                  query={searchQuery}
                   onSelect={(item) => {
                     navigate(`/${item.media_type}/${item.id}`);
                     setSearchQuery('');
