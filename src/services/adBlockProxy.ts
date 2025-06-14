@@ -19,8 +19,8 @@ export const createAdFreeStreamUrl = async (originalUrl: string, userId?: string
       return originalUrl;
     }
 
-    // Create proxied URL for ad-free experience
-    const proxyUrl = `${supabase.supabaseUrl}/functions/v1/stream-proxy?url=${encodeURIComponent(originalUrl)}&user_id=${userId}`;
+    // Create proxied URL for ad-free experience using the actual Supabase URL
+    const proxyUrl = `https://ehqlkafauehdpqzrdkia.supabase.co/functions/v1/stream-proxy?url=${encodeURIComponent(originalUrl)}&user_id=${userId}`;
     
     console.log('Created ad-free stream URL for subscribed user');
     return proxyUrl;
