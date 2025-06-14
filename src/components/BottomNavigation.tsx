@@ -17,7 +17,7 @@ export const BottomNavigation = () => {
   const isActive = (path: string) => location.pathname === path;
 
   return (
-    <nav className="mobile-nav hide-on-mobile">
+    <nav className="mobile-nav md:hidden">
       <div className="flex items-center justify-around">
         {navItems.map((item) => {
           const Icon = item.icon;

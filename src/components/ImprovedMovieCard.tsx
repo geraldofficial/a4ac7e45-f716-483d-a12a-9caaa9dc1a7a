@@ -27,6 +27,7 @@ export const ImprovedMovieCard: React.FC<ImprovedMovieCardProps> = ({
   const navigate = useNavigate();
   const [imageLoaded, setImageLoaded] = useState(false);
   const [imageError, setImageError] = useState(false);
+  const [isHovered, setIsHovered] = useState(false);
 
   const title = movie.title || movie.name || 'Unknown Title';
   const releaseDate = movie.release_date || movie.first_air_date || '';
@@ -120,32 +121,18 @@ export const ImprovedMovieCard: React.FC<ImprovedMovieCardProps> = ({
     return 'text-red-400 bg-red-400/20';
   };
 
-  const getVariantClasses = () => {
-    switch (variant) {
-      case 'compact':
-        return 'mobile-movie-card-compact';
-      case 'featured':
-        return 'w-full max-w-lg';
-      default:
-        return 'mobile-movie-card';
-    }
-  };
-
-  const getAspectRatio = () => {
-    return variant === 'featured' ? 'aspect-[16/9]' : 'aspect-[2/3]';
-  };
-
   return (
     <div 
       className={cn(
-        "mobile-card cursor-pointer relative overflow-hidden",
-        // Only apply hover effects on desktop
-        "md:transition-all md:duration-300 md:hover:scale-[1.02] md:hover:shadow-2xl md:hover:border-primary/30",
-        getVariantClasses()
+        "group relative overflow-hidden rounded-xl bg-card border border-border/50 cursor-pointer transition-all duration-300 w-full max-w-sm mx-auto",
+        // Desktop hover effects
+        "hover:scale-105 hover:shadow-2xl hover:border-primary/50 hover:z-10"
       )}
       onClick={handleMoreInfo}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
     >
-      <div className={cn("overflow-hidden relative bg-muted/20", getAspectRatio())}>
+      <div className="aspect-[2/3] overflow-hidden relative bg-muted/20">
         {/* Loading state */}
         {!imageLoaded && !imageError && (
           <div className="absolute inset-0 bg-muted/30 animate-pulse flex items-center justify-center">
@@ -159,10 +146,9 @@ export const ImprovedMovieCard: React.FC<ImprovedMovieCardProps> = ({
             src={posterUrl}
             alt={title}
             className={cn(
-              "h-full w-full object-cover",
+              "h-full w-full object-cover transition-all duration-500",
               imageLoaded ? 'opacity-100' : 'opacity-0',
-              // Only apply scaling on desktop
-              "md:transition-all md:duration-500 md:group-hover:scale-110"
+              "group-hover:scale-110"
             )}
             onLoad={() => setImageLoaded(true)}
             onError={() => setImageError(true)}
@@ -180,81 +166,113 @@ export const ImprovedMovieCard: React.FC<ImprovedMovieCardProps> = ({
           />
         )}
 
-        {/* Mobile-optimized overlay */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/50 to-transparent" />
-
-        {/* Rating badge - mobile optimized */}
-        <div className="absolute top-2 left-2 z-10">
-          <Badge className={cn(
-            "px-2 py-1 text-xs font-bold border-0 backdrop-blur-sm",
-            getRatingColor(movie.vote_average)
-          )}>
-            <Star className="h-3 w-3 mr-1 fill-current" />
-            {movie.vote_average.toFixed(1)}
-          </Badge>
-        </div>
-
-        {/* Type badge */}
-        <div className="absolute top-2 right-2 z-10">
-          <Badge variant="secondary" className="bg-black/60 text-white backdrop-blur-sm border-0 text-xs">
-            {type === 'tv' ? 'TV' : 'Movie'}
-          </Badge>
-        </div>
-
-        {/* Mobile-optimized action buttons */}
-        <div className="absolute bottom-0 left-0 right-0 z-10 p-3 space-y-3">
-          {/* Quick info */}
-          <div className="flex items-center justify-between text-white text-xs">
-            <span className="font-medium truncate flex-1 mr-2">{title}</span>
-            {year && (
-              <span className="bg-white/20 px-2 py-1 rounded-full text-xs backdrop-blur-sm">
-                {year}
-              </span>
-            )}
+        {/* Desktop overlay with enhanced design */}
+        <div className={cn(
+          "absolute inset-0 bg-gradient-to-t from-black/95 via-black/30 to-transparent transition-opacity duration-300",
+          "opacity-0 group-hover:opacity-100"
+        )}>
+          {/* Rating badge */}
+          <div className="absolute top-3 left-3">
+            <Badge className={cn(
+              "px-2 py-1 text-xs font-bold border-0 backdrop-blur-sm",
+              getRatingColor(movie.vote_average)
+            )}>
+              <Star className="h-3 w-3 mr-1 fill-current" />
+              {movie.vote_average.toFixed(1)}
+            </Badge>
           </div>
-          
-          {/* Action buttons - mobile optimized */}
-          <div className="flex gap-2">
-            <Button 
-              size="sm" 
-              className="touch-button-small bg-primary hover:bg-primary/90 text-primary-foreground font-semibold flex-1 active:scale-95"
-              onClick={handleWatch}
-            >
-              <Play className="h-4 w-4 mr-1 fill-current" />
-              <span className="text-sm">Play</span>
-            </Button>
+
+          {/* Type badge */}
+          <div className="absolute top-3 right-3">
+            <Badge variant="secondary" className="bg-primary/20 text-primary-foreground backdrop-blur-sm border-0 text-xs font-semibold">
+              {type === 'tv' ? 'TV Series' : 'Movie'}
+            </Badge>
+          </div>
+
+          {/* Content info */}
+          <div className="absolute bottom-0 left-0 right-0 p-4 space-y-3">
+            <div className="space-y-2">
+              <h3 className="text-white font-bold text-lg leading-tight line-clamp-2">
+                {title}
+              </h3>
+              <div className="flex items-center gap-2 text-sm">
+                {year && (
+                  <span className="text-gray-300 bg-white/10 px-2 py-1 rounded-full text-xs">
+                    {year}
+                  </span>
+                )}
+                {movie.vote_count > 0 && (
+                  <span className="text-gray-300 text-xs">
+                    {movie.vote_count.toLocaleString()} votes
+                  </span>
+                )}
+              </div>
+              {movie.overview && (
+                <p className="text-gray-300 text-sm line-clamp-3 leading-relaxed">
+                  {movie.overview}
+                </p>
+              )}
+            </div>
             
-            <Button 
-              size="sm" 
-              variant="outline"
-              className="touch-button-small border-white/30 bg-white/10 backdrop-blur-sm text-white hover:bg-white/20 active:scale-95"
-              onClick={(e) => {
-                e.stopPropagation();
-                handleMoreInfo();
-              }}
-            >
-              <Info className="h-4 w-4" />
-            </Button>
-            
-            {user && (
+            {/* Action buttons */}
+            <div className="flex gap-2">
               <Button 
                 size="sm" 
-                variant="outline" 
-                className="touch-button-small border-white/30 bg-white/10 backdrop-blur-sm text-white hover:bg-white/20 active:scale-95"
-                onClick={handleWatchlistToggle}
+                className="bg-primary hover:bg-primary/90 text-primary-foreground font-semibold flex-1 h-9"
+                onClick={handleWatch}
               >
-                {isInWatchlist(movie.id) ? <Check className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
+                <Play className="h-4 w-4 mr-2 fill-current" />
+                Watch Now
               </Button>
-            )}
+              
+              <Button 
+                size="sm" 
+                variant="outline"
+                className="border-white/30 bg-white/10 backdrop-blur-sm text-white hover:bg-white/20 h-9 px-3"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleMoreInfo();
+                }}
+              >
+                <Info className="h-4 w-4" />
+              </Button>
+              
+              {user && (
+                <Button 
+                  size="sm" 
+                  variant="outline" 
+                  className="border-white/30 bg-white/10 backdrop-blur-sm text-white hover:bg-white/20 h-9 px-3"
+                  onClick={handleWatchlistToggle}
+                >
+                  {isInWatchlist(movie.id) ? <Check className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
+                </Button>
+              )}
 
-            <Button 
-              size="sm" 
-              variant="outline"
-              className="touch-button-small border-white/30 bg-white/10 backdrop-blur-sm text-white hover:bg-white/20 active:scale-95"
-              onClick={handleShare}
-            >
-              <Share2 className="h-4 w-4" />
-            </Button>
+              <Button 
+                size="sm" 
+                variant="outline"
+                className="border-white/30 bg-white/10 backdrop-blur-sm text-white hover:bg-white/20 h-9 px-3"
+                onClick={handleShare}
+              >
+                <Share2 className="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      {/* Bottom info section - always visible */}
+      <div className="p-4 bg-gradient-to-b from-card to-card/90 border-t border-border/20">
+        <h3 className="text-foreground font-semibold text-sm leading-tight mb-1 line-clamp-1 group-hover:text-primary transition-colors">
+          {title}
+        </h3>
+        <div className="flex items-center justify-between">
+          {year && (
+            <span className="text-muted-foreground text-xs">{year}</span>
+          )}
+          <div className="flex items-center gap-1">
+            <Star className="h-3 w-3 text-yellow-400 fill-current" />
+            <span className="text-muted-foreground text-xs">{movie.vote_average.toFixed(1)}</span>
           </div>
         </div>
       </div>
