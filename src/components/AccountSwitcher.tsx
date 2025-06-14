@@ -11,7 +11,14 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Users, Plus, Baby, User, Shield } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
-import { SubAccount } from '@/types/user';
+
+interface SubAccount {
+  id: string;
+  name: string;
+  avatar: string;
+  type: 'adult' | 'teen' | 'kids';
+  isActive: boolean;
+}
 
 export const AccountSwitcher = () => {
   const { user, updateProfile } = useAuth();
@@ -20,8 +27,7 @@ export const AccountSwitcher = () => {
   const [newAccountName, setNewAccountName] = useState('');
   const [newAccountType, setNewAccountType] = useState<'adult' | 'teen' | 'kids'>('adult');
   
-  // Get sub-accounts from user profile or default to empty array
-  const userSubAccounts = (user as any)?.sub_accounts || [];
+  const userSubAccounts = user?.sub_accounts || [];
   const subAccounts: SubAccount[] = Array.isArray(userSubAccounts) ? userSubAccounts : [];
   
   const activeAccount = subAccounts.find(acc => acc.isActive) || {
@@ -55,7 +61,7 @@ export const AccountSwitcher = () => {
       await updateProfile({ 
         sub_accounts: updatedSubAccounts,
         active_account_type: newAccountType
-      } as any);
+      });
       
       setNewAccountName('');
       setNewAccountType('adult');
@@ -86,7 +92,7 @@ export const AccountSwitcher = () => {
       await updateProfile({ 
         sub_accounts: updatedSubAccounts,
         active_account_type: accountType
-      } as any);
+      });
       
       const accountName = accountId === 'main' ? 'Main Profile' : updatedSubAccounts.find(acc => acc.id === accountId)?.name;
       
@@ -95,7 +101,6 @@ export const AccountSwitcher = () => {
         description: `Switched to ${accountName}`,
       });
       
-      // Refresh the page to apply content filtering
       window.location.reload();
     } catch (error) {
       toast({
@@ -149,7 +154,6 @@ export const AccountSwitcher = () => {
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent className="w-64 bg-background border" align="end">
-        {/* Main Account */}
         <DropdownMenuItem 
           onClick={() => handleSwitchAccount('main')}
           className={`flex items-center gap-3 p-3 ${activeAccount.id === 'main' ? 'bg-accent' : ''}`}
@@ -167,7 +171,6 @@ export const AccountSwitcher = () => {
           </div>
         </DropdownMenuItem>
 
-        {/* Sub Accounts */}
         {subAccounts.map((account) => (
           <DropdownMenuItem 
             key={account.id}
@@ -189,7 +192,6 @@ export const AccountSwitcher = () => {
 
         <DropdownMenuSeparator />
 
-        {/* Add New Profile */}
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
             <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
