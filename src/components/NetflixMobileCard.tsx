@@ -19,14 +19,7 @@ export const NetflixMobileCard: React.FC<NetflixMobileCardProps> = ({
   const [imageError, setImageError] = useState(false);
   const [touchStart, setTouchStart] = useState<{ x: number; y: number } | null>(null);
 
-  // Safe navigation hook usage
-  let navigate;
-  try {
-    navigate = useNavigate();
-  } catch (error) {
-    console.error('Navigation context not available:', error);
-    navigate = null;
-  }
+  const navigate = useNavigate();
 
   const title = movie.title || movie.name || 'Unknown Title';
   const releaseDate = movie.release_date || movie.first_air_date || '';
@@ -53,19 +46,20 @@ export const NetflixMobileCard: React.FC<NetflixMobileCardProps> = ({
 
     // Only trigger click if it's a tap (minimal movement)
     if (deltaX < 10 && deltaY < 10) {
-      try {
-        if (navigate) {
-          navigate(`/${type}/${movie.id}`);
-        } else {
-          window.location.href = `/${type}/${movie.id}`;
-        }
-      } catch (error) {
-        console.error('Navigation error:', error);
-        window.location.href = `/${type}/${movie.id}`;
-      }
+      handleNavigation();
     }
 
     setTouchStart(null);
+  };
+
+  const handleNavigation = () => {
+    try {
+      navigate(`/${type}/${movie.id}`);
+    } catch (error) {
+      console.error('Navigation error:', error);
+      // Fallback to direct navigation
+      window.location.href = `/${type}/${movie.id}`;
+    }
   };
 
   const cardClasses = size === 'large' 
@@ -77,6 +71,7 @@ export const NetflixMobileCard: React.FC<NetflixMobileCardProps> = ({
       className={cardClasses}
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
+      onClick={handleNavigation}
       style={{ touchAction: 'manipulation' }}
     >
       <div className="relative">

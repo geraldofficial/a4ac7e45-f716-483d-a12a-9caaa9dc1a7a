@@ -13,6 +13,7 @@ import { EnhancedMovieSection } from '@/components/EnhancedMovieSection';
 import { OfflineBanner } from '@/components/OfflineBanner';
 import { useAuth } from '@/contexts/AuthContext';
 import { useQueryClient } from '@tanstack/react-query';
+import { ErrorBoundary } from '@/components/ErrorBoundary';
 
 const Index = () => {
   const { user, loading } = useAuth();
@@ -34,7 +35,11 @@ const Index = () => {
     if (loading) return;
     
     if (user && !user.onboarding_completed) {
-      navigate('/onboarding');
+      try {
+        navigate('/onboarding');
+      } catch (error) {
+        console.error('Navigation error:', error);
+      }
     }
   }, [user, loading, navigate]);
 
@@ -96,23 +101,56 @@ const Index = () => {
         </script>
       </Helmet>
       
-      <div className="min-h-screen bg-background dark overflow-x-hidden">
-        <Navbar />
-        <main className="relative safe-area-top pt-14 md:pt-16">
-          {/* Use Netflix mobile hero on mobile, regular hero on desktop */}
-          {isMobile ? <NetflixMobileHero /> : <HeroSection />}
+      <ErrorBoundary>
+        <div className="min-h-screen bg-background dark overflow-x-hidden">
+          <ErrorBoundary>
+            <Navbar />
+          </ErrorBoundary>
           
-          {/* Hide continue watching and recently watched on mobile to match Netflix */}
-          {!isMobile && user && <ContinueWatching />}
-          {!isMobile && user && <RecentlyWatched />}
+          <main className="relative safe-area-top pt-14 md:pt-16">
+            {/* Use Netflix mobile hero on mobile, regular hero on desktop */}
+            <ErrorBoundary fallback={
+              <div className="h-[50vh] bg-gradient-to-r from-purple-900 to-blue-900 flex items-center justify-center">
+                <p className="text-white text-xl">Hero content unavailable</p>
+              </div>
+            }>
+              {isMobile ? <NetflixMobileHero /> : <HeroSection />}
+            </ErrorBoundary>
+            
+            {/* Hide continue watching and recently watched on mobile to match Netflix */}
+            {!isMobile && user && (
+              <ErrorBoundary>
+                <ContinueWatching />
+              </ErrorBoundary>
+            )}
+            
+            {!isMobile && user && (
+              <ErrorBoundary>
+                <RecentlyWatched />
+              </ErrorBoundary>
+            )}
+            
+            <ErrorBoundary fallback={
+              <div className="p-8 text-center">
+                <p className="text-muted-foreground">Content sections unavailable</p>
+              </div>
+            }>
+              <EnhancedMovieSection />
+            </ErrorBoundary>
+          </main>
           
-          <EnhancedMovieSection />
-        </main>
-        
-        {/* Hide footer on mobile */}
-        {!isMobile && <Footer />}
-        <BottomNavigation />
-      </div>
+          {/* Hide footer on mobile */}
+          {!isMobile && (
+            <ErrorBoundary>
+              <Footer />
+            </ErrorBoundary>
+          )}
+          
+          <ErrorBoundary>
+            <BottomNavigation />
+          </ErrorBoundary>
+        </div>
+      </ErrorBoundary>
     </>
   );
 };
