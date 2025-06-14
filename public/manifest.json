@@ -2,13 +2,37 @@
 {
   "name": "FlickPick - Stream Movies & TV Shows",
   "short_name": "FlickPick",
-  "description": "Stream unlimited movies and TV series with FlickPick - Your ultimate entertainment destination",
+  "description": "Stream unlimited movies and TV series with FlickPick - Your ultimate entertainment destination with offline capabilities",
   "theme_color": "#7c3aed",
   "background_color": "#000000",
   "display": "standalone",
-  "orientation": "portrait",
+  "orientation": "portrait-primary",
   "scope": "/",
   "start_url": "/",
+  "prefer_related_applications": false,
+  "shortcuts": [
+    {
+      "name": "Search Movies",
+      "short_name": "Search",
+      "description": "Search for movies and TV shows",
+      "url": "/search",
+      "icons": [{ "src": "/placeholder.svg", "sizes": "96x96" }]
+    },
+    {
+      "name": "My Watchlist",
+      "short_name": "Watchlist", 
+      "description": "View your saved movies and shows",
+      "url": "/watchlist",
+      "icons": [{ "src": "/placeholder.svg", "sizes": "96x96" }]
+    },
+    {
+      "name": "Browse Movies",
+      "short_name": "Browse",
+      "description": "Browse popular movies and TV shows",
+      "url": "/browse",
+      "icons": [{ "src": "/placeholder.svg", "sizes": "96x96" }]
+    }
+  ],
   "icons": [
     {
       "src": "/favicon.ico",
@@ -34,13 +58,22 @@
       "src": "/placeholder.svg",
       "sizes": "1280x720",
       "type": "image/svg+xml",
-      "form_factor": "wide"
+      "form_factor": "wide",
+      "label": "FlickPick desktop experience"
     },
     {
       "src": "/placeholder.svg", 
       "sizes": "750x1334",
       "type": "image/svg+xml",
-      "form_factor": "narrow"
+      "form_factor": "narrow",
+      "label": "FlickPick mobile experience"
+    }
+  ],
+  "related_applications": [],
+  "protocol_handlers": [
+    {
+      "protocol": "web+flickpick",
+      "url": "/?action=%s"
     }
   ]
 }

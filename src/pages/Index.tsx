@@ -1,3 +1,4 @@
+
 import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
@@ -10,6 +11,7 @@ import { PullToRefresh } from '@/components/PullToRefresh';
 import { Footer } from '@/components/Footer';
 import { BottomNavigation } from '@/components/BottomNavigation';
 import { EnhancedMovieSection } from '@/components/EnhancedMovieSection';
+import { OfflineBanner } from '@/components/OfflineBanner';
 import { useAuth } from '@/contexts/AuthContext';
 import { useQueryClient } from '@tanstack/react-query';
 
