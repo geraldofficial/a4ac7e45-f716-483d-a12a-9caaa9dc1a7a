@@ -1,12 +1,12 @@
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { tmdbApi } from '@/services/tmdb';
-import { Search } from 'lucide-react';
+import { tmdbApi, Movie } from '@/services/tmdb';
+import { LoadingSpinner } from './LoadingSpinner';
 
 interface SearchSuggestionsProps {
   query: string;
-  onSelect: (item: any) => void;
+  onSelect: (item: Movie) => void;
   onClose: () => void;
   isMobile?: boolean;
 }
@@ -17,51 +17,58 @@ export const SearchSuggestions: React.FC<SearchSuggestionsProps> = ({
   onClose,
   isMobile = false
 }) => {
-  const { data: results, isLoading } = useQuery({
-    queryKey: ['search', query],
-    queryFn: () => tmdbApi.searchMulti(query),
-    enabled: query.length > 2,
-    staleTime: 2 * 60 * 1000,
+  const [debouncedQuery, setDebouncedQuery] = useState(query);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedQuery(query);
+    }, 300);
+
+    return () => clearTimeout(timer);
+  }, [query]);
+
+  const { data: suggestions, isLoading } = useQuery({
+    queryKey: ['search-suggestions', debouncedQuery],
+    queryFn: () => tmdbApi.searchMulti(debouncedQuery),
+    enabled: debouncedQuery.length > 2,
+    staleTime: 5 * 60 * 1000,
   });
 
-  if (query.length <= 2) return null;
+  if (!debouncedQuery || debouncedQuery.length <= 2) return null;
 
   return (
-    <div className={`absolute z-50 w-full bg-background/95 backdrop-blur-3xl border border-border/50 rounded-xl shadow-2xl mt-2 max-h-96 overflow-y-auto ${isMobile ? 'mt-4' : ''}`}>
+    <div className={`absolute top-full left-0 right-0 bg-background/95 backdrop-blur-3xl border border-border/50 rounded-xl mt-2 shadow-lg z-50 max-h-96 overflow-y-auto ${isMobile ? 'mt-4' : ''}`}>
       {isLoading ? (
-        <div className="p-4 text-center text-muted-foreground">
-          <div className="flex items-center justify-center space-x-2">
-            <div className="animate-spin h-4 w-4 border-2 border-primary/20 border-t-primary rounded-full"></div>
-            <span>Searching...</span>
-          </div>
+        <div className="p-4 flex justify-center">
+          <LoadingSpinner />
         </div>
-      ) : results && results.length > 0 ? (
+      ) : suggestions && suggestions.length > 0 ? (
         <div className="py-2">
-          {results.slice(0, 8).map((item) => (
+          {suggestions.slice(0, 8).map((item) => (
             <button
               key={`${item.id}-${item.media_type}`}
               onClick={() => onSelect(item)}
-              className="w-full px-4 py-3 text-left hover:bg-muted/50 transition-colors flex items-center space-x-3"
+              className="w-full px-4 py-3 text-left hover:bg-accent/50 transition-colors flex items-center space-x-3"
             >
-              <div className="flex-shrink-0">
-                {item.poster_path ? (
+              <div className="flex-shrink-0 w-12 h-16 bg-muted rounded overflow-hidden">
+                {item.poster_path && (
                   <img
                     src={`https://image.tmdb.org/t/p/w92${item.poster_path}`}
                     alt={item.title || item.name}
-                    className="w-10 h-15 object-cover rounded"
+                    className="w-full h-full object-cover"
                   />
-                ) : (
-                  <div className="w-10 h-15 bg-muted rounded flex items-center justify-center">
-                    <Search className="h-4 w-4 text-muted-foreground" />
-                  </div>
                 )}
               </div>
               <div className="flex-1 min-w-0">
                 <p className="font-medium text-foreground truncate">
                   {item.title || item.name}
                 </p>
-                <p className="text-sm text-muted-foreground capitalize">
-                  {item.media_type} {item.release_date && `• ${new Date(item.release_date).getFullYear()}`}
+                <p className="text-sm text-muted-foreground">
+                  {item.media_type === 'movie' ? 'Movie' : 'TV Show'}
+                  {item.release_date || item.first_air_date ? 
+                    ` • ${(item.release_date || item.first_air_date)?.split('-')[0]}` : 
+                    ''
+                  }
                 </p>
               </div>
             </button>
@@ -69,7 +76,7 @@ export const SearchSuggestions: React.FC<SearchSuggestionsProps> = ({
         </div>
       ) : (
         <div className="p-4 text-center text-muted-foreground">
-          No results found for "{query}"
+          No results found for "{debouncedQuery}"
         </div>
       )}
     </div>
