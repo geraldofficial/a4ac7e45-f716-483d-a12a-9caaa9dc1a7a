@@ -58,181 +58,316 @@
   }
 }
 
-/* Mobile-first design system */
-.mobile-container {
-  padding: 1rem;
-  max-width: 100vw;
-}
-
-.mobile-section {
-  margin-bottom: 2rem;
-}
-
-.mobile-title {
-  font-size: 1.5rem;
-  font-weight: 700;
-  line-height: 1.2;
-  margin-bottom: 0.75rem;
-}
-
-.mobile-subtitle {
-  font-size: 0.875rem;
-  color: hsl(var(--muted-foreground));
-  margin-bottom: 1rem;
-}
-
-/* Touch-friendly components */
-.touch-button {
-  min-height: 48px;
-  min-width: 48px;
-  padding: 12px 16px;
-  border-radius: 12px;
-  font-weight: 600;
-  font-size: 16px;
-  touch-action: manipulation;
-  -webkit-tap-highlight-color: transparent;
-  user-select: none;
-}
-
-.touch-button-small {
-  min-height: 44px;
-  min-width: 44px;
-  padding: 10px 14px;
-  border-radius: 10px;
-  font-weight: 600;
-  font-size: 14px;
-  touch-action: manipulation;
-  -webkit-tap-highlight-color: transparent;
-  user-select: none;
-}
-
-/* Enhanced mobile card design */
-.mobile-card {
-  background: hsl(var(--card));
-  border: 1px solid hsl(var(--border));
-  border-radius: 16px;
-  overflow: hidden;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-}
-
-/* Mobile-optimized movie cards */
-.mobile-movie-card {
-  width: 160px;
-  min-width: 160px;
-  background: hsl(var(--card));
-  border: 1px solid hsl(var(--border));
-  border-radius: 16px;
-  overflow: hidden;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-}
-
-.mobile-movie-card-compact {
-  width: 140px;
-  min-width: 140px;
-}
-
-/* Mobile navigation enhancement */
-.mobile-nav {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  background: hsl(var(--background) / 0.98);
-  backdrop-filter: blur(20px);
-  border-top: 1px solid hsl(var(--border));
-  padding: 8px 16px calc(8px + env(safe-area-inset-bottom));
-  z-index: 1000;
-}
-
-.mobile-nav-item {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 12px 8px;
-  border-radius: 12px;
-  min-height: 64px;
-  min-width: 64px;
-  touch-action: manipulation;
-  -webkit-tap-highlight-color: transparent;
-  transition: all 0.2s ease;
-}
-
-/* Mobile scroll containers */
-.mobile-scroll-horizontal {
-  display: flex;
-  overflow-x: auto;
-  overflow-y: hidden;
-  -webkit-overflow-scrolling: touch;
-  scroll-snap-type: x proximity;
-  scrollbar-width: none;
-  -ms-overflow-style: none;
-  gap: 12px;
-  padding: 0 16px 16px;
-}
-
-.mobile-scroll-horizontal::-webkit-scrollbar {
-  display: none;
-}
-
-.mobile-scroll-horizontal > * {
-  scroll-snap-align: start;
-  flex-shrink: 0;
-}
-
-/* Safe area handling */
-.safe-area-top {
-  padding-top: env(safe-area-inset-top);
-}
-
-.safe-area-bottom {
-  padding-bottom: env(safe-area-inset-bottom);
-}
-
-.content-with-bottom-nav {
-  padding-bottom: calc(88px + env(safe-area-inset-bottom));
-}
-
-/* Mobile-specific responsive breakpoints */
-@media (max-width: 640px) {
-  .mobile-container {
-    padding: 0.75rem;
+/* Netflix-style mobile components */
+@media (max-width: 768px) {
+  .netflix-mobile-container {
+    padding: 0;
+    max-width: 100vw;
+    overflow-x: hidden;
   }
-  
-  .mobile-section {
-    margin-bottom: 1.5rem;
+
+  .netflix-mobile-section {
+    margin-bottom: 24px;
+    padding: 0 16px;
   }
-  
-  .mobile-title {
-    font-size: 1.25rem;
+
+  .netflix-mobile-title {
+    font-size: 20px;
+    font-weight: 700;
+    color: white;
+    margin-bottom: 12px;
+    letter-spacing: -0.02em;
   }
-  
-  .mobile-movie-card {
+
+  .netflix-mobile-hero {
+    height: 60vh;
+    background: linear-gradient(to bottom, rgba(0,0,0,0.3), rgba(0,0,0,0.8));
+    position: relative;
+    display: flex;
+    align-items: flex-end;
+    margin-bottom: 24px;
+  }
+
+  .netflix-mobile-hero-content {
+    padding: 24px 16px 32px;
+    color: white;
+    z-index: 10;
+  }
+
+  .netflix-mobile-hero-title {
+    font-size: 32px;
+    font-weight: 700;
+    line-height: 1.1;
+    margin-bottom: 8px;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+  }
+
+  .netflix-mobile-hero-meta {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+    font-size: 14px;
+  }
+
+  .netflix-mobile-hero-buttons {
+    display: flex;
+    gap: 12px;
+  }
+
+  .netflix-mobile-play-btn {
+    background: white;
+    color: black;
+    font-weight: 600;
+    border-radius: 4px;
+    padding: 12px 24px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 16px;
+    min-height: 48px;
+    touch-action: manipulation;
+  }
+
+  .netflix-mobile-info-btn {
+    background: rgba(109, 109, 110, 0.7);
+    color: white;
+    font-weight: 600;
+    border-radius: 4px;
+    padding: 12px 20px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 16px;
+    min-height: 48px;
+    touch-action: manipulation;
+  }
+
+  .netflix-mobile-row {
+    padding-left: 16px;
+  }
+
+  .netflix-mobile-scroll {
+    display: flex;
+    overflow-x: auto;
+    gap: 8px;
+    padding-bottom: 16px;
+    scroll-snap-type: x proximity;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+
+  .netflix-mobile-scroll::-webkit-scrollbar {
+    display: none;
+  }
+
+  .netflix-mobile-card {
+    width: 120px;
+    min-width: 120px;
+    scroll-snap-align: start;
+    position: relative;
+    border-radius: 6px;
+    overflow: hidden;
+    background: #181818;
+  }
+
+  .netflix-mobile-card-large {
     width: 140px;
     min-width: 140px;
   }
+
+  .netflix-mobile-card-image {
+    width: 100%;
+    aspect-ratio: 2/3;
+    object-fit: cover;
+    display: block;
+  }
+
+  .netflix-mobile-card-overlay {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: linear-gradient(transparent, rgba(0,0,0,0.9));
+    padding: 8px;
+    color: white;
+  }
+
+  .netflix-mobile-card-title {
+    font-size: 12px;
+    font-weight: 600;
+    line-height: 1.2;
+    margin-bottom: 4px;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .netflix-mobile-card-meta {
+    font-size: 10px;
+    color: rgba(255,255,255,0.7);
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  /* Hide desktop elements on mobile */
+  .hide-on-mobile {
+    display: none !important;
+  }
+
+  /* Remove bottom navigation on mobile */
+  .mobile-nav {
+    display: none !important;
+  }
+
+  /* Ensure no overflow */
+  body {
+    overflow-x: hidden;
+  }
   
-  .mobile-movie-card-compact {
-    width: 120px;
-    min-width: 120px;
+  * {
+    box-sizing: border-box;
+  }
+
+  /* Disable problematic transforms on mobile */
+  .no-mobile-transform {
+    transform: none !important;
+    transition: none !important;
+  }
+
+  /* Mobile-safe touch targets */
+  .mobile-touch-target {
+    min-height: 44px;
+    min-width: 44px;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
   }
 }
 
-/* Tablet and larger screen optimizations */
-@media (min-width: 641px) {
-  .mobile-movie-card {
-    width: 180px;
-    min-width: 180px;
+/* Desktop styles preserved */
+@media (min-width: 769px) {
+  .mobile-container {
+    padding: 1rem;
+    max-width: 100vw;
   }
-  
-  .mobile-movie-card-compact {
+
+  .mobile-section {
+    margin-bottom: 2rem;
+  }
+
+  .mobile-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    line-height: 1.2;
+    margin-bottom: 0.75rem;
+  }
+
+  .mobile-subtitle {
+    font-size: 0.875rem;
+    color: hsl(var(--muted-foreground));
+    margin-bottom: 1rem;
+  }
+
+  .touch-button {
+    min-height: 48px;
+    min-width: 48px;
+    padding: 12px 16px;
+    border-radius: 12px;
+    font-weight: 600;
+    font-size: 16px;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+    user-select: none;
+  }
+
+  .touch-button-small {
+    min-height: 44px;
+    min-width: 44px;
+    padding: 10px 14px;
+    border-radius: 10px;
+    font-weight: 600;
+    font-size: 14px;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+    user-select: none;
+  }
+
+  .mobile-card {
+    background: hsl(var(--card));
+    border: 1px solid hsl(var(--border));
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
+
+  .mobile-movie-card {
     width: 160px;
     min-width: 160px;
+    background: hsl(var(--card));
+    border: 1px solid hsl(var(--border));
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   }
-}
 
-/* Desktop hover effects - only on larger screens */
-@media (min-width: 769px) {
+  .mobile-movie-card-compact {
+    width: 140px;
+    min-width: 140px;
+  }
+
+  .mobile-nav {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: hsl(var(--background) / 0.98);
+    backdrop-filter: blur(20px);
+    border-top: 1px solid hsl(var(--border));
+    padding: 8px 16px calc(8px + env(safe-area-inset-bottom));
+    z-index: 1000;
+  }
+
+  .mobile-nav-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 12px 8px;
+    border-radius: 12px;
+    min-height: 64px;
+    min-width: 64px;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+    transition: all 0.2s ease;
+  }
+
+  .mobile-scroll-horizontal {
+    display: flex;
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+    scroll-snap-type: x proximity;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    gap: 12px;
+    padding: 0 16px 16px;
+  }
+
+  .mobile-scroll-horizontal::-webkit-scrollbar {
+    display: none;
+  }
+
+  .mobile-scroll-horizontal > * {
+    scroll-snap-align: start;
+    flex-shrink: 0;
+  }
+
+  .content-with-bottom-nav {
+    padding-bottom: calc(88px + env(safe-area-inset-bottom));
+  }
+
   .movie-card:hover {
     transform: scale(1.02);
     transition: transform 0.2s ease;
@@ -243,27 +378,14 @@
   }
 }
 
-/* Prevent zoom and unwanted interactions on mobile */
-@media (max-width: 768px) {
-  button, [role="button"] {
-    -webkit-tap-highlight-color: transparent;
-    touch-action: manipulation;
-    user-select: none;
-  }
-  
-  /* Disable problematic hover effects on mobile */
-  .movie-card:hover,
-  .group:hover {
-    transform: none !important;
-  }
-  
-  /* Ensure smooth scrolling */
-  .mobile-scroll-horizontal {
-    scroll-behavior: smooth;
-  }
+.safe-area-top {
+  padding-top: env(safe-area-inset-top);
 }
 
-/* Z-index hierarchy */
+.safe-area-bottom {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
 .z-navbar { z-index: 1000; }
 .z-search-suggestions { z-index: 99999; }
 .z-dropdown { z-index: 9999; }
@@ -271,13 +393,11 @@
 .z-tooltip { z-index: 5000; }
 .z-bottom-nav { z-index: 999; }
 
-/* Enhanced focus states for accessibility */
 :focus-visible {
   outline: 2px solid hsl(var(--primary));
   outline-offset: 2px;
 }
 
-/* iOS Safari specific fixes */
 @supports (-webkit-touch-callout: none) {
   body {
     -webkit-overflow-scrolling: touch;

@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { Navbar } from '@/components/Navbar';
 import { HeroSection } from '@/components/HeroSection';
+import { NetflixMobileHero } from '@/components/NetflixMobileHero';
 import { ContinueWatching } from '@/components/ContinueWatching';
 import { RecentlyWatched } from '@/components/RecentlyWatched';
 import { PullToRefresh } from '@/components/PullToRefresh';
@@ -10,12 +11,23 @@ import { Footer } from '@/components/Footer';
 import { BottomNavigation } from '@/components/BottomNavigation';
 import { EnhancedMovieSection } from '@/components/EnhancedMovieSection';
 import { useAuth } from '@/contexts/AuthContext';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQueryClient } from '@tanstack/react-query';
 
 const Index = () => {
   const { user, loading } = useAuth();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const [isMobile, setIsMobile] = React.useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth <= 768);
+    };
+    
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   useEffect(() => {
     if (loading) return;
@@ -37,25 +49,21 @@ const Index = () => {
         <meta name="description" content="Stream unlimited movies and TV series free on FlickPick. Premium subscribers enjoy ad-free viewing. Watch the latest releases, trending content, and classic favorites." />
         <meta name="keywords" content="free movies, tv shows, streaming, watch online, ad-free, premium streaming, latest movies, trending shows, FlickPick" />
         
-        {/* Enhanced Open Graph */}
         <meta property="og:title" content="FlickPick - Stream Movies & TV Shows Online Free" />
         <meta property="og:description" content="Stream unlimited movies and TV series free on FlickPick. Premium subscribers enjoy ad-free viewing." />
         <meta property="og:type" content="website" />
         <meta property="og:url" content={window.location.href} />
         <meta property="og:image" content="https://images.unsplash.com/photo-1489599904276-39c2bb2d64?w=1200&h=630&fit=crop" />
         
-        {/* Twitter Card */}
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content="FlickPick - Stream Movies & TV Shows Online Free" />
         <meta name="twitter:description" content="Stream unlimited movies and TV series free on FlickPick." />
         
-        {/* Mobile optimization */}
         <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes, viewport-fit=cover" />
         <meta name="mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
         
-        {/* Enhanced Structured Data */}
         <script type="application/ld+json">
           {JSON.stringify({
             "@context": "https://schema.org",
@@ -96,13 +104,19 @@ const Index = () => {
         <Navbar />
         <PullToRefresh onRefresh={handleRefresh}>
           <main className="relative safe-area-top pt-14 md:pt-16">
-            <HeroSection />
-            {user && <ContinueWatching />}
-            {user && <RecentlyWatched />}
+            {/* Use Netflix mobile hero on mobile, regular hero on desktop */}
+            {isMobile ? <NetflixMobileHero /> : <HeroSection />}
+            
+            {/* Hide continue watching and recently watched on mobile to match Netflix */}
+            {!isMobile && user && <ContinueWatching />}
+            {!isMobile && user && <RecentlyWatched />}
+            
             <EnhancedMovieSection />
           </main>
         </PullToRefresh>
-        <Footer />
+        
+        {/* Hide footer on mobile */}
+        {!isMobile && <Footer />}
         <BottomNavigation />
       </div>
     </>

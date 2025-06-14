@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { ImprovedMovieCard } from './ImprovedMovieCard';
+import { NetflixMobileCard } from './NetflixMobileCard';
 import { LoadingSpinner } from './LoadingSpinner';
 import { EmailSubscription } from './EmailSubscription';
 import { tmdbApi, Movie } from '@/services/tmdb';
@@ -19,6 +20,7 @@ export const EnhancedMovieSection = () => {
   const [recommendedPage, setRecommendedPage] = useState(1);
   const [hasMoreRecommended, setHasMoreRecommended] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
   const { user } = useAuth();
   
   const observer = useRef<IntersectionObserver>();
@@ -32,6 +34,16 @@ export const EnhancedMovieSection = () => {
     });
     if (node) observer.current.observe(node);
   }, [loadingMore, hasMoreRecommended]);
+
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth <= 768);
+    };
+    
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   const fetchMovies = useCallback(async (isRefresh = false) => {
     try {
@@ -101,7 +113,46 @@ export const EnhancedMovieSection = () => {
     }
   };
 
-  const MovieRow = ({ 
+  // Netflix-style mobile row component
+  const NetflixMobileRow = ({ 
+    title, 
+    movies, 
+    sectionId, 
+    priority = false,
+    size = 'small'
+  }: { 
+    title: string; 
+    movies: Movie[]; 
+    sectionId: string; 
+    priority?: boolean;
+    size?: 'small' | 'large';
+  }) => (
+    <div className="netflix-mobile-section">
+      <h2 className="netflix-mobile-title">{title}</h2>
+      <div className="netflix-mobile-row">
+        <div 
+          id={sectionId}
+          className="netflix-mobile-scroll"
+        >
+          {movies.map((movie, index) => (
+            <div 
+              key={movie.id}
+              ref={sectionId === 'recommended' && index === movies.length - 1 ? lastMovieElementRef : null}
+            >
+              <NetflixMobileCard 
+                movie={movie} 
+                size={size}
+                priority={priority && index < 6}
+              />
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+
+  // Desktop row component (unchanged)
+  const DesktopMovieRow = ({ 
     title, 
     movies, 
     sectionId, 
@@ -115,7 +166,6 @@ export const EnhancedMovieSection = () => {
     priority?: boolean;
   }) => (
     <section className="mobile-section">
-      {/* Mobile-optimized section header */}
       <div className="flex items-center justify-between mb-4 px-4">
         <div className="flex items-center gap-3">
           <div className="w-1 h-6 bg-gradient-to-b from-primary to-primary/60 rounded-full"></div>
@@ -126,7 +176,6 @@ export const EnhancedMovieSection = () => {
           </div>
         </div>
         
-        {/* Desktop-only controls */}
         <div className="hidden md:flex items-center gap-2">
           {sectionId === 'trending' && (
             <Button
@@ -162,7 +211,6 @@ export const EnhancedMovieSection = () => {
         </div>
       </div>
 
-      {/* Mobile-optimized horizontal scroll */}
       <div 
         id={sectionId}
         className="mobile-scroll-horizontal"
@@ -216,45 +264,79 @@ export const EnhancedMovieSection = () => {
     : 'Popular Movies';
 
   return (
-    <div className="content-with-bottom-nav">
-      {/* Email Subscription Section - mobile optimized */}
-      <section className="mobile-section px-4">
-        <div className="flex items-center gap-3 mb-4">
-          <div className="w-1 h-6 bg-gradient-to-b from-primary to-primary/60 rounded-full"></div>
-          <h2 className="mobile-title text-foreground">
-            Stay Updated
-          </h2>
-        </div>
-        <EmailSubscription />
-      </section>
+    <div className={isMobile ? 'netflix-mobile-container' : 'content-with-bottom-nav'}>
+      {/* Netflix-style mobile layout */}
+      {isMobile ? (
+        <>
+          <NetflixMobileRow
+            title={recommendationTitle}
+            movies={recommendedMovies}
+            sectionId="recommended"
+            priority={true}
+            size="large"
+          />
 
-      {/* Movie sections */}
-      <MovieRow
-        title={recommendationTitle}
-        movies={recommendedMovies}
-        sectionId="recommended"
-        showScrollButtons={false}
-        priority={true}
-      />
+          <NetflixMobileRow
+            title="Trending Now"
+            movies={trendingMovies}
+            sectionId="trending"
+            priority={false}
+          />
 
-      <MovieRow
-        title="Trending Now"
-        movies={trendingMovies}
-        sectionId="trending"
-        priority={false}
-      />
+          <NetflixMobileRow
+            title="Popular Movies"
+            movies={popularMovies}
+            sectionId="popular"
+            priority={false}
+          />
 
-      <MovieRow
-        title="Popular Movies"
-        movies={popularMovies}
-        sectionId="popular"
-        priority={false}
-      />
+          {loadingMore && (
+            <div className="text-center py-6">
+              <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin mx-auto"></div>
+            </div>
+          )}
+        </>
+      ) : (
+        /* Desktop layout (unchanged) */
+        <>
+          <section className="mobile-section px-4">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-1 h-6 bg-gradient-to-b from-primary to-primary/60 rounded-full"></div>
+              <h2 className="mobile-title text-foreground">
+                Stay Updated
+              </h2>
+            </div>
+            <EmailSubscription />
+          </section>
 
-      {loadingMore && (
-        <div className="text-center py-6">
-          <LoadingSpinner size="md" text="Loading more recommendations..." />
-        </div>
+          <DesktopMovieRow
+            title={recommendationTitle}
+            movies={recommendedMovies}
+            sectionId="recommended"
+            showScrollButtons={false}
+            priority={true}
+          />
+
+          <DesktopMovieRow
+            title="Trending Now"
+            movies={trendingMovies}
+            sectionId="trending"
+            priority={false}
+          />
+
+          <DesktopMovieRow
+            title="Popular Movies"
+            movies={popularMovies}
+            sectionId="popular"
+            priority={false}
+          />
+
+          {loadingMore && (
+            <div className="text-center py-6">
+              <LoadingSpinner size="md" text="Loading more recommendations..." />
+            </div>
+          )}
+        </>
       )}
     </div>
   );
