@@ -1,4 +1,3 @@
-
 import React, { createContext, useState, useEffect, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from "@/components/ui/use-toast";
@@ -43,33 +42,58 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
   const { toast } = useToast();
 
   useEffect(() => {
+    let mounted = true;
+    
     const checkAuth = async () => {
       try {
+        setError(null);
         const session = await authApi.getSession();
+        
+        if (!mounted) return;
+        
         if (session?.user) {
           // Get user profile from profiles table
           const profile = await userApi.getUserProfile(session.user.id);
-          setUser({
-            id: session.user.id,
-            email: session.user.email,
-            ...profile,
-          });
+          if (mounted) {
+            setUser({
+              id: session.user.id,
+              email: session.user.email,
+              ...profile,
+            });
+          }
         }
       } catch (error) {
         console.error("Authentication check failed", error);
+        if (mounted) {
+          setError("Failed to authenticate. Please try again.");
+        }
       } finally {
-        setLoading(false);
+        if (mounted) {
+          setLoading(false);
+        }
       }
     };
 
-    checkAuth();
+    // Add a minimum loading time to prevent flashing
+    const minLoadingTime = new Promise(resolve => setTimeout(resolve, 1000));
+    
+    Promise.all([checkAuth(), minLoadingTime]).then(() => {
+      if (mounted) {
+        setLoading(false);
+      }
+    });
 
     // Listen for auth state changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (!mounted) return;
+      
+      console.log('Auth state changed:', event);
+      
       if (event === 'SIGNED_IN' && session?.user) {
         try {
           const profile = await userApi.getUserProfile(session.user.id);
@@ -79,6 +103,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             ...profile,
           };
           setUser(userData);
+          setError(null);
           
           // Send welcome email for new users
           if (event === 'SIGNED_IN' && !profile?.email_welcomed) {
@@ -98,14 +123,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           }
         } catch (error) {
           console.error("Error fetching user profile:", error);
+          setError("Failed to load user profile");
         }
       } else if (event === 'SIGNED_OUT') {
         setUser(null);
+        setError(null);
       }
       setLoading(false);
     });
 
-    return () => subscription.unsubscribe();
+    return () => {
+      mounted = false;
+      subscription.unsubscribe();
+    };
   }, []);
 
   const signIn = async (email: string, password: string) => {
@@ -262,8 +292,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     signUp,
     signOut,
     updateProfile,
-    login,
-    signup,
+    login: signIn, // Alias for signIn
+    signup: signUp, // Alias for signUp
     addToWatchlist,
     removeFromWatchlist,
     isInWatchlist,

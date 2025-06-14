@@ -7,6 +7,8 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { BottomNavigation } from "@/components/BottomNavigation";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
+import { LoadingWithTimeout } from "@/components/LoadingWithTimeout";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import Onboarding from "./pages/Onboarding";
@@ -29,8 +31,16 @@ import { ScrollToTop } from "./components/ScrollToTop";
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      retry: false,
+      retry: (failureCount, error) => {
+        // Don't retry on 4xx errors
+        if (error && typeof error === 'object' && 'status' in error) {
+          const status = (error as any).status;
+          if (status >= 400 && status < 500) return false;
+        }
+        return failureCount < 2; // Retry up to 2 times
+      },
       refetchOnWindowFocus: false,
+      staleTime: 5 * 60 * 1000, // 5 minutes
     },
   },
 });
@@ -40,53 +50,60 @@ const AppContent: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="text-foreground text-xl">Loading FlickPick...</div>
-      </div>
+      <LoadingWithTimeout 
+        timeout={15000} 
+        onTimeout={() => {
+          console.warn('App loading timed out');
+        }}
+      />
     );
   }
 
   return (
-    <div className="min-h-screen">
-      <ScrollToTop />
-      <Routes>
-        <Route path="/" element={<Index />} />
-        <Route path="/auth" element={<Auth />} />
-        <Route path="/onboarding" element={<Onboarding />} />
-        <Route path="/search" element={<Search />} />
-        <Route path="/watchlist" element={<Watchlist />} />
-        <Route path="/browse" element={<Browse />} />
-        <Route path="/trending" element={<Trending />} />
-        <Route path="/top-rated" element={<TopRated />} />
-        <Route path="/profile" element={<Profile />} />
-        <Route path="/history" element={<History />} />
-        <Route path="/support" element={<Support />} />
-        <Route path="/help" element={<Help />} />
-        <Route path="/contact" element={<Contact />} />
-        <Route path="/privacy" element={<Privacy />} />
-        <Route path="/terms" element={<Terms />} />
-        <Route path="/movie/:id" element={<DetailPage />} />
-        <Route path="/tv/:id" element={<DetailPage />} />
-        <Route path="*" element={<NotFound />} />
-      </Routes>
-      <BottomNavigation />
-    </div>
+    <ErrorBoundary>
+      <div className="min-h-screen">
+        <ScrollToTop />
+        <Routes>
+          <Route path="/" element={<Index />} />
+          <Route path="/auth" element={<Auth />} />
+          <Route path="/onboarding" element={<Onboarding />} />
+          <Route path="/search" element={<Search />} />
+          <Route path="/watchlist" element={<Watchlist />} />
+          <Route path="/browse" element={<Browse />} />
+          <Route path="/trending" element={<Trending />} />
+          <Route path="/top-rated" element={<TopRated />} />
+          <Route path="/profile" element={<Profile />} />
+          <Route path="/history" element={<History />} />
+          <Route path="/support" element={<Support />} />
+          <Route path="/help" element={<Help />} />
+          <Route path="/contact" element={<Contact />} />
+          <Route path="/privacy" element={<Privacy />} />
+          <Route path="/terms" element={<Terms />} />
+          <Route path="/movie/:id" element={<DetailPage />} />
+          <Route path="/tv/:id" element={<DetailPage />} />
+          <Route path="*" element={<NotFound />} />
+        </Routes>
+        <BottomNavigation />
+      </div>
+    </ErrorBoundary>
   );
 };
 
 const App: React.FC = () => {
   return (
-    <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <AuthProvider>
-            <AppContent />
-          </AuthProvider>
-        </BrowserRouter>
-      </TooltipProvider>
-    </QueryClientProvider>
+    <ErrorBoundary>
+      <QueryClientProvider client={queryClient}>
+        <TooltipProvider>
+          <Toaster />
+          <Sonner />
+          <BrowserRouter>
+            <AuthProvider>
+              <AppContent />
+            </AuthProvider>
+          </BrowserRouter>
+        </TooltipProvider>
+      </QueryClientProvider>
+    </ErrorBoundary>
   );
 };
 
