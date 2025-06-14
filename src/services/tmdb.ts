@@ -20,6 +20,7 @@ export interface Movie {
   release_date?: string;
   first_air_date?: string; // For TV shows
   vote_average: number;
+  vote_count: number; // Added missing vote_count property
   backdrop_path?: string;
   runtime?: number;
   number_of_seasons?: number; // For TV shows
