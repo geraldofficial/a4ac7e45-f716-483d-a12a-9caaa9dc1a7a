@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Github, Twitter, Youtube, Instagram } from 'lucide-react';
+import { Github, Twitter, Youtube, Instagram, Heart } from 'lucide-react';
 import { FlickPickLogo } from './FlickPickLogo';
 import { useNavigate } from 'react-router-dom';
 
@@ -57,6 +57,14 @@ export const Footer = () => {
                   Top Rated
                 </button>
               </li>
+              <li>
+                <button 
+                  onClick={() => navigate('/history')} 
+                  className="text-muted-foreground hover:text-primary transition-colors"
+                >
+                  Watch History
+                </button>
+              </li>
             </ul>
           </div>
 
@@ -64,6 +72,15 @@ export const Footer = () => {
           <div>
             <h3 className="text-foreground font-semibold mb-6 text-lg">Support</h3>
             <ul className="space-y-3">
+              <li>
+                <button 
+                  onClick={() => navigate('/support')} 
+                  className="text-muted-foreground hover:text-primary transition-colors flex items-center gap-2"
+                >
+                  <Heart className="h-4 w-4" />
+                  Support Us
+                </button>
+              </li>
               <li>
                 <button 
                   onClick={() => navigate('/help')} 

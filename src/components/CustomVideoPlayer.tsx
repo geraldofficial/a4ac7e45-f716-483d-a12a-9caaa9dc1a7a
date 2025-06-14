@@ -1,10 +1,10 @@
-
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Play, Pause, Volume2, VolumeX, Maximize, RotateCcw, Settings, Monitor, Smartphone, X, RefreshCw } from 'lucide-react';
+import { Maximize, RefreshCw, Settings, Monitor, X, Minimize } from 'lucide-react';
 import { streamingSources, getStreamingUrl } from '@/services/streaming';
 import { tmdbApi } from '@/services/tmdb';
+import { watchHistoryService } from '@/services/watchHistory';
 
 interface CustomVideoPlayerProps {
   title: string;
@@ -12,6 +12,7 @@ interface CustomVideoPlayerProps {
   type: 'movie' | 'tv';
   season?: number;
   episode?: number;
+  autoFullscreen?: boolean;
 }
 
 interface Episode {
@@ -34,7 +35,8 @@ export const CustomVideoPlayer: React.FC<CustomVideoPlayerProps> = ({
   tmdbId, 
   type, 
   season = 1, 
-  episode = 1 
+  episode = 1,
+  autoFullscreen = false
 }) => {
   const [currentSource, setCurrentSource] = useState(0);
   const [currentSeason, setCurrentSeason] = useState(season);
@@ -42,11 +44,96 @@ export const CustomVideoPlayer: React.FC<CustomVideoPlayerProps> = ({
   const [seasons, setSeasons] = useState<Season[]>([]);
   const [episodes, setEpisodes] = useState<Episode[]>([]);
   const [loading, setLoading] = useState(false);
-  const [isFullscreen, setIsFullscreen] = useState(false);
+  const [isFullscreen, setIsFullscreen] = useState(autoFullscreen);
   const [showControls, setShowControls] = useState(true);
-  const [isMuted, setIsMuted] = useState(false);
-  const [isPlaying, setIsPlaying] = useState(true);
   const [showSourceMenu, setShowSourceMenu] = useState(false);
+  const playerRef = useRef<HTMLDivElement>(null);
+  const iframeRef = useRef<HTMLIFrameElement>(null);
+
+  // Add to watch history when component mounts
+  useEffect(() => {
+    const addToHistory = async () => {
+      try {
+        let backdropPath = '';
+        let posterPath = '';
+        
+        if (type === 'movie') {
+          const movieDetails = await tmdbApi.getMovieDetails(tmdbId);
+          backdropPath = movieDetails.backdrop_path || '';
+          posterPath = movieDetails.poster_path || '';
+        } else {
+          const tvDetails = await tmdbApi.getTVDetails(tmdbId);
+          backdropPath = tvDetails.backdrop_path || '';
+          posterPath = tvDetails.poster_path || '';
+        }
+
+        watchHistoryService.addToHistory({
+          tmdbId,
+          type,
+          title,
+          season: type === 'tv' ? currentSeason : undefined,
+          episode: type === 'tv' ? currentEpisode : undefined,
+          progress: 0,
+          backdrop_path: backdropPath,
+          poster_path: posterPath
+        });
+      } catch (error) {
+        console.error('Error adding to watch history:', error);
+      }
+    };
+
+    addToHistory();
+  }, [tmdbId, type, title, currentSeason, currentEpisode]);
+
+  // Handle fullscreen changes
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      const isCurrentlyFullscreen = !!document.fullscreenElement;
+      setIsFullscreen(isCurrentlyFullscreen);
+    };
+
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
+  }, []);
+
+  // Auto fullscreen on mount if requested
+  useEffect(() => {
+    if (autoFullscreen && playerRef.current) {
+      setTimeout(() => {
+        enterFullscreen();
+      }, 1000);
+    }
+  }, [autoFullscreen]);
+
+  const enterFullscreen = async () => {
+    if (playerRef.current && !document.fullscreenElement) {
+      try {
+        await playerRef.current.requestFullscreen();
+        setIsFullscreen(true);
+      } catch (error) {
+        console.error('Error entering fullscreen:', error);
+      }
+    }
+  };
+
+  const exitFullscreen = async () => {
+    if (document.fullscreenElement) {
+      try {
+        await document.exitFullscreen();
+        setIsFullscreen(false);
+      } catch (error) {
+        console.error('Error exiting fullscreen:', error);
+      }
+    }
+  };
+
+  const toggleFullscreen = () => {
+    if (isFullscreen) {
+      exitFullscreen();
+    } else {
+      enterFullscreen();
+    }
+  };
 
   // Haptic feedback function
   const triggerHaptic = () => {
@@ -107,20 +194,20 @@ export const CustomVideoPlayer: React.FC<CustomVideoPlayerProps> = ({
     setCurrentEpisode(parseInt(episodeNumber));
   };
 
-  const toggleFullscreen = () => {
-    triggerHaptic();
-    setIsFullscreen(!isFullscreen);
-  };
-
   const refreshPlayer = () => {
     triggerHaptic();
-    window.location.reload();
+    if (iframeRef.current) {
+      iframeRef.current.src = iframeRef.current.src;
+    }
   };
 
   return (
-    <div className="w-full">
+    <div 
+      ref={playerRef}
+      className={`w-full ${isFullscreen ? 'fixed inset-0 z-50 bg-black' : ''}`}
+    >
       {/* Custom Controls Header */}
-      <div className="bg-background/95 backdrop-blur-3xl border border-border/60 rounded-t-2xl p-4 space-y-4">
+      <div className={`bg-background/95 backdrop-blur-3xl border border-border/60 ${isFullscreen ? 'rounded-none' : 'rounded-t-2xl'} p-4 space-y-4`}>
         <div className="flex items-center justify-between flex-wrap gap-2">
           <h3 className="text-foreground font-medium text-sm md:text-base truncate">
             {title} {type === 'tv' ? `S${currentSeason}E${currentEpisode}` : ''}
@@ -137,12 +224,34 @@ export const CustomVideoPlayer: React.FC<CustomVideoPlayerProps> = ({
             <Button
               variant="outline"
               size="sm"
+              onClick={toggleFullscreen}
+              className="h-8 px-3 bg-background/50 backdrop-blur-xl border-border/50 hover:bg-background/70"
+            >
+              {isFullscreen ? (
+                <Minimize className="h-3.5 w-3.5" />
+              ) : (
+                <Maximize className="h-3.5 w-3.5" />
+              )}
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
               onClick={() => setShowSourceMenu(!showSourceMenu)}
               className="h-8 px-3 bg-background/50 backdrop-blur-xl border-border/50 hover:bg-background/70"
             >
               <Settings className="h-3.5 w-3.5 mr-1" />
               Sources
             </Button>
+            {isFullscreen && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={exitFullscreen}
+                className="h-8 px-3 bg-background/50 backdrop-blur-xl border-border/50 hover:bg-background/70"
+              >
+                <X className="h-3.5 w-3.5" />
+              </Button>
+            )}
           </div>
         </div>
 
@@ -214,8 +323,12 @@ export const CustomVideoPlayer: React.FC<CustomVideoPlayerProps> = ({
       </div>
       
       {/* Video Player */}
-      <div className="relative w-full bg-black rounded-b-2xl overflow-hidden" style={{ paddingBottom: '56.25%' }}>
+      <div 
+        className={`relative w-full bg-black ${isFullscreen ? 'flex-1' : 'rounded-b-2xl'} overflow-hidden`} 
+        style={isFullscreen ? { height: 'calc(100vh - 120px)' } : { paddingBottom: '56.25%' }}
+      >
         <iframe
+          ref={iframeRef}
           src={getStreamingUrl(tmdbId, type, currentSource, currentSeason, currentEpisode)}
           title={`${title} ${type === 'tv' ? `S${currentSeason}E${currentEpisode}` : ''}`}
           className="absolute top-0 left-0 w-full h-full"
@@ -225,8 +338,8 @@ export const CustomVideoPlayer: React.FC<CustomVideoPlayerProps> = ({
         />
       </div>
 
-      {/* Episode Grid for TV Shows */}
-      {type === 'tv' && episodes.length > 0 && (
+      {/* Episode Grid for TV Shows - only show when not in fullscreen */}
+      {!isFullscreen && type === 'tv' && episodes.length > 0 && (
         <div className="mt-4 bg-background/95 backdrop-blur-3xl border border-border/60 rounded-2xl p-4">
           <h4 className="text-foreground font-medium mb-3 flex items-center gap-2">
             <Smartphone className="h-4 w-4" />

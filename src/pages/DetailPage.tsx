@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { Navbar } from '@/components/Navbar';
@@ -245,6 +244,7 @@ const DetailPage = () => {
                 title={title}
                 tmdbId={content.id}
                 type={type}
+                autoFullscreen={true}
               />
             </div>
           </div>

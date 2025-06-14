@@ -8,6 +8,7 @@ interface VideoPlayerProps {
   type: 'movie' | 'tv';
   season?: number;
   episode?: number;
+  autoFullscreen?: boolean;
 }
 
 export const VideoPlayer: React.FC<VideoPlayerProps> = (props) => {

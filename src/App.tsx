@@ -56,6 +56,8 @@ const AppContent: React.FC = () => {
         <Route path="/trending" element={<Trending />} />
         <Route path="/top-rated" element={<TopRated />} />
         <Route path="/profile" element={<Profile />} />
+        <Route path="/history" element={<History />} />
+        <Route path="/support" element={<Support />} />
         <Route path="/help" element={<Help />} />
         <Route path="/contact" element={<Contact />} />
         <Route path="/privacy" element={<Privacy />} />

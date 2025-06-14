@@ -1,4 +1,3 @@
-
 export interface StreamingSource {
   name: string;
   getUrl: (tmdbId: number, type: 'movie' | 'tv', season?: number, episode?: number) => string;
@@ -8,6 +7,16 @@ export interface StreamingSource {
 const adBlockParams = '&adblock=1&nopop=1&noads=1&block_ads=true&popup=0&adsblock=true&adsblocker=1';
 
 export const streamingSources: StreamingSource[] = [
+  {
+    name: 'VidSrc Me',
+    getUrl: (tmdbId, type, season, episode) => {
+      const baseUrl = `https://vidsrc.me/embed/${type}?tmdb=${tmdbId}&autoplay=1${adBlockParams}`;
+      if (type === 'tv' && season && episode) {
+        return `${baseUrl}&season=${season}&episode=${episode}`;
+      }
+      return baseUrl;
+    }
+  },
   {
     name: 'VidSrc',
     getUrl: (tmdbId, type, season, episode) => {
@@ -26,16 +35,6 @@ export const streamingSources: StreamingSource[] = [
         return `${baseUrl}/${season}/${episode}?autoplay=1${adBlockParams}`;
       }
       return `${baseUrl}?autoplay=1${adBlockParams}`;
-    }
-  },
-  {
-    name: 'VidSrc Me',
-    getUrl: (tmdbId, type, season, episode) => {
-      const baseUrl = `https://vidsrc.me/embed/${type}?tmdb=${tmdbId}&autoplay=1${adBlockParams}`;
-      if (type === 'tv' && season && episode) {
-        return `${baseUrl}&season=${season}&episode=${episode}`;
-      }
-      return baseUrl;
     }
   },
   {
