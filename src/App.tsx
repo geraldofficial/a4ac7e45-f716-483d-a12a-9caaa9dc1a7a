@@ -22,6 +22,10 @@ const Support = lazy(() => import("./pages/Support"));
 const Trending = lazy(() => import("./pages/Trending"));
 const TopRated = lazy(() => import("./pages/TopRated"));
 const History = lazy(() => import("./pages/History"));
+const Terms = lazy(() => import("./pages/Terms"));
+const Privacy = lazy(() => import("./pages/Privacy"));
+const Contact = lazy(() => import("./pages/Contact"));
+const Help = lazy(() => import("./pages/Help"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -73,6 +77,10 @@ const App = () => {
                         <Route path="/trending" element={<Trending />} />
                         <Route path="/top-rated" element={<TopRated />} />
                         <Route path="/history" element={<History />} />
+                        <Route path="/terms" element={<Terms />} />
+                        <Route path="/privacy" element={<Privacy />} />
+                        <Route path="/contact" element={<Contact />} />
+                        <Route path="/help" element={<Help />} />
                         <Route path="*" element={<NotFound />} />
                       </Routes>
                     </Suspense>
