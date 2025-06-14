@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { streamingSources, getStreamingUrl } from '@/services/streaming';
@@ -33,7 +32,7 @@ export const EnhancedVideoPlayer: React.FC<EnhancedVideoPlayerProps> = ({
   const currentSource = streamingSources[currentSourceIndex];
 
   // Enhanced URL with better caching and performance parameters
-  const enhancedUrl = `${currentUrl}&cache=1&preload=auto&buffer=30&quality=auto`;
+  const enhancedUrl = `${currentUrl}&cache=1&preload=auto&buffer=30&quality=auto&timestamp=${Date.now()}`;
 
   const switchSource = () => {
     const nextIndex = (currentSourceIndex + 1) % streamingSources.length;
@@ -72,7 +71,9 @@ export const EnhancedVideoPlayer: React.FC<EnhancedVideoPlayerProps> = ({
     setIsLoading(true);
     setHasError(false);
     if (iframeRef.current) {
-      iframeRef.current.src = enhancedUrl;
+      // Force reload with new timestamp to bypass cache
+      const reloadUrl = `${currentUrl}&cache=1&preload=auto&buffer=30&quality=auto&timestamp=${Date.now()}`;
+      iframeRef.current.src = reloadUrl;
     }
   };
 
@@ -92,6 +93,15 @@ export const EnhancedVideoPlayer: React.FC<EnhancedVideoPlayerProps> = ({
       }, 1000);
     }
   }, [autoFullscreen]);
+
+  useEffect(() => {
+    // Reload iframe when source changes
+    if (iframeRef.current) {
+      setIsLoading(true);
+      setHasError(false);
+      iframeRef.current.src = enhancedUrl;
+    }
+  }, [currentSourceIndex, enhancedUrl]);
 
   const handleIframeLoad = () => {
     setIsLoading(false);
@@ -187,7 +197,8 @@ export const EnhancedVideoPlayer: React.FC<EnhancedVideoPlayerProps> = ({
         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
         onLoad={handleIframeLoad}
         onError={handleIframeError}
-        sandbox="allow-same-origin allow-scripts allow-forms allow-popups allow-presentation allow-top-navigation allow-downloads"
+        referrerPolicy="no-referrer-when-downgrade"
+        loading="eager"
       />
 
       {/* Source Selector */}
