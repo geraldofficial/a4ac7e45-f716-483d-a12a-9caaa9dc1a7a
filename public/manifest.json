@@ -3,7 +3,7 @@
   "name": "FlickPick - Stream Movies & TV Shows",
   "short_name": "FlickPick",
   "description": "Stream unlimited movies and TV series with FlickPick - Your ultimate entertainment destination",
-  "theme_color": "#7c3aed",
+  "theme_color": "#dc2626",
   "background_color": "#000000",
   "display": "standalone",
   "orientation": "portrait",
@@ -11,21 +11,28 @@
   "start_url": "/",
   "icons": [
     {
-      "src": "/favicon.ico",
-      "sizes": "64x64 32x32 24x24 16x16",
-      "type": "image/x-icon"
-    },
-    {
       "src": "/lovable-uploads/0bb41fd4-6209-45e7-a375-a53cedfcb322.png",
       "type": "image/png",
       "sizes": "192x192",
-      "purpose": "any maskable"
+      "purpose": "any"
     },
     {
       "src": "/lovable-uploads/0bb41fd4-6209-45e7-a375-a53cedfcb322.png",
       "type": "image/png", 
       "sizes": "512x512",
-      "purpose": "any maskable"
+      "purpose": "any"
+    },
+    {
+      "src": "/lovable-uploads/0bb41fd4-6209-45e7-a375-a53cedfcb322.png",
+      "type": "image/png",
+      "sizes": "192x192",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/lovable-uploads/0bb41fd4-6209-45e7-a375-a53cedfcb322.png",
+      "type": "image/png",
+      "sizes": "512x512",
+      "purpose": "maskable"
     }
   ],
   "categories": ["entertainment", "multimedia"],

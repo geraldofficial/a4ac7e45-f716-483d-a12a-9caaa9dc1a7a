@@ -1,3 +1,4 @@
+
 @import url("https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap");
 @import url('./styles/video-player.css');
 @tailwind base;
@@ -9,9 +10,9 @@
   line-height: 1.5;
   font-weight: 400;
 
-  color-scheme: light dark;
+  color-scheme: dark;
   color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
+  background-color: #000000;
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
@@ -22,31 +23,26 @@
 
 @layer base {
   :root {
-    --background: 220 17% 7%;
-    --foreground: 220 8% 95%;
-    --card: 220 17% 9%;
-    --card-foreground: 220 8% 95%;
-    --popover: 220 17% 9%;
-    --popover-foreground: 220 8% 95%;
-    --primary: 262 83% 58%;
-    --primary-foreground: 220 8% 95%;
-    --secondary: 220 17% 15%;
-    --secondary-foreground: 220 8% 95%;
-    --muted: 220 17% 15%;
-    --muted-foreground: 220 8% 65%;
-    --accent: 220 17% 15%;
-    --accent-foreground: 220 8% 95%;
+    --background: 0 0% 0%;
+    --foreground: 0 0% 98%;
+    --card: 0 0% 6%;
+    --card-foreground: 0 0% 98%;
+    --popover: 0 0% 6%;
+    --popover-foreground: 0 0% 98%;
+    --primary: 0 72% 51%;
+    --primary-foreground: 0 0% 98%;
+    --secondary: 0 0% 15%;
+    --secondary-foreground: 0 0% 98%;
+    --muted: 0 0% 15%;
+    --muted-foreground: 0 0% 65%;
+    --accent: 0 0% 15%;
+    --accent-foreground: 0 0% 98%;
     --destructive: 0 84% 60%;
-    --destructive-foreground: 220 8% 95%;
-    --border: 220 17% 20%;
-    --input: 220 17% 20%;
-    --ring: 262 83% 58%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 0 0% 20%;
+    --input: 0 0% 20%;
+    --ring: 0 72% 51%;
     --radius: 0.5rem;
-    --chart-1: 220 70% 50%;
-    --chart-2: 160 60% 45%;
-    --chart-3: 30 80% 55%;
-    --chart-4: 280 65% 60%;
-    --chart-5: 340 75% 55%;
   }
 }
 
@@ -56,22 +52,8 @@
   }
   body {
     @apply bg-background text-foreground;
+    background-color: #000000;
   }
-}
-
-/* Enhanced glassmorphism styles */
-.glass-effect {
-  background: rgba(255, 255, 255, 0.08);
-  backdrop-filter: blur(30px);
-  -webkit-backdrop-filter: blur(30px);
-  border: 1px solid rgba(255, 255, 255, 0.15);
-}
-
-.glass-effect-strong {
-  background: rgba(255, 255, 255, 0.12);
-  backdrop-filter: blur(40px);
-  -webkit-backdrop-filter: blur(40px);
-  border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 /* Custom scrollbar */
@@ -92,25 +74,18 @@
   background: rgba(255, 255, 255, 0.3);
 }
 
-/* Z-index hierarchy */
-.z-navbar { z-index: 1000; }
-.z-search-suggestions { z-index: 99999; }
-.z-dropdown { z-index: 9999; }
-.z-modal { z-index: 10000; }
-.z-tooltip { z-index: 5000; }
-
-/* Ensure search suggestions are always on top */
-[data-search-suggestions] {
-  z-index: 99999 !important;
+/* Simplified transitions - Netflix style */
+.transition-smooth {
+  transition: all 0.2s ease-out;
 }
 
-/* Enhanced blur effects */
-.backdrop-blur-ultra {
-  backdrop-filter: blur(60px);
-  -webkit-backdrop-filter: blur(60px);
+/* Remove distracting animations */
+* {
+  animation-duration: 0.2s !important;
 }
 
-.backdrop-blur-extreme {
-  backdrop-filter: blur(80px);
-  -webkit-backdrop-filter: blur(80px);
+/* Focus styles */
+:focus-visible {
+  outline: 2px solid #dc2626;
+  outline-offset: 2px;
 }

@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { streamingSources, getStreamingUrl } from '@/services/streaming';
@@ -16,6 +15,8 @@ interface SimpleVideoPlayerProps {
   backdrop_path?: string;
   duration?: number;
   resumeFrom?: number;
+  onProgress?: (currentTime: number, duration: number) => void;
+  onComplete?: () => void;
   onClose?: () => void;
 }
 
@@ -29,6 +30,8 @@ export const SimpleVideoPlayer: React.FC<SimpleVideoPlayerProps> = ({
   backdrop_path,
   duration,
   resumeFrom = 0,
+  onProgress,
+  onComplete,
   onClose
 }) => {
   const [currentSourceIndex, setCurrentSourceIndex] = useState(0);

@@ -64,13 +64,13 @@ export const NotificationCenter: React.FC = () => {
         variant="ghost"
         size="sm"
         onClick={() => setIsOpen(!isOpen)}
-        className="relative"
+        className="relative text-gray-300 hover:text-white hover:bg-white/10"
       >
-        <Bell className="h-4 w-4" />
+        <Bell className="h-5 w-5" />
         {unreadCount > 0 && (
           <Badge
             variant="destructive"
-            className="absolute -top-1 -right-1 h-5 w-5 p-0 flex items-center justify-center text-xs"
+            className="absolute -top-1 -right-1 h-5 w-5 p-0 flex items-center justify-center text-xs bg-red-600"
           >
             {unreadCount > 9 ? '9+' : unreadCount}
           </Badge>
@@ -78,16 +78,16 @@ export const NotificationCenter: React.FC = () => {
       </Button>
 
       {isOpen && (
-        <Card className="absolute right-0 top-full mt-2 w-80 sm:w-96 max-h-96 z-50 bg-background border shadow-lg max-w-[calc(100vw-2rem)] md:max-w-none">
-          <div className="p-4 border-b flex items-center justify-between">
-            <h3 className="font-semibold">Notifications</h3>
+        <Card className="absolute right-0 top-full mt-2 w-80 md:w-96 max-h-96 z-50 bg-gray-900 border-gray-700 shadow-xl max-w-[calc(100vw-1rem)] mr-2 md:mr-0">
+          <div className="p-4 border-b border-gray-700 flex items-center justify-between">
+            <h3 className="font-semibold text-white">Notifications</h3>
             <div className="flex gap-2">
               {unreadCount > 0 && (
-                <Button variant="ghost" size="sm" onClick={markAllAsRead}>
+                <Button variant="ghost" size="sm" onClick={markAllAsRead} className="text-gray-300 hover:text-white">
                   <Check className="h-4 w-4" />
                 </Button>
               )}
-              <Button variant="ghost" size="sm" onClick={() => setIsOpen(false)}>
+              <Button variant="ghost" size="sm" onClick={() => setIsOpen(false)} className="text-gray-300 hover:text-white">
                 <X className="h-4 w-4" />
               </Button>
             </div>
@@ -95,15 +95,15 @@ export const NotificationCenter: React.FC = () => {
 
           <div className="max-h-64 overflow-y-auto">
             {notifications.length === 0 ? (
-              <div className="p-4 text-center text-muted-foreground">
+              <div className="p-4 text-center text-gray-400">
                 No notifications yet
               </div>
             ) : (
               notifications.map((notification) => (
                 <div
                   key={notification.id}
-                  className={`p-3 border-b cursor-pointer hover:bg-accent transition-colors ${
-                    !notification.isRead ? 'bg-primary/5' : ''
+                  className={`p-3 border-b border-gray-700 cursor-pointer hover:bg-gray-800 ${
+                    !notification.isRead ? 'bg-gray-800/50' : ''
                   }`}
                   onClick={() => handleNotificationClick(notification)}
                 >
@@ -113,17 +113,17 @@ export const NotificationCenter: React.FC = () => {
                     </span>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2">
-                        <h4 className="text-sm font-medium truncate">
+                        <h4 className="text-sm font-medium truncate text-white">
                           {notification.title}
                         </h4>
                         {!notification.isRead && (
-                          <div className="w-2 h-2 bg-primary rounded-full flex-shrink-0" />
+                          <div className="w-2 h-2 bg-red-600 rounded-full flex-shrink-0" />
                         )}
                       </div>
-                      <p className="text-xs text-muted-foreground line-clamp-2 mt-1">
+                      <p className="text-xs text-gray-400 line-clamp-2 mt-1">
                         {notification.message}
                       </p>
-                      <p className="text-xs text-muted-foreground mt-1">
+                      <p className="text-xs text-gray-500 mt-1">
                         {new Date(notification.createdAt).toLocaleDateString()}
                       </p>
                     </div>
