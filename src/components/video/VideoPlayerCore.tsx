@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { streamingSources, getStreamingUrl } from '@/services/streaming';
-import { ProductionLoadingSpinner } from '../ProductionLoadingSpinner';
+import { VideoPlayerState } from './VideoPlayerState';
 
 interface VideoPlayerCoreProps {
   title: string;
@@ -83,40 +83,14 @@ export const VideoPlayerCore: React.FC<VideoPlayerCoreProps> = ({
 
   return (
     <div className="relative w-full h-full">
-      {/* Loading State */}
-      {isLoading && (
-        <div className="absolute inset-0 flex items-center justify-center bg-black z-10">
-          <ProductionLoadingSpinner 
-            size="lg" 
-            text={`Loading ${getDisplayTitle()}...`}
-            showLogo={true}
-          />
-        </div>
-      )}
-
-      {/* Error State */}
-      {hasError && (
-        <div className="absolute inset-0 flex items-center justify-center bg-black z-10">
-          <div className="text-center max-w-md mx-auto p-6">
-            <p className="text-white mb-4 text-xl">Playback Error</p>
-            <p className="text-white/70 mb-6">Failed to load from {currentSource.name}</p>
-            <div className="flex gap-3 justify-center">
-              <button
-                onClick={switchSource}
-                className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90"
-              >
-                Try Next Source
-              </button>
-              <button
-                onClick={reloadPlayer}
-                className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700"
-              >
-                Retry
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <VideoPlayerState
+        isLoading={isLoading}
+        hasError={hasError}
+        title={getDisplayTitle()}
+        currentSourceName={currentSource.name}
+        onRetry={reloadPlayer}
+        onSwitchSource={switchSource}
+      />
 
       {/* Video Iframe */}
       <iframe

@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -6,7 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { WatchPartyErrorBoundary } from './watchparty/WatchPartyErrorBoundary';
 import { WatchPartyVideoSync } from './watchparty/WatchPartyVideoSync';
-import { WatchPartyStatus } from './watchparty/WatchPartyStatus';
+import { WatchPartyStatusCard } from './watchparty/WatchPartyStatusCard';
 import { WatchPartyInvite } from './watchparty/WatchPartyInvite';
 import { WatchPartyControls } from './watchparty/WatchPartyControls';
 import { SimpleVideoPlayer } from './SimpleVideoPlayer';
@@ -121,12 +122,13 @@ export const MatureWatchParty: React.FC<WatchPartyProps> = ({
                 </div>
               </CardHeader>
               <CardContent className="pt-0">
-                <WatchPartyStatus
+                <WatchPartyStatusCard
                   participantCount={participants}
                   isPlaying={isVideoPlaying}
                   isConnected={isConnected}
                   isHost={isHost}
                   movieTitle={movieTitle}
+                  compact={true}
                 />
                 <WatchPartyVideoSync
                   isHost={isHost}
@@ -177,7 +179,7 @@ export const MatureWatchParty: React.FC<WatchPartyProps> = ({
             </TabsList>
 
             <TabsContent value="party" className="space-y-6 mt-6">
-              <WatchPartyStatus
+              <WatchPartyStatusCard
                 participantCount={participants}
                 isPlaying={isVideoPlaying}
                 isConnected={isConnected}
