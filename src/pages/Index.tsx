@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import { Navbar } from '@/components/Navbar';
 import { HeroCarousel } from '@/components/HeroCarousel';
-import { ContentRecommendations } from '@/components/ContentRecommendations';
+import { EnhancedMovieSection } from '@/components/EnhancedMovieSection';
 import { ContinueWatching } from '@/components/ContinueWatching';
 import { RecentlyWatched } from '@/components/RecentlyWatched';
 import { Footer } from '@/components/Footer';
@@ -40,11 +40,7 @@ const Index = () => {
           {user && <ContinueWatching profile={currentProfile} />}
           {user && <RecentlyWatched profile={currentProfile} />}
           
-          <ContentRecommendations 
-            userId={user?.id} 
-            profileId={currentProfile?.id}
-            profile={currentProfile}
-          />
+          <EnhancedMovieSection />
         </div>
       </main>
       
