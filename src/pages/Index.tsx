@@ -14,20 +14,18 @@ const Index = () => {
   const [currentProfile, setCurrentProfile] = useState(null);
 
   useEffect(() => {
-    // Get the selected profile from localStorage
+    // Get the selected profile from localStorage with error handling
     const savedProfile = localStorage.getItem('selectedProfile');
     if (savedProfile) {
       try {
         const parsedProfile = JSON.parse(savedProfile);
-        console.log('Index: Loaded profile from localStorage:', parsedProfile);
         setCurrentProfile(parsedProfile);
       } catch (error) {
         console.error('Error parsing saved profile:', error);
+        localStorage.removeItem('selectedProfile'); // Clean up corrupted data
       }
     }
   }, []);
-
-  console.log('Index: Current profile state:', currentProfile);
 
   return (
     <div className="min-h-screen bg-background overflow-x-hidden">

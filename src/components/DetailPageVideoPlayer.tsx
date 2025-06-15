@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useMemo } from 'react';
 import { VideoPlayer } from './VideoPlayer';
 
 interface DetailPageVideoPlayerProps {
@@ -29,26 +29,31 @@ export const DetailPageVideoPlayer: React.FC<DetailPageVideoPlayerProps> = ({
   shouldResume,
   onClose
 }) => {
-  // Get display title with episode info for TV shows
-  const getDisplayTitle = () => {
+  // Memoize the display title calculation to prevent unnecessary re-renders
+  const displayTitle = useMemo(() => {
     if (type === 'tv' && season && episode) {
       return `${title} - Season ${season} Episode ${episode}`;
     }
     return title;
-  };
+  }, [title, type, season, episode]);
+
+  // Memoize the duration calculation
+  const videoDuration = useMemo(() => {
+    return duration ? duration * 60 : undefined;
+  }, [duration]);
 
   if (!isPlaying) return null;
 
   return (
     <VideoPlayer
-      title={getDisplayTitle()}
+      title={displayTitle}
       tmdbId={contentId}
       type={type}
       season={season}
       episode={episode}
       poster_path={posterPath}
       backdrop_path={backdropPath}
-      duration={duration ? duration * 60 : undefined}
+      duration={videoDuration}
       shouldResume={shouldResume}
       onClose={onClose}
     />

@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Play, Plus, Check, Star, Info } from 'lucide-react';
@@ -19,16 +19,30 @@ export const EnhancedMovieCard: React.FC<EnhancedMovieCardProps> = ({ movie }) =
   const [imageLoaded, setImageLoaded] = useState(false);
   const [showActions, setShowActions] = useState(false);
 
-  const title = movie.title || movie.name || 'Unknown Title';
-  const releaseDate = movie.release_date || movie.first_air_date || '';
-  const type = movie.media_type || (movie.title ? 'movie' : 'tv');
-  const year = releaseDate ? new Date(releaseDate).getFullYear() : '';
+  // Memoize computed values to prevent unnecessary re-calculations
+  const { title, releaseDate, type, year, posterUrl, isInUserWatchlist } = useMemo(() => {
+    const movieTitle = movie.title || movie.name || 'Unknown Title';
+    const movieReleaseDate = movie.release_date || movie.first_air_date || '';
+    const movieType = movie.media_type || (movie.title ? 'movie' : 'tv');
+    const movieYear = movieReleaseDate ? new Date(movieReleaseDate).getFullYear() : '';
 
-  const posterUrl = movie.poster_path 
-    ? `https://image.tmdb.org/t/p/w500${movie.poster_path}`
-    : 'https://images.unsplash.com/photo-1489599904276-39c2bb2d7b64?w=400&h=600&fit=crop';
+    const moviePosterUrl = movie.poster_path 
+      ? `https://image.tmdb.org/t/p/w500${movie.poster_path}`
+      : 'https://images.unsplash.com/photo-1489599904276-39c2bb2d7b64?w=400&h=600&fit=crop';
 
-  const handleWatch = (e: React.MouseEvent) => {
+    const inWatchlist = user ? isInWatchlist(movie.id) : false;
+
+    return {
+      title: movieTitle,
+      releaseDate: movieReleaseDate,
+      type: movieType,
+      year: movieYear,
+      posterUrl: moviePosterUrl,
+      isInUserWatchlist: inWatchlist
+    };
+  }, [movie, user, isInWatchlist]);
+
+  const handleWatch = useCallback((e: React.MouseEvent) => {
     e.stopPropagation();
     if (!user) {
       toast({
@@ -39,13 +53,13 @@ export const EnhancedMovieCard: React.FC<EnhancedMovieCardProps> = ({ movie }) =
       return;
     }
     navigate(`/${type}/${movie.id}`);
-  };
+  }, [user, toast, navigate, type, movie.id]);
 
-  const handleMoreInfo = () => {
+  const handleMoreInfo = useCallback(() => {
     navigate(`/${type}/${movie.id}`);
-  };
+  }, [navigate, type, movie.id]);
 
-  const handleWatchlistToggle = async (e: React.MouseEvent) => {
+  const handleWatchlistToggle = useCallback(async (e: React.MouseEvent) => {
     e.stopPropagation();
     if (!user) {
       toast({
@@ -57,7 +71,7 @@ export const EnhancedMovieCard: React.FC<EnhancedMovieCardProps> = ({ movie }) =
     }
 
     try {
-      if (isInWatchlist(movie.id)) {
+      if (isInUserWatchlist) {
         await removeFromWatchlist(movie.id);
         toast({ title: "Removed from watchlist" });
       } else {
@@ -71,14 +85,31 @@ export const EnhancedMovieCard: React.FC<EnhancedMovieCardProps> = ({ movie }) =
         variant: "destructive",
       });
     }
-  };
+  }, [user, toast, isInUserWatchlist, removeFromWatchlist, addToWatchlist, movie.id]);
+
+  const handleImageLoad = useCallback(() => {
+    setImageLoaded(true);
+  }, []);
+
+  const handleImageError = useCallback((e: React.SyntheticEvent<HTMLImageElement>) => {
+    e.currentTarget.src = 'https://images.unsplash.com/photo-1489599904276-39c2bb2d7b64?w=400&h=600&fit=crop';
+    setImageLoaded(true);
+  }, []);
+
+  const handleMouseEnter = useCallback(() => {
+    setShowActions(true);
+  }, []);
+
+  const handleMouseLeave = useCallback(() => {
+    setShowActions(false);
+  }, []);
 
   return (
     <div 
-      className="group relative bg-gray-900 rounded-lg overflow-hidden border border-gray-800 hover:border-gray-600 cursor-pointer transition-all duration-200 w-full aspect-[2/3] sm:aspect-[2/3]"
+      className="group relative bg-gray-900 rounded-lg overflow-hidden border border-gray-800 hover:border-gray-600 cursor-pointer transition-all duration-200 w-full aspect-[2/3] sm:aspect-[2/3] hover:scale-105"
       onClick={handleMoreInfo}
-      onMouseEnter={() => setShowActions(true)}
-      onMouseLeave={() => setShowActions(false)}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
     >
       {/* Image Container - Responsive aspect ratio */}
       <div className="relative w-full h-full bg-gray-800">
@@ -91,17 +122,15 @@ export const EnhancedMovieCard: React.FC<EnhancedMovieCardProps> = ({ movie }) =
         <img 
           src={posterUrl}
           alt={title}
-          className={`w-full h-full object-cover transition-opacity duration-200 ${imageLoaded ? 'opacity-100' : 'opacity-0'}`}
-          onLoad={() => setImageLoaded(true)}
-          onError={(e) => {
-            e.currentTarget.src = 'https://images.unsplash.com/photo-1489599904276-39c2bb2d7b64?w=400&h=600&fit=crop';
-            setImageLoaded(true);
-          }}
+          className={`w-full h-full object-cover transition-all duration-300 ${imageLoaded ? 'opacity-100' : 'opacity-0'}`}
+          onLoad={handleImageLoad}
+          onError={handleImageError}
+          loading="lazy"
         />
 
         {/* Rating Badge */}
         <div className="absolute top-1 left-1 sm:top-2 sm:left-2">
-          <Badge className="bg-black/70 text-white border-0 text-xs">
+          <Badge className="bg-black/70 text-white border-0 text-xs backdrop-blur-sm">
             <Star className="h-2 w-2 sm:h-3 sm:w-3 mr-1 text-yellow-400 fill-current" />
             {movie.vote_average.toFixed(1)}
           </Badge>
@@ -122,7 +151,7 @@ export const EnhancedMovieCard: React.FC<EnhancedMovieCardProps> = ({ movie }) =
             <Button
               onClick={handleWatch}
               size="sm"
-              className="bg-red-600 hover:bg-red-700 text-white rounded-full w-8 h-8 sm:w-12 sm:h-12 p-0"
+              className="bg-red-600 hover:bg-red-700 text-white rounded-full w-8 h-8 sm:w-12 sm:h-12 p-0 transition-all duration-200 hover:scale-110"
             >
               <Play className="h-3 w-3 sm:h-4 sm:w-4 fill-current" />
             </Button>
@@ -135,7 +164,7 @@ export const EnhancedMovieCard: React.FC<EnhancedMovieCardProps> = ({ movie }) =
                 onClick={handleMoreInfo}
                 variant="outline"
                 size="sm"
-                className="border-white/30 bg-white/10 text-white hover:bg-white/20 flex-1 text-xs sm:text-sm h-6 sm:h-8"
+                className="border-white/30 bg-white/10 text-white hover:bg-white/20 flex-1 text-xs sm:text-sm h-6 sm:h-8 backdrop-blur-sm transition-all duration-200"
               >
                 <Info className="h-2 w-2 sm:h-3 sm:w-3 mr-1" />
                 Info
@@ -146,9 +175,9 @@ export const EnhancedMovieCard: React.FC<EnhancedMovieCardProps> = ({ movie }) =
                   onClick={handleWatchlistToggle}
                   variant="outline"
                   size="sm"
-                  className="border-white/30 bg-white/10 text-white hover:bg-white/20 w-6 sm:w-8 h-6 sm:h-8 p-0"
+                  className="border-white/30 bg-white/10 text-white hover:bg-white/20 w-6 sm:w-8 h-6 sm:h-8 p-0 backdrop-blur-sm transition-all duration-200"
                 >
-                  {isInWatchlist(movie.id) ? 
+                  {isInUserWatchlist ? 
                     <Check className="h-2 w-2 sm:h-3 sm:w-3" /> : 
                     <Plus className="h-2 w-2 sm:h-3 sm:w-3" />
                   }
