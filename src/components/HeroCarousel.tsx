@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
-import { Play, Plus, Star, Info } from 'lucide-react';
+import { Play, Plus, Star, Info, RefreshCw } from 'lucide-react';
 import { tmdbApi, Movie } from '@/services/tmdb';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
@@ -11,6 +11,7 @@ import { useToast } from '@/hooks/use-toast';
 export const HeroCarousel = () => {
   const [movies, setMovies] = useState<Movie[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
   const { user, addToWatchlist, isInWatchlist } = useAuth();
   const { toast } = useToast();
@@ -21,10 +22,30 @@ export const HeroCarousel = () => {
 
   const fetchPopularMovies = async () => {
     try {
+      setLoading(true);
+      setError(null);
       const popularMoviesResponse = await tmdbApi.getPopularMovies();
-      setMovies(popularMoviesResponse.results.slice(0, 5));
+      
+      if (popularMoviesResponse && popularMoviesResponse.results) {
+        setMovies(popularMoviesResponse.results.slice(0, 5));
+      } else {
+        throw new Error('No movie data received');
+      }
     } catch (error) {
       console.error('Error fetching popular movies:', error);
+      setError('Failed to load content. Please check your API configuration.');
+      // Fallback to mock data
+      setMovies([
+        {
+          id: 1,
+          title: 'Welcome to FlickPick',
+          overview: 'Discover amazing movies and TV shows. Configure your TMDB API key to start exploring!',
+          poster_path: '',
+          backdrop_path: '',
+          vote_average: 8.5,
+          release_date: '2024-01-01'
+        }
+      ]);
     } finally {
       setLoading(false);
     }
@@ -56,7 +77,26 @@ export const HeroCarousel = () => {
   if (loading) {
     return (
       <section className="relative w-full h-[100dvh] flex items-center justify-center bg-background">
-        <div className="text-foreground text-xl">Loading...</div>
+        <div className="text-center space-y-4">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
+          <div className="text-foreground text-xl">Loading amazing content...</div>
+        </div>
+      </section>
+    );
+  }
+
+  if (error) {
+    return (
+      <section className="relative w-full h-[100dvh] flex items-center justify-center bg-background">
+        <div className="text-center space-y-4 max-w-md mx-auto px-4">
+          <div className="text-destructive text-6xl mb-4">⚠️</div>
+          <h2 className="text-2xl font-bold text-foreground">Content Loading Issue</h2>
+          <p className="text-muted-foreground">{error}</p>
+          <Button onClick={fetchPopularMovies} className="mt-4">
+            <RefreshCw className="h-4 w-4 mr-2" />
+            Try Again
+          </Button>
+        </div>
       </section>
     );
   }

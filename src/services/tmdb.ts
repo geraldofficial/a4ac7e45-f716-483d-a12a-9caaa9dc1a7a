@@ -1,5 +1,5 @@
 
-const API_KEY = '3c1ad5a8c5c564f5b2c5b4b1e6b2b5b1';
+const API_KEY = 'your_valid_tmdb_api_key_here'; // You'll need to replace this with a valid TMDB API key
 const BASE_URL = 'https://api.themoviedb.org/3';
 
 export interface Movie {

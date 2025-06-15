@@ -1,6 +1,5 @@
-
 import React from 'react';
-import { TrendingUp, Heart, Clock, Star, Users, Zap, Baby } from 'lucide-react';
+import { TrendingUp, Heart, Clock, Star, Users, Zap, AlertCircle, RefreshCw } from 'lucide-react';
 import { MovieCard } from '@/components/MovieCard';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -44,26 +43,59 @@ export const ContentRecommendations: React.FC<ContentRecommendationsProps> = ({
   }
 
   // Default content when no profile is selected
-  // Get trending content
-  const { data: trending } = useQuery({
+  // Get trending content with error handling
+  const { data: trending, error: trendingError, refetch: refetchTrending } = useQuery({
     queryKey: ['trending-all'],
     queryFn: () => tmdbApi.getTrending(),
-    staleTime: 1000 * 60 * 30 // 30 minutes
+    staleTime: 1000 * 60 * 30, // 30 minutes
+    retry: 1
   });
 
-  // Get popular movies
-  const { data: popularMovies } = useQuery({
+  // Get popular movies with error handling
+  const { data: popularMovies, error: popularMoviesError, refetch: refetchPopularMovies } = useQuery({
     queryKey: ['popular-movies'],
     queryFn: () => tmdbApi.getPopularMovies(),
-    staleTime: 1000 * 60 * 60 // 1 hour
+    staleTime: 1000 * 60 * 60, // 1 hour
+    retry: 1
   });
 
-  // Get popular TV shows
-  const { data: popularTV } = useQuery({
+  // Get popular TV shows with error handling
+  const { data: popularTV, error: popularTVError, refetch: refetchPopularTV } = useQuery({
     queryKey: ['popular-tv'],
     queryFn: () => tmdbApi.getPopularTVShows(),
-    staleTime: 1000 * 60 * 60 // 1 hour
+    staleTime: 1000 * 60 * 60, // 1 hour
+    retry: 1
   });
+
+  // Check if we have any errors
+  const hasErrors = trendingError || popularMoviesError || popularTVError;
+
+  if (hasErrors) {
+    return (
+      <div className={`space-y-8 ${className}`}>
+        <div className="text-center py-12">
+          <AlertCircle className="h-16 w-16 text-destructive mx-auto mb-4" />
+          <h2 className="text-2xl font-bold text-foreground mb-2">Unable to Load Content</h2>
+          <p className="text-muted-foreground mb-6">
+            We're having trouble connecting to our content database. This might be due to API configuration issues.
+          </p>
+          <div className="space-x-4">
+            <Button 
+              onClick={() => {
+                refetchTrending();
+                refetchPopularMovies();
+                refetchPopularTV();
+              }}
+              variant="outline"
+            >
+              <RefreshCw className="h-4 w-4 mr-2" />
+              Try Again
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   // Get top rated content
   const { data: topRated } = useQuery({
