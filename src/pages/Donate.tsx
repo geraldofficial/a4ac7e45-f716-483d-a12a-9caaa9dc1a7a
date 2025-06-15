@@ -7,11 +7,17 @@ import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Heart, Coffee, Star, Zap, Crown, Gift } from 'lucide-react';
 import { toast } from 'sonner';
+import { KeshoPayButton } from 'keshopay-v1';
 
 const Donate = () => {
   const [selectedAmount, setSelectedAmount] = useState(5);
   const [customAmount, setCustomAmount] = useState('');
-  const [isProcessing, setIsProcessing] = useState(false);
+
+  // Your KeshoPay App ID
+  const KESHO_APP_ID = "80165";
+
+  // Exchange rate: 1 USD = 130 KES (approximate)
+  const EXCHANGE_RATE = 130;
 
   const donationTiers = [
     {
@@ -51,28 +57,28 @@ const Donate = () => {
     }
   ];
 
-  const handleDonate = async () => {
+  const getDonationAmount = () => {
     const amount = customAmount ? parseFloat(customAmount) : selectedAmount;
-    
-    if (amount < 1) {
-      toast.error('Minimum donation amount is $1');
-      return;
-    }
-
-    setIsProcessing(true);
-    
-    try {
-      // Simulate donation processing
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      toast.success(`Thank you for your $${amount} donation! 🎉`);
-      setCustomAmount('');
-    } catch (error) {
-      toast.error('Donation failed. Please try again.');
-    } finally {
-      setIsProcessing(false);
-    }
+    return Math.round(amount * EXCHANGE_RATE); // Convert to KES
   };
+
+  const getDonationReference = () => {
+    return `FLICKPICK-${Date.now()}`;
+  };
+
+  const getDonationIdentifier = () => {
+    return `flickpick-user-${Date.now()}`;
+  };
+
+  // Check for payment success on component mount
+  React.useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('payment') === 'success') {
+      toast.success('Thank you for your generous donation! 🎉');
+      // Clean up URL
+      window.history.replaceState({}, document.title, window.location.pathname);
+    }
+  }, []);
 
   return (
     <div className="min-h-screen bg-background">
@@ -144,29 +150,46 @@ const Donate = () => {
                   step="0.01"
                 />
               </div>
+              {(customAmount || selectedAmount > 0) && (
+                <p className="text-center text-sm text-muted-foreground mt-4">
+                  ≈ KSh {getDonationAmount().toLocaleString()} (converted to Kenyan Shillings)
+                </p>
+              )}
             </div>
           </Card>
 
-          {/* Donation Button */}
+          {/* KeshoPay Donation Button */}
           <div className="text-center mb-12">
-            <Button
-              onClick={handleDonate}
-              disabled={isProcessing || (!selectedAmount && !customAmount)}
-              size="lg"
-              className="px-12 py-6 text-lg font-semibold bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white border-0"
-            >
-              {isProcessing ? (
-                <>
-                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-3"></div>
-                  Processing...
-                </>
-              ) : (
-                <>
-                  <Heart className="h-5 w-5 mr-3" />
-                  Donate ${customAmount || selectedAmount}
-                </>
-              )}
-            </Button>
+            <div className="bg-gradient-to-r from-pink-500/10 to-purple-600/10 p-8 rounded-2xl border border-pink-500/20">
+              <div className="mb-6">
+                <Heart className="h-12 w-12 text-pink-500 mx-auto mb-4" />
+                <h3 className="text-2xl font-bold text-foreground mb-2">
+                  Ready to Support FlickPick?
+                </h3>
+                <p className="text-muted-foreground">
+                  Your ${customAmount || selectedAmount} donation helps keep FlickPick free for everyone
+                </p>
+              </div>
+              
+              <div className="flex justify-center">
+                <KeshoPayButton
+                  amount={getDonationAmount()}
+                  reference={getDonationReference()}
+                  appId={KESHO_APP_ID}
+                  buttonText={`❤️ Donate $${customAmount || selectedAmount} (KSh ${getDonationAmount().toLocaleString()})`}
+                  identifier={getDonationIdentifier()}
+                />
+              </div>
+              
+              <div className="mt-6 text-sm text-muted-foreground bg-muted/20 rounded-lg p-4">
+                <p className="mb-2">
+                  <strong>Secure Payment:</strong> Powered by KeshoPay with M-Pesa, Airtel Money, and card payments
+                </p>
+                <p className="text-xs opacity-75">
+                  All payments are processed securely in Kenyan Shillings (KES)
+                </p>
+              </div>
+            </div>
           </div>
 
           {/* Why Donate */}
