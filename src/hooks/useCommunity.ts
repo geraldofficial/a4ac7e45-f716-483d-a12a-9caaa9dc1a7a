@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -26,18 +25,27 @@ export interface CommunityPost {
 export const useCommunity = () => {
   const [posts, setPosts] = useState<CommunityPost[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
   const { user } = useAuth();
 
   const fetchPosts = async () => {
     try {
+      setError(null);
+      console.log('🔄 Fetching community posts...');
+      
       // First, fetch posts without profile data
       const { data: postsData, error: postsError } = await supabase
         .from('community_posts')
         .select('*')
         .order('created_at', { ascending: false });
 
-      if (postsError) throw postsError;
+      if (postsError) {
+        console.error('❌ Error fetching posts:', postsError);
+        throw postsError;
+      }
+
+      console.log('✅ Posts fetched successfully:', postsData?.length || 0);
 
       if (!postsData) {
         setPosts([]);
@@ -46,6 +54,7 @@ export const useCommunity = () => {
 
       // Get unique user IDs from posts
       const userIds = [...new Set(postsData.map(post => post.user_id))];
+      console.log('👥 Fetching profiles for users:', userIds.length);
 
       // Fetch profile data for these users
       const { data: profilesData, error: profilesError } = await supabase
@@ -54,7 +63,7 @@ export const useCommunity = () => {
         .in('id', userIds);
 
       if (profilesError) {
-        console.error('Error fetching profiles:', profilesError);
+        console.error('⚠️ Error fetching profiles:', profilesError);
       }
 
       // Create a map of user profiles for easy lookup
@@ -71,7 +80,7 @@ export const useCommunity = () => {
         // Fetch user likes and bookmarks
         const postIds = postsData.map(post => post.id);
         
-        const [likesData, bookmarksData] = await Promise.all([
+        const [likesResult, bookmarksResult] = await Promise.allSettled([
           supabase
             .from('community_post_likes')
             .select('post_id')
@@ -84,8 +93,17 @@ export const useCommunity = () => {
             .in('post_id', postIds)
         ]);
 
-        const likedPosts = new Set(likesData.data?.map(like => like.post_id));
-        const bookmarkedPosts = new Set(bookmarksData.data?.map(bookmark => bookmark.post_id));
+        const likedPosts = new Set(
+          likesResult.status === 'fulfilled' && likesResult.value.data
+            ? likesResult.value.data.map(like => like.post_id)
+            : []
+        );
+        
+        const bookmarkedPosts = new Set(
+          bookmarksResult.status === 'fulfilled' && bookmarksResult.value.data
+            ? bookmarksResult.value.data.map(bookmark => bookmark.post_id)
+            : []
+        );
 
         const enrichedPosts = postsData.map(post => ({
           ...post,
@@ -114,10 +132,12 @@ export const useCommunity = () => {
         setPosts(enrichedPosts);
       }
     } catch (error) {
-      console.error('Error fetching posts:', error);
+      console.error('💥 Critical error in fetchPosts:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Failed to load posts';
+      setError(errorMessage);
       toast({
         title: "Error",
-        description: "Failed to load posts",
+        description: "Failed to load posts. Please try again.",
         variant: "destructive",
       });
     } finally {
@@ -295,6 +315,7 @@ export const useCommunity = () => {
   };
 
   useEffect(() => {
+    console.log('🚀 Community hook initializing...');
     fetchPosts();
 
     // Set up real-time subscriptions
@@ -305,6 +326,7 @@ export const useCommunity = () => {
         schema: 'public',
         table: 'community_posts'
       }, () => {
+        console.log('📡 Real-time post update detected');
         fetchPosts();
       })
       .subscribe();
@@ -316,6 +338,7 @@ export const useCommunity = () => {
         schema: 'public',
         table: 'community_post_likes'
       }, () => {
+        console.log('📡 Real-time like update detected');
         fetchPosts();
       })
       .subscribe();
@@ -327,11 +350,13 @@ export const useCommunity = () => {
         schema: 'public',
         table: 'community_post_comments'
       }, () => {
+        console.log('📡 Real-time comment update detected');
         fetchPosts();
       })
       .subscribe();
 
     return () => {
+      console.log('🧹 Cleaning up community subscriptions');
       postsSubscription.unsubscribe();
       likesSubscription.unsubscribe();
       commentsSubscription.unsubscribe();
@@ -341,6 +366,7 @@ export const useCommunity = () => {
   return {
     posts,
     loading,
+    error,
     createPost,
     toggleLike,
     toggleBookmark,
