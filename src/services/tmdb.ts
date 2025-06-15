@@ -44,6 +44,16 @@ export interface Movie {
     air_date: string;
     overview: string;
   }>;
+  videos?: {
+    results: Array<{
+      id: string;
+      key: string;
+      name: string;
+      site: string;
+      type: string;
+      official: boolean;
+    }>;
+  };
 }
 
 export const tmdbApi = {

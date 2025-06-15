@@ -5,6 +5,7 @@ import { Navbar } from '@/components/Navbar';
 import { Footer } from '@/components/Footer';
 import { Button } from '@/components/ui/button';
 import { VideoPlayer } from '@/components/VideoPlayer';
+import { TrailerPlayer } from '@/components/TrailerPlayer';
 import { tmdbApi, Movie } from '@/services/tmdb';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
@@ -77,6 +78,25 @@ const DetailPage = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  // Get the best trailer from videos
+  const getTrailer = () => {
+    if (!content?.videos?.results) return null;
+    
+    // Look for official trailers first
+    const officialTrailer = content.videos.results.find(
+      video => video.site === 'YouTube' && video.type === 'Trailer' && video.official
+    );
+    
+    if (officialTrailer) return officialTrailer;
+    
+    // Fall back to any trailer
+    const anyTrailer = content.videos.results.find(
+      video => video.site === 'YouTube' && video.type === 'Trailer'
+    );
+    
+    return anyTrailer || null;
   };
 
   const handleWatch = () => {
@@ -168,6 +188,7 @@ const DetailPage = () => {
 
   const title = content.title || content.name || 'Unknown Title';
   const releaseDate = content.release_date || content.first_air_date || '';
+  const trailer = getTrailer();
   const backdropUrl = content.backdrop_path 
     ? `https://image.tmdb.org/t/p/original${content.backdrop_path}`
     : 'https://images.unsplash.com/photo-1489599904276-39c2bb2d7b64?w=1920&h=1080&fit=crop';
@@ -205,15 +226,23 @@ const DetailPage = () => {
           <div className="pt-14 md:pt-16">
             {/* Hero Section */}
             <div className="relative h-[60vh] md:h-screen">
-              <div 
-                className="absolute inset-0 bg-cover bg-center"
-                style={{ backgroundImage: `url(${backdropUrl})` }}
-              >
-                <div className="absolute inset-0 bg-gradient-to-t from-background via-background/70 to-transparent" />
-              </div>
+              {trailer ? (
+                <TrailerPlayer
+                  videoKey={trailer.key}
+                  title={title}
+                  backdropPath={content.backdrop_path}
+                />
+              ) : (
+                <div 
+                  className="absolute inset-0 bg-cover bg-center"
+                  style={{ backgroundImage: `url(${backdropUrl})` }}
+                >
+                  <div className="absolute inset-0 bg-gradient-to-t from-background via-background/70 to-transparent" />
+                </div>
+              )}
               
-              <div className="relative z-10 container mx-auto px-3 md:px-4 h-full flex items-end md:items-center">
-                <div className="max-w-full md:max-w-2xl pb-4 md:pb-0">
+              <div className="absolute bottom-0 left-0 right-0 z-10 container mx-auto px-3 md:px-4 pb-4 md:pb-8">
+                <div className="max-w-full md:max-w-2xl">
                   <Button
                     variant="ghost"
                     onClick={() => navigate(-1)}
@@ -224,7 +253,7 @@ const DetailPage = () => {
                     <span className="text-xs md:text-sm">Back</span>
                   </Button>
                   
-                  <h1 className="text-2xl md:text-5xl lg:text-7xl font-bold text-foreground mb-2 md:mb-6 leading-tight">
+                  <h1 className="text-2xl md:text-5xl lg:text-7xl font-bold text-white mb-2 md:mb-6 leading-tight drop-shadow-lg">
                     {getDisplayTitle()}
                   </h1>
 
@@ -242,7 +271,7 @@ const DetailPage = () => {
                     </div>
                   )}
                   
-                  <div className="flex items-center gap-2 md:gap-6 text-foreground mb-2 md:mb-6 flex-wrap">
+                  <div className="flex items-center gap-2 md:gap-6 text-white mb-2 md:mb-6 flex-wrap">
                     <div className="flex items-center gap-1">
                       <Star className="h-3 w-3 md:h-5 md:w-5 text-yellow-400 fill-current" />
                       <span className="text-sm md:text-lg font-semibold">{content.vote_average.toFixed(1)}</span>
@@ -270,7 +299,7 @@ const DetailPage = () => {
                     )}
                   </div>
                   
-                  <p className="text-muted-foreground text-xs md:text-lg leading-relaxed mb-3 md:mb-8 max-w-full md:max-w-xl line-clamp-3 md:line-clamp-none">
+                  <p className="text-white/90 text-xs md:text-lg leading-relaxed mb-3 md:mb-8 max-w-full md:max-w-xl line-clamp-3 md:line-clamp-none drop-shadow">
                     {content.overview}
                   </p>
                   
@@ -289,7 +318,7 @@ const DetailPage = () => {
                         onClick={handleWatchlistToggle}
                         variant="outline"
                         size="sm"
-                        className="border-border text-foreground hover:bg-accent px-3 md:px-6 text-xs md:text-base"
+                        className="border-white/30 text-white hover:bg-white/20 px-3 md:px-6 text-xs md:text-base backdrop-blur-sm"
                       >
                         {isInWatchlist(content.id) ? (
                           <>
@@ -311,7 +340,7 @@ const DetailPage = () => {
                       onClick={handleShare}
                       variant="outline"
                       size="sm"
-                      className="border-border text-foreground hover:bg-accent px-3 md:px-6 text-xs md:text-base"
+                      className="border-white/30 text-white hover:bg-white/20 px-3 md:px-6 text-xs md:text-base backdrop-blur-sm"
                     >
                       <Share className="h-3 w-3 md:h-5 md:w-5 mr-1 md:mr-2" />
                       <span className="hidden sm:inline">Share</span>
@@ -321,7 +350,7 @@ const DetailPage = () => {
                       onClick={handleWatchParty}
                       variant="outline"
                       size="sm"
-                      className="border-border text-foreground hover:bg-accent px-3 md:px-6 text-xs md:text-base"
+                      className="border-white/30 text-white hover:bg-white/20 px-3 md:px-6 text-xs md:text-base backdrop-blur-sm"
                     >
                       <UserPlus className="h-3 w-3 md:h-5 md:w-5 mr-1 md:mr-2" />
                       <span className="hidden sm:inline">Watch Party</span>
