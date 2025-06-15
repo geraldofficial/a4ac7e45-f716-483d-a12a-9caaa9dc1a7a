@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { MovieCard } from './MovieCard';
 import { LoadingSpinner } from './LoadingSpinner';
@@ -103,40 +102,40 @@ export const MovieSection = () => {
     sectionId: string; 
     showScrollButtons?: boolean;
   }) => (
-    <section className="mb-8 md:mb-12">
-      <div className="flex items-center justify-between mb-4 md:mb-6 px-3 md:px-6">
-        <div className="flex items-center gap-2">
-          <div className="w-1 h-6 bg-gradient-to-b from-primary to-primary/50 rounded-full"></div>
-          <h2 className="text-lg md:text-2xl lg:text-3xl font-bold text-foreground bg-gradient-to-r from-foreground to-foreground/80 bg-clip-text">
+    <section className="mb-4 md:mb-6">
+      <div className="flex items-center justify-between mb-2 md:mb-3 px-2 md:px-4">
+        <div className="flex items-center gap-1.5">
+          <div className="w-1 h-4 bg-gradient-to-b from-primary to-primary/50 rounded-full"></div>
+          <h2 className="text-base md:text-xl lg:text-2xl font-bold text-foreground bg-gradient-to-r from-foreground to-foreground/80 bg-clip-text">
             {title}
           </h2>
         </div>
         {showScrollButtons && (
-          <div className="hidden md:flex gap-2">
+          <div className="hidden md:flex gap-1">
             <button
               onClick={() => scrollSection(sectionId, 'left')}
-              className="p-2 rounded-full bg-card/80 hover:bg-card border border-border hover:border-primary/50 transition-all duration-200 hover:scale-105 backdrop-blur-sm"
+              className="p-1.5 rounded-full bg-card/80 hover:bg-card border border-border hover:border-primary/50 transition-all duration-200 hover:scale-105 backdrop-blur-sm"
             >
-              <ChevronLeft className="h-4 w-4 text-foreground" />
+              <ChevronLeft className="h-3 w-3 text-foreground" />
             </button>
             <button
               onClick={() => scrollSection(sectionId, 'right')}
-              className="p-2 rounded-full bg-card/80 hover:bg-card border border-border hover:border-primary/50 transition-all duration-200 hover:scale-105 backdrop-blur-sm"
+              className="p-1.5 rounded-full bg-card/80 hover:bg-card border border-border hover:border-primary/50 transition-all duration-200 hover:scale-105 backdrop-blur-sm"
             >
-              <ChevronRight className="h-4 w-4 text-foreground" />
+              <ChevronRight className="h-3 w-3 text-foreground" />
             </button>
           </div>
         )}
       </div>
       <div 
         id={sectionId}
-        className="flex gap-3 md:gap-4 lg:gap-6 overflow-x-auto pb-4 px-3 md:px-6 scrollbar-hide scroll-smooth"
+        className="flex gap-2 md:gap-3 lg:gap-4 overflow-x-auto pb-2 px-2 md:px-4 scrollbar-hide scroll-smooth"
         style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
       >
         {movies.map((movie, index) => (
           <div 
             key={movie.id} 
-            className="flex-shrink-0 w-32 sm:w-36 md:w-40 lg:w-48 xl:w-52"
+            className="flex-shrink-0 w-28 sm:w-32 md:w-36 lg:w-40 xl:w-44"
             ref={sectionId === 'recommended' && index === movies.length - 1 ? lastMovieElementRef : null}
           >
             <MovieCard movie={movie} />
@@ -148,7 +147,7 @@ export const MovieSection = () => {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center py-16 md:py-24">
+      <div className="flex items-center justify-center py-12 md:py-16">
         <LoadingSpinner size="lg" text="Loading amazing content..." />
       </div>
     );
@@ -159,7 +158,7 @@ export const MovieSection = () => {
     : 'Popular Movies';
 
   return (
-    <div className="space-y-6 md:space-y-8 lg:space-y-12">
+    <div className="space-y-3 md:space-y-4 lg:space-y-6">
       {/* Personalized Recommendations */}
       <MovieRow
         title={recommendationTitle}
@@ -183,7 +182,7 @@ export const MovieSection = () => {
       />
 
       {loadingMore && (
-        <div className="text-center py-6">
+        <div className="text-center py-4">
           <LoadingSpinner size="md" text="Loading more recommendations..." />
         </div>
       )}

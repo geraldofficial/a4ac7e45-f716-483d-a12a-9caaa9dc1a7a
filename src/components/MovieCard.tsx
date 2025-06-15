@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Play, Plus, Check, Star, Info } from 'lucide-react';
@@ -5,21 +6,14 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
 import { Movie } from '@/services/tmdb';
+
 interface MovieCardProps {
   movie: Movie;
 }
-export const MovieCard: React.FC<MovieCardProps> = ({
-  movie
-}) => {
-  const {
-    user,
-    addToWatchlist,
-    removeFromWatchlist,
-    isInWatchlist
-  } = useAuth();
-  const {
-    toast
-  } = useToast();
+
+export const MovieCard: React.FC<MovieCardProps> = ({ movie }) => {
+  const { user, addToWatchlist, removeFromWatchlist, isInWatchlist } = useAuth();
+  const { toast } = useToast();
   const navigate = useNavigate();
   const [imageLoaded, setImageLoaded] = useState(false);
 
@@ -29,7 +23,10 @@ export const MovieCard: React.FC<MovieCardProps> = ({
 
   // Determine type from media_type or fallback to title/name check
   const type = movie.media_type || (movie.title ? 'movie' : 'tv');
-  const posterUrl = movie.poster_path ? `https://image.tmdb.org/t/p/w500${movie.poster_path}` : 'https://images.unsplash.com/photo-1489599904276-39c2bb2d7b64?w=400&h=600&fit=crop';
+  const posterUrl = movie.poster_path 
+    ? `https://image.tmdb.org/t/p/w500${movie.poster_path}` 
+    : 'https://images.unsplash.com/photo-1489599904276-39c2bb2d7b64?w=400&h=600&fit=crop';
+
   const handleWatch = () => {
     if (!user) {
       toast({
@@ -42,10 +39,12 @@ export const MovieCard: React.FC<MovieCardProps> = ({
     console.log('Navigating to:', `/${type}/${movie.id}`);
     navigate(`/${type}/${movie.id}`);
   };
+
   const handleMoreInfo = () => {
     console.log('Navigating to:', `/${type}/${movie.id}`);
     navigate(`/${type}/${movie.id}`);
   };
+
   const handleWatchlistToggle = async (e: React.MouseEvent) => {
     e.stopPropagation();
     if (!user) {
@@ -56,6 +55,7 @@ export const MovieCard: React.FC<MovieCardProps> = ({
       });
       return;
     }
+
     if (isInWatchlist(movie.id)) {
       await removeFromWatchlist(movie.id);
       toast({
@@ -70,30 +70,44 @@ export const MovieCard: React.FC<MovieCardProps> = ({
       });
     }
   };
-  return <div className="group relative overflow-hidden rounded-xl bg-card/80 backdrop-blur-sm border border-border/50 transition-all duration-300 hover:scale-[1.02] hover:shadow-2xl hover:border-primary/30 cursor-pointer w-full">
+
+  return (
+    <div className="group relative overflow-hidden rounded-lg bg-card/80 backdrop-blur-sm border border-border/50 transition-all duration-300 hover:scale-[1.02] hover:shadow-xl hover:border-primary/30 cursor-pointer w-full">
       <div className="aspect-[2/3] overflow-hidden relative bg-muted/20">
-        {!imageLoaded && <div className="absolute inset-0 bg-muted/30 animate-pulse flex items-center justify-center">
-            <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
-          </div>}
-        <img src={posterUrl} alt={title} className={`h-full w-full object-cover transition-all duration-500 group-hover:scale-110 ${imageLoaded ? 'opacity-100' : 'opacity-0'}`} onLoad={() => setImageLoaded(true)} onError={e => {
-        e.currentTarget.src = 'https://images.unsplash.com/photo-1489599904276-39c2bb2d7b64?w=400&h=600&fit=crop';
-        setImageLoaded(true);
-      }} />
+        {!imageLoaded && (
+          <div className="absolute inset-0 bg-muted/30 animate-pulse flex items-center justify-center">
+            <div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
+          </div>
+        )}
+        <img 
+          src={posterUrl} 
+          alt={title}
+          className={`h-full w-full object-cover transition-all duration-500 group-hover:scale-110 ${
+            imageLoaded ? 'opacity-100' : 'opacity-0'
+          }`}
+          onLoad={() => setImageLoaded(true)}
+          onError={(e) => {
+            e.currentTarget.src = 'https://images.unsplash.com/photo-1489599904276-39c2bb2d7b64?w=400&h=600&fit=crop';
+            setImageLoaded(true);
+          }}
+        />
         
         {/* Enhanced overlay with better gradient */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-all duration-300 max-w-xl ">
-          <div className="absolute bottom-1.5 left-1.5 right-1.5">
-            <div className="flex items-center justify-between mb-1.5">
+        <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-all duration-300">
+          <div className="absolute bottom-1 left-1 right-1">
+            <div className="flex items-center justify-between mb-1">
               <div className="flex items-center gap-1">
                 <div className="flex items-center gap-0.5 bg-black/40 backdrop-blur-sm rounded-full px-1.5 py-0.5">
-                  <Star className="h-2.5 w-2.5 text-yellow-400 fill-current" />
+                  <Star className="h-2 w-2 text-yellow-400 fill-current" />
                   <span className="text-white text-xs font-medium">{movie.vote_average.toFixed(1)}</span>
                 </div>
-                {releaseDate && <div className="bg-black/40 backdrop-blur-sm rounded-full px-1.5 py-0.5">
+                {releaseDate && (
+                  <div className="bg-black/40 backdrop-blur-sm rounded-full px-1.5 py-0.5">
                     <span className="text-gray-200 text-xs font-medium">
                       {new Date(releaseDate).getFullYear()}
                     </span>
-                  </div>}
+                  </div>
+                )}
               </div>
               <div className="bg-primary/20 backdrop-blur-sm rounded-full px-1.5 py-0.5">
                 <span className="text-primary text-xs font-semibold uppercase tracking-wider">
@@ -102,35 +116,60 @@ export const MovieCard: React.FC<MovieCardProps> = ({
               </div>
             </div>
             
-            <div className="flex gap-1">
-              <Button size="sm" className="bg-primary hover:bg-primary/90 text-primary-foreground font-medium transition-all duration-200 hover:scale-105 shadow-lg px-2 py-1 text-xs h-6 flex-1 rounded-full" onClick={e => {
-              e.stopPropagation();
-              handleWatch();
-            }}>
-                <Play className="h-2.5 w-2.5 mr-1 fill-current" />
+            <div className="flex gap-0.5">
+              <Button 
+                size="sm" 
+                className="bg-primary hover:bg-primary/90 text-primary-foreground font-medium transition-all duration-200 hover:scale-105 shadow-lg px-2 py-1 text-xs h-5 flex-1 rounded-full"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleWatch();
+                }}
+              >
+                <Play className="h-2 w-2 mr-1 fill-current" />
                 <span>Play</span>
               </Button>
               
-              <Button size="sm" variant="outline" className="border-white/30 bg-white/10 backdrop-blur-sm text-white hover:bg-white/20 hover:border-white/50 transition-all duration-200 hover:scale-105 shadow-lg px-1.5 py-1 text-xs h-6 rounded-full" onClick={e => {
-              e.stopPropagation();
-              handleMoreInfo();
-            }}>
-                <Info className="h-2.5 w-2.5" />
+              <Button 
+                size="sm" 
+                variant="outline" 
+                className="border-white/30 bg-white/10 backdrop-blur-sm text-white hover:bg-white/20 hover:border-white/50 transition-all duration-200 hover:scale-105 shadow-lg px-1 py-1 text-xs h-5 rounded-full"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleMoreInfo();
+                }}
+              >
+                <Info className="h-2 w-2" />
               </Button>
               
-              {user && <Button size="sm" variant="outline" className="border-white/30 bg-white/10 backdrop-blur-sm text-white hover:bg-white/20 hover:border-white/50 transition-all duration-200 hover:scale-105 shadow-lg px-1.5 py-1 text-xs h-6 rounded-full" onClick={handleWatchlistToggle}>
-                  {isInWatchlist(movie.id) ? <Check className="h-2.5 w-2.5" /> : <Plus className="h-2.5 w-2.5" />}
-                </Button>}
+              {user && (
+                <Button 
+                  size="sm" 
+                  variant="outline" 
+                  className="border-white/30 bg-white/10 backdrop-blur-sm text-white hover:bg-white/20 hover:border-white/50 transition-all duration-200 hover:scale-105 shadow-lg px-1 py-1 text-xs h-5 rounded-full"
+                  onClick={handleWatchlistToggle}
+                >
+                  {isInWatchlist(movie.id) ? (
+                    <Check className="h-2 w-2" />
+                  ) : (
+                    <Plus className="h-2 w-2" />
+                  )}
+                </Button>
+              )}
             </div>
           </div>
         </div>
       </div>
       
-      <div className="p-2 md:p-3 bg-gradient-to-b from-card to-card/80">
-        <h3 className="text-foreground font-semibold truncate mb-1 text-sm leading-tight group-hover:text-primary transition-colors">{title}</h3>
-        {releaseDate && <p className="text-muted-foreground text-xs">
+      <div className="p-1.5 md:p-2 bg-gradient-to-b from-card to-card/80">
+        <h3 className="text-foreground font-semibold truncate mb-0.5 text-xs leading-tight group-hover:text-primary transition-colors">
+          {title}
+        </h3>
+        {releaseDate && (
+          <p className="text-muted-foreground text-xs">
             {new Date(releaseDate).getFullYear()}
-          </p>}
+          </p>
+        )}
       </div>
-    </div>;
+    </div>
+  );
 };

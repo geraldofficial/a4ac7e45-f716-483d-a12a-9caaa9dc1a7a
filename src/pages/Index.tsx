@@ -35,7 +35,7 @@ const Index = () => {
       <main className="relative pt-14 sm:pt-16 md:pt-20">
         <HeroCarousel profile={currentProfile} />
         
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 space-y-8 sm:space-y-12 relative z-10">
+        <div className="container mx-auto px-2 sm:px-4 lg:px-8 py-4 sm:py-6 lg:py-8 space-y-4 sm:space-y-6 lg:space-y-8 relative z-10 pb-20 md:pb-8">
           {user && <ContinueWatching profile={currentProfile} />}
           {user && <RecentlyWatched profile={currentProfile} />}
           
