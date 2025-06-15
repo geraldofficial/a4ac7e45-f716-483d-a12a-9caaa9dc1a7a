@@ -6,13 +6,15 @@ interface FlickPickLogoProps {
   size?: 'sm' | 'md' | 'lg';
   showIcon?: boolean;
   showText?: boolean;
+  responsive?: boolean; // New prop for responsive behavior
 }
 
 export const FlickPickLogo: React.FC<FlickPickLogoProps> = ({ 
   className = "", 
   size = 'md', 
   showIcon = true,
-  showText = true 
+  showText = true,
+  responsive = false
 }) => {
   const sizeClasses = {
     sm: 'text-lg',
@@ -38,7 +40,9 @@ export const FlickPickLogo: React.FC<FlickPickLogoProps> = ({
         </div>
       )}
       {showText && (
-        <span className={`${sizeClasses[size]} font-bold text-foreground`}>
+        <span className={`${sizeClasses[size]} font-bold text-foreground ${
+          responsive ? 'hidden md:inline' : ''
+        }`}>
           FlickPick
         </span>
       )}

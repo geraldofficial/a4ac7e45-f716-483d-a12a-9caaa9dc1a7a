@@ -78,7 +78,7 @@ export const NotificationCenter: React.FC = () => {
       </Button>
 
       {isOpen && (
-        <Card className="absolute right-0 top-full mt-2 w-80 max-h-96 z-50 bg-background border shadow-lg">
+        <Card className="absolute right-0 top-full mt-2 w-80 sm:w-96 max-h-96 z-50 bg-background border shadow-lg max-w-[calc(100vw-2rem)] md:max-w-none">
           <div className="p-4 border-b flex items-center justify-between">
             <h3 className="font-semibold">Notifications</h3>
             <div className="flex gap-2">
@@ -108,7 +108,7 @@ export const NotificationCenter: React.FC = () => {
                   onClick={() => handleNotificationClick(notification)}
                 >
                   <div className="flex items-start gap-3">
-                    <span className="text-lg">
+                    <span className="text-lg flex-shrink-0">
                       {getNotificationIcon(notification.type)}
                     </span>
                     <div className="flex-1 min-w-0">

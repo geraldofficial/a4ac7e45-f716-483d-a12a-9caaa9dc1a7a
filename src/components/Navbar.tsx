@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Search, Menu, X, User, LogOut, Home, TrendingUp, Grid3X3, Star, Clock, UserCircle, Settings, Gamepad2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -72,8 +73,13 @@ export const Navbar = () => {
               onClick={() => navigate('/')} 
               className="flex items-center gap-2 hover:opacity-80 transition-opacity"
             >
-              <FlickPickLogo className="h-6 w-6 md:h-8 md:w-8" />
-              <span className="font-bold text-base md:text-xl text-foreground">FlickPick</span>
+              <FlickPickLogo 
+                size="md" 
+                showIcon={true} 
+                showText={true} 
+                responsive={true}
+                className="h-6 w-6 md:h-8 md:w-8" 
+              />
             </button>
           </div>
 

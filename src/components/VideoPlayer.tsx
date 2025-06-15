@@ -48,6 +48,8 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = (props) => {
       backdrop_path={props.backdrop_path}
       duration={props.duration}
       resumeFrom={resumeFrom}
+      onProgress={props.onProgress}
+      onComplete={props.onComplete}
       onClose={props.onClose}
     />
   );

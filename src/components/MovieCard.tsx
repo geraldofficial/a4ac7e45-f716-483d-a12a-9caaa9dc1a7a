@@ -18,7 +18,7 @@ export const MovieCard: React.FC<MovieCardProps> = ({ movie }) => {
   const [imageLoaded, setImageLoaded] = useState(false);
 
   // Handle optional title/name from TMDB API
-  const title = movie.title || movie.name || 'Unknown Title';
+  const title = movie.title || movie.name ||'Unknown Title';
   const releaseDate = movie.release_date || movie.first_air_date || '';
 
   // Determine type from media_type or fallback to title/name check
@@ -118,39 +118,39 @@ export const MovieCard: React.FC<MovieCardProps> = ({ movie }) => {
             <div className="grid grid-cols-3 gap-1">
               <Button 
                 size="sm" 
-                className="bg-primary hover:bg-primary/90 text-primary-foreground font-medium transition-all duration-200 hover:scale-105 shadow-lg px-2 py-2 text-sm h-8 rounded-md"
+                className="bg-primary hover:bg-primary/90 text-primary-foreground font-medium transition-all duration-200 hover:scale-105 shadow-lg px-2 py-2 text-xs sm:text-sm h-8 sm:h-9 rounded-md min-w-0"
                 onClick={(e) => {
                   e.stopPropagation();
                   handleWatch();
                 }}
               >
-                <Play className="h-3 w-3 mr-1 fill-current" />
-                <span>Play</span>
+                <Play className="h-3 w-3 sm:h-4 sm:w-4 mr-1 flex-shrink-0 fill-current" />
+                <span className="truncate">Play</span>
               </Button>
               
               <Button 
                 size="sm" 
                 variant="outline" 
-                className="border-white/30 bg-white/10 backdrop-blur-sm text-white hover:bg-white/20 hover:border-white/50 transition-all duration-200 hover:scale-105 shadow-lg px-2 py-2 text-sm h-8 rounded-md"
+                className="border-white/30 bg-white/10 backdrop-blur-sm text-white hover:bg-white/20 hover:border-white/50 transition-all duration-200 hover:scale-105 shadow-lg px-2 py-2 text-xs sm:text-sm h-8 sm:h-9 rounded-md min-w-0"
                 onClick={(e) => {
                   e.stopPropagation();
                   handleMoreInfo();
                 }}
               >
-                <Info className="h-3 w-3" />
+                <Info className="h-3 w-3 sm:h-4 sm:w-4" />
               </Button>
               
               {user && (
                 <Button 
                   size="sm" 
                   variant="outline" 
-                  className="border-white/30 bg-white/10 backdrop-blur-sm text-white hover:bg-white/20 hover:border-white/50 transition-all duration-200 hover:scale-105 shadow-lg px-2 py-2 text-sm h-8 rounded-md"
+                  className="border-white/30 bg-white/10 backdrop-blur-sm text-white hover:bg-white/20 hover:border-white/50 transition-all duration-200 hover:scale-105 shadow-lg px-2 py-2 text-xs sm:text-sm h-8 sm:h-9 rounded-md min-w-0"
                   onClick={handleWatchlistToggle}
                 >
                   {isInWatchlist(movie.id) ? (
-                    <Check className="h-3 w-3" />
+                    <Check className="h-3 w-3 sm:h-4 sm:w-4" />
                   ) : (
-                    <Plus className="h-3 w-3" />
+                    <Plus className="h-3 w-3 sm:h-4 sm:w-4" />
                   )}
                 </Button>
               )}
