@@ -82,9 +82,9 @@ export const CreatePostCard: React.FC = () => {
       <CardContent className="p-6">
         <div className="flex gap-4">
           <Avatar className="h-10 w-10 flex-shrink-0">
-            <AvatarImage src={user.user_metadata?.avatar_url} />
+            <AvatarImage src={user.avatar || user.image} />
             <AvatarFallback>
-              {user.user_metadata?.full_name?.charAt(0) || user.email?.charAt(0) || 'U'}
+              {user.full_name?.charAt(0) || user.name?.charAt(0) || user.email?.charAt(0) || 'U'}
             </AvatarFallback>
           </Avatar>
           
