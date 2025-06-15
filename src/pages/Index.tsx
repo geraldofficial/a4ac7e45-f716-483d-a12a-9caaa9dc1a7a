@@ -15,21 +15,25 @@ const Index = () => {
     const savedProfile = localStorage.getItem('selectedProfile');
     if (savedProfile) {
       try {
-        setCurrentProfile(JSON.parse(savedProfile));
+        const parsedProfile = JSON.parse(savedProfile);
+        console.log('Index: Loaded profile from localStorage:', parsedProfile);
+        setCurrentProfile(parsedProfile);
       } catch (error) {
         console.error('Error parsing saved profile:', error);
       }
     }
   }, []);
 
+  console.log('Index: Current profile state:', currentProfile);
+
   return (
     <div className="min-h-screen bg-background overflow-x-hidden">
       <Navbar />
       
-      <main className="relative">
+      <main className="relative pt-14 sm:pt-16 md:pt-20">
         <HeroCarousel />
         
-        <div className="container mx-auto px-4 py-12 space-y-12 relative z-10">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 space-y-8 sm:space-y-12 relative z-10">
           <ContentRecommendations 
             userId={user?.id} 
             profileId={currentProfile?.id}

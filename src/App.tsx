@@ -30,6 +30,7 @@ import Profile from "./pages/Profile";
 import Profiles from "./pages/Profiles";
 import History from "./pages/History";
 import Support from "./pages/Support";
+import Donate from "./pages/Donate";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -107,6 +108,7 @@ const App: React.FC = () => {
                   <Route path="/browse" element={<SafeRoute componentName="Browse"><Browse /></SafeRoute>} />
                   <Route path="/trending" element={<SafeRoute componentName="Trending"><Trending /></SafeRoute>} />
                   <Route path="/top-rated" element={<SafeRoute componentName="TopRated"><TopRated /></SafeRoute>} />
+                  <Route path="/donate" element={<SafeRoute componentName="Donate"><Donate /></SafeRoute>} />
                   <Route path="/profile" element={<SafeRoute componentName="Profile"><Profile /></SafeRoute>} />
                   <Route path="/profiles" element={<SafeRoute componentName="Profiles"><Profiles /></SafeRoute>} />
                   <Route path="/history" element={<SafeRoute componentName="History"><History /></SafeRoute>} />

@@ -1,6 +1,5 @@
 
 import React from 'react';
-import { Film } from 'lucide-react';
 
 interface FlickPickLogoProps {
   className?: string;
@@ -16,12 +15,12 @@ export const FlickPickLogo: React.FC<FlickPickLogoProps> = ({
   showText = true 
 }) => {
   const sizeClasses = {
-    sm: 'text-xl',
+    sm: 'text-lg',
     md: 'text-2xl',
     lg: 'text-4xl'
   };
 
-  const iconSizes = {
+  const logoSizes = {
     sm: 'h-6 w-6',
     md: 'h-8 w-8',
     lg: 'h-12 w-12'
@@ -31,7 +30,11 @@ export const FlickPickLogo: React.FC<FlickPickLogoProps> = ({
     <div className={`flex items-center space-x-2 ${className}`}>
       {showIcon && (
         <div className="relative">
-          <Film className={`${iconSizes[size]} text-primary`} />
+          <img 
+            src="/lovable-uploads/13e4711a-4553-48a5-952a-746d04a28025.png" 
+            alt="FlickPick Logo" 
+            className={`${logoSizes[size]} object-contain`}
+          />
         </div>
       )}
       {showText && (

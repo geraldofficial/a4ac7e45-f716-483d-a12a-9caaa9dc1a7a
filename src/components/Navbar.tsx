@@ -41,15 +41,15 @@ export const Navbar = () => {
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-lg border-b border-border/20">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16 md:h-20">
+      <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8">
+        <div className="flex items-center justify-between h-14 sm:h-16 md:h-20">
           {/* Logo */}
-          <Link to="/" className="flex items-center space-x-2">
-            <FlickPickLogo size="md" />
+          <Link to="/" className="flex items-center space-x-2 flex-shrink-0">
+            <FlickPickLogo size="sm" className="sm:text-base md:text-lg" />
           </Link>
 
           {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center space-x-8">
+          <div className="hidden md:flex items-center space-x-6 lg:space-x-8">
             {navigation.map((item) => (
               <Link
                 key={item.name}
@@ -67,7 +67,7 @@ export const Navbar = () => {
           </div>
 
           {/* Desktop Actions */}
-          <div className="hidden md:flex items-center space-x-4">
+          <div className="hidden md:flex items-center space-x-2 lg:space-x-4">
             <Button
               variant="ghost"
               size="sm"
@@ -105,12 +105,20 @@ export const Navbar = () => {
           </div>
 
           {/* Mobile menu button */}
-          <div className="md:hidden">
+          <div className="md:hidden flex items-center gap-2">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => navigate('/search')}
+              className="text-muted-foreground hover:text-foreground p-2"
+            >
+              <Search className="h-5 w-5" />
+            </Button>
             <Button
               variant="ghost"
               size="sm"
               onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className="text-muted-foreground hover:text-foreground"
+              className="text-muted-foreground hover:text-foreground p-2"
             >
               {isMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
             </Button>
@@ -120,15 +128,15 @@ export const Navbar = () => {
         {/* Mobile Navigation */}
         {isMenuOpen && (
           <div className="md:hidden py-4 border-t border-border/20 bg-background/95 backdrop-blur-lg">
-            <div className="flex flex-col space-y-4">
+            <div className="flex flex-col space-y-3">
               {navigation.map((item) => (
                 <Link
                   key={item.name}
                   to={item.href}
                   onClick={() => setIsMenuOpen(false)}
-                  className={`text-base font-medium transition-colors hover:text-primary px-2 py-1 flex items-center gap-2 ${
+                  className={`text-base font-medium transition-colors hover:text-primary px-3 py-2 flex items-center gap-2 rounded-lg hover:bg-accent/50 ${
                     location.pathname === item.href 
-                      ? 'text-primary' 
+                      ? 'text-primary bg-primary/10' 
                       : 'text-muted-foreground'
                   }`}
                 >
@@ -137,40 +145,31 @@ export const Navbar = () => {
                 </Link>
               ))}
 
-              <div className="flex items-center justify-between px-2 py-2 border-t border-border/20 mt-4 pt-4">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => {
-                    navigate('/search');
-                    setIsMenuOpen(false);
-                  }}
-                  className="text-muted-foreground hover:text-foreground"
-                >
-                  <Search className="h-5 w-5 mr-2" />
-                  Search
-                </Button>
-
+              <div className="flex flex-col space-y-3 px-3 py-2 border-t border-border/20 mt-4 pt-4">
                 {user ? (
-                  <div className="flex items-center space-x-2">
-                    <ProfileSwitcher />
+                  <>
+                    <div className="mb-2">
+                      <ProfileSwitcher />
+                    </div>
                     <Button
                       variant="ghost"
                       size="sm"
                       onClick={handleProfileClick}
-                      className="text-muted-foreground hover:text-foreground"
+                      className="justify-start text-muted-foreground hover:text-foreground"
                     >
-                      <User className="h-5 w-5" />
+                      <User className="h-5 w-5 mr-2" />
+                      Profile
                     </Button>
                     <Button
                       variant="ghost"
                       size="sm"
                       onClick={handleSignOut}
-                      className="text-muted-foreground hover:text-foreground"
+                      className="justify-start text-muted-foreground hover:text-foreground"
                     >
-                      <LogOut className="h-5 w-5" />
+                      <LogOut className="h-5 w-5 mr-2" />
+                      Sign Out
                     </Button>
-                  </div>
+                  </>
                 ) : (
                   <Button 
                     onClick={() => {
@@ -178,6 +177,7 @@ export const Navbar = () => {
                       setIsMenuOpen(false);
                     }} 
                     size="sm"
+                    className="w-full"
                   >
                     Sign In
                   </Button>
