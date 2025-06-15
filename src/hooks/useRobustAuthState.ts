@@ -1,3 +1,4 @@
+
 import { useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuthStateManager } from './auth/useAuthStateManager';
@@ -22,28 +23,27 @@ export const useRobustAuthState = () => {
     mountedRef.current = true;
     loadingRef.current = true;
     let subscription: any;
+    let safetyTimeout: NodeJS.Timeout;
     
     console.log('🔐 Starting robust auth initialization...');
     
-    // Safety timeout using ref to avoid stale closure
-    const safetyTimeout = setTimeout(() => {
-      if (mountedRef.current && loadingRef.current) {
-        console.log('⏰ Safety timeout: forcing loading to false');
-        setLoading(false);
-        loadingRef.current = false;
-        setError('Authentication took too long to initialize');
-      }
-    }, 5000);
-    
     const initializeAuth = async () => {
-      if (initializationAttempted.current) {
-        console.log('🚫 Auth initialization already attempted');
-        return;
-      }
-      
-      initializationAttempted.current = true;
-      
       try {
+        // Clear any existing error
+        if (mountedRef.current) {
+          setError(null);
+        }
+
+        // Set up safety timeout with longer duration
+        safetyTimeout = setTimeout(() => {
+          if (mountedRef.current && loadingRef.current) {
+            console.log('⏰ Safety timeout: forcing loading to false after 10 seconds');
+            setLoading(false);
+            loadingRef.current = false;
+            setError('Authentication initialization timed out. Please refresh the page.');
+          }
+        }, 10000); // Increased to 10 seconds
+
         // Set up auth state listener
         console.log('🎯 Setting up auth state listener...');
         
@@ -59,15 +59,22 @@ export const useRobustAuthState = () => {
             if (event === 'SIGNED_IN' && session?.user) {
               console.log('✅ User signed in, setting basic profile...');
               
+              // Clear the safety timeout since we have a successful sign in
+              if (safetyTimeout) {
+                clearTimeout(safetyTimeout);
+              }
+              
               // Set basic user data immediately
               const basicUser = createBasicUserProfile(session.user);
               
               if (mountedRef.current) {
                 setUser(basicUser);
                 setError(null);
+                setLoading(false);
+                loadingRef.current = false;
                 console.log('👤 Basic user set:', basicUser.id);
                 
-                // Defer extended profile fetching with proper error handling
+                // Defer extended profile fetching
                 setTimeout(async () => {
                   if (mountedRef.current) {
                     try {
@@ -78,7 +85,6 @@ export const useRobustAuthState = () => {
                       }
                     } catch (profileError) {
                       console.warn('⚠️ Profile loading failed, keeping basic user:', profileError);
-                      // Keep the basic user, don't set error
                     }
                   }
                 }, 100);
@@ -86,105 +92,146 @@ export const useRobustAuthState = () => {
               
             } else if (event === 'SIGNED_OUT') {
               console.log('🚪 User signed out');
+              if (safetyTimeout) {
+                clearTimeout(safetyTimeout);
+              }
               if (mountedRef.current) {
                 setUser(null);
                 setError(null);
+                setLoading(false);
+                loadingRef.current = false;
+              }
+            } else if (event === 'TOKEN_REFRESHED') {
+              console.log('🔄 Token refreshed');
+              // Don't change loading state for token refresh
+            } else {
+              // For other events, ensure loading is false
+              if (mountedRef.current) {
+                setLoading(false);
+                loadingRef.current = false;
+                if (safetyTimeout) {
+                  clearTimeout(safetyTimeout);
+                }
               }
             }
             
-            // Always clear loading state after processing
-            if (mountedRef.current) {
-              setLoading(false);
-              loadingRef.current = false;
-              clearTimeout(safetyTimeout);
-            }
           } catch (error) {
             console.error('❌ Error in auth state change:', error);
+            if (safetyTimeout) {
+              clearTimeout(safetyTimeout);
+            }
             if (mountedRef.current) {
               setError(error instanceof Error ? error.message : 'Authentication error');
               setLoading(false);
               loadingRef.current = false;
-              clearTimeout(safetyTimeout);
             }
           }
         });
 
         subscription = data.subscription;
 
-        // Check for existing session
-        console.log('🔍 Checking for existing session...');
-        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-        
-        if (sessionError) {
-          console.error('❌ Session check failed:', sessionError);
-          if (mountedRef.current) {
-            setError('Failed to check authentication status');
-            setLoading(false);
-            loadingRef.current = false;
-            clearTimeout(safetyTimeout);
-          }
-        } else if (session?.user) {
-          console.log('📍 Found existing session:', session.user.id);
+        // Check for existing session with delay to avoid race conditions
+        setTimeout(async () => {
+          if (!mountedRef.current) return;
           
-          // Set basic user immediately
-          const basicUser = createBasicUserProfile(session.user);
-          
-          if (mountedRef.current) {
-            setUser(basicUser);
-            setError(null);
+          console.log('🔍 Checking for existing session...');
+          try {
+            const { data: { session }, error: sessionError } = await supabase.auth.getSession();
             
-            // Defer extended profile fetching with proper error handling
-            setTimeout(async () => {
+            if (sessionError) {
+              console.error('❌ Session check failed:', sessionError);
               if (mountedRef.current) {
-                try {
-                  const fullUser = await fetchAndMergeProfile(session.user.id, basicUser);
-                  if (mountedRef.current) {
-                    setUser(fullUser);
-                    console.log('🎉 Existing user profile loaded successfully');
-                  }
-                } catch (profileError) {
-                  console.warn('⚠️ Existing profile loading failed, keeping basic user:', profileError);
-                  // Keep the basic user, don't set error
+                setError('Failed to check authentication status');
+                setLoading(false);
+                loadingRef.current = false;
+                if (safetyTimeout) {
+                  clearTimeout(safetyTimeout);
                 }
               }
-            }, 100);
-            
-            setLoading(false);
-            loadingRef.current = false;
-            clearTimeout(safetyTimeout);
+            } else if (session?.user) {
+              console.log('📍 Found existing session:', session.user.id);
+              
+              // Clear the safety timeout
+              if (safetyTimeout) {
+                clearTimeout(safetyTimeout);
+              }
+              
+              // Set basic user immediately
+              const basicUser = createBasicUserProfile(session.user);
+              
+              if (mountedRef.current) {
+                setUser(basicUser);
+                setError(null);
+                setLoading(false);
+                loadingRef.current = false;
+                
+                // Defer extended profile fetching
+                setTimeout(async () => {
+                  if (mountedRef.current) {
+                    try {
+                      const fullUser = await fetchAndMergeProfile(session.user.id, basicUser);
+                      if (mountedRef.current) {
+                        setUser(fullUser);
+                        console.log('🎉 Existing user profile loaded successfully');
+                      }
+                    } catch (profileError) {
+                      console.warn('⚠️ Existing profile loading failed, keeping basic user:', profileError);
+                    }
+                  }
+                }, 100);
+              }
+            } else {
+              console.log('📍 No existing session found');
+              if (mountedRef.current) {
+                setLoading(false);
+                loadingRef.current = false;
+                if (safetyTimeout) {
+                  clearTimeout(safetyTimeout);
+                }
+              }
+            }
+          } catch (error) {
+            console.error('💥 Session check failed:', error);
+            if (safetyTimeout) {
+              clearTimeout(safetyTimeout);
+            }
+            if (mountedRef.current) {
+              setError(error instanceof Error ? error.message : 'Failed to check authentication status');
+              setLoading(false);
+              loadingRef.current = false;
+            }
           }
-        } else {
-          console.log('📍 No existing session found');
-          if (mountedRef.current) {
-            setLoading(false);
-            loadingRef.current = false;
-            clearTimeout(safetyTimeout);
-          }
-        }
+        }, 100); // Small delay to avoid race conditions
 
       } catch (error) {
         console.error('💥 Auth initialization failed:', error);
+        if (safetyTimeout) {
+          clearTimeout(safetyTimeout);
+        }
         if (mountedRef.current) {
           setError(error instanceof Error ? error.message : 'Failed to initialize authentication');
           setLoading(false);
           loadingRef.current = false;
-          clearTimeout(safetyTimeout);
         }
       }
     };
 
+    // Reset initialization flag and start
+    initializationAttempted.current = false;
     initializeAuth();
 
     return () => {
       console.log('🧹 Cleaning up robust auth state');
       mountedRef.current = false;
       loadingRef.current = false;
-      clearTimeout(safetyTimeout);
+      if (safetyTimeout) {
+        clearTimeout(safetyTimeout);
+      }
       if (subscription) {
         subscription.unsubscribe();
       }
     };
-  }, []);
+  }, []); // Empty dependency array to ensure this only runs once
 
   return { user, setUser, loading, setLoading, error, setError };
 };
