@@ -6,6 +6,7 @@ import { ContentRecommendations } from '@/components/ContentRecommendations';
 import { ContinueWatching } from '@/components/ContinueWatching';
 import { RecentlyWatched } from '@/components/RecentlyWatched';
 import { Footer } from '@/components/Footer';
+import { BottomNavigation } from '@/components/BottomNavigation';
 import { useAuth } from '@/contexts/AuthContext';
 
 const Index = () => {
@@ -48,6 +49,7 @@ const Index = () => {
       </main>
       
       <Footer />
+      <BottomNavigation />
     </div>
   );
 };

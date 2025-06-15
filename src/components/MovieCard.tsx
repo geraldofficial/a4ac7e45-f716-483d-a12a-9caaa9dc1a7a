@@ -93,64 +93,64 @@ export const MovieCard: React.FC<MovieCardProps> = ({ movie }) => {
         />
         
         <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-all duration-300">
-          <div className="absolute bottom-1 left-1 right-1">
-            <div className="flex items-center justify-between mb-1">
+          <div className="absolute bottom-2 left-2 right-2">
+            <div className="flex items-center justify-between mb-2">
               <div className="flex items-center gap-1">
-                <div className="flex items-center gap-0.5 bg-black/40 backdrop-blur-sm rounded-full px-1.5 py-0.5">
-                  <Star className="h-2 w-2 text-yellow-400 fill-current" />
-                  <span className="text-white text-xs font-medium">{movie.vote_average.toFixed(1)}</span>
+                <div className="flex items-center gap-1 bg-black/40 backdrop-blur-sm rounded-full px-2 py-1">
+                  <Star className="h-3 w-3 text-yellow-400 fill-current" />
+                  <span className="text-white text-sm font-medium">{movie.vote_average.toFixed(1)}</span>
                 </div>
                 {releaseDate && (
-                  <div className="bg-black/40 backdrop-blur-sm rounded-full px-1.5 py-0.5">
-                    <span className="text-gray-200 text-xs font-medium">
+                  <div className="bg-black/40 backdrop-blur-sm rounded-full px-2 py-1">
+                    <span className="text-gray-200 text-sm font-medium">
                       {new Date(releaseDate).getFullYear()}
                     </span>
                   </div>
                 )}
               </div>
-              <div className="bg-primary/20 backdrop-blur-sm rounded-full px-1.5 py-0.5">
+              <div className="bg-primary/20 backdrop-blur-sm rounded-full px-2 py-1">
                 <span className="text-primary text-xs font-semibold uppercase tracking-wider">
                   {type === 'tv' ? 'TV' : 'Movie'}
                 </span>
               </div>
             </div>
             
-            <div className="grid grid-cols-3 gap-0.5">
+            <div className="grid grid-cols-3 gap-1">
               <Button 
                 size="sm" 
-                className="bg-primary hover:bg-primary/90 text-primary-foreground font-medium transition-all duration-200 hover:scale-105 shadow-lg px-1 py-1 text-xs h-5 rounded-full"
+                className="bg-primary hover:bg-primary/90 text-primary-foreground font-medium transition-all duration-200 hover:scale-105 shadow-lg px-2 py-2 text-sm h-8 rounded-md"
                 onClick={(e) => {
                   e.stopPropagation();
                   handleWatch();
                 }}
               >
-                <Play className="h-2 w-2 mr-1 fill-current" />
+                <Play className="h-3 w-3 mr-1 fill-current" />
                 <span>Play</span>
               </Button>
               
               <Button 
                 size="sm" 
                 variant="outline" 
-                className="border-white/30 bg-white/10 backdrop-blur-sm text-white hover:bg-white/20 hover:border-white/50 transition-all duration-200 hover:scale-105 shadow-lg px-1 py-1 text-xs h-5 rounded-full"
+                className="border-white/30 bg-white/10 backdrop-blur-sm text-white hover:bg-white/20 hover:border-white/50 transition-all duration-200 hover:scale-105 shadow-lg px-2 py-2 text-sm h-8 rounded-md"
                 onClick={(e) => {
                   e.stopPropagation();
                   handleMoreInfo();
                 }}
               >
-                <Info className="h-2 w-2" />
+                <Info className="h-3 w-3" />
               </Button>
               
               {user && (
                 <Button 
                   size="sm" 
                   variant="outline" 
-                  className="border-white/30 bg-white/10 backdrop-blur-sm text-white hover:bg-white/20 hover:border-white/50 transition-all duration-200 hover:scale-105 shadow-lg px-1 py-1 text-xs h-5 rounded-full"
+                  className="border-white/30 bg-white/10 backdrop-blur-sm text-white hover:bg-white/20 hover:border-white/50 transition-all duration-200 hover:scale-105 shadow-lg px-2 py-2 text-sm h-8 rounded-md"
                   onClick={handleWatchlistToggle}
                 >
                   {isInWatchlist(movie.id) ? (
-                    <Check className="h-2 w-2" />
+                    <Check className="h-3 w-3" />
                   ) : (
-                    <Plus className="h-2 w-2" />
+                    <Plus className="h-3 w-3" />
                   )}
                 </Button>
               )}
@@ -159,8 +159,8 @@ export const MovieCard: React.FC<MovieCardProps> = ({ movie }) => {
         </div>
       </div>
       
-      <div className="p-1.5 md:p-2 bg-gradient-to-b from-card to-card/80">
-        <h3 className="text-foreground font-semibold truncate mb-0.5 text-xs leading-tight group-hover:text-primary transition-colors">
+      <div className="p-2 md:p-3 bg-gradient-to-b from-card to-card/80">
+        <h3 className="text-foreground font-semibold truncate mb-1 text-sm leading-tight group-hover:text-primary transition-colors">
           {title}
         </h3>
         {releaseDate && (

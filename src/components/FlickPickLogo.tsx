@@ -31,7 +31,7 @@ export const FlickPickLogo: React.FC<FlickPickLogoProps> = ({
       {showIcon && (
         <div className="relative">
           <img 
-            src="/lovable-uploads/13e4711a-4553-48a5-952a-746d04a28025.png" 
+            src="/lovable-uploads/0bb41fd4-6209-45e7-a375-a53cedfcb322.png" 
             alt="FlickPick Logo" 
             className={`${logoSizes[size]} object-contain`}
           />
