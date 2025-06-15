@@ -70,11 +70,11 @@ export const DetailPageActions: React.FC<DetailPageActionsProps> = ({
         onClick={onWatchParty}
         variant="outline"
         size="sm"
-        className="border-white/30 text-white hover:bg-white/20 px-3 md:px-6 text-xs md:text-base backdrop-blur-sm"
+        className="border-white/30 text-white hover:bg-white/20 px-3 md:px-8 text-xs md:text-base backdrop-blur-sm min-w-0 flex-shrink-0"
       >
-        <UserPlus className="h-3 w-3 md:h-5 md:w-5 mr-1 md:mr-2" />
-        <span className="hidden sm:inline">Watch Party</span>
-        <span className="sm:hidden">Party</span>
+        <UserPlus className="h-3 w-3 md:h-5 md:w-5 mr-1 md:mr-2 flex-shrink-0" />
+        <span className="hidden sm:inline whitespace-nowrap">Watch Party</span>
+        <span className="sm:hidden whitespace-nowrap">Party</span>
       </Button>
     </div>
   );
