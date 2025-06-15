@@ -9,69 +9,104 @@ interface AvatarSelectorProps {
   className?: string;
 }
 
-// Apple-style Memoji and professional avatars
-const defaultAvatars = [
-  'https://api.dicebear.com/8.x/notionists/svg?seed=Alex&backgroundColor=b6e3f4,c0aede,d1d4f9,ffd5dc,ffdfbf',
-  'https://api.dicebear.com/8.x/notionists/svg?seed=Emma&backgroundColor=b6e3f4,c0aede,d1d4f9,ffd5dc,ffdfbf',
-  'https://api.dicebear.com/8.x/notionists/svg?seed=Liam&backgroundColor=b6e3f4,c0aede,d1d4f9,ffd5dc,ffdfbf',
-  'https://api.dicebear.com/8.x/notionists/svg?seed=Olivia&backgroundColor=b6e3f4,c0aede,d1d4f9,ffd5dc,ffdfbf',
-  'https://api.dicebear.com/8.x/notionists/svg?seed=Noah&backgroundColor=b6e3f4,c0aede,d1d4f9,ffd5dc,ffdfbf',
-  'https://api.dicebear.com/8.x/notionists/svg?seed=Ava&backgroundColor=b6e3f4,c0aede,d1d4f9,ffd5dc,ffdfbf',
-  'https://api.dicebear.com/8.x/notionists/svg?seed=William&backgroundColor=b6e3f4,c0aede,d1d4f9,ffd5dc,ffdfbf',
-  'https://api.dicebear.com/8.x/notionists/svg?seed=Sophia&backgroundColor=b6e3f4,c0aede,d1d4f9,ffd5dc,ffdfbf',
-  'https://api.dicebear.com/8.x/notionists/svg?seed=James&backgroundColor=b6e3f4,c0aede,d1d4f9,ffd5dc,ffdfbf',
-  'https://api.dicebear.com/8.x/notionists/svg?seed=Isabella&backgroundColor=b6e3f4,c0aede,d1d4f9,ffd5dc,ffdfbf',
-  'https://api.dicebear.com/8.x/notionists/svg?seed=Benjamin&backgroundColor=b6e3f4,c0aede,d1d4f9,ffd5dc,ffdfbf',
-  'https://api.dicebear.com/8.x/notionists/svg?seed=Charlotte&backgroundColor=b6e3f4,c0aede,d1d4f9,ffd5dc,ffdfbf',
-  'https://api.dicebear.com/8.x/notionists/svg?seed=Lucas&backgroundColor=b6e3f4,c0aede,d1d4f9,ffd5dc,ffdfbf',
-  'https://api.dicebear.com/8.x/notionists/svg?seed=Amelia&backgroundColor=b6e3f4,c0aede,d1d4f9,ffd5dc,ffdfbf',
-  'https://api.dicebear.com/8.x/notionists/svg?seed=Mason&backgroundColor=b6e3f4,c0aede,d1d4f9,ffd5dc,ffdfbf',
-  'https://api.dicebear.com/8.x/notionists/svg?seed=Harper&backgroundColor=b6e3f4,c0aede,d1d4f9,ffd5dc,ffdfbf',
-  'https://api.dicebear.com/8.x/notionists/svg?seed=Ethan&backgroundColor=b6e3f4,c0aede,d1d4f9,ffd5dc,ffdfbf',
-  'https://api.dicebear.com/8.x/notionists/svg?seed=Evelyn&backgroundColor=b6e3f4,c0aede,d1d4f9,ffd5dc,ffdfbf',
-  'https://api.dicebear.com/8.x/notionists/svg?seed=Alexander&backgroundColor=b6e3f4,c0aede,d1d4f9,ffd5dc,ffdfbf',
-  'https://api.dicebear.com/8.x/notionists/svg?seed=Abigail&backgroundColor=b6e3f4,c0aede,d1d4f9,ffd5dc,ffdfbf',
-  'https://api.dicebear.com/8.x/notionists/svg?seed=Michael&backgroundColor=b6e3f4,c0aede,d1d4f9,ffd5dc,ffdfbf',
-  'https://api.dicebear.com/8.x/notionists/svg?seed=Emily&backgroundColor=b6e3f4,c0aede,d1d4f9,ffd5dc,ffdfbf',
-  'https://api.dicebear.com/8.x/notionists/svg?seed=Daniel&backgroundColor=b6e3f4,c0aede,d1d4f9,ffd5dc,ffdfbf',
-  'https://api.dicebear.com/8.x/notionists/svg?seed=Madison&backgroundColor=b6e3f4,c0aede,d1d4f9,ffd5dc,ffdfbf'
+// Emoji avatars as fallback and primary option
+const emojiAvatars = [
+  '👤', '👨', '👩', '🧑', '👦', '👧', '👶', '🧓', '👴', '👵',
+  '👨‍💼', '👩‍💼', '👨‍🎓', '👩‍🎓', '👨‍⚕️', '👩‍⚕️', '👨‍🚀', '👩‍🚀',
+  '🧑‍🎨', '👨‍🎨', '👩‍🎨', '🧑‍🍳', '👨‍🍳', '👩‍🍳'
+];
+
+// Alternative image avatars with better reliability
+const imageAvatars = [
+  'https://api.dicebear.com/7.x/avataaars/svg?seed=Alex',
+  'https://api.dicebear.com/7.x/avataaars/svg?seed=Emma',
+  'https://api.dicebear.com/7.x/avataaars/svg?seed=Liam',
+  'https://api.dicebear.com/7.x/avataaars/svg?seed=Olivia',
+  'https://api.dicebear.com/7.x/avataaars/svg?seed=Noah',
+  'https://api.dicebear.com/7.x/avataaars/svg?seed=Ava',
+  'https://api.dicebear.com/7.x/avataaars/svg?seed=William',
+  'https://api.dicebear.com/7.x/avataaars/svg?seed=Sophia',
+  'https://api.dicebear.com/7.x/avataaars/svg?seed=James',
+  'https://api.dicebear.com/7.x/avataaars/svg?seed=Isabella',
+  'https://api.dicebear.com/7.x/avataaars/svg?seed=Benjamin',
+  'https://api.dicebear.com/7.x/avataaars/svg?seed=Charlotte'
 ];
 
 export const AvatarSelector: React.FC<AvatarSelectorProps> = ({
-  selectedAvatar = defaultAvatars[0],
+  selectedAvatar = emojiAvatars[0],
   onAvatarSelect,
   className = ''
 }) => {
+  const [useEmojis, setUseEmojis] = useState(true);
+  const [imageErrors, setImageErrors] = useState<Set<string>>(new Set());
+
+  const currentAvatars = useEmojis ? emojiAvatars : imageAvatars;
+
+  const handleImageError = (avatar: string) => {
+    setImageErrors(prev => new Set(prev.add(avatar)));
+  };
+
+  const renderAvatar = (avatar: string, index: number) => {
+    const isSelected = selectedAvatar === avatar;
+    const isEmoji = emojiAvatars.includes(avatar);
+    const hasError = imageErrors.has(avatar);
+
+    return (
+      <button
+        key={`${avatar}-${index}`}
+        onClick={() => onAvatarSelect(avatar)}
+        className={`
+          relative w-16 h-16 sm:w-18 sm:h-18 rounded-2xl border-3 flex items-center justify-center
+          transition-all duration-300 hover:scale-110 overflow-hidden backdrop-blur-2xl
+          shadow-lg hover:shadow-2xl
+          ${isSelected 
+            ? 'border-primary bg-primary/10 shadow-primary/25 scale-110' 
+            : 'border-border/50 hover:border-primary/50 bg-background/20 hover:bg-background/30'
+          }
+        `}
+      >
+        {isEmoji || hasError ? (
+          <span className="text-2xl">{isEmoji ? avatar : '👤'}</span>
+        ) : (
+          <img 
+            src={avatar} 
+            alt={`Avatar ${index + 1}`}
+            className="w-full h-full object-cover rounded-xl"
+            onError={() => handleImageError(avatar)}
+          />
+        )}
+        {isSelected && (
+          <div className="absolute -top-1 -right-1 w-7 h-7 bg-primary rounded-full flex items-center justify-center border-3 border-background shadow-lg animate-bounce-in">
+            <Check className="w-4 h-4 text-primary-foreground font-bold" strokeWidth={3} />
+          </div>
+        )}
+      </button>
+    );
+  };
+
   return (
     <div className={`space-y-6 ${className}`}>
-      <h3 className="text-xl font-bold text-foreground text-center">Choose Your Avatar</h3>
-      <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 gap-4">
-        {defaultAvatars.map((avatar, index) => (
-          <button
-            key={index}
-            onClick={() => onAvatarSelect(avatar)}
-            className={`
-              relative w-16 h-16 sm:w-18 sm:h-18 rounded-2xl border-3 flex items-center justify-center
-              transition-all duration-300 hover:scale-110 overflow-hidden backdrop-blur-2xl
-              shadow-lg hover:shadow-2xl
-              ${selectedAvatar === avatar 
-                ? 'border-primary bg-primary/10 shadow-primary/25 scale-110' 
-                : 'border-border/50 hover:border-primary/50 bg-background/20 hover:bg-background/30'
-              }
-            `}
+      <div className="flex items-center justify-between">
+        <h3 className="text-xl font-bold text-foreground">Choose Your Avatar</h3>
+        <div className="flex gap-2">
+          <Button
+            variant={useEmojis ? "default" : "outline"}
+            size="sm"
+            onClick={() => setUseEmojis(true)}
           >
-            <img 
-              src={avatar} 
-              alt={`Avatar ${index + 1}`}
-              className="w-full h-full object-cover rounded-xl"
-            />
-            {selectedAvatar === avatar && (
-              <div className="absolute -top-1 -right-1 w-7 h-7 bg-primary rounded-full flex items-center justify-center border-3 border-background shadow-lg animate-bounce-in">
-                <Check className="w-4 h-4 text-primary-foreground font-bold" strokeWidth={3} />
-              </div>
-            )}
-          </button>
-        ))}
+            😊 Emojis
+          </Button>
+          <Button
+            variant={!useEmojis ? "default" : "outline"}
+            size="sm"
+            onClick={() => setUseEmojis(false)}
+          >
+            🖼️ Images
+          </Button>
+        </div>
+      </div>
+      <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 gap-4">
+        {currentAvatars.map(renderAvatar)}
       </div>
     </div>
   );

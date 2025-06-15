@@ -58,6 +58,31 @@ export const ProfileSwitcher = () => {
     navigate('/profiles');
   };
 
+  const renderProfileAvatar = (avatar: string) => {
+    // Check if it's an emoji
+    const isEmoji = avatar.length <= 2 || /^[\u{1F600}-\u{1F64F}]|[\u{1F300}-\u{1F5FF}]|[\u{1F680}-\u{1F6FF}]|[\u{1F1E0}-\u{1F1FF}]|[\u{2600}-\u{26FF}]|[\u{2700}-\u{27BF}]/u.test(avatar);
+    
+    if (isEmoji) {
+      return <span className="text-lg">{avatar}</span>;
+    } else {
+      return (
+        <img 
+          src={avatar} 
+          alt="Profile avatar"
+          className="w-full h-full object-cover rounded-full"
+          onError={(e) => {
+            // Fallback to emoji if image fails to load
+            e.currentTarget.style.display = 'none';
+            const fallback = document.createElement('span');
+            fallback.textContent = '👤';
+            fallback.className = 'text-lg';
+            e.currentTarget.parentNode?.appendChild(fallback);
+          }}
+        />
+      );
+    }
+  };
+
   if (!currentProfile && profiles.length === 0) {
     return (
       <Button variant="ghost" onClick={handleManageProfiles} className="text-white">
@@ -73,7 +98,7 @@ export const ProfileSwitcher = () => {
         <Button variant="ghost" className="flex items-center gap-2 text-white hover:bg-white/10">
           <Avatar className="h-8 w-8">
             <AvatarFallback className="bg-primary text-primary-foreground text-sm">
-              {currentProfile?.avatar || '👤'}
+              {currentProfile?.avatar ? renderProfileAvatar(currentProfile.avatar) : '👤'}
             </AvatarFallback>
           </Avatar>
           <span className="hidden sm:inline">{currentProfile?.name || 'Select Profile'}</span>
@@ -87,7 +112,7 @@ export const ProfileSwitcher = () => {
             onClick={() => handleProfileSwitch(profile)}
             className="flex items-center gap-2 cursor-pointer"
           >
-            <span className="text-lg">{profile.avatar}</span>
+            <span className="text-lg">{renderProfileAvatar(profile.avatar)}</span>
             <div className="flex flex-col">
               <span>{profile.name}</span>
               {profile.is_child && (

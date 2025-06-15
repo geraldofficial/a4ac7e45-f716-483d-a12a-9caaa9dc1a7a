@@ -161,6 +161,32 @@ export const ProfileSelector: React.FC<ProfileSelectorProps> = ({
     }
   };
 
+  const renderAvatar = (avatar: string) => {
+    // Check if it's an emoji (single character or typical emoji)
+    const isEmoji = avatar.length <= 2 || /^[\u{1F600}-\u{1F64F}]|[\u{1F300}-\u{1F5FF}]|[\u{1F680}-\u{1F6FF}]|[\u{1F1E0}-\u{1F1FF}]|[\u{2600}-\u{26FF}]|[\u{2700}-\u{27BF}]/u.test(avatar);
+    
+    if (isEmoji) {
+      return <span className="text-3xl">{avatar}</span>;
+    } else {
+      return (
+        <img 
+          src={avatar} 
+          alt="Profile avatar"
+          className="w-full h-full object-cover rounded-full"
+          onError={(e) => {
+            // Fallback to emoji if image fails to load
+            e.currentTarget.style.display = 'none';
+            e.currentTarget.nextElementSibling?.remove();
+            const fallback = document.createElement('span');
+            fallback.textContent = '👤';
+            fallback.className = 'text-3xl';
+            e.currentTarget.parentNode?.appendChild(fallback);
+          }}
+        />
+      );
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
@@ -188,8 +214,8 @@ export const ProfileSelector: React.FC<ProfileSelectorProps> = ({
             >
               <div className="p-6 text-center">
                 <div className="relative mb-4">
-                  <div className="w-20 h-20 mx-auto bg-gradient-to-br from-purple-500 to-blue-500 rounded-full flex items-center justify-center text-3xl">
-                    {profile.avatar}
+                  <div className="w-20 h-20 mx-auto bg-gradient-to-br from-purple-500 to-blue-500 rounded-full flex items-center justify-center">
+                    {renderAvatar(profile.avatar)}
                   </div>
                   {profile.is_child && (
                     <div className="absolute -top-2 -right-2 w-6 h-6 bg-green-500 rounded-full flex items-center justify-center">
