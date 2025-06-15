@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { ChevronDown, Users } from 'lucide-react';
+import { ChevronDown, Users, User } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -41,7 +41,6 @@ export const ProfileSwitcher = () => {
         console.error('Error parsing saved profile:', error);
       }
     } else if (profiles.length > 0) {
-      // Auto-select first profile if none selected
       setCurrentProfile(profiles[0]);
       localStorage.setItem('selectedProfile', JSON.stringify(profiles[0]));
     }
@@ -50,7 +49,6 @@ export const ProfileSwitcher = () => {
   const handleProfileSwitch = (profile: UserProfile) => {
     setCurrentProfile(profile);
     localStorage.setItem('selectedProfile', JSON.stringify(profile));
-    // Refresh the page to update content based on new profile
     window.location.reload();
   };
 
@@ -59,28 +57,20 @@ export const ProfileSwitcher = () => {
   };
 
   const renderProfileAvatar = (avatar: string) => {
-    // Check if it's an emoji
-    const isEmoji = avatar.length <= 2 || /^[\u{1F600}-\u{1F64F}]|[\u{1F300}-\u{1F5FF}]|[\u{1F680}-\u{1F6FF}]|[\u{1F1E0}-\u{1F1FF}]|[\u{2600}-\u{26FF}]|[\u{2700}-\u{27BF}]/u.test(avatar);
-    
-    if (isEmoji) {
-      return <span className="text-lg">{avatar}</span>;
-    } else {
-      return (
-        <img 
-          src={avatar} 
-          alt="Profile avatar"
-          className="w-full h-full object-cover rounded-full"
-          onError={(e) => {
-            // Fallback to emoji if image fails to load
-            e.currentTarget.style.display = 'none';
-            const fallback = document.createElement('span');
-            fallback.textContent = '👤';
-            fallback.className = 'text-lg';
-            e.currentTarget.parentNode?.appendChild(fallback);
-          }}
-        />
-      );
-    }
+    return (
+      <img 
+        src={avatar} 
+        alt="Profile avatar"
+        className="w-full h-full object-cover rounded-full"
+        onError={(e) => {
+          // Fallback to default user icon if image fails to load
+          const fallback = document.createElement('div');
+          fallback.innerHTML = '<svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"></path></svg>';
+          e.currentTarget.style.display = 'none';
+          e.currentTarget.parentNode?.appendChild(fallback);
+        }}
+      />
+    );
   };
 
   if (!currentProfile && profiles.length === 0) {
@@ -98,7 +88,7 @@ export const ProfileSwitcher = () => {
         <Button variant="ghost" className="flex items-center gap-2 text-white hover:bg-white/10">
           <Avatar className="h-8 w-8">
             <AvatarFallback className="bg-primary text-primary-foreground text-sm">
-              {currentProfile?.avatar ? renderProfileAvatar(currentProfile.avatar) : '👤'}
+              {currentProfile?.avatar ? renderProfileAvatar(currentProfile.avatar) : <User className="h-4 w-4" />}
             </AvatarFallback>
           </Avatar>
           <span className="hidden sm:inline">{currentProfile?.name || 'Select Profile'}</span>
@@ -112,7 +102,9 @@ export const ProfileSwitcher = () => {
             onClick={() => handleProfileSwitch(profile)}
             className="flex items-center gap-2 cursor-pointer"
           >
-            <span className="text-lg">{renderProfileAvatar(profile.avatar)}</span>
+            <div className="w-6 h-6 rounded-full overflow-hidden">
+              {renderProfileAvatar(profile.avatar)}
+            </div>
             <div className="flex flex-col">
               <span>{profile.name}</span>
               {profile.is_child && (

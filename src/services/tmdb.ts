@@ -74,7 +74,7 @@ export const tmdbApi = {
   },
 
   getMoviesByGenre: async (genreId: number, page: number = 1) => {
-    const response = await fetch(`${BASE_URL}/discover/movie?api_key=${API_KEY}&with_genres=${genreId}&sort_by=popularity.desc&page=${page}`);
+    const response = await fetch(`${BASE_URL}/discover/movie?api_key=${API_KEY}&with_genres=${genreId}&sort_by=popularity.desc&page=${page}&certification_country=US&certification.lte=PG-13`);
     return await response.json();
   },
 

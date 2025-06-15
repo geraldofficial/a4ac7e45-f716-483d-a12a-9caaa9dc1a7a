@@ -64,7 +64,6 @@ export const ProfileSelector: React.FC<ProfileSelectorProps> = ({
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('Not authenticated');
 
-      // Auto-set age restriction for kids profiles
       const finalData = {
         ...profileData,
         age_restriction: profileData.is_child ? 0 : profileData.age_restriction
@@ -95,7 +94,6 @@ export const ProfileSelector: React.FC<ProfileSelectorProps> = ({
 
   const updateProfileMutation = useMutation({
     mutationFn: async ({ id, updates }: { id: string; updates: Partial<typeof formData> }) => {
-      // Auto-set age restriction for kids profiles
       const finalUpdates = {
         ...updates,
         age_restriction: updates.is_child ? 0 : updates.age_restriction
@@ -185,7 +183,6 @@ export const ProfileSelector: React.FC<ProfileSelectorProps> = ({
         alt="Profile avatar"
         className="w-full h-full object-cover rounded-full"
         onError={(e) => {
-          // Fallback to a default Dicebear avatar if the current one fails
           e.currentTarget.src = generateDefaultAvatar();
         }}
       />
@@ -247,7 +244,6 @@ export const ProfileSelector: React.FC<ProfileSelectorProps> = ({
                 <h3 className="text-white font-medium truncate mb-1">{profile.name}</h3>
                 {getAgeDisplay(profile)}
 
-                {/* Action buttons - show on hover */}
                 <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
                   <div className="flex gap-1">
                     <Button
@@ -280,7 +276,6 @@ export const ProfileSelector: React.FC<ProfileSelectorProps> = ({
             </Card>
           ))}
 
-          {/* Add Profile Card */}
           <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
             <DialogTrigger asChild>
               <Card className="cursor-pointer transition-all duration-300 hover:scale-105 bg-white/5 backdrop-blur-sm border-white/20 border-dashed hover:border-white/40">
@@ -292,7 +287,7 @@ export const ProfileSelector: React.FC<ProfileSelectorProps> = ({
                 </div>
               </Card>
             </DialogTrigger>
-            <DialogContent className="bg-gray-900 border-gray-700 max-w-2xl">
+            <DialogContent className="bg-gray-900 border-gray-700 max-w-2xl max-h-[90vh] overflow-y-auto">
               <DialogHeader>
                 <DialogTitle className="text-white">
                   {editingProfile ? 'Edit Profile' : 'Create New Profile'}
@@ -381,9 +376,8 @@ export const ProfileSelector: React.FC<ProfileSelectorProps> = ({
           </Dialog>
         </div>
 
-        {/* Edit Profile Dialog */}
         <Dialog open={!!editingProfile} onOpenChange={(open) => !open && setEditingProfile(null)}>
-          <DialogContent className="bg-gray-900 border-gray-700">
+          <DialogContent className="bg-gray-900 border-gray-700 max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle className="text-white">Edit Profile</DialogTitle>
             </DialogHeader>
