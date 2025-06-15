@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Plus, Edit2, Trash2, User, Baby } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -59,11 +58,17 @@ export const ProfileSelector: React.FC<ProfileSelectorProps> = ({
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('Not authenticated');
 
+      // Auto-set age restriction for kids profiles
+      const finalData = {
+        ...profileData,
+        age_restriction: profileData.is_child ? 0 : profileData.age_restriction
+      };
+
       const { data, error } = await supabase
         .from('user_profiles')
         .insert({
           user_id: user.id,
-          ...profileData
+          ...finalData
         })
         .select()
         .single();
@@ -84,9 +89,15 @@ export const ProfileSelector: React.FC<ProfileSelectorProps> = ({
 
   const updateProfileMutation = useMutation({
     mutationFn: async ({ id, updates }: { id: string; updates: Partial<typeof formData> }) => {
+      // Auto-set age restriction for kids profiles
+      const finalUpdates = {
+        ...updates,
+        age_restriction: updates.is_child ? 0 : updates.age_restriction
+      };
+
       const { data, error } = await supabase
         .from('user_profiles')
-        .update(updates)
+        .update(finalUpdates)
         .eq('id', id)
         .select()
         .single();
@@ -162,7 +173,6 @@ export const ProfileSelector: React.FC<ProfileSelectorProps> = ({
   };
 
   const renderAvatar = (avatar: string) => {
-    // Check if it's an emoji (single character or typical emoji)
     const isEmoji = avatar.length <= 2 || /^[\u{1F600}-\u{1F64F}]|[\u{1F300}-\u{1F5FF}]|[\u{1F680}-\u{1F6FF}]|[\u{1F1E0}-\u{1F1FF}]|[\u{2600}-\u{26FF}]|[\u{2700}-\u{27BF}]/u.test(avatar);
     
     if (isEmoji) {
@@ -174,7 +184,6 @@ export const ProfileSelector: React.FC<ProfileSelectorProps> = ({
           alt="Profile avatar"
           className="w-full h-full object-cover rounded-full"
           onError={(e) => {
-            // Fallback to emoji if image fails to load
             e.currentTarget.style.display = 'none';
             e.currentTarget.nextElementSibling?.remove();
             const fallback = document.createElement('span');
@@ -185,6 +194,18 @@ export const ProfileSelector: React.FC<ProfileSelectorProps> = ({
         />
       );
     }
+  };
+
+  const getAgeDisplay = (profile: UserProfile) => {
+    if (profile.is_child) {
+      return (
+        <div className="flex items-center gap-1 text-green-400">
+          <Baby className="w-3 h-3" />
+          <span>Kids</span>
+        </div>
+      );
+    }
+    return <span className="text-white/60">{profile.age_restriction}+</span>;
   };
 
   if (isLoading) {
@@ -209,24 +230,26 @@ export const ProfileSelector: React.FC<ProfileSelectorProps> = ({
               key={profile.id}
               className={`relative group cursor-pointer transition-all duration-300 hover:scale-105 bg-white/10 backdrop-blur-sm border-white/20 ${
                 currentProfileId === profile.id ? 'ring-2 ring-purple-400' : ''
-              }`}
+              } ${profile.is_child ? 'border-green-400/50' : ''}`}
               onClick={() => onProfileSelect(profile)}
             >
               <div className="p-6 text-center">
                 <div className="relative mb-4">
-                  <div className="w-20 h-20 mx-auto bg-gradient-to-br from-purple-500 to-blue-500 rounded-full flex items-center justify-center">
+                  <div className={`w-20 h-20 mx-auto rounded-full flex items-center justify-center ${
+                    profile.is_child 
+                      ? 'bg-gradient-to-br from-green-400 to-blue-400' 
+                      : 'bg-gradient-to-br from-purple-500 to-blue-500'
+                  }`}>
                     {renderAvatar(profile.avatar)}
                   </div>
                   {profile.is_child && (
-                    <div className="absolute -top-2 -right-2 w-6 h-6 bg-green-500 rounded-full flex items-center justify-center">
+                    <div className="absolute -top-2 -right-2 w-6 h-6 bg-green-500 rounded-full flex items-center justify-center animate-pulse">
                       <Baby className="w-3 h-3 text-white" />
                     </div>
                   )}
                 </div>
-                <h3 className="text-white font-medium truncate">{profile.name}</h3>
-                <p className="text-white/60 text-sm mt-1">
-                  {profile.is_child ? 'Kids' : `${profile.age_restriction}+`}
-                </p>
+                <h3 className="text-white font-medium truncate mb-1">{profile.name}</h3>
+                {getAgeDisplay(profile)}
 
                 {/* Action buttons - show on hover */}
                 <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -300,12 +323,19 @@ export const ProfileSelector: React.FC<ProfileSelectorProps> = ({
                   />
                 </div>
 
-                <div className="flex items-center justify-between">
-                  <Label htmlFor="is_child" className="text-white">Kids Profile</Label>
+                <div className="flex items-center justify-between p-4 bg-gradient-to-r from-green-500/10 to-blue-500/10 rounded-lg border border-green-400/20">
+                  <div>
+                    <Label htmlFor="is_child" className="text-white font-medium">Kids Profile</Label>
+                    <p className="text-sm text-green-300">Safe content for children with animations and cartoons</p>
+                  </div>
                   <Switch
                     id="is_child"
                     checked={formData.is_child}
-                    onCheckedChange={(checked) => setFormData({ ...formData, is_child: checked })}
+                    onCheckedChange={(checked) => setFormData({ 
+                      ...formData, 
+                      is_child: checked,
+                      age_restriction: checked ? 0 : 18 
+                    })}
                   />
                 </div>
 
@@ -382,12 +412,19 @@ export const ProfileSelector: React.FC<ProfileSelectorProps> = ({
                 />
               </div>
 
-              <div className="flex items-center justify-between">
-                <Label htmlFor="edit-is_child" className="text-white">Kids Profile</Label>
+              <div className="flex items-center justify-between p-4 bg-gradient-to-r from-green-500/10 to-blue-500/10 rounded-lg border border-green-400/20">
+                <div>
+                  <Label htmlFor="edit-is_child" className="text-white font-medium">Kids Profile</Label>
+                  <p className="text-sm text-green-300">Safe content for children with animations and cartoons</p>
+                </div>
                 <Switch
                   id="edit-is_child"
                   checked={formData.is_child}
-                  onCheckedChange={(checked) => setFormData({ ...formData, is_child: checked })}
+                  onCheckedChange={(checked) => setFormData({ 
+                    ...formData, 
+                    is_child: checked,
+                    age_restriction: checked ? 0 : 18 
+                  })}
                 />
               </div>
 

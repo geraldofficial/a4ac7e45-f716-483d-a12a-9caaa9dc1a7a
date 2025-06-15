@@ -1,30 +1,40 @@
 import React from 'react';
-import { TrendingUp, Heart, Clock, Star, Users, Zap } from 'lucide-react';
+import { TrendingUp, Heart, Clock, Star, Users, Zap, Baby } from 'lucide-react';
 import { MovieCard } from '@/components/MovieCard';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useQuery } from '@tanstack/react-query';
 import { tmdbApi } from '@/services/tmdb';
+import { AgeRestrictedContent } from '@/components/AgeRestrictedContent';
 
 interface ContentRecommendationsProps {
   userId?: string;
   profileId?: string;
+  profile?: {
+    id: string;
+    name: string;
+    is_child: boolean;
+    age_restriction: number;
+  };
   className?: string;
-}
-
-interface RecommendationSection {
-  title: string;
-  description: string;
-  icon: React.ReactNode;
-  badge?: string;
-  items: any[];
 }
 
 export const ContentRecommendations: React.FC<ContentRecommendationsProps> = ({
   userId,
   profileId,
+  profile,
   className = ''
 }) => {
+  // If we have a profile, show age-restricted content
+  if (profile) {
+    return (
+      <div className={`space-y-8 ${className}`}>
+        <AgeRestrictedContent profile={profile} />
+      </div>
+    );
+  }
+
+  // Default content when no profile is selected
   // Get trending content
   const { data: trending } = useQuery({
     queryKey: ['trending-all'],
