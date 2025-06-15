@@ -20,6 +20,7 @@ import Watchlist from "./pages/Watchlist";
 import Browse from "./pages/Browse";
 import Trending from "./pages/Trending";
 import TopRated from "./pages/TopRated";
+import Community from "./pages/Community";
 import Help from "./pages/Help";
 import Contact from "./pages/Contact";
 import Privacy from "./pages/Privacy";
@@ -108,6 +109,7 @@ const App: React.FC = () => {
                   <Route path="/browse" element={<SafeRoute componentName="Browse"><Browse /></SafeRoute>} />
                   <Route path="/trending" element={<SafeRoute componentName="Trending"><Trending /></SafeRoute>} />
                   <Route path="/top-rated" element={<SafeRoute componentName="TopRated"><TopRated /></SafeRoute>} />
+                  <Route path="/community" element={<SafeRoute componentName="Community"><Community /></SafeRoute>} />
                   <Route path="/donate" element={<SafeRoute componentName="Donate"><Donate /></SafeRoute>} />
                   <Route path="/profile" element={<SafeRoute componentName="Profile"><Profile /></SafeRoute>} />
                   <Route path="/profiles" element={<SafeRoute componentName="Profiles"><Profiles /></SafeRoute>} />

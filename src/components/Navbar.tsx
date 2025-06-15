@@ -1,6 +1,5 @@
-
 import React, { useState, useEffect } from 'react';
-import { Search, Menu, X, User, LogOut, Home, TrendingUp, Grid3X3, Star, Clock, UserCircle } from 'lucide-react';
+import { Search, Menu, X, User, LogOut, Home, TrendingUp, Grid3X3, Star, Clock, UserCircle, Users } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useAuth } from '@/contexts/AuthContext';
@@ -49,6 +48,7 @@ export const Navbar = () => {
     { name: 'Browse', href: '/browse', icon: Grid3X3, current: location.pathname === '/browse' },
     { name: 'Trending', href: '/trending', icon: TrendingUp, current: location.pathname === '/trending' },
     { name: 'Top Rated', href: '/top-rated', icon: Star, current: location.pathname === '/top-rated' },
+    { name: 'Community', href: '/community', icon: Users, current: location.pathname === '/community' },
   ];
 
   const userNavigation = user ? [

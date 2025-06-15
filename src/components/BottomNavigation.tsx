@@ -1,7 +1,6 @@
-
 import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Home, Heart, TrendingUp, Star, User, Clock } from 'lucide-react';
+import { Home, Heart, TrendingUp, Star, User, Clock, Users } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 
 export const BottomNavigation = () => {
@@ -14,8 +13,8 @@ export const BottomNavigation = () => {
     { icon: Heart, label: 'Support', path: '/support' },
     { icon: TrendingUp, label: 'Trending', path: '/trending' },
     { icon: Star, label: 'Top Rated', path: '/top-rated' },
+    { icon: Users, label: 'Community', path: '/community' },
     ...(user ? [{ icon: Clock, label: 'History', path: '/history' }] : []),
-    { icon: User, label: user ? 'Profile' : 'Sign In', path: user ? '/profile' : '/auth' }
   ];
 
   const isActive = (path: string) => location.pathname === path;
