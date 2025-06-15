@@ -108,19 +108,31 @@ export const ContinueWatching: React.FC<ContinueWatchingProps> = ({ profile }) =
           </button>
         </div>
       </div>
-      <div 
-        id="continue-watching-scroll"
-        className="flex gap-3 md:gap-4 lg:gap-6 overflow-x-auto pb-4 px-3 md:px-6 scrollbar-hide scroll-smooth"
-        style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
-      >
-        {continueWatchingMovies.map((movie) => (
-          <div 
-            key={movie.id} 
-            className="flex-shrink-0 w-32 sm:w-36 md:w-40 lg:w-48 xl:w-52"
-          >
-            <MovieCard movie={movie} />
-          </div>
-        ))}
+      
+      {/* Mobile: Grid layout, Desktop: Horizontal scroll */}
+      <div className="block md:hidden">
+        <div className="grid grid-cols-2 gap-3 px-3">
+          {continueWatchingMovies.slice(0, 6).map((movie) => (
+            <MovieCard key={movie.id} movie={movie} />
+          ))}
+        </div>
+      </div>
+      
+      <div className="hidden md:block">
+        <div 
+          id="continue-watching-scroll"
+          className="flex gap-3 md:gap-4 lg:gap-6 overflow-x-auto pb-4 px-3 md:px-6 scrollbar-hide scroll-smooth"
+          style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+        >
+          {continueWatchingMovies.map((movie) => (
+            <div 
+              key={movie.id} 
+              className="flex-shrink-0 w-32 sm:w-36 md:w-40 lg:w-48 xl:w-52"
+            >
+              <MovieCard movie={movie} />
+            </div>
+          ))}
+        </div>
       </div>
     </section>
   );

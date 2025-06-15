@@ -38,15 +38,16 @@ export const Navbar = () => {
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-xl border-b border-border/50">
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-14 sm:h-16 md:h-20">
+      <div className="container mx-auto px-3 sm:px-4 lg:px-8">
+        <div className="flex items-center justify-between h-16 sm:h-18 md:h-20">
           {/* Logo */}
           <Link to="/" className="flex items-center gap-2 flex-shrink-0">
-            <FlickPickLogo />
+            <FlickPickLogo size="sm" className="sm:hidden" />
+            <FlickPickLogo size="md" className="hidden sm:flex" />
           </Link>
 
           {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center space-x-4 lg:space-x-8">
+          <div className="hidden md:flex items-center space-x-6 lg:space-x-8">
             <Link 
               to="/" 
               className={`text-sm lg:text-base font-medium transition-colors hover:text-primary ${
@@ -92,7 +93,7 @@ export const Navbar = () => {
           </div>
 
           {/* Search and Profile */}
-          <div className="flex items-center gap-2 sm:gap-3 lg:gap-4">
+          <div className="flex items-center gap-2 sm:gap-3">
             {/* Search */}
             <div className="relative">
               {isSearchOpen ? (
@@ -112,7 +113,7 @@ export const Navbar = () => {
                   variant="ghost"
                   size="sm"
                   onClick={toggleSearch}
-                  className="text-foreground/80 hover:text-foreground"
+                  className="text-foreground/80 hover:text-foreground h-8 w-8 p-0"
                 >
                   <Search className="h-4 w-4" />
                 </Button>
@@ -121,14 +122,16 @@ export const Navbar = () => {
 
             {/* Profile/Auth */}
             {user ? (
-              <div className="flex items-center gap-2">
-                <ProfileSwitcher />
+              <div className="flex items-center gap-1 sm:gap-2">
+                <div className="hidden sm:block">
+                  <ProfileSwitcher />
+                </div>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="sm" className="relative h-8 w-8 rounded-full">
+                    <Button variant="ghost" size="sm" className="relative h-8 w-8 rounded-full p-0">
                       <Avatar className="h-8 w-8">
                         <AvatarImage src={user.avatar} alt={user.username || 'User'} />
-                        <AvatarFallback>
+                        <AvatarFallback className="text-xs">
                           <User className="h-4 w-4" />
                         </AvatarFallback>
                       </Avatar>
@@ -137,11 +140,18 @@ export const Navbar = () => {
                   <DropdownMenuContent className="w-56" align="end" forceMount>
                     <div className="flex flex-col space-y-1 p-2">
                       <p className="text-sm font-medium leading-none">{user.username || 'User'}</p>
-                      <p className="text-xs leading-none text-muted-foreground">
+                      <p className="text-xs leading-none text-muted-foreground truncate">
                         {user.email}
                       </p>
                     </div>
                     <DropdownMenuSeparator />
+                    <div className="sm:hidden">
+                      <DropdownMenuItem onClick={() => navigate('/profiles')}>
+                        <Settings className="mr-2 h-4 w-4" />
+                        <span>Switch Profile</span>
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                    </div>
                     <DropdownMenuItem onClick={() => navigate('/profile')}>
                       <User className="mr-2 h-4 w-4" />
                       <span>Profile</span>
@@ -167,7 +177,7 @@ export const Navbar = () => {
                 variant="default" 
                 size="sm"
                 onClick={() => navigate('/auth')}
-                className="text-sm"
+                className="text-xs sm:text-sm px-3 sm:px-4 h-8"
               >
                 Sign In
               </Button>
@@ -177,7 +187,7 @@ export const Navbar = () => {
             <Button
               variant="ghost"
               size="sm"
-              className="md:hidden"
+              className="md:hidden h-8 w-8 p-0"
               onClick={() => setIsMenuOpen(!isMenuOpen)}
             >
               {isMenuOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}

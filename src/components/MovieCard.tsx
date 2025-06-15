@@ -73,7 +73,7 @@ export const MovieCard: React.FC<MovieCardProps> = ({ movie }) => {
   };
 
   return (
-    <div className="group relative overflow-hidden rounded-xl bg-card/80 backdrop-blur-sm border border-border/50 transition-all duration-300 hover:scale-[1.02] hover:shadow-2xl hover:border-primary/30 cursor-pointer w-full max-w-sm mx-auto">
+    <div className="group relative overflow-hidden rounded-xl bg-card/80 backdrop-blur-sm border border-border/50 transition-all duration-300 hover:scale-[1.02] hover:shadow-2xl hover:border-primary/30 cursor-pointer w-full">
       <div className="aspect-[2/3] overflow-hidden relative bg-muted/20">
         {!imageLoaded && (
           <div className="absolute inset-0 bg-muted/30 animate-pulse flex items-center justify-center">
