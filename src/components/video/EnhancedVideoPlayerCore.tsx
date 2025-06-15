@@ -1,7 +1,7 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { streamingSources, getStreamingUrl } from '@/services/streaming';
 import { VideoPlayerState } from './VideoPlayerState';
+import { EnhancedVideoPlayerControls } from './EnhancedVideoPlayerControls';
 import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts';
 import { useChromecast } from '@/hooks/useChromecast';
 import { useSubtitles } from '@/hooks/useSubtitles';
@@ -39,6 +39,7 @@ export const EnhancedVideoPlayerCore: React.FC<EnhancedVideoPlayerCoreProps> = (
   const [isMuted, setIsMuted] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
+  const [currentAudioTrack, setCurrentAudioTrack] = useState('default');
   
   const iframeRef = useRef<HTMLIFrameElement>(null);
 
@@ -48,8 +49,8 @@ export const EnhancedVideoPlayerCore: React.FC<EnhancedVideoPlayerCoreProps> = (
   // Chromecast integration
   const { isCastAvailable, isCasting, startCasting, stopCasting } = useChromecast();
 
-  // Mock subtitles for demonstration - in real implementation, these would come from the streaming source
-  const mockSubtitles = [
+  // Enhanced subtitles with more options
+  const availableSubtitles = [
     {
       id: 'en',
       language: 'en',
@@ -61,6 +62,42 @@ export const EnhancedVideoPlayerCore: React.FC<EnhancedVideoPlayerCoreProps> = (
       language: 'es', 
       label: 'Spanish',
       url: '/subtitles/es.vtt'
+    },
+    {
+      id: 'fr',
+      language: 'fr',
+      label: 'French',
+      url: '/subtitles/fr.vtt'
+    },
+    {
+      id: 'de',
+      language: 'de',
+      label: 'German',
+      url: '/subtitles/de.vtt'
+    }
+  ];
+
+  // Mock audio tracks
+  const availableAudioTracks = [
+    {
+      id: 'default',
+      language: 'en',
+      label: 'English (Stereo)'
+    },
+    {
+      id: 'en-5.1',
+      language: 'en',
+      label: 'English (5.1 Surround)'
+    },
+    {
+      id: 'es',
+      language: 'es',
+      label: 'Spanish (Stereo)'
+    },
+    {
+      id: 'fr',
+      language: 'fr',
+      label: 'French (Stereo)'
     }
   ];
 
@@ -70,13 +107,12 @@ export const EnhancedVideoPlayerCore: React.FC<EnhancedVideoPlayerCoreProps> = (
     setCurrentSubtitle, 
     currentCue, 
     updateCurrentCue 
-  } = useSubtitles(mockSubtitles);
+  } = useSubtitles(availableSubtitles);
 
   // Keyboard shortcuts integration
   useKeyboardShortcuts({
     onPlayPause: () => {
       setIsPlaying(!isPlaying);
-      // In real implementation, this would control the iframe video
     },
     onSeekForward: () => {
       const newTime = Math.min(duration, currentTime + 10);
@@ -142,7 +178,7 @@ export const EnhancedVideoPlayerCore: React.FC<EnhancedVideoPlayerCoreProps> = (
         title: getDisplayTitle(),
         videoUrl: currentUrl,
         contentType: 'video/mp4',
-        imageUrl: `https://image.tmdb.org/t/p/w500/poster.jpg` // Would use actual poster
+        imageUrl: `https://image.tmdb.org/t/p/w500/poster.jpg`
       };
       await startCasting(castMedia);
       onCastToggle?.(true);
@@ -181,9 +217,30 @@ export const EnhancedVideoPlayerCore: React.FC<EnhancedVideoPlayerCoreProps> = (
         onSwitchSource={switchSource}
       />
 
+      {/* Enhanced Controls */}
+      <div className="absolute top-0 left-0 right-0 z-10 opacity-0 hover:opacity-100 transition-opacity">
+        <EnhancedVideoPlayerControls
+          title={getDisplayTitle()}
+          currentSourceIndex={currentSourceIndex}
+          currentSubtitle={currentSubtitle}
+          currentAudioTrack={currentAudioTrack}
+          availableSubtitles={availableSubtitles}
+          availableAudioTracks={availableAudioTracks}
+          isCastAvailable={isCastAvailable}
+          isCasting={isCasting}
+          onSourceChange={setCurrentSourceIndex}
+          onSubtitleChange={setCurrentSubtitle}
+          onAudioTrackChange={setCurrentAudioTrack}
+          onCastToggle={handleCastToggle}
+          onReload={reloadPlayer}
+          onFullscreen={() => iframeRef.current?.requestFullscreen()}
+          hasError={hasError}
+        />
+      </div>
+
       {/* Subtitles Display */}
       {currentCue && (
-        <div className="absolute bottom-20 left-1/2 transform -translate-x-1/2 bg-black/80 text-white px-4 py-2 rounded text-center max-w-lg">
+        <div className="absolute bottom-20 left-1/2 transform -translate-x-1/2 bg-black/80 text-white px-4 py-2 rounded text-center max-w-lg z-20">
           {currentCue.text}
         </div>
       )}
@@ -200,44 +257,6 @@ export const EnhancedVideoPlayerCore: React.FC<EnhancedVideoPlayerCoreProps> = (
         onError={handleIframeError}
         referrerPolicy="no-referrer-when-downgrade"
       />
-
-      {/* Enhanced Controls Overlay */}
-      <div className="absolute bottom-4 left-4 right-4 bg-black/50 backdrop-blur-sm rounded-lg p-4 opacity-0 hover:opacity-100 transition-opacity">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <span className="text-white text-sm">
-              {Math.floor(currentTime / 60)}:{(currentTime % 60).toString().padStart(2, '0')} / 
-              {Math.floor(duration / 60)}:{(duration % 60).toString().padStart(2, '0')}
-            </span>
-          </div>
-          
-          <div className="flex items-center gap-2">
-            {/* Subtitle selector */}
-            <select 
-              value={currentSubtitle} 
-              onChange={(e) => setCurrentSubtitle(e.target.value)}
-              className="bg-white/20 text-white text-xs px-2 py-1 rounded"
-            >
-              <option value="off">No Subtitles</option>
-              {mockSubtitles.map(sub => (
-                <option key={sub.id} value={sub.id}>{sub.label}</option>
-              ))}
-            </select>
-
-            {/* Cast button */}
-            {isCastAvailable && (
-              <button
-                onClick={handleCastToggle}
-                className={`text-white text-xs px-2 py-1 rounded ${
-                  isCasting ? 'bg-primary' : 'bg-white/20'
-                }`}
-              >
-                {isCasting ? 'Casting' : 'Cast'}
-              </button>
-            )}
-          </div>
-        </div>
-      </div>
     </div>
   );
 };

@@ -1,19 +1,23 @@
 
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { streamingSources } from '@/services/streaming';
-import { RotateCcw, X, Maximize, SkipForward, Cast, Subtitles, Keyboard } from 'lucide-react';
+import { SubtitleSelector } from './SubtitleSelector';
+import { AudioTrackSelector } from './AudioTrackSelector';
+import { RotateCcw, X, Maximize, SkipForward, Cast, Keyboard } from 'lucide-react';
 
 interface EnhancedVideoPlayerControlsProps {
   title: string;
   currentSourceIndex: number;
   currentSubtitle: string;
-  availableSubtitles: Array<{ id: string; label: string }>;
+  currentAudioTrack: string;
+  availableSubtitles: Array<{ id: string; label: string; language: string; url: string }>;
+  availableAudioTracks: Array<{ id: string; label: string; language: string }>;
   isCastAvailable: boolean;
   isCasting: boolean;
   onSourceChange: (index: number) => void;
   onSubtitleChange: (subtitleId: string) => void;
+  onAudioTrackChange: (trackId: string) => void;
   onCastToggle: () => void;
   onReload: () => void;
   onFullscreen: () => void;
@@ -25,11 +29,14 @@ export const EnhancedVideoPlayerControls: React.FC<EnhancedVideoPlayerControlsPr
   title,
   currentSourceIndex,
   currentSubtitle,
+  currentAudioTrack,
   availableSubtitles,
+  availableAudioTracks,
   isCastAvailable,
   isCasting,
   onSourceChange,
   onSubtitleChange,
+  onAudioTrackChange,
   onCastToggle,
   onReload,
   onFullscreen,
@@ -129,22 +136,18 @@ export const EnhancedVideoPlayerControls: React.FC<EnhancedVideoPlayerControlsPr
         {/* Advanced Controls */}
         <div className="flex items-center gap-4 flex-wrap">
           {/* Subtitles */}
-          <div className="flex items-center gap-2">
-            <Subtitles className="h-4 w-4 text-white" />
-            <Select value={currentSubtitle} onValueChange={onSubtitleChange}>
-              <SelectTrigger className="w-32 h-8 bg-black/50 text-white border-white/20">
-                <SelectValue placeholder="Subtitles" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="off">Off</SelectItem>
-                {availableSubtitles.map((subtitle) => (
-                  <SelectItem key={subtitle.id} value={subtitle.id}>
-                    {subtitle.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+          <SubtitleSelector
+            subtitles={availableSubtitles}
+            currentSubtitle={currentSubtitle}
+            onSubtitleChange={onSubtitleChange}
+          />
+
+          {/* Audio Tracks */}
+          <AudioTrackSelector
+            audioTracks={availableAudioTracks}
+            currentTrack={currentAudioTrack}
+            onTrackChange={onAudioTrackChange}
+          />
 
           {/* Cast */}
           {isCastAvailable && (
