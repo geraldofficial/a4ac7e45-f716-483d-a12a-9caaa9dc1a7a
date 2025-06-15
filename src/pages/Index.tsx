@@ -3,6 +3,8 @@ import React, { useEffect, useState } from 'react';
 import { Navbar } from '@/components/Navbar';
 import { HeroCarousel } from '@/components/HeroCarousel';
 import { ContentRecommendations } from '@/components/ContentRecommendations';
+import { ContinueWatching } from '@/components/ContinueWatching';
+import { RecentlyWatched } from '@/components/RecentlyWatched';
 import { Footer } from '@/components/Footer';
 import { useAuth } from '@/contexts/AuthContext';
 
@@ -34,6 +36,9 @@ const Index = () => {
         <HeroCarousel profile={currentProfile} />
         
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 space-y-8 sm:space-y-12 relative z-10">
+          {user && <ContinueWatching />}
+          {user && <RecentlyWatched />}
+          
           <ContentRecommendations 
             userId={user?.id} 
             profileId={currentProfile?.id}

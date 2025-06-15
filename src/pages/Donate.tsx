@@ -5,7 +5,7 @@ import { Footer } from '@/components/Footer';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { Heart, Coffee, Star, Zap, Crown, Gift } from 'lucide-react';
+import { Heart, Coffee, Star, Zap, Crown, Gift, Shield, CreditCard } from 'lucide-react';
 import { toast } from 'sonner';
 import { KeshoPayButton } from 'keshopay-v1';
 
@@ -159,38 +159,47 @@ const Donate = () => {
           </Card>
 
           {/* KeshoPay Donation Button */}
-          <div className="text-center mb-12">
-            <div className="bg-gradient-to-r from-pink-500/10 to-purple-600/10 p-8 rounded-2xl border border-pink-500/20">
-              <div className="mb-6">
-                <Heart className="h-12 w-12 text-pink-500 mx-auto mb-4" />
+          <Card className="mb-12 overflow-hidden">
+            <div className="bg-gradient-to-br from-primary/5 via-purple-500/5 to-pink-500/5 p-8">
+              <div className="text-center mb-6">
+                <div className="w-20 h-20 mx-auto mb-4 bg-gradient-to-br from-primary to-purple-600 rounded-full flex items-center justify-center">
+                  <Heart className="h-10 w-10 text-white" />
+                </div>
                 <h3 className="text-2xl font-bold text-foreground mb-2">
                   Ready to Support FlickPick?
                 </h3>
-                <p className="text-muted-foreground">
-                  Your ${customAmount || selectedAmount} donation helps keep FlickPick free for everyone
+                <p className="text-muted-foreground max-w-md mx-auto">
+                  Your ${customAmount || selectedAmount} donation helps keep FlickPick free and awesome for everyone
                 </p>
               </div>
               
-              <div className="flex justify-center">
-                <KeshoPayButton
-                  amount={getDonationAmount()}
-                  reference={getDonationReference()}
-                  appId={KESHO_APP_ID}
-                  buttonText={`❤️ Donate $${customAmount || selectedAmount} (KSh ${getDonationAmount().toLocaleString()})`}
-                  identifier={getDonationIdentifier()}
-                />
+              <div className="flex justify-center mb-6">
+                <div className="bg-background/80 backdrop-blur-sm rounded-2xl p-1 shadow-lg">
+                  <KeshoPayButton
+                    amount={getDonationAmount()}
+                    reference={getDonationReference()}
+                    appId={KESHO_APP_ID}
+                    buttonText={`❤️ Donate $${customAmount || selectedAmount}`}
+                    identifier={getDonationIdentifier()}
+                  />
+                </div>
               </div>
               
-              <div className="mt-6 text-sm text-muted-foreground bg-muted/20 rounded-lg p-4">
-                <p className="mb-2">
-                  <strong>Secure Payment:</strong> Powered by KeshoPay with M-Pesa, Airtel Money, and card payments
+              <div className="bg-background/50 backdrop-blur-sm rounded-xl p-4 border border-border/50">
+                <div className="flex items-center justify-center gap-4 mb-3">
+                  <Shield className="h-5 w-5 text-green-500" />
+                  <span className="font-medium text-foreground">Secure Payment</span>
+                  <CreditCard className="h-5 w-5 text-primary" />
+                </div>
+                <p className="text-sm text-muted-foreground text-center mb-2">
+                  Powered by KeshoPay with M-Pesa, Airtel Money, and card payments
                 </p>
-                <p className="text-xs opacity-75">
-                  All payments are processed securely in Kenyan Shillings (KES)
+                <p className="text-xs text-muted-foreground text-center opacity-75">
+                  All payments are processed securely • Amount: KSh {getDonationAmount().toLocaleString()}
                 </p>
               </div>
             </div>
-          </div>
+          </Card>
 
           {/* Why Donate */}
           <Card className="bg-gradient-to-r from-blue-500/10 to-purple-500/10 border-blue-400/20">
