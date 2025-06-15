@@ -476,6 +476,8 @@ export type Database = {
           movie_title: string
           movie_type: string
           playback_time: number | null
+          sync_position: number | null
+          sync_timestamp: string | null
         }
         Insert: {
           created_at?: string | null
@@ -488,6 +490,8 @@ export type Database = {
           movie_title: string
           movie_type: string
           playback_time?: number | null
+          sync_position?: number | null
+          sync_timestamp?: string | null
         }
         Update: {
           created_at?: string | null
@@ -500,6 +504,8 @@ export type Database = {
           movie_title?: string
           movie_type?: string
           playback_time?: number | null
+          sync_position?: number | null
+          sync_timestamp?: string | null
         }
         Relationships: []
       }
