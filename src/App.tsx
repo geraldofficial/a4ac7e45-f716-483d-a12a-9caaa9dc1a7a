@@ -9,7 +9,7 @@ import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { BottomNavigation } from "@/components/BottomNavigation";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { SafeErrorBoundary } from "@/components/SafeErrorBoundary";
-import { SafeLoadingFallback } from "@/components/SafeLoadingFallback";
+import { LoadingSpinner } from "@/components/LoadingSpinner";
 import { ScrollToTop } from "./components/ScrollToTop";
 
 // Pages - wrapped in error boundaries for safety
@@ -74,12 +74,16 @@ const AppContent: React.FC = () => {
 
   console.log('🎬 AppContent render - loading:', loading, 'error:', error);
 
-  if (loading) {
-    return <SafeLoadingFallback message="Initializing FlickPick..." error={error} />;
-  }
-
-  if (error) {
-    return <SafeLoadingFallback error={error} />;
+  // Only show loading at the app level if there's a critical error
+  if (error && loading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center space-y-4">
+          <LoadingSpinner />
+          <p className="text-muted-foreground">Initializing FlickPick...</p>
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -116,13 +120,49 @@ const AppContent: React.FC = () => {
 
 const App: React.FC = () => {
   return (
-    <ErrorBoundary fallback={<SafeLoadingFallback error="Application failed to start. Please refresh the page." />}>
+    <ErrorBoundary fallback={
+      <div className="min-h-screen bg-background flex items-center justify-center p-4">
+        <div className="text-center space-y-4 max-w-md">
+          <div className="text-red-500 mb-4">
+            <svg className="h-12 w-12 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.732-.833-2.5 0L4.268 19.5c-.77.833.192 2.5 1.732 2.5z" />
+            </svg>
+          </div>
+          <h2 className="text-xl font-semibold text-foreground">Application Error</h2>
+          <p className="text-muted-foreground text-sm">FlickPick failed to start. Please refresh the page.</p>
+          <button 
+            onClick={() => window.location.reload()} 
+            className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors"
+          >
+            Reload App
+          </button>
+        </div>
+      </div>
+    }>
       <QueryClientProvider client={queryClient}>
         <TooltipProvider>
           <Toaster />
           <Sonner />
           <BrowserRouter>
-            <ErrorBoundary fallback={<SafeLoadingFallback error="Authentication system failed. Please refresh the page." />}>
+            <ErrorBoundary fallback={
+              <div className="min-h-screen bg-background flex items-center justify-center p-4">
+                <div className="text-center space-y-4 max-w-md">
+                  <div className="text-red-500 mb-4">
+                    <svg className="h-12 w-12 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.732-.833-2.5 0L4.268 19.5c-.77.833.192 2.5 1.732 2.5z" />
+                    </svg>
+                  </div>
+                  <h2 className="text-xl font-semibold text-foreground">Authentication Error</h2>
+                  <p className="text-muted-foreground text-sm">Authentication system failed. Please refresh the page.</p>
+                  <button 
+                    onClick={() => window.location.reload()} 
+                    className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors"
+                  >
+                    Reload App
+                  </button>
+                </div>
+              </div>
+            }>
               <AuthProvider>
                 <AppContent />
               </AuthProvider>
