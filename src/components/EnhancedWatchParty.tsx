@@ -117,7 +117,6 @@ export const EnhancedWatchParty: React.FC<EnhancedWatchPartyProps> = ({
         });
       }
     } catch (error) {
-      // Fallback to clipboard
       await navigator.clipboard.writeText(shareText);
       toast({
         title: "Party details copied!",
@@ -198,25 +197,26 @@ export const EnhancedWatchParty: React.FC<EnhancedWatchPartyProps> = ({
     );
   }
 
-  // Active Party Interface
+  // Mobile-First Active Party Interface
   return (
-    <div className="fixed bottom-4 right-4 z-50 w-80 md:w-96">
-      <Card className="bg-gray-900/95 backdrop-blur-sm border-gray-700 shadow-2xl">
-        {/* Header */}
-        <div className="p-4 border-b border-gray-700">
-          <div className="flex items-center justify-between mb-2">
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 bg-red-600 rounded-full flex items-center justify-center">
-                <Users className="h-4 w-4 text-white" />
+    <div className="fixed inset-0 z-50 bg-black/90 md:bg-transparent md:bottom-4 md:right-4 md:top-auto md:left-auto md:w-96">
+      <div className="h-full md:h-auto bg-gray-900 md:rounded-lg md:shadow-2xl border-0 md:border md:border-gray-700 flex flex-col">
+        
+        {/* Mobile Header with Watch Party Info */}
+        <div className="p-4 md:p-4 border-b border-gray-700 bg-gray-800 md:bg-gray-900 md:rounded-t-lg">
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-red-600 rounded-full flex items-center justify-center">
+                <Users className="h-5 w-5 text-white" />
               </div>
               <div>
-                <span className="text-sm font-medium text-white">Watch Party</span>
+                <h3 className="text-lg md:text-base font-semibold text-white">Watch Party</h3>
                 <div className="flex items-center gap-2 mt-1">
-                  <span className="text-xs bg-green-600/20 text-green-400 px-2 py-1 rounded-full">
+                  <span className="text-sm md:text-xs bg-green-600/20 text-green-400 px-3 py-1 md:px-2 rounded-full font-medium">
                     {session.participants.length} watching
                   </span>
                   {isHost && (
-                    <span className="text-xs bg-yellow-600/20 text-yellow-400 px-2 py-1 rounded-full">
+                    <span className="text-sm md:text-xs bg-yellow-600/20 text-yellow-400 px-3 py-1 md:px-2 rounded-full font-medium">
                       Host
                     </span>
                   )}
@@ -224,117 +224,149 @@ export const EnhancedWatchParty: React.FC<EnhancedWatchPartyProps> = ({
               </div>
             </div>
             
-            <div className="flex gap-1">
+            {/* Mobile Action Buttons */}
+            <div className="flex gap-2">
               <Button 
                 variant="ghost" 
                 size="sm" 
                 onClick={() => setShowChat(!showChat)}
-                className="text-gray-400 hover:text-white h-8 w-8 p-0"
+                className={`text-gray-300 hover:text-white hover:bg-white/10 h-10 w-10 p-0 md:h-8 md:w-8 ${showChat ? 'bg-white/10' : ''}`}
               >
-                <MessageCircle className="h-4 w-4" />
+                <MessageCircle className="h-5 w-5 md:h-4 md:w-4" />
               </Button>
               <Button 
                 variant="ghost" 
                 size="sm" 
                 onClick={shareParty}
-                className="text-gray-400 hover:text-white h-8 w-8 p-0"
+                className="text-gray-300 hover:text-white hover:bg-white/10 h-10 w-10 p-0 md:h-8 md:w-8"
               >
-                <Share className="h-4 w-4" />
+                <Share className="h-5 w-5 md:h-4 md:w-4" />
               </Button>
               <Button 
                 variant="ghost" 
                 size="sm" 
                 onClick={onClose}
-                className="text-gray-400 hover:text-white h-8 w-8 p-0"
+                className="text-gray-300 hover:text-white hover:bg-white/10 h-10 w-10 p-0 md:h-8 md:w-8"
               >
-                <X className="h-4 w-4" />
+                <X className="h-5 w-5 md:h-4 md:w-4" />
               </Button>
             </div>
           </div>
 
-          {/* Party Code */}
-          <div className="flex items-center gap-2 p-2 bg-gray-800 rounded-lg">
-            <span className="text-xs text-gray-400 flex-1">Party Code:</span>
-            <code className="text-sm font-mono text-white bg-gray-700 px-2 py-1 rounded">
-              {session.id}
-            </code>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={copyPartyCode}
-              className="text-gray-400 hover:text-white h-6 w-6 p-0"
-            >
-              {copied ? <Check className="h-3 w-3" /> : <Copy className="h-3 w-3" />}
-            </Button>
+          {/* Mobile-Optimized Party Code */}
+          <div className="bg-gray-700 rounded-lg p-3 md:p-2">
+            <div className="flex items-center justify-between">
+              <div className="flex-1">
+                <span className="text-sm md:text-xs text-gray-400 block mb-1">Party Code</span>
+                <code className="text-lg md:text-sm font-mono text-white bg-gray-600 px-3 py-2 md:px-2 md:py-1 rounded block">
+                  {session.id}
+                </code>
+              </div>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={copyPartyCode}
+                className="text-gray-300 hover:text-white hover:bg-gray-600 h-12 w-12 md:h-8 md:w-8 p-0 ml-3"
+              >
+                {copied ? <Check className="h-5 w-5 md:h-4 md:w-4" /> : <Copy className="h-5 w-5 md:h-4 md:w-4" />}
+              </Button>
+            </div>
           </div>
         </div>
 
-        {/* Participants */}
-        <div className="p-3 border-b border-gray-700">
-          <div className="flex items-center gap-2 mb-2">
-            <span className="text-xs text-gray-400">Watching now:</span>
-          </div>
-          <div className="flex gap-2 flex-wrap">
-            {session.participants.slice(0, 8).map((participant) => (
+        {/* Mobile-Optimized Participants */}
+        <div className="p-4 md:p-3 border-b border-gray-700 bg-gray-850 md:bg-transparent">
+          <h4 className="text-base md:text-sm text-gray-300 mb-3 md:mb-2 font-medium">Watching now</h4>
+          <div className="grid grid-cols-2 md:flex md:flex-wrap gap-2">
+            {session.participants.slice(0, 6).map((participant) => (
               <div
                 key={participant.user_id}
-                className="flex items-center gap-1 bg-gray-800 rounded-full px-2 py-1"
+                className="flex items-center gap-2 bg-gray-700 rounded-lg px-3 py-2 md:px-2 md:py-1 md:rounded-full"
                 title={participant.username}
               >
-                <span className="text-xs">{participant.avatar}</span>
-                <span className="text-xs text-gray-300 max-w-[60px] truncate">
+                <span className="text-lg md:text-sm">{participant.avatar}</span>
+                <span className="text-sm md:text-xs text-gray-200 truncate font-medium">
                   {participant.username}
                 </span>
               </div>
             ))}
-            {session.participants.length > 8 && (
-              <div className="bg-gray-800 rounded-full px-2 py-1">
-                <span className="text-xs text-gray-400">
-                  +{session.participants.length - 8} more
+            {session.participants.length > 6 && (
+              <div className="bg-gray-700 rounded-lg px-3 py-2 md:px-2 md:py-1 md:rounded-full flex items-center justify-center">
+                <span className="text-sm md:text-xs text-gray-400 font-medium">
+                  +{session.participants.length - 6}
                 </span>
               </div>
             )}
           </div>
         </div>
 
-        {/* Chat */}
+        {/* Mobile-Optimized Chat */}
         {showChat && (
-          <div className="border-b border-gray-700">
-            <div className="h-32 overflow-y-auto p-3 space-y-2">
+          <div className="flex-1 flex flex-col border-b border-gray-700 md:border-b-0">
+            <div className="flex-1 overflow-y-auto p-4 md:p-3 space-y-3 md:space-y-2 max-h-64 md:max-h-32">
               {messages.length === 0 ? (
-                <div className="text-center text-gray-500 text-xs py-4">
-                  No messages yet. Start the conversation! 💬
+                <div className="text-center text-gray-500 py-8 md:py-4">
+                  <MessageCircle className="h-12 w-12 md:h-8 md:w-8 text-gray-600 mx-auto mb-3 md:mb-2" />
+                  <p className="text-base md:text-sm font-medium">No messages yet</p>
+                  <p className="text-sm md:text-xs text-gray-600 mt-1">
+                    Start the conversation! 💬
+                  </p>
                 </div>
               ) : (
                 messages.map((message) => (
-                  <div key={message.id} className="text-xs">
-                    <span className="font-medium text-red-400">{message.username}:</span>
-                    <span className="ml-2 text-gray-300">{message.message}</span>
+                  <div key={message.id} className="bg-gray-800 rounded-lg p-3 md:p-2">
+                    <div className="flex items-start gap-2">
+                      <span className="text-lg md:text-sm">👤</span>
+                      <div className="flex-1">
+                        <span className="font-medium text-red-400 text-sm md:text-xs">
+                          {message.username}
+                        </span>
+                        <p className="text-gray-200 text-sm md:text-xs mt-1 leading-relaxed">
+                          {message.message}
+                        </p>
+                      </div>
+                    </div>
                   </div>
                 ))
               )}
             </div>
             
-            <div className="p-3 flex gap-2">
-              <Input
-                placeholder="Type a message..."
-                value={newMessage}
-                onChange={(e) => setNewMessage(e.target.value)}
-                onKeyPress={(e) => e.key === 'Enter' && sendMessage()}
-                className="bg-gray-800 border-gray-600 text-white text-xs h-8"
-              />
-              <Button 
-                size="sm" 
-                onClick={sendMessage}
-                disabled={!newMessage.trim()}
-                className="bg-red-600 hover:bg-red-700 text-white h-8 px-3"
-              >
-                Send
-              </Button>
+            {/* Mobile Chat Input */}
+            <div className="p-4 md:p-3 bg-gray-800 md:bg-transparent">
+              <div className="flex gap-3 md:gap-2">
+                <Input
+                  placeholder="Type a message..."
+                  value={newMessage}
+                  onChange={(e) => setNewMessage(e.target.value)}
+                  onKeyPress={(e) => e.key === 'Enter' && sendMessage()}
+                  className="bg-gray-700 border-gray-600 text-white text-base md:text-sm h-12 md:h-8 rounded-lg"
+                />
+                <Button 
+                  size="sm" 
+                  onClick={sendMessage}
+                  disabled={!newMessage.trim()}
+                  className="bg-red-600 hover:bg-red-700 text-white h-12 md:h-8 px-6 md:px-3 rounded-lg"
+                >
+                  Send
+                </Button>
+              </div>
             </div>
           </div>
         )}
-      </Card>
+
+        {/* Mobile Close Button (if chat is not shown) */}
+        {!showChat && (
+          <div className="p-4 md:hidden">
+            <Button
+              variant="outline"
+              onClick={onClose}
+              className="w-full border-gray-600 text-gray-300 hover:text-white hover:bg-gray-800 h-12"
+            >
+              Close Watch Party
+            </Button>
+          </div>
+        )}
+      </div>
     </div>
   );
 };
