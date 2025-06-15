@@ -60,60 +60,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   useEffect(() => {
     let mounted = true;
+    let subscription: any;
     
     const initializeAuth = async () => {
       try {
-        console.log('Initializing auth...');
+        console.log('🔐 Initializing auth...');
         
         // Set up auth state listener first
-        const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-          console.log('Auth state changed:', event, session?.user?.id);
+        const { data } = supabase.auth.onAuthStateChange(async (event, session) => {
+          console.log('🔄 Auth state changed:', event, session?.user?.id);
           
           if (!mounted) return;
           
           if (event === 'SIGNED_IN' && session?.user) {
-            console.log('User signed in, fetching profile...');
-            // Use setTimeout to prevent deadlock
-            setTimeout(async () => {
-              try {
-                const profile = await userApi.getUserProfile(session.user.id);
-                if (mounted) {
-                  setUser({
-                    id: session.user.id,
-                    email: session.user.email,
-                    ...profile,
-                  });
-                }
-              } catch (error) {
-                console.error("Error fetching user profile:", error);
-                if (mounted) {
-                  setUser({
-                    id: session.user.id,
-                    email: session.user.email,
-                  });
-                }
-              }
-            }, 0);
-          } else if (event === 'SIGNED_OUT') {
-            console.log('User signed out');
-            setUser(null);
-          }
-          
-          if (mounted) {
-            setLoading(false);
-          }
-        });
-
-        // Then check for existing session with error handling
-        try {
-          const { data: { session }, error } = await supabase.auth.getSession();
-          
-          if (error) {
-            console.error("Session check failed:", error);
-            // Clear potentially corrupted session data
-            cleanupAuthState();
-          } else if (session?.user) {
-            console.log('Found existing session for user:', session.user.id);
+            console.log('✅ User signed in, fetching profile...');
             try {
               const profile = await userApi.getUserProfile(session.user.id);
               if (mounted) {
@@ -124,7 +84,57 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 });
               }
             } catch (error) {
-              console.error("Error fetching user profile:", error);
+              console.error("❌ Error fetching user profile:", error);
+              if (mounted) {
+                setUser({
+                  id: session.user.id,
+                  email: session.user.email,
+                });
+              }
+            }
+          } else if (event === 'SIGNED_OUT') {
+            console.log('🚪 User signed out');
+            if (mounted) {
+              setUser(null);
+            }
+          }
+          
+          // Always set loading to false after auth state change
+          if (mounted) {
+            setLoading(false);
+          }
+        });
+
+        subscription = data.subscription;
+
+        // Check for existing session with timeout
+        const sessionTimeout = setTimeout(() => {
+          console.log('⏰ Session check timeout, setting loading to false');
+          if (mounted) {
+            setLoading(false);
+          }
+        }, 3000); // 3 second timeout
+
+        try {
+          const { data: { session }, error } = await supabase.auth.getSession();
+          clearTimeout(sessionTimeout);
+          
+          if (error) {
+            console.error("❌ Session check failed:", error);
+            cleanupAuthState();
+          } else if (session?.user) {
+            console.log('📍 Found existing session for user:', session.user.id);
+            try {
+              const profile = await userApi.getUserProfile(session.user.id);
+              if (mounted) {
+                setUser({
+                  id: session.user.id,
+                  email: session.user.email,
+                  ...profile,
+                });
+              }
+            } catch (error) {
+              console.error("❌ Error fetching user profile:", error);
               if (mounted) {
                 setUser({
                   id: session.user.id,
@@ -133,22 +143,21 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
               }
             }
           } else {
-            console.log('No existing session found');
+            console.log('📍 No existing session found');
           }
         } catch (sessionError) {
-          console.error("Critical session error:", sessionError);
+          clearTimeout(sessionTimeout);
+          console.error("💥 Critical session error:", sessionError);
           cleanupAuthState();
         }
         
+        // Ensure loading is set to false
         if (mounted) {
           setLoading(false);
         }
 
-        return () => {
-          subscription.unsubscribe();
-        };
       } catch (error) {
-        console.error("Auth initialization failed:", error);
+        console.error("💥 Auth initialization failed:", error);
         if (mounted) {
           setLoading(false);
         }
@@ -159,16 +168,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     return () => {
       mounted = false;
+      if (subscription) {
+        subscription.unsubscribe();
+      }
     };
   }, []);
 
   const signIn = async (email: string, password: string) => {
     setLoading(true);
     try {
-      // Clean up existing state first
       cleanupAuthState();
       
-      // Attempt global sign out first
       try {
         await supabase.auth.signOut({ scope: 'global' });
       } catch (err) {
@@ -181,7 +191,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           title: "Sign in successful!",
           description: `Welcome back!`,
         });
-        // Force page reload for clean state
         window.location.href = '/';
       }
     } catch (error: any) {
@@ -203,7 +212,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const signUp = async (email: string, password: string, userData: any = {}) => {
     setLoading(true);
     try {
-      // Clean up existing state first
       cleanupAuthState();
       
       const response = await authApi.signUp(email, password, userData);
@@ -213,7 +221,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           description: `Welcome to FlickPick! Please check your email to verify your account.`,
         });
         
-        // Force page reload for clean state
         window.location.href = '/onboarding';
       }
     } catch (error: any) {
@@ -248,7 +255,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         description: "Signed out successfully!",
       });
       
-      // Force page reload for clean state
       window.location.href = '/auth';
     } catch (error: any) {
       console.error("Sign-out error:", error);

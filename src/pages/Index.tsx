@@ -15,15 +15,20 @@ const Index = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (loading) return;
-    
-    if (user && !user.onboarding_completed) {
-      navigate('/onboarding');
+    // Only redirect if we're sure about the auth state
+    if (!loading) {
+      console.log('🏠 Index: Auth state resolved, user:', user?.id || 'none');
+      
+      if (user && !user.onboarding_completed) {
+        console.log('🚀 Redirecting to onboarding');
+        navigate('/onboarding');
+      }
     }
   }, [user, loading, navigate]);
 
   // Show loading state while auth is initializing
   if (loading) {
+    console.log('⏳ Index: Still loading auth state');
     return (
       <div className="min-h-screen bg-background dark flex items-center justify-center">
         <div className="text-center space-y-4">
@@ -33,6 +38,8 @@ const Index = () => {
       </div>
     );
   }
+
+  console.log('🎬 Index: Rendering main content');
 
   return (
     <div className="min-h-screen bg-background dark overflow-x-hidden">
