@@ -157,8 +157,8 @@ export const MovieCard: React.FC<MovieCardProps> = ({ movie }) => {
         </div>
       </div>
       
-      <div className="p-2 md:p-3 bg-gradient-to-b from-card to-card/80">
-        <h3 className="text-foreground font-semibold truncate mb-1 text-xs md:text-sm leading-tight group-hover:text-primary transition-colors">{title}</h3>
+      <div className="p-2.5 md:p-3 bg-gradient-to-b from-card to-card/80">
+        <h3 className="text-foreground font-semibold truncate mb-1 text-sm md:text-sm leading-tight group-hover:text-primary transition-colors">{title}</h3>
         {releaseDate && (
           <p className="text-muted-foreground text-xs">
             {new Date(releaseDate).getFullYear()}
