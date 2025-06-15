@@ -1,4 +1,5 @@
-import { useState, useEffect } from 'react';
+
+import { useState, useEffect, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
@@ -28,6 +29,14 @@ export const useCommunity = () => {
   const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
   const { user } = useAuth();
+  
+  // Use refs to track subscriptions and prevent multiple subscriptions
+  const subscriptionsRef = useRef<{
+    posts?: any;
+    likes?: any;
+    comments?: any;
+  }>({});
+  const mountedRef = useRef(true);
 
   const fetchPosts = async () => {
     try {
@@ -116,7 +125,9 @@ export const useCommunity = () => {
           is_bookmarked: bookmarkedPosts.has(post.id)
         }));
 
-        setPosts(enrichedPosts);
+        if (mountedRef.current) {
+          setPosts(enrichedPosts);
+        }
       } else {
         const enrichedPosts = postsData.map(post => ({
           ...post,
@@ -129,19 +140,25 @@ export const useCommunity = () => {
           is_bookmarked: false
         }));
 
-        setPosts(enrichedPosts);
+        if (mountedRef.current) {
+          setPosts(enrichedPosts);
+        }
       }
     } catch (error) {
       console.error('💥 Critical error in fetchPosts:', error);
       const errorMessage = error instanceof Error ? error.message : 'Failed to load posts';
-      setError(errorMessage);
-      toast({
-        title: "Error",
-        description: "Failed to load posts. Please try again.",
-        variant: "destructive",
-      });
+      if (mountedRef.current) {
+        setError(errorMessage);
+        toast({
+          title: "Error",
+          description: "Failed to load posts. Please try again.",
+          variant: "destructive",
+        });
+      }
     } finally {
-      setLoading(false);
+      if (mountedRef.current) {
+        setLoading(false);
+      }
     }
   };
 
@@ -315,51 +332,100 @@ export const useCommunity = () => {
   };
 
   useEffect(() => {
+    mountedRef.current = true;
     console.log('🚀 Community hook initializing...');
+    
+    // Clean up any existing subscriptions first
+    Object.values(subscriptionsRef.current).forEach(subscription => {
+      if (subscription) {
+        try {
+          subscription.unsubscribe();
+        } catch (error) {
+          console.error('Error unsubscribing:', error);
+        }
+      }
+    });
+    
+    // Reset subscriptions
+    subscriptionsRef.current = {};
+    
     fetchPosts();
 
-    // Set up real-time subscriptions
-    const postsSubscription = supabase
-      .channel('community-posts-changes')
-      .on('postgres_changes', {
-        event: '*',
-        schema: 'public',
-        table: 'community_posts'
-      }, () => {
-        console.log('📡 Real-time post update detected');
-        fetchPosts();
-      })
-      .subscribe();
+    // Set up real-time subscriptions with unique channel names
+    const channelName = `community-updates-${Date.now()}-${Math.random()}`;
+    
+    try {
+      const postsChannel = supabase
+        .channel(`${channelName}-posts`)
+        .on('postgres_changes', {
+          event: '*',
+          schema: 'public',
+          table: 'community_posts'
+        }, () => {
+          console.log('📡 Real-time post update detected');
+          if (mountedRef.current) {
+            fetchPosts();
+          }
+        });
 
-    const likesSubscription = supabase
-      .channel('community-likes-changes')
-      .on('postgres_changes', {
-        event: '*',
-        schema: 'public',
-        table: 'community_post_likes'
-      }, () => {
-        console.log('📡 Real-time like update detected');
-        fetchPosts();
-      })
-      .subscribe();
+      const likesChannel = supabase
+        .channel(`${channelName}-likes`)
+        .on('postgres_changes', {
+          event: '*',
+          schema: 'public',
+          table: 'community_post_likes'
+        }, () => {
+          console.log('📡 Real-time like update detected');
+          if (mountedRef.current) {
+            fetchPosts();
+          }
+        });
 
-    const commentsSubscription = supabase
-      .channel('community-comments-changes')
-      .on('postgres_changes', {
-        event: '*',
-        schema: 'public',
-        table: 'community_post_comments'
-      }, () => {
-        console.log('📡 Real-time comment update detected');
-        fetchPosts();
-      })
-      .subscribe();
+      const commentsChannel = supabase
+        .channel(`${channelName}-comments`)
+        .on('postgres_changes', {
+          event: '*',
+          schema: 'public',
+          table: 'community_post_comments'
+        }, () => {
+          console.log('📡 Real-time comment update detected');
+          if (mountedRef.current) {
+            fetchPosts();
+          }
+        });
+
+      // Subscribe to channels
+      postsChannel.subscribe();
+      likesChannel.subscribe();
+      commentsChannel.subscribe();
+
+      // Store subscriptions for cleanup
+      subscriptionsRef.current = {
+        posts: postsChannel,
+        likes: likesChannel,
+        comments: commentsChannel
+      };
+
+    } catch (error) {
+      console.error('Error setting up real-time subscriptions:', error);
+    }
 
     return () => {
       console.log('🧹 Cleaning up community subscriptions');
-      postsSubscription.unsubscribe();
-      likesSubscription.unsubscribe();
-      commentsSubscription.unsubscribe();
+      mountedRef.current = false;
+      
+      // Clean up subscriptions
+      Object.values(subscriptionsRef.current).forEach(subscription => {
+        if (subscription) {
+          try {
+            subscription.unsubscribe();
+          } catch (error) {
+            console.error('Error unsubscribing:', error);
+          }
+        }
+      });
+      
+      subscriptionsRef.current = {};
     };
   }, [user]);
 
