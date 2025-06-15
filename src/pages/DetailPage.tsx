@@ -220,7 +220,7 @@ const DetailPage = () => {
         <>
           <Navbar />
           
-          <div className="pt-14 md:pt-16">
+          <div className="pt-14 md:pt-16 relative">
             {/* Hero Section */}
             <DetailPageHeader
               content={content}
@@ -232,8 +232,8 @@ const DetailPage = () => {
               onBack={() => navigate(-1)}
             />
 
-            {/* Action Buttons */}
-            <div className="absolute bottom-0 left-0 right-0 z-10 container mx-auto px-3 md:px-4 pb-4 md:pb-8">
+            {/* Action Buttons - Positioned as overlay */}
+            <div className="absolute bottom-4 md:bottom-8 left-0 right-0 z-20 container mx-auto px-3 md:px-4">
               <div className="max-w-full md:max-w-2xl">
                 <DetailPageActions
                   shouldResume={shouldResume}
