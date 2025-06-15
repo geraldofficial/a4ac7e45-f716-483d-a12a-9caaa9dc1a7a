@@ -75,13 +75,13 @@ export const EnhancedMovieCard: React.FC<EnhancedMovieCardProps> = ({ movie }) =
 
   return (
     <div 
-      className="group relative bg-gray-900 rounded-lg overflow-hidden border border-gray-800 hover:border-gray-600 cursor-pointer transition-all duration-200"
+      className="group relative bg-gray-900 rounded-lg overflow-hidden border border-gray-800 hover:border-gray-600 cursor-pointer transition-all duration-200 w-full aspect-[2/3]"
       onClick={handleMoreInfo}
       onMouseEnter={() => setShowActions(true)}
       onMouseLeave={() => setShowActions(false)}
     >
-      {/* Image Container */}
-      <div className="relative aspect-[2/3] bg-gray-800">
+      {/* Image Container - Fixed aspect ratio */}
+      <div className="relative w-full h-full bg-gray-800">
         {!imageLoaded && (
           <div className="absolute inset-0 bg-gray-800 flex items-center justify-center">
             <div className="w-8 h-8 border-2 border-red-600 border-t-transparent rounded-full animate-spin"></div>
@@ -159,16 +159,6 @@ export const EnhancedMovieCard: React.FC<EnhancedMovieCardProps> = ({ movie }) =
             </div>
           </div>
         </div>
-      </div>
-
-      {/* Simple Card Footer */}
-      <div className="p-3 bg-gray-900">
-        <h3 className="text-white font-medium text-sm line-clamp-1 mb-1">
-          {title}
-        </h3>
-        {year && (
-          <p className="text-gray-400 text-xs">{year}</p>
-        )}
       </div>
     </div>
   );

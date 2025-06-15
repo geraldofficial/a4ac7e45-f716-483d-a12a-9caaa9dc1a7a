@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Heart, MessageCircle, Share2, Bookmark, MoreHorizontal, Play } from 'lucide-react';
+import { Heart, MessageCircle, Share2, Bookmark, MoreHorizontal } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { CommunityPost } from '@/hooks/useCommunity';
 import { PostComments } from './PostComments';
@@ -28,17 +28,34 @@ export const PostCard: React.FC<PostCardProps> = ({
     setImageError(prev => ({ ...prev, [index]: true }));
   };
 
-  const handleShare = () => {
-    if (navigator.share) {
-      navigator.share({
-        title: `Post by ${post.user_profile?.full_name || post.user_profile?.username}`,
-        text: post.content,
-        url: window.location.href
-      });
-    } else {
-      navigator.clipboard.writeText(window.location.href);
+  const handleShare = async () => {
+    try {
+      if (navigator.share) {
+        await navigator.share({
+          title: `Post by ${post.user_profile?.full_name || post.user_profile?.username}`,
+          text: post.content,
+          url: window.location.href
+        });
+      } else {
+        await navigator.clipboard.writeText(window.location.href);
+      }
+    } catch (error) {
+      console.error('Error sharing:', error);
     }
   };
+
+  const safeFormatDate = (dateString: string) => {
+    try {
+      return formatDistanceToNow(new Date(dateString), { addSuffix: true });
+    } catch (error) {
+      console.error('Error formatting date:', error);
+      return 'some time ago';
+    }
+  };
+
+  if (!post) {
+    return null;
+  }
 
   return (
     <Card className="overflow-hidden hover:shadow-lg transition-shadow">
@@ -56,7 +73,7 @@ export const PostCard: React.FC<PostCardProps> = ({
           </h3>
           <p className="text-xs text-muted-foreground truncate">
             @{post.user_profile?.username || 'anonymous'} • {' '}
-            {formatDistanceToNow(new Date(post.created_at), { addSuffix: true })}
+            {safeFormatDate(post.created_at)}
           </p>
         </div>
         <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
@@ -106,7 +123,7 @@ export const PostCard: React.FC<PostCardProps> = ({
               className={`gap-2 h-9 px-3 ${post.is_liked ? 'text-red-500' : ''}`}
             >
               <Heart className={`h-4 w-4 ${post.is_liked ? 'fill-current' : ''}`} />
-              <span className="text-sm">{post.likes_count}</span>
+              <span className="text-sm">{post.likes_count || 0}</span>
             </Button>
             <Button 
               variant="ghost" 
@@ -115,7 +132,7 @@ export const PostCard: React.FC<PostCardProps> = ({
               className="gap-2 h-9 px-3"
             >
               <MessageCircle className="h-4 w-4" />
-              <span className="text-sm">{post.comments_count}</span>
+              <span className="text-sm">{post.comments_count || 0}</span>
             </Button>
             <Button 
               variant="ghost" 
@@ -124,7 +141,7 @@ export const PostCard: React.FC<PostCardProps> = ({
               className="gap-2 h-9 px-3"
             >
               <Share2 className="h-4 w-4" />
-              <span className="text-sm">{post.shares_count}</span>
+              <span className="text-sm">{post.shares_count || 0}</span>
             </Button>
           </div>
           <Button 
@@ -140,7 +157,7 @@ export const PostCard: React.FC<PostCardProps> = ({
         {showComments && (
           <PostComments
             postId={post.id}
-            commentsCount={post.comments_count}
+            commentsCount={post.comments_count || 0}
             onCommentAdded={onCommentAdded}
           />
         )}

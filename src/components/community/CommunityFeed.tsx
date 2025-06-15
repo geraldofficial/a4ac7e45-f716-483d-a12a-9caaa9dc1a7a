@@ -5,21 +5,27 @@ import { CreatePostCard } from './CreatePostCard';
 import { useCommunity } from '@/hooks/useCommunity';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
-import { RefreshCw } from 'lucide-react';
+import { RefreshCw, AlertCircle } from 'lucide-react';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 
 interface CommunityFeedProps {
   searchQuery: string;
 }
 
 export const CommunityFeed: React.FC<CommunityFeedProps> = ({ searchQuery }) => {
-  const { posts, loading, toggleLike, toggleBookmark, refreshPosts } = useCommunity();
+  const { posts, loading, error, toggleLike, toggleBookmark, refreshPosts } = useCommunity();
   const { user } = useAuth();
   const [refreshing, setRefreshing] = useState(false);
 
   const handleRefresh = async () => {
     setRefreshing(true);
-    await refreshPosts();
-    setRefreshing(false);
+    try {
+      await refreshPosts();
+    } catch (error) {
+      console.error('Failed to refresh posts:', error);
+    } finally {
+      setRefreshing(false);
+    }
   };
 
   const handleCommentAdded = () => {
@@ -35,6 +41,26 @@ export const CommunityFeed: React.FC<CommunityFeedProps> = ({ searchQuery }) => 
       post.user_profile?.full_name?.toLowerCase().includes(searchLower)
     );
   });
+
+  if (error) {
+    return (
+      <div className="space-y-6">
+        {user && <CreatePostCard />}
+        <Alert variant="destructive">
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription>
+            {error}. Please try refreshing the page.
+          </AlertDescription>
+        </Alert>
+        <div className="text-center">
+          <Button onClick={handleRefresh} variant="outline">
+            <RefreshCw className="h-4 w-4 mr-2" />
+            Retry
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   if (loading) {
     return (
