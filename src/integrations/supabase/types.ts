@@ -376,6 +376,10 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: undefined
       }
+      user_is_in_session: {
+        Args: { session_id_param: string }
+        Returns: boolean
+      }
     }
     Enums: {
       [_ in never]: never
