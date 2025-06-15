@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { Navbar } from '@/components/Navbar';
@@ -220,7 +219,7 @@ const DetailPage = () => {
         <>
           <Navbar />
           
-          <div className="pt-14 md:pt-16 relative">
+          <div className="pt-14 md:pt-16">
             {/* Hero Section */}
             <DetailPageHeader
               content={content}
@@ -232,8 +231,8 @@ const DetailPage = () => {
               onBack={() => navigate(-1)}
             />
 
-            {/* Action Buttons - Positioned as overlay */}
-            <div className="absolute bottom-4 md:bottom-8 left-0 right-0 z-20 container mx-auto px-3 md:px-4">
+            {/* Action Buttons - Below the hero section */}
+            <div className="container mx-auto px-3 md:px-4 py-4 md:py-6 -mt-2">
               <div className="max-w-full md:max-w-2xl">
                 <DetailPageActions
                   shouldResume={shouldResume}

@@ -54,7 +54,7 @@ export const DetailPageHeader: React.FC<DetailPageHeaderProps> = ({
         </div>
       )}
       
-      <div className="absolute bottom-0 left-0 right-0 z-10 container mx-auto px-3 md:px-4 pb-24 md:pb-32">
+      <div className="absolute bottom-0 left-0 right-0 z-10 container mx-auto px-3 md:px-4 pb-4 md:pb-8">
         <div className="max-w-full md:max-w-2xl">
           <Button
             variant="ghost"
@@ -111,7 +111,7 @@ export const DetailPageHeader: React.FC<DetailPageHeaderProps> = ({
             )}
           </div>
           
-          <p className="text-white/90 text-xs md:text-lg leading-relaxed mb-6 md:mb-12 max-w-full md:max-w-xl drop-shadow">
+          <p className="text-white/90 text-xs md:text-lg leading-relaxed mb-4 md:mb-6 max-w-full md:max-w-xl drop-shadow">
             {content.overview}
           </p>
         </div>
