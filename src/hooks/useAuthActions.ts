@@ -30,6 +30,7 @@ export const useAuthActions = (
           title: "Sign in successful!",
           description: `Welcome back!`,
         });
+        // Force a complete page reload to ensure clean state
         window.location.href = '/';
       }
     } catch (error: any) {
@@ -73,19 +74,23 @@ export const useAuthActions = (
   const signOut = async () => {
     setLoading(true);
     try {
+      // Clear state immediately
+      setUser(null);
+      
+      // Clean up all auth state including profiles
       cleanupAuthState();
       
       try {
         await supabase.auth.signOut({ scope: 'global' });
       } catch (err) {
-        // Continue even if this fails
+        console.warn('Sign out error:', err);
       }
       
-      setUser(null);
       toast({
         description: "Signed out successfully!",
       });
       
+      // Force complete page reload to clear all state
       window.location.href = '/auth';
     } catch (error: any) {
       console.error("Sign-out error:", error);
