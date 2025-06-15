@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { Play, Plus, Check, Share, UserPlus } from 'lucide-react';
+import { Play, Plus, Check, Share, Users } from 'lucide-react';
 
 interface DetailPageActionsProps {
   shouldResume: boolean;
@@ -23,59 +23,53 @@ export const DetailPageActions: React.FC<DetailPageActionsProps> = ({
   onWatchParty
 }) => {
   return (
-    <div className="flex gap-2 md:gap-4 flex-wrap">
+    <div className="flex flex-col sm:flex-row gap-3">
+      {/* Primary Watch Button */}
       <Button 
         onClick={onWatch}
-        size="sm"
-        className="bg-primary hover:bg-primary/90 px-3 md:px-8 text-xs md:text-base"
+        size="lg" 
+        className="flex-1 bg-white text-black hover:bg-gray-200 font-semibold h-12 text-base rounded-lg shadow-lg"
       >
-        <Play className="h-3 w-3 md:h-5 md:w-5 mr-1 md:mr-2" />
-        {shouldResume ? 'Continue Watching' : 'Watch Now'}
+        <Play className="mr-2 h-5 w-5 fill-current" />
+        {shouldResume ? 'Resume' : 'Play'}
       </Button>
-      
-      {user && (
-        <Button
+
+      {/* Secondary Actions */}
+      <div className="flex gap-3">
+        {/* Watchlist Button */}
+        <Button 
           onClick={onWatchlistToggle}
-          variant="outline"
-          size="sm"
-          className="border-white/30 text-white hover:bg-white/20 px-3 md:px-6 text-xs md:text-base backdrop-blur-sm"
+          variant="outline" 
+          size="lg"
+          className="bg-gray-800/80 border-gray-600 text-white hover:bg-gray-700 h-12 px-4 rounded-lg"
         >
           {isInWatchlist ? (
-            <>
-              <Check className="h-3 w-3 md:h-5 md:w-5 mr-1 md:mr-2" />
-              <span className="hidden sm:inline">In Watchlist</span>
-              <span className="sm:hidden">Added</span>
-            </>
+            <Check className="h-5 w-5" />
           ) : (
-            <>
-              <Plus className="h-3 w-3 md:h-5 md:w-5 mr-1 md:mr-2" />
-              <span className="hidden sm:inline">Add to Watchlist</span>
-              <span className="sm:hidden">Add</span>
-            </>
+            <Plus className="h-5 w-5" />
           )}
         </Button>
-      )}
 
-      <Button
-        onClick={onShare}
-        variant="outline"
-        size="sm"
-        className="border-white/30 text-white hover:bg-white/20 px-3 md:px-6 text-xs md:text-base backdrop-blur-sm"
-      >
-        <Share className="h-3 w-3 md:h-5 md:w-5 mr-1 md:mr-2" />
-        <span className="hidden sm:inline">Share</span>
-      </Button>
+        {/* Watch Party Button */}
+        <Button 
+          onClick={onWatchParty}
+          variant="outline" 
+          size="lg"
+          className="bg-red-600/80 border-red-500 text-white hover:bg-red-700 h-12 px-4 rounded-lg"
+        >
+          <Users className="h-5 w-5" />
+        </Button>
 
-      <Button
-        onClick={onWatchParty}
-        variant="outline"
-        size="sm"
-        className="border-white/30 text-white hover:bg-white/20 px-3 md:px-8 text-xs md:text-base backdrop-blur-sm min-w-0 flex-shrink-0"
-      >
-        <UserPlus className="h-3 w-3 md:h-5 md:w-5 mr-1 md:mr-2 flex-shrink-0" />
-        <span className="hidden sm:inline whitespace-nowrap">Watch Party</span>
-        <span className="sm:hidden whitespace-nowrap">Party</span>
-      </Button>
+        {/* Share Button */}
+        <Button 
+          onClick={onShare}
+          variant="outline" 
+          size="lg"
+          className="bg-gray-800/80 border-gray-600 text-white hover:bg-gray-700 h-12 px-4 rounded-lg"
+        >
+          <Share className="h-5 w-5" />
+        </Button>
+      </div>
     </div>
   );
 };

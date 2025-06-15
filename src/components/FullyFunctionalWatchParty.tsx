@@ -1,21 +1,29 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
-import { enhancedDatabaseWatchPartyService, EnhancedWatchPartySession, EnhancedWatchPartyMessage, PlaybackSyncData } from '@/services/enhancedDatabaseWatchParty';
+import { Input } from '@/components/ui/input';
+import { enhancedDatabaseWatchPartyService, EnhancedWatchPartySession, EnhancedWatchPartyMessage } from '@/services/enhancedDatabaseWatchParty';
 import { useToast } from '@/hooks/use-toast';
-import { WatchPartySetup } from './watchparty/WatchPartySetup';
 import { EnhancedWatchPartyHeader } from './watchparty/EnhancedWatchPartyHeader';
 import { EnhancedWatchPartyParticipants } from './watchparty/EnhancedWatchPartyParticipants';
 import { EnhancedWatchPartyChat } from './watchparty/EnhancedWatchPartyChat';
+import { WatchPartyVideoSync } from './watchparty/WatchPartyVideoSync';
+import { WatchPartyControls } from './watchparty/WatchPartyControls';
+import { X, Users, Play } from 'lucide-react';
 
 interface FullyFunctionalWatchPartyProps {
   movieId: number;
   movieTitle: string;
   movieType: 'movie' | 'tv';
   onClose: () => void;
-  onPlaybackSync?: (data: PlaybackSyncData) => void;
   currentPlaybackTime?: number;
   isCurrentlyPlaying?: boolean;
+  videoDuration?: number;
+  volume?: number;
+  onVolumeChange?: (volume: number) => void;
+  onSeek?: (time: number) => void;
+  onPlayPause?: () => void;
+  onPlaybackSync?: (data: { position: number; isPlaying: boolean; timestamp: string }) => void;
 }
 
 export const FullyFunctionalWatchParty: React.FC<FullyFunctionalWatchPartyProps> = ({ 
@@ -23,9 +31,14 @@ export const FullyFunctionalWatchParty: React.FC<FullyFunctionalWatchPartyProps>
   movieTitle, 
   movieType, 
   onClose,
-  onPlaybackSync,
   currentPlaybackTime = 0,
-  isCurrentlyPlaying = false
+  isCurrentlyPlaying = false,
+  videoDuration = 0,
+  volume = 1,
+  onVolumeChange,
+  onSeek,
+  onPlayPause,
+  onPlaybackSync
 }) => {
   const [session, setSession] = useState<EnhancedWatchPartySession | null>(null);
   const [messages, setMessages] = useState<EnhancedWatchPartyMessage[]>([]);
@@ -36,81 +49,48 @@ export const FullyFunctionalWatchParty: React.FC<FullyFunctionalWatchPartyProps>
   const [copied, setCopied] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
   const [isJoining, setIsJoining] = useState(false);
-  const [lastSyncTime, setLastSyncTime] = useState(0);
+  const [setupMode, setSetupMode] = useState(true);
   const { toast } = useToast();
   
-  const syncTimeoutRef = useRef<NodeJS.Timeout>();
+  const unsubscribeSessionRef = useRef<(() => void) | null>(null);
+  const unsubscribeMessagesRef = useRef<(() => void) | null>(null);
+  const unsubscribeSyncRef = useRef<(() => void) | null>(null);
+
+  useEffect(() => {
+    return () => {
+      // Cleanup subscriptions on unmount
+      if (unsubscribeSessionRef.current) unsubscribeSessionRef.current();
+      if (unsubscribeMessagesRef.current) unsubscribeMessagesRef.current();
+      if (unsubscribeSyncRef.current) unsubscribeSyncRef.current();
+      enhancedDatabaseWatchPartyService.cleanup();
+    };
+  }, []);
 
   useEffect(() => {
     if (session) {
       loadMessages();
       
-      const unsubscribeSession = enhancedDatabaseWatchPartyService.subscribeToSession(
-        session.id, 
-        (updatedSession) => {
-          setSession(updatedSession);
-        }
-      );
-
-      const unsubscribeMessages = enhancedDatabaseWatchPartyService.subscribeToMessages(
+      // Subscribe to real-time updates
+      unsubscribeSessionRef.current = enhancedDatabaseWatchPartyService.subscribeToSession(
         session.id,
-        (updatedMessages) => {
-          setMessages(updatedMessages);
-        }
+        (updatedSession) => setSession(updatedSession)
       );
-
-      const unsubscribeSync = enhancedDatabaseWatchPartyService.subscribeToPlaybackSync(
+      
+      unsubscribeMessagesRef.current = enhancedDatabaseWatchPartyService.subscribeToMessages(
+        session.id,
+        setMessages
+      );
+      
+      unsubscribeSyncRef.current = enhancedDatabaseWatchPartyService.subscribeToPlaybackSync(
         session.id,
         (syncData) => {
           if (!isHost && onPlaybackSync) {
-            const timeSinceLastSync = Date.now() - lastSyncTime;
-            if (timeSinceLastSync > 2000) {
-              onPlaybackSync(syncData);
-              setLastSyncTime(Date.now());
-            }
+            onPlaybackSync(syncData);
           }
         }
       );
-
-      return () => {
-        unsubscribeSession();
-        unsubscribeMessages();
-        unsubscribeSync();
-      };
     }
-  }, [session, isHost, onPlaybackSync, lastSyncTime]);
-
-  useEffect(() => {
-    if (session && isHost) {
-      if (syncTimeoutRef.current) {
-        clearTimeout(syncTimeoutRef.current);
-      }
-
-      syncTimeoutRef.current = setTimeout(async () => {
-        try {
-          await enhancedDatabaseWatchPartyService.syncPlayback(
-            session.id,
-            currentPlaybackTime,
-            isCurrentlyPlaying
-          );
-        } catch (error) {
-          console.error('Error syncing playback:', error);
-        }
-      }, 1000);
-    }
-
-    return () => {
-      if (syncTimeoutRef.current) {
-        clearTimeout(syncTimeoutRef.current);
-      }
-    };
-  }, [session, isHost, currentPlaybackTime, isCurrentlyPlaying]);
-
-  useEffect(() => {
-    return () => {
-      enhancedDatabaseWatchPartyService.cleanup();
-    };
-  }, []);
+  }, [session, isHost, onPlaybackSync]);
 
   const loadMessages = async () => {
     if (!session) return;
@@ -133,9 +113,10 @@ export const FullyFunctionalWatchParty: React.FC<FullyFunctionalWatchPartyProps>
       if (newSession) {
         setSession(newSession);
         setIsHost(true);
+        setSetupMode(false);
         toast({
           title: "Watch party created!",
-          description: `Party code: ${sessionId}. You're the host!`,
+          description: `Party code: ${sessionId}`,
         });
       }
     } catch (error) {
@@ -157,8 +138,8 @@ export const FullyFunctionalWatchParty: React.FC<FullyFunctionalWatchPartyProps>
     const cleanCode = code.trim().toUpperCase();
     
     try {
-      const sessionExists = await enhancedDatabaseWatchPartyService.sessionExists(cleanCode);
-      if (!sessionExists) {
+      const exists = await enhancedDatabaseWatchPartyService.sessionExists(cleanCode);
+      if (!exists) {
         toast({
           title: "Party not found",
           description: "The party code you entered is invalid or expired.",
@@ -171,6 +152,7 @@ export const FullyFunctionalWatchParty: React.FC<FullyFunctionalWatchPartyProps>
       if (joinedSession) {
         setSession(joinedSession);
         setIsHost(false);
+        setSetupMode(false);
         toast({
           title: "Joined watch party!",
           description: `Now watching ${joinedSession.movie_title} with friends.`,
@@ -201,6 +183,16 @@ export const FullyFunctionalWatchParty: React.FC<FullyFunctionalWatchPartyProps>
         description: "Failed to send message.",
         variant: "destructive",
       });
+    }
+  };
+
+  const handlePlaybackSync = async (position: number, isPlaying: boolean) => {
+    if (!session || !isHost) return;
+    
+    try {
+      await enhancedDatabaseWatchPartyService.syncPlayback(session.id, position, isPlaying);
+    } catch (error) {
+      console.error('Error syncing playback:', error);
     }
   };
 
@@ -261,27 +253,92 @@ export const FullyFunctionalWatchParty: React.FC<FullyFunctionalWatchPartyProps>
     }
   };
 
-  if (!session) {
+  // Setup mode - create or join party
+  if (setupMode) {
     return (
-      <WatchPartySetup
-        movieTitle={movieTitle}
-        partyCode={partyCode}
-        setPartyCode={setPartyCode}
-        isCreating={isCreating}
-        isJoining={isJoining}
-        onCreateParty={createParty}
-        onJoinParty={joinParty}
-        onClose={onClose}
-      />
+      <div className="fixed inset-0 z-50 bg-black/95 md:bg-transparent md:bottom-4 md:right-4 md:top-auto md:left-auto md:w-96 md:max-h-[85vh]">
+        <div className="h-full md:h-auto bg-gray-900 md:rounded-2xl md:shadow-2xl border-0 md:border md:border-gray-700 flex flex-col overflow-hidden">
+          
+          <div className="p-6 border-b border-gray-700 bg-gradient-to-r from-red-900/30 to-gray-800 md:rounded-t-2xl">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 bg-gradient-to-br from-red-600 to-red-700 rounded-xl flex items-center justify-center shadow-lg">
+                  <Users className="h-6 w-6 text-white" />
+                </div>
+                <div>
+                  <h3 className="text-xl font-bold text-white">Watch Party</h3>
+                  <p className="text-sm text-gray-300">{movieTitle}</p>
+                </div>
+              </div>
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                onClick={onClose}
+                className="text-gray-300 hover:text-white hover:bg-white/10 h-10 w-10 p-0 rounded-full"
+              >
+                <X className="h-5 w-5" />
+              </Button>
+            </div>
+          </div>
+
+          <div className="flex-1 p-6 space-y-6">
+            {/* Create Party */}
+            <div className="space-y-3">
+              <h4 className="font-semibold text-white">Host a Watch Party</h4>
+              <p className="text-sm text-gray-400">Start a new watch party and invite friends</p>
+              <Button 
+                onClick={createParty}
+                disabled={isCreating}
+                className="w-full bg-red-600 hover:bg-red-700 text-white h-12 rounded-lg font-semibold"
+              >
+                <Play className="mr-2 h-5 w-5" />
+                {isCreating ? 'Creating...' : 'Create Party'}
+              </Button>
+            </div>
+
+            <div className="relative">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-gray-700"></div>
+              </div>
+              <div className="relative flex justify-center text-sm">
+                <span className="bg-gray-900 px-4 text-gray-400">or</span>
+              </div>
+            </div>
+
+            {/* Join Party */}
+            <div className="space-y-3">
+              <h4 className="font-semibold text-white">Join a Watch Party</h4>
+              <p className="text-sm text-gray-400">Enter a party code to join friends</p>
+              <div className="space-y-3">
+                <Input
+                  value={partyCode}
+                  onChange={(e) => setPartyCode(e.target.value.toUpperCase())}
+                  placeholder="Enter party code..."
+                  className="bg-gray-800 border-gray-600 text-white placeholder-gray-400 h-12 text-center text-lg font-mono tracking-wider"
+                  maxLength={6}
+                />
+                <Button 
+                  onClick={() => joinParty(partyCode)}
+                  disabled={isJoining || !partyCode.trim()}
+                  className="w-full bg-blue-600 hover:bg-blue-700 text-white h-12 rounded-lg font-semibold"
+                >
+                  {isJoining ? 'Joining...' : 'Join Party'}
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     );
   }
 
+  // Active watch party
   return (
     <div className="fixed inset-0 z-50 bg-black/95 md:bg-transparent md:bottom-4 md:right-4 md:top-auto md:left-auto md:w-96 md:max-h-[85vh]">
       <div className="h-full md:h-auto bg-gray-900 md:rounded-2xl md:shadow-2xl border-0 md:border md:border-gray-700 flex flex-col overflow-hidden">
         
         <EnhancedWatchPartyHeader
-          session={session}
+          session={session!}
           isHost={isHost}
           showChat={showChat}
           copied={copied}
@@ -291,7 +348,32 @@ export const FullyFunctionalWatchParty: React.FC<FullyFunctionalWatchPartyProps>
           onClose={onClose}
         />
 
-        <EnhancedWatchPartyParticipants participants={session.participants} />
+        <EnhancedWatchPartyParticipants participants={session?.participants || []} />
+
+        {/* Video Sync Component */}
+        <WatchPartyVideoSync
+          isHost={isHost}
+          currentTime={currentPlaybackTime}
+          isPlaying={isCurrentlyPlaying}
+          onTimeUpdate={(time) => handlePlaybackSync(time, isCurrentlyPlaying)}
+          onPlayStateChange={(playing) => handlePlaybackSync(currentPlaybackTime, playing)}
+        />
+
+        {/* Host Controls */}
+        {isHost && onSeek && onPlayPause && onVolumeChange && (
+          <div className="p-4 border-b border-gray-700">
+            <WatchPartyControls
+              isHost={isHost}
+              isPlaying={isCurrentlyPlaying}
+              currentTime={currentPlaybackTime}
+              duration={videoDuration}
+              volume={volume}
+              onPlayPause={onPlayPause}
+              onSeek={onSeek}
+              onVolumeChange={onVolumeChange}
+            />
+          </div>
+        )}
 
         {showChat && (
           <EnhancedWatchPartyChat

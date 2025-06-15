@@ -1,21 +1,23 @@
 
 import React from 'react';
 import { ShareModal } from './ShareModal';
-import { WatchParty } from './WatchParty';
+import { FullyFunctionalWatchParty } from './FullyFunctionalWatchParty';
 
 interface DetailPageModalsProps {
   showShareModal: boolean;
   showWatchParty: boolean;
-  content: {
-    id: number;
-    title?: string;
-    name?: string;
-    poster_path?: string;
-    overview?: string;
-  };
+  content: any;
   type: 'movie' | 'tv';
   onCloseShare: () => void;
   onCloseWatchParty: () => void;
+  currentPlaybackTime?: number;
+  isCurrentlyPlaying?: boolean;
+  videoDuration?: number;
+  volume?: number;
+  onVolumeChange?: (volume: number) => void;
+  onSeek?: (time: number) => void;
+  onPlayPause?: () => void;
+  onPlaybackSync?: (data: { position: number; isPlaying: boolean; timestamp: string }) => void;
 }
 
 export const DetailPageModals: React.FC<DetailPageModalsProps> = ({
@@ -24,36 +26,46 @@ export const DetailPageModals: React.FC<DetailPageModalsProps> = ({
   content,
   type,
   onCloseShare,
-  onCloseWatchParty
+  onCloseWatchParty,
+  currentPlaybackTime,
+  isCurrentlyPlaying,
+  videoDuration,
+  volume,
+  onVolumeChange,
+  onSeek,
+  onPlayPause,
+  onPlaybackSync
 }) => {
-  const title = content.title || content.name || 'Unknown Title';
+  const title = content?.title || content?.name || 'Unknown Title';
 
   return (
     <>
       {/* Share Modal */}
       {showShareModal && (
         <ShareModal
-          content={{
-            id: content.id,
-            title,
-            type: type as 'movie' | 'tv',
-            poster_path: content.poster_path,
-            description: content.overview
-          }}
+          title={title}
+          type={type}
+          id={content.id}
           onClose={onCloseShare}
         />
       )}
 
-      {/* Watch Party Modal */}
+      {/* Watch Party */}
       {showWatchParty && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <WatchParty
-            movieId={content.id}
-            movieTitle={title}
-            movieType={type as 'movie' | 'tv'}
-            onClose={onCloseWatchParty}
-          />
-        </div>
+        <FullyFunctionalWatchParty
+          movieId={content.id}
+          movieTitle={title}
+          movieType={type}
+          onClose={onCloseWatchParty}
+          currentPlaybackTime={currentPlaybackTime}
+          isCurrentlyPlaying={isCurrentlyPlaying}
+          videoDuration={videoDuration}
+          volume={volume}
+          onVolumeChange={onVolumeChange}
+          onSeek={onSeek}
+          onPlayPause={onPlayPause}
+          onPlaybackSync={onPlaybackSync}
+        />
       )}
     </>
   );

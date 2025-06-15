@@ -104,6 +104,7 @@ class EnhancedDatabaseWatchPartyService {
 
     return {
       ...session,
+      movie_type: session.movie_type as 'movie' | 'tv',
       participants
     };
   }
@@ -193,7 +194,10 @@ class EnhancedDatabaseWatchPartyService {
       .order('timestamp', { ascending: true });
 
     if (error) throw error;
-    return data || [];
+    return (data || []).map(msg => ({
+      ...msg,
+      type: msg.type as 'message' | 'system' | 'sync'
+    }));
   }
 
   private async getParticipants(sessionId: string): Promise<EnhancedWatchPartyParticipant[]> {
