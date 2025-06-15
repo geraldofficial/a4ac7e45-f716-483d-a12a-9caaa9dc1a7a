@@ -88,7 +88,10 @@ export const useAuthStateListener = ({
       }
     });
 
-    return data.subscription;
+    // Return cleanup function that unsubscribes
+    return () => {
+      data.subscription.unsubscribe();
+    };
   }, [
     mountedRef,
     loadingRef,
