@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Search, Menu, X, User, LogOut, Home, TrendingUp, Grid3X3, Star, Clock, UserCircle, Settings, Gamepad2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -6,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/contexts/AuthContext';
 import { FlickPickLogo } from './FlickPickLogo';
-import { ProfileSelector } from './ProfileSelector';
+import { ProfileDisplay } from './ProfileDisplay';
 import { NotificationCenter } from './NotificationCenter';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -15,7 +14,7 @@ export const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-  const { user, signOut, currentProfile } = useAuth();
+  const { user, signOut } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -117,7 +116,7 @@ export const Navbar = () => {
             {user && <NotificationCenter />}
             {user ? (
               <div className="flex items-center space-x-3">
-                <ProfileSelector />
+                <ProfileDisplay />
                 <Button
                   variant="ghost"
                   size="sm"
@@ -193,7 +192,7 @@ export const Navbar = () => {
                 <>
                   <div className="border-t border-border/30 my-2"></div>
                   <div className="px-3 py-2">
-                    <ProfileSelector />
+                    <ProfileDisplay />
                   </div>
                   {userNavigation.map((item) => (
                     <button
