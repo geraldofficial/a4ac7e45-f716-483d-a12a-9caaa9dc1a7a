@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -49,6 +48,7 @@ export const MatureWatchParty: React.FC<WatchPartyProps> = ({
   const [isVideoPlaying, setIsVideoPlaying] = useState(false);
   const [showVideo, setShowVideo] = useState(false);
   const [activeTab, setActiveTab] = useState('party');
+  const [copied, setCopied] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -73,6 +73,24 @@ export const MatureWatchParty: React.FC<WatchPartyProps> = ({
   const handleSyncReceived = (data: any) => {
     console.log('Sync received:', data);
     // Handle video sync here
+  };
+
+  const handleCopyCode = async () => {
+    try {
+      await navigator.clipboard.writeText(roomCode);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+      toast({
+        title: "Party code copied!",
+        description: "Share this code with friends.",
+      });
+    } catch (error) {
+      toast({
+        title: "Copy failed",
+        description: "Unable to copy to clipboard.",
+        variant: "destructive",
+      });
+    }
   };
 
   if (showVideo) {
@@ -187,14 +205,10 @@ export const MatureWatchParty: React.FC<WatchPartyProps> = ({
 
             <TabsContent value="invite" className="mt-6">
               <WatchPartyInvite
-                roomCode={roomCode}
+                sessionId={roomCode}
                 movieTitle={movieTitle}
-                onInviteSent={() => {
-                  toast({
-                    title: "Invitation sent!",
-                    description: "Your friends will receive the watch party link",
-                  });
-                }}
+                onCopyCode={handleCopyCode}
+                copied={copied}
               />
             </TabsContent>
 
