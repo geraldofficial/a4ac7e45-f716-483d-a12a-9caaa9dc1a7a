@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card } from '@/components/ui/card';
-import { Users, MessageCircle, Share, X, Copy, Check, Plus, Link, Twitter, Facebook } from 'lucide-react';
+import { Users, MessageCircle, Share, X, Copy, Check, Plus, Link, Send, UserCircle } from 'lucide-react';
 import { watchPartyService, WatchPartySession, WatchPartyMessage } from '@/services/watchParty';
 import { useToast } from '@/hooks/use-toast';
 
@@ -34,6 +34,9 @@ export const EnhancedWatchParty: React.FC<EnhancedWatchPartyProps> = ({
   useEffect(() => {
     if (session) {
       loadMessages();
+      // Set up polling for real-time updates
+      const interval = setInterval(loadMessages, 2000);
+      return () => clearInterval(interval);
     }
   }, [session]);
 
@@ -52,7 +55,10 @@ export const EnhancedWatchParty: React.FC<EnhancedWatchPartyProps> = ({
     
     setIsCreating(true);
     try {
+      console.log('Creating watch party...');
       const sessionId = await watchPartyService.createSession(movieId, movieTitle, movieType);
+      console.log('Session created:', sessionId);
+      
       const newSession = await watchPartyService.joinSession(sessionId);
       
       if (newSession) {
@@ -62,6 +68,8 @@ export const EnhancedWatchParty: React.FC<EnhancedWatchPartyProps> = ({
           title: "Watch party created!",
           description: `Party code: ${sessionId}`,
         });
+      } else {
+        throw new Error('Failed to join created session');
       }
     } catch (error) {
       console.error('Error creating party:', error);
@@ -79,9 +87,12 @@ export const EnhancedWatchParty: React.FC<EnhancedWatchPartyProps> = ({
     if (isJoining || !code.trim()) return;
     
     setIsJoining(true);
+    const cleanCode = code.trim().toUpperCase();
+    
     try {
-      // Check if session exists first
-      if (!watchPartyService.sessionExists(code)) {
+      console.log('Attempting to join party:', cleanCode);
+      
+      if (!watchPartyService.sessionExists(cleanCode)) {
         toast({
           title: "Party not found",
           description: "The party code you entered is invalid or expired.",
@@ -90,13 +101,19 @@ export const EnhancedWatchParty: React.FC<EnhancedWatchPartyProps> = ({
         return;
       }
 
-      const joinedSession = await watchPartyService.joinSession(code);
+      const joinedSession = await watchPartyService.joinSession(cleanCode);
       if (joinedSession) {
         setSession(joinedSession);
         setIsHost(false);
         toast({
           title: "Joined watch party!",
           description: `Now watching ${joinedSession.movie_title} with friends.`,
+        });
+      } else {
+        toast({
+          title: "Error",
+          description: "Failed to join the party. Please try again.",
+          variant: "destructive",
         });
       }
     } catch (error) {
@@ -120,6 +137,11 @@ export const EnhancedWatchParty: React.FC<EnhancedWatchPartyProps> = ({
       await loadMessages();
     } catch (error) {
       console.error('Error sending message:', error);
+      toast({
+        title: "Error",
+        description: "Failed to send message.",
+        variant: "destructive",
+      });
     }
   };
 
@@ -187,29 +209,29 @@ export const EnhancedWatchParty: React.FC<EnhancedWatchPartyProps> = ({
         <Card className="w-full max-w-md bg-gray-900 border-gray-700 p-6">
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-red-600 rounded-full flex items-center justify-center">
-                <Users className="h-5 w-5 text-white" />
+              <div className="w-12 h-12 bg-gradient-to-br from-red-600 to-red-700 rounded-xl flex items-center justify-center shadow-lg">
+                <Users className="h-6 w-6 text-white" />
               </div>
               <div>
-                <h3 className="text-lg font-semibold text-white">Watch Party</h3>
-                <p className="text-sm text-gray-400">{movieTitle}</p>
+                <h3 className="text-xl font-bold text-white">Watch Party</h3>
+                <p className="text-sm text-gray-400 truncate max-w-48">{movieTitle}</p>
               </div>
             </div>
-            <Button variant="ghost" size="sm" onClick={onClose} className="text-gray-400 hover:text-white">
-              <X className="h-4 w-4" />
+            <Button variant="ghost" size="sm" onClick={onClose} className="text-gray-400 hover:text-white rounded-xl">
+              <X className="h-5 w-5" />
             </Button>
           </div>
           
-          <div className="space-y-4">
+          <div className="space-y-6">
             <Button 
               onClick={createParty}
               disabled={isCreating}
-              className="w-full bg-red-600 hover:bg-red-700 text-white h-12 text-base"
+              className="w-full bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white h-14 text-base font-semibold rounded-xl shadow-lg"
             >
               {isCreating ? (
-                <div className="flex items-center gap-2">
-                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                  Creating...
+                <div className="flex items-center gap-3">
+                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  Creating Party...
                 </div>
               ) : (
                 <>
@@ -224,29 +246,29 @@ export const EnhancedWatchParty: React.FC<EnhancedWatchPartyProps> = ({
                 <div className="w-full border-t border-gray-700"></div>
               </div>
               <div className="relative flex justify-center text-sm">
-                <span className="bg-gray-900 px-3 text-gray-400">or join existing party</span>
+                <span className="bg-gray-900 px-4 text-gray-400 font-medium">or join existing party</span>
               </div>
             </div>
             
-            <div className="space-y-3">
+            <div className="space-y-4">
               <Input
                 placeholder="Enter party code (e.g. ABC123)"
                 value={partyCode}
                 onChange={(e) => setPartyCode(e.target.value.toUpperCase())}
                 onKeyPress={(e) => e.key === 'Enter' && joinParty(partyCode)}
-                className="bg-gray-800 border-gray-600 text-white placeholder-gray-400 h-12 text-base text-center"
-                maxLength={8}
+                className="bg-gray-800 border-gray-600 text-white placeholder-gray-400 h-14 text-base text-center font-mono tracking-wider rounded-xl"
+                maxLength={6}
               />
               <Button 
                 variant="outline" 
-                className="w-full border-gray-600 text-gray-300 hover:text-white hover:bg-gray-800 h-12 text-base"
+                className="w-full border-gray-600 text-gray-300 hover:text-white hover:bg-gray-800 h-14 text-base font-semibold rounded-xl"
                 onClick={() => joinParty(partyCode)}
                 disabled={!partyCode.trim() || isJoining}
               >
                 {isJoining ? (
-                  <div className="flex items-center gap-2">
-                    <div className="w-4 h-4 border-2 border-gray-300 border-t-transparent rounded-full animate-spin" />
-                    Joining...
+                  <div className="flex items-center gap-3">
+                    <div className="w-5 h-5 border-2 border-gray-300 border-t-transparent rounded-full animate-spin" />
+                    Joining Party...
                   </div>
                 ) : (
                   'Join Party'
@@ -259,13 +281,13 @@ export const EnhancedWatchParty: React.FC<EnhancedWatchPartyProps> = ({
     );
   }
 
-  // Active Party Interface - Mobile First Design
+  // Active Party Interface
   return (
-    <div className="fixed inset-0 z-50 bg-black/95 md:bg-transparent md:bottom-4 md:right-4 md:top-auto md:left-auto md:w-96 md:max-h-[80vh]">
-      <div className="h-full md:h-auto bg-gray-900 md:rounded-xl md:shadow-2xl border-0 md:border md:border-gray-700 flex flex-col">
+    <div className="fixed inset-0 z-50 bg-black/95 md:bg-transparent md:bottom-4 md:right-4 md:top-auto md:left-auto md:w-96 md:max-h-[85vh]">
+      <div className="h-full md:h-auto bg-gray-900 md:rounded-2xl md:shadow-2xl border-0 md:border md:border-gray-700 flex flex-col overflow-hidden">
         
-        {/* Enhanced Mobile Header */}
-        <div className="p-4 md:p-4 border-b border-gray-700 bg-gradient-to-r from-red-900/20 to-gray-800 md:rounded-t-xl">
+        {/* Header */}
+        <div className="p-6 md:p-4 border-b border-gray-700 bg-gradient-to-r from-red-900/30 to-gray-800 md:rounded-t-2xl">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-3">
               <div className="w-12 h-12 md:w-10 md:h-10 bg-gradient-to-br from-red-600 to-red-700 rounded-xl md:rounded-full flex items-center justify-center shadow-lg">
@@ -286,7 +308,6 @@ export const EnhancedWatchParty: React.FC<EnhancedWatchPartyProps> = ({
               </div>
             </div>
             
-            {/* Mobile Action Buttons */}
             <div className="flex gap-2">
               <Button 
                 variant="ghost" 
@@ -315,7 +336,7 @@ export const EnhancedWatchParty: React.FC<EnhancedWatchPartyProps> = ({
             </div>
           </div>
 
-          {/* Enhanced Party Code Section */}
+          {/* Party Code Section */}
           <div className="bg-gray-800/50 rounded-xl p-4 md:p-3 border border-gray-600/30 backdrop-blur-sm">
             <div className="flex items-center justify-between">
               <div className="flex-1">
@@ -339,7 +360,7 @@ export const EnhancedWatchParty: React.FC<EnhancedWatchPartyProps> = ({
           </div>
         </div>
 
-        {/* Enhanced Participants Section */}
+        {/* Participants Section */}
         <div className="p-4 md:p-3 border-b border-gray-700/50">
           <h4 className="text-lg md:text-sm text-white mb-3 md:mb-2 font-semibold flex items-center gap-2">
             <Users className="h-5 w-5 md:h-4 md:w-4 text-red-400" />
@@ -353,7 +374,7 @@ export const EnhancedWatchParty: React.FC<EnhancedWatchPartyProps> = ({
                 title={participant.username}
               >
                 <div className="w-8 h-8 md:w-6 md:h-6 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-semibold text-sm md:text-xs">
-                  {participant.username.charAt(0).toUpperCase()}
+                  <UserCircle className="h-4 w-4 md:h-3 md:w-3" />
                 </div>
                 <span className="text-sm md:text-xs text-gray-200 truncate font-medium">
                   {participant.username}
@@ -370,7 +391,7 @@ export const EnhancedWatchParty: React.FC<EnhancedWatchPartyProps> = ({
           </div>
         </div>
 
-        {/* Enhanced Chat Section */}
+        {/* Chat Section */}
         {showChat && (
           <div className="flex-1 flex flex-col border-b border-gray-700/50 md:border-b-0">
             <div className="flex-1 overflow-y-auto p-4 md:p-3 space-y-4 md:space-y-3 max-h-80 md:max-h-40">
@@ -387,7 +408,7 @@ export const EnhancedWatchParty: React.FC<EnhancedWatchPartyProps> = ({
                   <div key={message.id} className="bg-gray-800/30 rounded-xl p-4 md:p-3 border border-gray-600/20 backdrop-blur-sm">
                     <div className="flex items-start gap-3 md:gap-2">
                       <div className="w-8 h-8 md:w-6 md:h-6 bg-gradient-to-br from-green-500 to-blue-600 rounded-full flex items-center justify-center text-white font-semibold text-sm md:text-xs flex-shrink-0">
-                        {message.username.charAt(0).toUpperCase()}
+                        <UserCircle className="h-4 w-4 md:h-3 md:w-3" />
                       </div>
                       <div className="flex-1 min-w-0">
                         <span className="font-semibold text-red-400 text-sm md:text-xs block mb-1">
@@ -403,7 +424,7 @@ export const EnhancedWatchParty: React.FC<EnhancedWatchPartyProps> = ({
               )}
             </div>
             
-            {/* Enhanced Chat Input */}
+            {/* Chat Input */}
             <div className="p-4 md:p-3 bg-gray-800/30 md:bg-transparent border-t border-gray-700/50 md:border-t-0">
               <div className="flex gap-3 md:gap-2">
                 <Input
@@ -419,14 +440,14 @@ export const EnhancedWatchParty: React.FC<EnhancedWatchPartyProps> = ({
                   disabled={!newMessage.trim()}
                   className="bg-red-600 hover:bg-red-700 text-white h-14 md:h-9 px-6 md:px-4 rounded-xl font-semibold"
                 >
-                  Send
+                  <Send className="h-4 w-4" />
                 </Button>
               </div>
             </div>
           </div>
         )}
 
-        {/* Enhanced Mobile Footer */}
+        {/* Mobile Footer */}
         {!showChat && (
           <div className="p-4 md:hidden bg-gray-800/30">
             <Button

@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { MobileVideoPlayer } from './MobileVideoPlayer';
+import { AdBlockingVideoPlayer } from './AdBlockingVideoPlayer';
 import { watchHistoryService } from '@/services/watchHistory';
 
 interface VideoPlayerProps {
@@ -38,7 +38,7 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = (props) => {
   }
 
   return (
-    <MobileVideoPlayer
+    <AdBlockingVideoPlayer
       title={props.title}
       tmdbId={props.tmdbId}
       type={props.type}

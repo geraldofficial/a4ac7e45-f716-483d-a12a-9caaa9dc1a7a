@@ -30,12 +30,29 @@ export interface WatchPartyMessage {
 }
 
 class WatchPartyService {
+  private generateSessionId(): string {
+    // Generate a more reliable 6-character session ID
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+    let result = '';
+    for (let i = 0; i < 6; i++) {
+      result += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    return result;
+  }
+
+  private getStorageKey(sessionId: string): string {
+    return `watchParty_${sessionId.toUpperCase()}`;
+  }
+
+  private getChatKey(sessionId: string): string {
+    return `watchPartyChat_${sessionId.toUpperCase()}`;
+  }
+
   async createSession(movieId: number, movieTitle: string, movieType: 'movie' | 'tv'): Promise<string> {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) throw new Error('User not authenticated');
 
-    // Generate a simpler, more reliable session ID
-    const sessionId = Math.random().toString(36).substr(2, 8).toUpperCase();
+    const sessionId = this.generateSessionId();
     
     const session: WatchPartySession = {
       id: sessionId,
@@ -54,13 +71,20 @@ class WatchPartyService {
       }]
     };
 
-    localStorage.setItem(`watchParty_${sessionId}`, JSON.stringify(session));
+    // Store session data
+    localStorage.setItem(this.getStorageKey(sessionId), JSON.stringify(session));
     
-    // Also store in a global sessions list for easier lookup
+    // Initialize empty chat
+    localStorage.setItem(this.getChatKey(sessionId), JSON.stringify([]));
+    
+    // Store in global sessions list
     const allSessions = JSON.parse(localStorage.getItem('watchPartySessions') || '[]');
-    allSessions.push(sessionId);
-    localStorage.setItem('watchPartySessions', JSON.stringify(allSessions));
+    if (!allSessions.includes(sessionId)) {
+      allSessions.push(sessionId);
+      localStorage.setItem('watchPartySessions', JSON.stringify(allSessions));
+    }
     
+    console.log(`Created watch party session: ${sessionId}`);
     return sessionId;
   }
 
@@ -68,71 +92,112 @@ class WatchPartyService {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) throw new Error('User not authenticated');
 
-    // Clean the session ID
     const cleanSessionId = sessionId.trim().toUpperCase();
+    console.log(`Attempting to join session: ${cleanSessionId}`);
     
-    const sessionData = localStorage.getItem(`watchParty_${cleanSessionId}`);
+    const sessionData = localStorage.getItem(this.getStorageKey(cleanSessionId));
     if (!sessionData) {
-      console.log('Session not found:', cleanSessionId);
+      console.log(`Session not found: ${cleanSessionId}`);
       return null;
     }
 
-    const session: WatchPartySession = JSON.parse(sessionData);
-    
-    // Add user to participants if not already there
-    const existingParticipant = session.participants.find(p => p.user_id === user.id);
-    if (!existingParticipant) {
-      session.participants.push({
-        user_id: user.id,
-        username: user.email?.split('@')[0] || 'User',
-        avatar: '👤',
-        joined_at: new Date().toISOString()
-      });
-      localStorage.setItem(`watchParty_${cleanSessionId}`, JSON.stringify(session));
-    }
+    try {
+      const session: WatchPartySession = JSON.parse(sessionData);
+      
+      // Check if user is already a participant
+      const existingParticipant = session.participants.find(p => p.user_id === user.id);
+      if (!existingParticipant) {
+        session.participants.push({
+          user_id: user.id,
+          username: user.email?.split('@')[0] || 'User',
+          avatar: '👤',
+          joined_at: new Date().toISOString()
+        });
+        
+        // Save updated session
+        localStorage.setItem(this.getStorageKey(cleanSessionId), JSON.stringify(session));
+        console.log(`User joined session: ${cleanSessionId}`);
+      }
 
-    return session;
+      return session;
+    } catch (error) {
+      console.error('Error parsing session data:', error);
+      return null;
+    }
   }
 
   async updatePlaybackState(sessionId: string, currentTime: number, isPlaying: boolean): Promise<void> {
-    const sessionData = localStorage.getItem(`watchParty_${sessionId}`);
+    const cleanSessionId = sessionId.toUpperCase();
+    const sessionData = localStorage.getItem(this.getStorageKey(cleanSessionId));
     if (!sessionData) return;
 
-    const session: WatchPartySession = JSON.parse(sessionData);
-    session.current_time = currentTime;
-    session.is_playing = isPlaying;
-    
-    localStorage.setItem(`watchParty_${sessionId}`, JSON.stringify(session));
+    try {
+      const session: WatchPartySession = JSON.parse(sessionData);
+      session.current_time = currentTime;
+      session.is_playing = isPlaying;
+      
+      localStorage.setItem(this.getStorageKey(cleanSessionId), JSON.stringify(session));
+    } catch (error) {
+      console.error('Error updating playback state:', error);
+    }
   }
 
   async sendMessage(sessionId: string, message: string): Promise<void> {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
 
+    const cleanSessionId = sessionId.toUpperCase();
     const messageId = `msg_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    
     const chatMessage: WatchPartyMessage = {
       id: messageId,
-      session_id: sessionId,
+      session_id: cleanSessionId,
       user_id: user.id,
       username: user.email?.split('@')[0] || 'User',
       message,
       timestamp: new Date().toISOString()
     };
 
-    const existingMessages = JSON.parse(localStorage.getItem(`watchPartyChat_${sessionId}`) || '[]');
-    existingMessages.push(chatMessage);
-    localStorage.setItem(`watchPartyChat_${sessionId}`, JSON.stringify(existingMessages));
+    try {
+      const existingMessages = JSON.parse(localStorage.getItem(this.getChatKey(cleanSessionId)) || '[]');
+      existingMessages.push(chatMessage);
+      localStorage.setItem(this.getChatKey(cleanSessionId), JSON.stringify(existingMessages));
+      console.log('Message sent to session:', cleanSessionId);
+    } catch (error) {
+      console.error('Error sending message:', error);
+    }
   }
 
   async getMessages(sessionId: string): Promise<WatchPartyMessage[]> {
-    const messages = localStorage.getItem(`watchPartyChat_${sessionId}`);
-    return messages ? JSON.parse(messages) : [];
+    const cleanSessionId = sessionId.toUpperCase();
+    try {
+      const messages = localStorage.getItem(this.getChatKey(cleanSessionId));
+      return messages ? JSON.parse(messages) : [];
+    } catch (error) {
+      console.error('Error getting messages:', error);
+      return [];
+    }
   }
 
-  // Helper method to check if session exists
   sessionExists(sessionId: string): boolean {
     const cleanSessionId = sessionId.trim().toUpperCase();
-    return localStorage.getItem(`watchParty_${cleanSessionId}`) !== null;
+    const exists = localStorage.getItem(this.getStorageKey(cleanSessionId)) !== null;
+    console.log(`Session ${cleanSessionId} exists: ${exists}`);
+    return exists;
+  }
+
+  async getSession(sessionId: string): Promise<WatchPartySession | null> {
+    const cleanSessionId = sessionId.toUpperCase();
+    const sessionData = localStorage.getItem(this.getStorageKey(cleanSessionId));
+    
+    if (!sessionData) return null;
+    
+    try {
+      return JSON.parse(sessionData);
+    } catch (error) {
+      console.error('Error parsing session:', error);
+      return null;
+    }
   }
 }
 
