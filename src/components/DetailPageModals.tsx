@@ -36,16 +36,21 @@ export const DetailPageModals: React.FC<DetailPageModalsProps> = ({
   onPlayPause,
   onPlaybackSync
 }) => {
-  const title = content?.title || content?.name || 'Unknown Title';
+  // Create ShareableContent object for ShareModal
+  const shareableContent = {
+    id: content?.id || 0,
+    title: content?.title || content?.name || 'Unknown Title',
+    type: type,
+    poster_path: content?.poster_path,
+    description: content?.overview
+  };
 
   return (
     <>
       {/* Share Modal */}
       {showShareModal && (
         <ShareModal
-          title={title}
-          type={type}
-          id={content.id}
+          content={shareableContent}
           onClose={onCloseShare}
         />
       )}
@@ -54,7 +59,7 @@ export const DetailPageModals: React.FC<DetailPageModalsProps> = ({
       {showWatchParty && (
         <FullyFunctionalWatchParty
           movieId={content.id}
-          movieTitle={title}
+          movieTitle={shareableContent.title}
           movieType={type}
           onClose={onCloseWatchParty}
           currentPlaybackTime={currentPlaybackTime}
