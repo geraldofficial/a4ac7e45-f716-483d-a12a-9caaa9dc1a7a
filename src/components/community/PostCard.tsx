@@ -6,19 +6,23 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Heart, MessageCircle, Share2, Bookmark, MoreHorizontal, Play } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { CommunityPost } from '@/hooks/useCommunity';
+import { PostComments } from './PostComments';
 
 interface PostCardProps {
   post: CommunityPost;
   onLike: () => void;
   onBookmark: () => void;
+  onCommentAdded: () => void;
 }
 
 export const PostCard: React.FC<PostCardProps> = ({ 
   post, 
   onLike, 
-  onBookmark
+  onBookmark,
+  onCommentAdded
 }) => {
   const [imageError, setImageError] = useState<{ [key: string]: boolean }>({});
+  const [showComments, setShowComments] = useState(false);
 
   const handleImageError = (index: number) => {
     setImageError(prev => ({ ...prev, [index]: true }));
@@ -107,6 +111,7 @@ export const PostCard: React.FC<PostCardProps> = ({
             <Button 
               variant="ghost" 
               size="sm" 
+              onClick={() => setShowComments(!showComments)}
               className="gap-2 h-9 px-3"
             >
               <MessageCircle className="h-4 w-4" />
@@ -131,6 +136,14 @@ export const PostCard: React.FC<PostCardProps> = ({
             <Bookmark className={`h-4 w-4 ${post.is_bookmarked ? 'fill-current' : ''}`} />
           </Button>
         </div>
+
+        {showComments && (
+          <PostComments
+            postId={post.id}
+            commentsCount={post.comments_count}
+            onCommentAdded={onCommentAdded}
+          />
+        )}
       </CardContent>
     </Card>
   );

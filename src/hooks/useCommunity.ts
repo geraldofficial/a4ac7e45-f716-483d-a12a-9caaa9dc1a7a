@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -296,9 +297,9 @@ export const useCommunity = () => {
   useEffect(() => {
     fetchPosts();
 
-    // Set up real-time subscription
-    const subscription = supabase
-      .channel('community-posts')
+    // Set up real-time subscriptions
+    const postsSubscription = supabase
+      .channel('community-posts-changes')
       .on('postgres_changes', {
         event: '*',
         schema: 'public',
@@ -308,8 +309,32 @@ export const useCommunity = () => {
       })
       .subscribe();
 
+    const likesSubscription = supabase
+      .channel('community-likes-changes')
+      .on('postgres_changes', {
+        event: '*',
+        schema: 'public',
+        table: 'community_post_likes'
+      }, () => {
+        fetchPosts();
+      })
+      .subscribe();
+
+    const commentsSubscription = supabase
+      .channel('community-comments-changes')
+      .on('postgres_changes', {
+        event: '*',
+        schema: 'public',
+        table: 'community_post_comments'
+      }, () => {
+        fetchPosts();
+      })
+      .subscribe();
+
     return () => {
-      subscription.unsubscribe();
+      postsSubscription.unsubscribe();
+      likesSubscription.unsubscribe();
+      commentsSubscription.unsubscribe();
     };
   }, [user]);
 

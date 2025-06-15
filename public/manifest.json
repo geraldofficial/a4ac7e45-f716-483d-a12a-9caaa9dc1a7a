@@ -11,25 +11,25 @@
   "start_url": "/",
   "icons": [
     {
-      "src": "/lovable-uploads/0bb41fd4-6209-45e7-a375-a53cedfcb322.png",
+      "src": "/lovable-uploads/1dbe7566-e61a-43fb-8913-7b44138a0ff1.png",
       "type": "image/png",
       "sizes": "192x192",
       "purpose": "any"
     },
     {
-      "src": "/lovable-uploads/0bb41fd4-6209-45e7-a375-a53cedfcb322.png",
+      "src": "/lovable-uploads/1dbe7566-e61a-43fb-8913-7b44138a0ff1.png",
       "type": "image/png", 
       "sizes": "512x512",
       "purpose": "any"
     },
     {
-      "src": "/lovable-uploads/0bb41fd4-6209-45e7-a375-a53cedfcb322.png",
+      "src": "/lovable-uploads/1dbe7566-e61a-43fb-8913-7b44138a0ff1.png",
       "type": "image/png",
       "sizes": "192x192",
       "purpose": "maskable"
     },
     {
-      "src": "/lovable-uploads/0bb41fd4-6209-45e7-a375-a53cedfcb322.png",
+      "src": "/lovable-uploads/1dbe7566-e61a-43fb-8913-7b44138a0ff1.png",
       "type": "image/png",
       "sizes": "512x512",
       "purpose": "maskable"
@@ -38,13 +38,13 @@
   "categories": ["entertainment", "multimedia"],
   "screenshots": [
     {
-      "src": "/lovable-uploads/0bb41fd4-6209-45e7-a375-a53cedfcb322.png",
+      "src": "/lovable-uploads/1dbe7566-e61a-43fb-8913-7b44138a0ff1.png",
       "sizes": "1280x720",
       "type": "image/png",
       "form_factor": "wide"
     },
     {
-      "src": "/lovable-uploads/0bb41fd4-6209-45e7-a375-a53cedfcb322.png", 
+      "src": "/lovable-uploads/1dbe7566-e61a-43fb-8913-7b44138a0ff1.png", 
       "sizes": "750x1334",
       "type": "image/png",
       "form_factor": "narrow"

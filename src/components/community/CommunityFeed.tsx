@@ -22,6 +22,10 @@ export const CommunityFeed: React.FC<CommunityFeedProps> = ({ searchQuery }) => 
     setRefreshing(false);
   };
 
+  const handleCommentAdded = () => {
+    refreshPosts();
+  };
+
   const filteredPosts = posts.filter(post => {
     if (!searchQuery) return true;
     const searchLower = searchQuery.toLowerCase();
@@ -95,6 +99,7 @@ export const CommunityFeed: React.FC<CommunityFeedProps> = ({ searchQuery }) => 
               post={post}
               onLike={() => toggleLike(post.id)}
               onBookmark={() => toggleBookmark(post.id)}
+              onCommentAdded={handleCommentAdded}
             />
           ))}
         </div>
