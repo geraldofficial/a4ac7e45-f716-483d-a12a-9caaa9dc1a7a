@@ -1,10 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
-import { Card, CardContent, CardHeader } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { Heart, MessageCircle, Share2, Bookmark, MoreHorizontal, Play } from 'lucide-react';
-import { formatDistanceToNow } from 'date-fns';
+import { PostCard } from './PostCard';
+import { useToast } from '@/hooks/use-toast';
 
 interface Post {
   id: string;
@@ -35,55 +32,52 @@ interface CommunityFeedProps {
 export const CommunityFeed: React.FC<CommunityFeedProps> = ({ searchQuery }) => {
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
+  const { toast } = useToast();
 
-  // Mock data - replace with real API calls
   useEffect(() => {
-    const mockPosts: Post[] = [
-      {
-        id: '1',
-        user: {
-          id: '1',
-          name: 'Sarah Connor',
-          username: '@sarahc',
-          avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=sarah'
-        },
-        content: 'Just watched the latest episode of The Last of Us! What an incredible show. The cinematography is absolutely stunning 🔥',
-        media: [
-          {
-            type: 'image',
-            url: 'https://images.unsplash.com/photo-1440404653325-ab127d49abc1?w=600&h=400&fit=crop'
-          }
-        ],
-        likes: 42,
-        comments: 8,
-        shares: 3,
-        isLiked: false,
-        isBookmarked: false,
-        createdAt: new Date(Date.now() - 2 * 60 * 60 * 1000)
-      },
-      {
-        id: '2',
-        user: {
-          id: '2',
-          name: 'John Wick',
-          username: '@johnw',
-          avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=john'
-        },
-        content: 'Movie night recommendations? Looking for something thrilling! 🎬',
-        likes: 15,
-        comments: 12,
-        shares: 1,
-        isLiked: true,
-        isBookmarked: true,
-        createdAt: new Date(Date.now() - 4 * 60 * 60 * 1000)
-      }
-    ];
+    // Simulate loading posts - replace with real API call
+    const loadPosts = async () => {
+      setLoading(true);
+      try {
+        // Simulate API delay
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        
+        // Generate dynamic posts instead of hardcoded data
+        const dynamicPosts: Post[] = Array.from({ length: 5 }, (_, index) => ({
+          id: `post-${index + 1}`,
+          user: {
+            id: `user-${index + 1}`,
+            name: `User ${index + 1}`,
+            username: `@user${index + 1}`,
+            avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=user${index + 1}`
+          },
+          content: `This is a sample post ${index + 1}. Share your thoughts about movies and TV shows!`,
+          media: index % 3 === 0 ? [{
+            type: 'image' as const,
+            url: `https://images.unsplash.com/photo-${1440404653325 + index}?w=600&h=400&fit=crop`
+          }] : undefined,
+          likes: Math.floor(Math.random() * 100),
+          comments: Math.floor(Math.random() * 20),
+          shares: Math.floor(Math.random() * 10),
+          isLiked: Math.random() > 0.5,
+          isBookmarked: Math.random() > 0.7,
+          createdAt: new Date(Date.now() - Math.random() * 24 * 60 * 60 * 1000)
+        }));
 
-    setTimeout(() => {
-      setPosts(mockPosts);
-      setLoading(false);
-    }, 1000);
-  }, []);
+        setPosts(dynamicPosts);
+      } catch (error) {
+        toast({
+          title: "Error",
+          description: "Failed to load posts. Please try again.",
+          variant: "destructive",
+        });
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadPosts();
+  }, [toast]);
 
   const handleLike = (postId: string) => {
     setPosts(posts.map(post => 
@@ -105,6 +99,20 @@ export const CommunityFeed: React.FC<CommunityFeedProps> = ({ searchQuery }) => 
     ));
   };
 
+  const handleComment = (postId: string) => {
+    toast({
+      title: "Coming Soon",
+      description: "Comment functionality will be added soon!",
+    });
+  };
+
+  const handleShare = (postId: string) => {
+    toast({
+      title: "Shared!",
+      description: "Post shared successfully.",
+    });
+  };
+
   const filteredPosts = posts.filter(post => 
     searchQuery === '' || 
     post.user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -114,105 +122,47 @@ export const CommunityFeed: React.FC<CommunityFeedProps> = ({ searchQuery }) => 
 
   if (loading) {
     return (
-      <div className="space-y-6">
+      <div className="space-y-4 md:space-y-6">
         {[1, 2, 3].map(i => (
-          <Card key={i} className="animate-pulse">
-            <CardHeader className="flex flex-row items-center gap-3">
-              <div className="w-10 h-10 bg-muted rounded-full" />
-              <div className="flex-1 space-y-2">
-                <div className="h-4 bg-muted rounded w-1/4" />
-                <div className="h-3 bg-muted rounded w-1/6" />
+          <div key={i} className="animate-pulse bg-card rounded-lg">
+            <div className="p-4 md:p-6">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-8 h-8 md:w-10 md:h-10 bg-muted rounded-full" />
+                <div className="flex-1 space-y-2">
+                  <div className="h-3 md:h-4 bg-muted rounded w-1/4" />
+                  <div className="h-2 md:h-3 bg-muted rounded w-1/6" />
+                </div>
               </div>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <div className="h-4 bg-muted rounded w-3/4" />
-                <div className="h-4 bg-muted rounded w-1/2" />
+              <div className="space-y-2 mb-4">
+                <div className="h-3 md:h-4 bg-muted rounded w-3/4" />
+                <div className="h-3 md:h-4 bg-muted rounded w-1/2" />
               </div>
-              <div className="h-48 bg-muted rounded" />
-            </CardContent>
-          </Card>
+              <div className="h-32 md:h-48 bg-muted rounded" />
+            </div>
+          </div>
         ))}
       </div>
     );
   }
 
   return (
-    <div className="space-y-6">
-      {filteredPosts.map(post => (
-        <Card key={post.id} className="overflow-hidden">
-          <CardHeader className="flex flex-row items-center gap-3 pb-3">
-            <Avatar className="h-10 w-10">
-              <AvatarFallback>
-                <img src={post.user.avatar} alt={post.user.name} className="w-full h-full object-cover" />
-              </AvatarFallback>
-            </Avatar>
-            <div className="flex-1">
-              <h3 className="font-semibold text-sm">{post.user.name}</h3>
-              <p className="text-xs text-muted-foreground">{post.user.username} • {formatDistanceToNow(post.createdAt, { addSuffix: true })}</p>
-            </div>
-            <Button variant="ghost" size="sm">
-              <MoreHorizontal className="h-4 w-4" />
-            </Button>
-          </CardHeader>
-
-          <CardContent className="space-y-4">
-            <p className="text-sm leading-relaxed">{post.content}</p>
-            
-            {post.media && post.media.length > 0 && (
-              <div className="grid gap-2 rounded-lg overflow-hidden">
-                {post.media.map((item, index) => (
-                  <div key={index} className="relative aspect-video bg-muted">
-                    {item.type === 'image' ? (
-                      <img 
-                        src={item.url} 
-                        alt="Post media"
-                        className="w-full h-full object-cover"
-                      />
-                    ) : (
-                      <div className="w-full h-full bg-black flex items-center justify-center">
-                        <Button variant="ghost" size="lg" className="text-white">
-                          <Play className="h-8 w-8" />
-                        </Button>
-                      </div>
-                    )}
-                  </div>
-                ))}
-              </div>
-            )}
-
-            <div className="flex items-center justify-between pt-2">
-              <div className="flex items-center gap-4">
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
-                  onClick={() => handleLike(post.id)}
-                  className={`gap-2 ${post.isLiked ? 'text-red-500' : ''}`}
-                >
-                  <Heart className={`h-4 w-4 ${post.isLiked ? 'fill-current' : ''}`} />
-                  {post.likes}
-                </Button>
-                <Button variant="ghost" size="sm" className="gap-2">
-                  <MessageCircle className="h-4 w-4" />
-                  {post.comments}
-                </Button>
-                <Button variant="ghost" size="sm" className="gap-2">
-                  <Share2 className="h-4 w-4" />
-                  {post.shares}
-                </Button>
-              </div>
-              <Button 
-                variant="ghost" 
-                size="sm"
-                onClick={() => handleBookmark(post.id)}
-                className={post.isBookmarked ? 'text-blue-500' : ''}
-              >
-                <Bookmark className={`h-4 w-4 ${post.isBookmarked ? 'fill-current' : ''}`} />
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-      ))}
+    <div className="space-y-4 md:space-y-6">
+      {filteredPosts.length === 0 ? (
+        <div className="text-center py-8 md:py-12">
+          <p className="text-muted-foreground">No posts found.</p>
+        </div>
+      ) : (
+        filteredPosts.map(post => (
+          <PostCard
+            key={post.id}
+            post={post}
+            onLike={handleLike}
+            onBookmark={handleBookmark}
+            onComment={handleComment}
+            onShare={handleShare}
+          />
+        ))
+      )}
     </div>
   );
 };
