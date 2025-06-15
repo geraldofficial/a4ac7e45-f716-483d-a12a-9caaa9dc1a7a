@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { EnhancedWatchParty } from './EnhancedWatchParty';
+import { DatabaseEnhancedWatchParty } from './DatabaseEnhancedWatchParty';
 
 interface WatchPartyProps {
   movieId: number;
@@ -10,5 +10,5 @@ interface WatchPartyProps {
 }
 
 export const WatchParty: React.FC<WatchPartyProps> = (props) => {
-  return <EnhancedWatchParty {...props} />;
+  return <DatabaseEnhancedWatchParty {...props} />;
 };

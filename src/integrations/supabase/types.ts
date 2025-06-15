@@ -199,6 +199,124 @@ export type Database = {
           },
         ]
       }
+      watch_party_messages: {
+        Row: {
+          id: string
+          message: string
+          session_id: string
+          timestamp: string | null
+          type: string | null
+          user_id: string | null
+          username: string
+        }
+        Insert: {
+          id?: string
+          message: string
+          session_id: string
+          timestamp?: string | null
+          type?: string | null
+          user_id?: string | null
+          username: string
+        }
+        Update: {
+          id?: string
+          message?: string
+          session_id?: string
+          timestamp?: string | null
+          type?: string | null
+          user_id?: string | null
+          username?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "watch_party_messages_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "watch_party_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      watch_party_participants: {
+        Row: {
+          avatar: string | null
+          id: string
+          is_active: boolean | null
+          joined_at: string | null
+          last_seen: string | null
+          session_id: string
+          user_id: string
+          username: string
+        }
+        Insert: {
+          avatar?: string | null
+          id?: string
+          is_active?: boolean | null
+          joined_at?: string | null
+          last_seen?: string | null
+          session_id: string
+          user_id: string
+          username: string
+        }
+        Update: {
+          avatar?: string | null
+          id?: string
+          is_active?: boolean | null
+          joined_at?: string | null
+          last_seen?: string | null
+          session_id?: string
+          user_id?: string
+          username?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "watch_party_participants_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "watch_party_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      watch_party_sessions: {
+        Row: {
+          created_at: string | null
+          expires_at: string | null
+          host_id: string
+          id: string
+          is_playing: boolean | null
+          last_activity: string | null
+          movie_id: number
+          movie_title: string
+          movie_type: string
+          playback_time: number | null
+        }
+        Insert: {
+          created_at?: string | null
+          expires_at?: string | null
+          host_id: string
+          id: string
+          is_playing?: boolean | null
+          last_activity?: string | null
+          movie_id: number
+          movie_title: string
+          movie_type: string
+          playback_time?: number | null
+        }
+        Update: {
+          created_at?: string | null
+          expires_at?: string | null
+          host_id?: string
+          id?: string
+          is_playing?: boolean | null
+          last_activity?: string | null
+          movie_id?: number
+          movie_title?: string
+          movie_type?: string
+          playback_time?: number | null
+        }
+        Relationships: []
+      }
       watch_progress: {
         Row: {
           completed: boolean | null
@@ -254,7 +372,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      cleanup_expired_watch_party_sessions: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
     }
     Enums: {
       [_ in never]: never
