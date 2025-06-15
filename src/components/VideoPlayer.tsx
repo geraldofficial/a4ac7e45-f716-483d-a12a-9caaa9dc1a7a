@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { SimpleVideoPlayer } from './SimpleVideoPlayer';
+import { MobileVideoPlayer } from './MobileVideoPlayer';
 import { watchHistoryService } from '@/services/watchHistory';
 
 interface VideoPlayerProps {
@@ -38,7 +38,7 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = (props) => {
   }
 
   return (
-    <SimpleVideoPlayer
+    <MobileVideoPlayer
       title={props.title}
       tmdbId={props.tmdbId}
       type={props.type}
@@ -46,10 +46,7 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = (props) => {
       episode={props.episode}
       poster_path={props.poster_path}
       backdrop_path={props.backdrop_path}
-      duration={props.duration}
       resumeFrom={resumeFrom}
-      onProgress={props.onProgress}
-      onComplete={props.onComplete}
       onClose={props.onClose}
     />
   );

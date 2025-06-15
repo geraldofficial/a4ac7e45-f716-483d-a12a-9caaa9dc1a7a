@@ -17,11 +17,8 @@ export const MovieCard: React.FC<MovieCardProps> = ({ movie }) => {
   const navigate = useNavigate();
   const [imageLoaded, setImageLoaded] = useState(false);
 
-  // Handle optional title/name from TMDB API
   const title = movie.title || movie.name ||'Unknown Title';
   const releaseDate = movie.release_date || movie.first_air_date || '';
-
-  // Determine type from media_type or fallback to title/name check
   const type = movie.media_type || (movie.title ? 'movie' : 'tv');
   const posterUrl = movie.poster_path 
     ? `https://image.tmdb.org/t/p/w500${movie.poster_path}` 
@@ -92,7 +89,7 @@ export const MovieCard: React.FC<MovieCardProps> = ({ movie }) => {
           }}
         />
         
-        <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity duration-200">
+        <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent opacity-100 md:opacity-0 md:group-hover:opacity-100">
           <div className="absolute bottom-3 left-3 right-3">
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-2">
@@ -118,20 +115,20 @@ export const MovieCard: React.FC<MovieCardProps> = ({ movie }) => {
             <div className="grid grid-cols-3 gap-2">
               <Button 
                 size="sm" 
-                className="bg-red-600 hover:bg-red-700 text-white font-medium px-3 py-2 text-sm h-10 rounded min-w-0"
+                className="bg-red-600 hover:bg-red-700 text-white font-medium px-4 py-3 text-sm h-12 rounded min-w-0"
                 onClick={(e) => {
                   e.stopPropagation();
                   handleWatch();
                 }}
               >
-                <Play className="h-4 w-4 mr-1 flex-shrink-0 fill-current" />
-                <span className="truncate">Play</span>
+                <Play className="h-4 w-4 mr-2 flex-shrink-0 fill-current" />
+                <span className="hidden sm:inline">Play</span>
               </Button>
               
               <Button 
                 size="sm" 
                 variant="outline" 
-                className="border-white/40 bg-black/40 text-white hover:bg-black/60 hover:border-white/60 px-3 py-2 text-sm h-10 rounded min-w-0"
+                className="border-white/40 bg-black/40 text-white hover:bg-black/60 hover:border-white/60 px-4 py-3 text-sm h-12 rounded min-w-0"
                 onClick={(e) => {
                   e.stopPropagation();
                   handleMoreInfo();
@@ -144,7 +141,7 @@ export const MovieCard: React.FC<MovieCardProps> = ({ movie }) => {
                 <Button 
                   size="sm" 
                   variant="outline" 
-                  className="border-white/40 bg-black/40 text-white hover:bg-black/60 hover:border-white/60 px-3 py-2 text-sm h-10 rounded min-w-0"
+                  className="border-white/40 bg-black/40 text-white hover:bg-black/60 hover:border-white/60 px-4 py-3 text-sm h-12 rounded min-w-0"
                   onClick={handleWatchlistToggle}
                 >
                   {isInWatchlist(movie.id) ? (
@@ -159,7 +156,7 @@ export const MovieCard: React.FC<MovieCardProps> = ({ movie }) => {
         </div>
       </div>
       
-      <div className="p-3 bg-gray-900">
+      <div className="p-3 bg-gray-900 text-center md:text-left">
         <h3 className="text-white font-semibold truncate mb-1 text-sm leading-tight">
           {title}
         </h3>

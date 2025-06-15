@@ -15,7 +15,6 @@ export const NotificationCenter: React.FC = () => {
 
   useEffect(() => {
     loadNotifications();
-    // Request notification permission on component mount
     notificationsService.requestPermission();
   }, []);
 
@@ -78,7 +77,7 @@ export const NotificationCenter: React.FC = () => {
       </Button>
 
       {isOpen && (
-        <Card className="absolute right-0 top-full mt-2 w-80 md:w-96 max-h-96 z-50 bg-gray-900 border-gray-700 shadow-xl max-w-[calc(100vw-1rem)] mr-2 md:mr-0">
+        <Card className="absolute right-0 top-full mt-2 w-80 md:w-96 max-h-96 z-50 bg-gray-900 border-gray-700 shadow-xl">
           <div className="p-4 border-b border-gray-700 flex items-center justify-between">
             <h3 className="font-semibold text-white">Notifications</h3>
             <div className="flex gap-2">
