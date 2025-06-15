@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { EnhancedVideoPlayerV2 } from './EnhancedVideoPlayerV2';
 import { watchHistoryService } from '@/services/watchHistory';
@@ -15,6 +14,8 @@ interface VideoPlayerProps {
   backdrop_path?: string;
   duration?: number;
   shouldResume?: boolean;
+  onProgress?: (currentTime: number, duration: number) => void;
+  onComplete?: () => void;
   onClose?: () => void;
 }
 
@@ -36,11 +37,11 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = (props) => {
     }
   }
 
-  // Convert streaming sources to video sources
+  // Convert streaming sources to video sources with proper quality mapping
   const videoSources = streamingSources.map((source, index) => ({
     url: getStreamingUrl(props.tmdbId, props.type, index, props.season, props.episode),
-    quality: source.name,
-    bandwidth: source.quality === 'HD' ? 5000000 : source.quality === 'SD' ? 2000000 : 1000000
+    quality: source.reliability === 'high' ? 'HD' : source.reliability === 'medium' ? 'SD' : 'Low',
+    bandwidth: source.reliability === 'high' ? 5000000 : source.reliability === 'medium' ? 2000000 : 1000000
   }));
 
   // Mock subtitles - in a real app, these would come from your API

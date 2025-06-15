@@ -1,6 +1,15 @@
 
 import { useState, useEffect } from 'react';
 
+// Extend the Window interface to include Google Cast properties
+declare global {
+  interface Window {
+    __onGCastApiAvailable: (isAvailable: boolean) => void;
+    cast?: any;
+    chrome?: any;
+  }
+}
+
 interface CastMedia {
   title: string;
   subtitle?: string;
