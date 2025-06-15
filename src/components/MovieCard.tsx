@@ -1,13 +1,11 @@
+
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Play, Plus, Check, Star, Info, Share, Users } from 'lucide-react';
+import { Play, Plus, Check, Star, Info } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
 import { Movie } from '@/services/tmdb';
-import { contentSharingService } from '@/services/contentSharing';
-import { WatchParty } from './WatchParty';
-import { ShareModal } from './ShareModal';
 
 interface MovieCardProps {
   movie: Movie;
@@ -18,8 +16,6 @@ export const MovieCard: React.FC<MovieCardProps> = ({ movie }) => {
   const { toast } = useToast();
   const navigate = useNavigate();
   const [imageLoaded, setImageLoaded] = useState(false);
-  const [showWatchParty, setShowWatchParty] = useState(false);
-  const [showShareModal, setShowShareModal] = useState(false);
 
   // Handle optional title/name from TMDB API
   const title = movie.title || movie.name || 'Unknown Title';
@@ -75,172 +71,104 @@ export const MovieCard: React.FC<MovieCardProps> = ({ movie }) => {
     }
   };
 
-  const handleShare = async (e: React.MouseEvent) => {
-    e.stopPropagation();
-    setShowShareModal(true);
-  };
-
-  const handleWatchParty = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    if (!user) {
-      toast({
-        title: "Sign in required",
-        description: "Please sign in to create watch parties.",
-        variant: "destructive"
-      });
-      return;
-    }
-    setShowWatchParty(true);
-  };
-
   return (
-    <>
-      <div className="group relative overflow-hidden rounded-lg bg-card/80 backdrop-blur-sm border border-border/50 transition-all duration-300 hover:scale-[1.02] hover:shadow-xl hover:border-primary/30 cursor-pointer w-full">
-        <div className="aspect-[2/3] overflow-hidden relative bg-muted/20">
-          {!imageLoaded && (
-            <div className="absolute inset-0 bg-muted/30 animate-pulse flex items-center justify-center">
-              <div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
-            </div>
-          )}
-          <img 
-            src={posterUrl} 
-            alt={title}
-            className={`h-full w-full object-cover transition-all duration-500 group-hover:scale-110 ${
-              imageLoaded ? 'opacity-100' : 'opacity-0'
-            }`}
-            onLoad={() => setImageLoaded(true)}
-            onError={(e) => {
-              e.currentTarget.src = 'https://images.unsplash.com/photo-1489599904276-39c2bb2d7b64?w=400&h=600&fit=crop';
-              setImageLoaded(true);
-            }}
-          />
-          
-          <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-all duration-300">
-            <div className="absolute bottom-1 left-1 right-1">
-              <div className="flex items-center justify-between mb-1">
-                <div className="flex items-center gap-1">
-                  <div className="flex items-center gap-0.5 bg-black/40 backdrop-blur-sm rounded-full px-1.5 py-0.5">
-                    <Star className="h-2 w-2 text-yellow-400 fill-current" />
-                    <span className="text-white text-xs font-medium">{movie.vote_average.toFixed(1)}</span>
+    <div className="group relative overflow-hidden rounded-lg bg-card/80 backdrop-blur-sm border border-border/50 transition-all duration-300 hover:scale-[1.02] hover:shadow-xl hover:border-primary/30 cursor-pointer w-full">
+      <div className="aspect-[2/3] overflow-hidden relative bg-muted/20">
+        {!imageLoaded && (
+          <div className="absolute inset-0 bg-muted/30 animate-pulse flex items-center justify-center">
+            <div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
+          </div>
+        )}
+        <img 
+          src={posterUrl} 
+          alt={title}
+          className={`h-full w-full object-cover transition-all duration-500 group-hover:scale-110 ${
+            imageLoaded ? 'opacity-100' : 'opacity-0'
+          }`}
+          onLoad={() => setImageLoaded(true)}
+          onError={(e) => {
+            e.currentTarget.src = 'https://images.unsplash.com/photo-1489599904276-39c2bb2d7b64?w=400&h=600&fit=crop';
+            setImageLoaded(true);
+          }}
+        />
+        
+        <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-all duration-300">
+          <div className="absolute bottom-1 left-1 right-1">
+            <div className="flex items-center justify-between mb-1">
+              <div className="flex items-center gap-1">
+                <div className="flex items-center gap-0.5 bg-black/40 backdrop-blur-sm rounded-full px-1.5 py-0.5">
+                  <Star className="h-2 w-2 text-yellow-400 fill-current" />
+                  <span className="text-white text-xs font-medium">{movie.vote_average.toFixed(1)}</span>
+                </div>
+                {releaseDate && (
+                  <div className="bg-black/40 backdrop-blur-sm rounded-full px-1.5 py-0.5">
+                    <span className="text-gray-200 text-xs font-medium">
+                      {new Date(releaseDate).getFullYear()}
+                    </span>
                   </div>
-                  {releaseDate && (
-                    <div className="bg-black/40 backdrop-blur-sm rounded-full px-1.5 py-0.5">
-                      <span className="text-gray-200 text-xs font-medium">
-                        {new Date(releaseDate).getFullYear()}
-                      </span>
-                    </div>
-                  )}
-                </div>
-                <div className="bg-primary/20 backdrop-blur-sm rounded-full px-1.5 py-0.5">
-                  <span className="text-primary text-xs font-semibold uppercase tracking-wider">
-                    {type === 'tv' ? 'TV' : 'Movie'}
-                  </span>
-                </div>
-              </div>
-              
-              <div className="grid grid-cols-4 gap-0.5">
-                <Button 
-                  size="sm" 
-                  className="bg-primary hover:bg-primary/90 text-primary-foreground font-medium transition-all duration-200 hover:scale-105 shadow-lg px-1 py-1 text-xs h-5 rounded-full col-span-2"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleWatch();
-                  }}
-                >
-                  <Play className="h-2 w-2 mr-1 fill-current" />
-                  <span>Play</span>
-                </Button>
-                
-                <Button 
-                  size="sm" 
-                  variant="outline" 
-                  className="border-white/30 bg-white/10 backdrop-blur-sm text-white hover:bg-white/20 hover:border-white/50 transition-all duration-200 hover:scale-105 shadow-lg px-1 py-1 text-xs h-5 rounded-full"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleMoreInfo();
-                  }}
-                >
-                  <Info className="h-2 w-2" />
-                </Button>
-                
-                <Button 
-                  size="sm" 
-                  variant="outline" 
-                  className="border-white/30 bg-white/10 backdrop-blur-sm text-white hover:bg-white/20 hover:border-white/50 transition-all duration-200 hover:scale-105 shadow-lg px-1 py-1 text-xs h-5 rounded-full"
-                  onClick={handleShare}
-                >
-                  <Share className="h-2 w-2" />
-                </Button>
-              </div>
-
-              <div className="grid grid-cols-2 gap-0.5 mt-0.5">
-                {user && (
-                  <Button 
-                    size="sm" 
-                    variant="outline" 
-                    className="border-white/30 bg-white/10 backdrop-blur-sm text-white hover:bg-white/20 hover:border-white/50 transition-all duration-200 hover:scale-105 shadow-lg px-1 py-1 text-xs h-5 rounded-full"
-                    onClick={handleWatchlistToggle}
-                  >
-                    {isInWatchlist(movie.id) ? (
-                      <Check className="h-2 w-2 mr-1" />
-                    ) : (
-                      <Plus className="h-2 w-2 mr-1" />
-                    )}
-                    <span className="truncate">List</span>
-                  </Button>
                 )}
-                
+              </div>
+              <div className="bg-primary/20 backdrop-blur-sm rounded-full px-1.5 py-0.5">
+                <span className="text-primary text-xs font-semibold uppercase tracking-wider">
+                  {type === 'tv' ? 'TV' : 'Movie'}
+                </span>
+              </div>
+            </div>
+            
+            <div className="grid grid-cols-3 gap-0.5">
+              <Button 
+                size="sm" 
+                className="bg-primary hover:bg-primary/90 text-primary-foreground font-medium transition-all duration-200 hover:scale-105 shadow-lg px-1 py-1 text-xs h-5 rounded-full"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleWatch();
+                }}
+              >
+                <Play className="h-2 w-2 mr-1 fill-current" />
+                <span>Play</span>
+              </Button>
+              
+              <Button 
+                size="sm" 
+                variant="outline" 
+                className="border-white/30 bg-white/10 backdrop-blur-sm text-white hover:bg-white/20 hover:border-white/50 transition-all duration-200 hover:scale-105 shadow-lg px-1 py-1 text-xs h-5 rounded-full"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleMoreInfo();
+                }}
+              >
+                <Info className="h-2 w-2" />
+              </Button>
+              
+              {user && (
                 <Button 
                   size="sm" 
                   variant="outline" 
                   className="border-white/30 bg-white/10 backdrop-blur-sm text-white hover:bg-white/20 hover:border-white/50 transition-all duration-200 hover:scale-105 shadow-lg px-1 py-1 text-xs h-5 rounded-full"
-                  onClick={handleWatchParty}
+                  onClick={handleWatchlistToggle}
                 >
-                  <Users className="h-2 w-2 mr-1" />
-                  <span className="truncate">Party</span>
+                  {isInWatchlist(movie.id) ? (
+                    <Check className="h-2 w-2" />
+                  ) : (
+                    <Plus className="h-2 w-2" />
+                  )}
                 </Button>
-              </div>
+              )}
             </div>
           </div>
         </div>
-        
-        <div className="p-1.5 md:p-2 bg-gradient-to-b from-card to-card/80">
-          <h3 className="text-foreground font-semibold truncate mb-0.5 text-xs leading-tight group-hover:text-primary transition-colors">
-            {title}
-          </h3>
-          {releaseDate && (
-            <p className="text-muted-foreground text-xs">
-              {new Date(releaseDate).getFullYear()}
-            </p>
-          )}
-        </div>
       </div>
-
-      {/* Watch Party Modal */}
-      {showWatchParty && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <WatchParty
-            movieId={movie.id}
-            movieTitle={title}
-            movieType={type}
-            onClose={() => setShowWatchParty(false)}
-          />
-        </div>
-      )}
-
-      {/* Share Modal */}
-      {showShareModal && (
-        <ShareModal
-          content={{
-            id: movie.id,
-            title,
-            type,
-            poster_path: movie.poster_path,
-            description: movie.overview
-          }}
-          onClose={() => setShowShareModal(false)}
-        />
-      )}
-    </>
+      
+      <div className="p-1.5 md:p-2 bg-gradient-to-b from-card to-card/80">
+        <h3 className="text-foreground font-semibold truncate mb-0.5 text-xs leading-tight group-hover:text-primary transition-colors">
+          {title}
+        </h3>
+        {releaseDate && (
+          <p className="text-muted-foreground text-xs">
+            {new Date(releaseDate).getFullYear()}
+          </p>
+        )}
+      </div>
+    </div>
   );
 };

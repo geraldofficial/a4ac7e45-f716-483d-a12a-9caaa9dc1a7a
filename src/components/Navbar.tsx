@@ -1,250 +1,235 @@
 
-import React, { useState } from 'react';
-import { Link, useNavigate, useLocation } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { Search, Menu, X, User, LogOut, Home, TrendingUp, Grid3X3, Star, Clock, UserCircle, Settings, Gamepad2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Menu, X, Search, User, LogOut, Settings, Heart } from 'lucide-react';
-import { FlickPickLogo } from './FlickPickLogo';
+import { Input } from '@/components/ui/input';
+import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/contexts/AuthContext';
-import { SearchSuggestions } from './SearchSuggestions';
-import { ProfileSwitcher } from './ProfileSwitcher';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { FlickPickLogo } from './FlickPickLogo';
+import { ProfileSelector } from './ProfileSelector';
+import { NotificationCenter } from './NotificationCenter';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { supabase } from '@/integrations/supabase/client';
 
 export const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [isSearchOpen, setIsSearchOpen] = useState(false);
-  const { user, signOut } = useAuth();
+  const [isScrolled, setIsScrolled] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const { user, signOut, currentProfile } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
 
-  const isActive = (path: string) => location.pathname === path;
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 50);
+    };
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (searchQuery.trim()) {
+      navigate(`/search?q=${encodeURIComponent(searchQuery)}`);
+      setSearchQuery('');
+      setIsMenuOpen(false);
+    }
+  };
 
   const handleSignOut = async () => {
     try {
       await signOut();
+      setIsMenuOpen(false);
       navigate('/');
     } catch (error) {
       console.error('Error signing out:', error);
     }
   };
 
-  const toggleSearch = () => {
-    setIsSearchOpen(!isSearchOpen);
-  };
+  const navigation = [
+    { name: 'Home', href: '/', icon: Home, current: location.pathname === '/' },
+    { name: 'Browse', href: '/browse', icon: Grid3X3, current: location.pathname === '/browse' },
+    { name: 'Trending', href: '/trending', icon: TrendingUp, current: location.pathname === '/trending' },
+    { name: 'Top Rated', href: '/top-rated', icon: Star, current: location.pathname === '/top-rated' },
+  ];
 
-  const closeSearch = () => {
-    setIsSearchOpen(false);
-  };
+  const userNavigation = user ? [
+    { name: 'Profile', href: '/profile', icon: UserCircle },
+    { name: 'Watchlist', href: '/watchlist', icon: Clock },
+    { name: 'Watch History', href: '/history', icon: Clock },
+  ] : [];
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-xl border-b border-border/50">
-      <div className="container mx-auto px-3 sm:px-4 lg:px-8">
-        <div className="flex items-center justify-between h-16 sm:h-18 md:h-20">
+    <nav className={`fixed top-0 left-0 right-0 z-40 transition-all duration-300 ${
+      isScrolled || isMenuOpen 
+        ? 'bg-background/95 backdrop-blur-sm border-b border-border/50' 
+        : 'bg-transparent'
+    }`}>
+      <div className="container mx-auto px-3 md:px-4">
+        <div className="flex items-center justify-between h-14 md:h-16">
           {/* Logo */}
-          <Link to="/" className="flex items-center gap-2 flex-shrink-0">
-            <FlickPickLogo size="sm" className="sm:hidden" />
-            <FlickPickLogo size="md" className="hidden sm:flex" />
-          </Link>
-
-          {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center space-x-6 lg:space-x-8">
-            <Link 
-              to="/" 
-              className={`text-sm lg:text-base font-medium transition-colors hover:text-primary ${
-                isActive('/') ? 'text-primary' : 'text-foreground/80'
-              }`}
+          <div className="flex items-center">
+            <button 
+              onClick={() => navigate('/')} 
+              className="flex items-center gap-2 hover:opacity-80 transition-opacity"
             >
-              Home
-            </Link>
-            <Link 
-              to="/browse" 
-              className={`text-sm lg:text-base font-medium transition-colors hover:text-primary ${
-                isActive('/browse') ? 'text-primary' : 'text-foreground/80'
-              }`}
-            >
-              Browse
-            </Link>
-            <Link 
-              to="/trending" 
-              className={`text-sm lg:text-base font-medium transition-colors hover:text-primary ${
-                isActive('/trending') ? 'text-primary' : 'text-foreground/80'
-              }`}
-            >
-              Trending
-            </Link>
-            <Link 
-              to="/donate" 
-              className={`text-sm lg:text-base font-medium transition-colors hover:text-primary ${
-                isActive('/donate') ? 'text-primary' : 'text-foreground/80'
-              }`}
-            >
-              Donate
-            </Link>
-            {user && (
-              <Link 
-                to="/watchlist" 
-                className={`text-sm lg:text-base font-medium transition-colors hover:text-primary ${
-                  isActive('/watchlist') ? 'text-primary' : 'text-foreground/80'
-                }`}
-              >
-                Watchlist
-              </Link>
-            )}
+              <FlickPickLogo className="h-6 w-6 md:h-8 md:w-8" />
+              <span className="font-bold text-base md:text-xl text-foreground">FlickPick</span>
+            </button>
           </div>
 
-          {/* Search and Profile */}
-          <div className="flex items-center gap-2 sm:gap-3">
-            {/* Search */}
-            <div className="relative">
-              {isSearchOpen ? (
-                <div className="fixed inset-0 bg-background/95 backdrop-blur-xl z-50 p-4">
-                  <div className="max-w-2xl mx-auto">
-                    <div className="flex items-center justify-between mb-4">
-                      <h2 className="text-lg font-semibold">Search Movies & TV Shows</h2>
-                      <Button variant="ghost" size="sm" onClick={closeSearch}>
-                        <X className="h-4 w-4" />
-                      </Button>
-                    </div>
-                    <SearchSuggestions onClose={closeSearch} className="w-full" />
-                  </div>
-                </div>
-              ) : (
+          {/* Desktop Navigation */}
+          <div className="hidden md:flex items-center space-x-6">
+            {navigation.map((item) => (
+              <button
+                key={item.name}
+                onClick={() => navigate(item.href)}
+                className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                  item.current
+                    ? 'bg-primary text-primary-foreground'
+                    : 'text-muted-foreground hover:text-foreground hover:bg-accent'
+                }`}
+              >
+                <item.icon className="h-4 w-4" />
+                <span>{item.name}</span>
+              </button>
+            ))}
+          </div>
+
+          {/* Search Bar - Desktop */}
+          <div className="hidden md:block flex-1 max-w-md mx-6">
+            <form onSubmit={handleSearch}>
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  type="search"
+                  placeholder="Search movies, TV shows..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-10 bg-background/50 border-border/50 focus:bg-background"
+                />
+              </div>
+            </form>
+          </div>
+
+          {/* Right Side - Desktop */}
+          <div className="hidden md:flex items-center space-x-3">
+            {user && <NotificationCenter />}
+            {user ? (
+              <div className="flex items-center space-x-3">
+                <ProfileSelector />
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={toggleSearch}
-                  className="text-foreground/80 hover:text-foreground h-8 w-8 p-0"
+                  onClick={handleSignOut}
+                  className="text-muted-foreground hover:text-foreground"
                 >
-                  <Search className="h-4 w-4" />
+                  <LogOut className="h-4 w-4" />
                 </Button>
-              )}
-            </div>
-
-            {/* Profile/Auth */}
-            {user ? (
-              <div className="flex items-center gap-1 sm:gap-2">
-                <div className="hidden sm:block">
-                  <ProfileSwitcher />
-                </div>
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="sm" className="relative h-8 w-8 rounded-full p-0">
-                      <Avatar className="h-8 w-8">
-                        <AvatarImage src={user.avatar} alt={user.username || 'User'} />
-                        <AvatarFallback className="text-xs">
-                          <User className="h-4 w-4" />
-                        </AvatarFallback>
-                      </Avatar>
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent className="w-56" align="end" forceMount>
-                    <div className="flex flex-col space-y-1 p-2">
-                      <p className="text-sm font-medium leading-none">{user.username || 'User'}</p>
-                      <p className="text-xs leading-none text-muted-foreground truncate">
-                        {user.email}
-                      </p>
-                    </div>
-                    <DropdownMenuSeparator />
-                    <div className="sm:hidden">
-                      <DropdownMenuItem onClick={() => navigate('/profiles')}>
-                        <Settings className="mr-2 h-4 w-4" />
-                        <span>Switch Profile</span>
-                      </DropdownMenuItem>
-                      <DropdownMenuSeparator />
-                    </div>
-                    <DropdownMenuItem onClick={() => navigate('/profile')}>
-                      <User className="mr-2 h-4 w-4" />
-                      <span>Profile</span>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => navigate('/watchlist')}>
-                      <Heart className="mr-2 h-4 w-4" />
-                      <span>Watchlist</span>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => navigate('/profiles')}>
-                      <Settings className="mr-2 h-4 w-4" />
-                      <span>Manage Profiles</span>
-                    </DropdownMenuItem>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem onClick={handleSignOut}>
-                      <LogOut className="mr-2 h-4 w-4" />
-                      <span>Log out</span>
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
               </div>
             ) : (
-              <Button 
-                variant="default" 
-                size="sm"
+              <Button
                 onClick={() => navigate('/auth')}
-                className="text-xs sm:text-sm px-3 sm:px-4 h-8"
+                size="sm"
+                className="bg-primary hover:bg-primary/90"
               >
                 Sign In
               </Button>
             )}
+          </div>
 
-            {/* Mobile Menu Button */}
+          {/* Mobile Menu Button */}
+          <div className="md:hidden flex items-center space-x-2">
+            {user && <NotificationCenter />}
             <Button
               variant="ghost"
               size="sm"
-              className="md:hidden h-8 w-8 p-0"
               onClick={() => setIsMenuOpen(!isMenuOpen)}
             >
-              {isMenuOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
+              {isMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
             </Button>
           </div>
         </div>
 
         {/* Mobile Menu */}
         {isMenuOpen && (
-          <div className="md:hidden border-t border-border/50 py-4">
-            <div className="flex flex-col space-y-3">
-              <Link 
-                to="/" 
-                className={`text-sm font-medium transition-colors hover:text-primary px-2 py-1 ${
-                  isActive('/') ? 'text-primary' : 'text-foreground/80'
-                }`}
-                onClick={() => setIsMenuOpen(false)}
-              >
-                Home
-              </Link>
-              <Link 
-                to="/browse" 
-                className={`text-sm font-medium transition-colors hover:text-primary px-2 py-1 ${
-                  isActive('/browse') ? 'text-primary' : 'text-foreground/80'
-                }`}
-                onClick={() => setIsMenuOpen(false)}
-              >
-                Browse
-              </Link>
-              <Link 
-                to="/trending" 
-                className={`text-sm font-medium transition-colors hover:text-primary px-2 py-1 ${
-                  isActive('/trending') ? 'text-primary' : 'text-foreground/80'
-                }`}
-                onClick={() => setIsMenuOpen(false)}
-              >
-                Trending
-              </Link>
-              <Link 
-                to="/donate" 
-                className={`text-sm font-medium transition-colors hover:text-primary px-2 py-1 ${
-                  isActive('/donate') ? 'text-primary' : 'text-foreground/80'
-                }`}
-                onClick={() => setIsMenuOpen(false)}
-              >
-                Donate
-              </Link>
-              {user && (
-                <Link 
-                  to="/watchlist" 
-                  className={`text-sm font-medium transition-colors hover:text-primary px-2 py-1 ${
-                    isActive('/watchlist') ? 'text-primary' : 'text-foreground/80'
+          <div className="md:hidden border-t border-border/50 bg-background/95 backdrop-blur-sm">
+            <div className="px-2 pt-2 pb-3 space-y-1">
+              {/* Search Bar - Mobile */}
+              <form onSubmit={handleSearch} className="mb-3">
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    type="search"
+                    placeholder="Search movies, TV shows..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="pl-10"
+                  />
+                </div>
+              </form>
+
+              {/* Navigation Items */}
+              {navigation.map((item) => (
+                <button
+                  key={item.name}
+                  onClick={() => {
+                    navigate(item.href);
+                    setIsMenuOpen(false);
+                  }}
+                  className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                    item.current
+                      ? 'bg-primary text-primary-foreground'
+                      : 'text-muted-foreground hover:text-foreground hover:bg-accent'
                   }`}
-                  onClick={() => setIsMenuOpen(false)}
                 >
-                  Watchlist
-                </Link>
+                  <item.icon className="h-4 w-4" />
+                  <span>{item.name}</span>
+                </button>
+              ))}
+
+              {/* User Navigation */}
+              {user && (
+                <>
+                  <div className="border-t border-border/30 my-2"></div>
+                  <div className="px-3 py-2">
+                    <ProfileSelector />
+                  </div>
+                  {userNavigation.map((item) => (
+                    <button
+                      key={item.name}
+                      onClick={() => {
+                        navigate(item.href);
+                        setIsMenuOpen(false);
+                      }}
+                      className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
+                    >
+                      <item.icon className="h-4 w-4" />
+                      <span>{item.name}</span>
+                    </button>
+                  ))}
+                  <button
+                    onClick={handleSignOut}
+                    className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
+                  >
+                    <LogOut className="h-4 w-4" />
+                    <span>Sign Out</span>
+                  </button>
+                </>
+              )}
+
+              {/* Sign In Button for Mobile */}
+              {!user && (
+                <Button
+                  onClick={() => {
+                    navigate('/auth');
+                    setIsMenuOpen(false);
+                  }}
+                  className="w-full mt-3"
+                >
+                  <User className="h-4 w-4 mr-2" />
+                  Sign In
+                </Button>
               )}
             </div>
           </div>

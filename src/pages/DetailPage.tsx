@@ -8,7 +8,9 @@ import { VideoPlayer } from '@/components/VideoPlayer';
 import { tmdbApi, Movie } from '@/services/tmdb';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
-import { Play, Plus, Check, Star, Calendar, Clock, Users, ArrowLeft } from 'lucide-react';
+import { Play, Plus, Check, Star, Calendar, Clock, Users, ArrowLeft, Share, UserPlus } from 'lucide-react';
+import { ShareModal } from '@/components/ShareModal';
+import { WatchParty } from '@/components/WatchParty';
 
 const DetailPage = () => {
   const { id } = useParams<{ id: string }>();
@@ -17,6 +19,8 @@ const DetailPage = () => {
   const [content, setContent] = useState<Movie | null>(null);
   const [loading, setLoading] = useState(true);
   const [isPlaying, setIsPlaying] = useState(false);
+  const [showShareModal, setShowShareModal] = useState(false);
+  const [showWatchParty, setShowWatchParty] = useState(false);
   const { user, addToWatchlist, removeFromWatchlist, isInWatchlist } = useAuth();
   const { toast } = useToast();
 
@@ -112,6 +116,22 @@ const DetailPage = () => {
         description: `${title} has been added to your watchlist.`,
       });
     }
+  };
+
+  const handleShare = () => {
+    setShowShareModal(true);
+  };
+
+  const handleWatchParty = () => {
+    if (!user) {
+      toast({
+        title: "Sign in required",
+        description: "Please sign in to create watch parties.",
+        variant: "destructive"
+      });
+      return;
+    }
+    setShowWatchParty(true);
   };
 
   if (loading) {
@@ -254,7 +274,7 @@ const DetailPage = () => {
                     {content.overview}
                   </p>
                   
-                  <div className="flex gap-2 md:gap-4">
+                  <div className="flex gap-2 md:gap-4 flex-wrap">
                     <Button 
                       onClick={handleWatch}
                       size="sm"
@@ -286,6 +306,27 @@ const DetailPage = () => {
                         )}
                       </Button>
                     )}
+
+                    <Button
+                      onClick={handleShare}
+                      variant="outline"
+                      size="sm"
+                      className="border-border text-foreground hover:bg-accent px-3 md:px-6 text-xs md:text-base"
+                    >
+                      <Share className="h-3 w-3 md:h-5 md:w-5 mr-1 md:mr-2" />
+                      <span className="hidden sm:inline">Share</span>
+                    </Button>
+
+                    <Button
+                      onClick={handleWatchParty}
+                      variant="outline"
+                      size="sm"
+                      className="border-border text-foreground hover:bg-accent px-3 md:px-6 text-xs md:text-base"
+                    >
+                      <UserPlus className="h-3 w-3 md:h-5 md:w-5 mr-1 md:mr-2" />
+                      <span className="hidden sm:inline">Watch Party</span>
+                      <span className="sm:hidden">Party</span>
+                    </Button>
                   </div>
                 </div>
               </div>
@@ -337,6 +378,32 @@ const DetailPage = () => {
           </div>
           
           <Footer />
+
+          {/* Share Modal */}
+          {showShareModal && (
+            <ShareModal
+              content={{
+                id: content.id,
+                title,
+                type: type as 'movie' | 'tv',
+                poster_path: content.poster_path,
+                description: content.overview
+              }}
+              onClose={() => setShowShareModal(false)}
+            />
+          )}
+
+          {/* Watch Party Modal */}
+          {showWatchParty && (
+            <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+              <WatchParty
+                movieId={content.id}
+                movieTitle={title}
+                movieType={type as 'movie' | 'tv'}
+                onClose={() => setShowWatchParty(false)}
+              />
+            </div>
+          )}
         </>
       )}
     </div>
