@@ -28,7 +28,7 @@ const Index = () => {
   console.log('🎬 Index: Rendering main content for user:', user?.id || 'anonymous');
 
   return (
-    <div className="min-h-screen bg-background dark overflow-x-hidden">
+    <div className="min-h-screen bg-background dark">
       <SafeErrorBoundary componentName="Navbar">
         <Navbar />
       </SafeErrorBoundary>
