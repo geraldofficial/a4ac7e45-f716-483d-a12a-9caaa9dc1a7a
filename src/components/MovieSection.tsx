@@ -1,11 +1,10 @@
 
-import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { ImprovedMovieCard } from './ImprovedMovieCard';
+import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
+import { MovieRow } from './MovieRow';
 import { LoadingSpinner } from './LoadingSpinner';
 import { tmdbApi, Movie } from '@/services/tmdb';
 import { getPersonalizedRecommendations, getRecommendationTitle } from '@/services/recommendations';
 import { useAuth } from '@/contexts/AuthContext';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
 
 export const MovieSection = () => {
   const [popularMovies, setPopularMovies] = useState<Movie[]>([]);
@@ -18,6 +17,7 @@ export const MovieSection = () => {
   const { user } = useAuth();
   
   const observer = useRef<IntersectionObserver>();
+  
   const lastMovieElementRef = useCallback((node: HTMLDivElement) => {
     if (loadingMore) return;
     if (observer.current) observer.current.disconnect();
@@ -29,41 +29,38 @@ export const MovieSection = () => {
     if (node) observer.current.observe(node);
   }, [loadingMore, hasMoreRecommended]);
 
-  useEffect(() => {
-    const fetchMovies = async () => {
-      try {
-        setLoading(true);
-        
-        // Fetch all sections in parallel
-        const [popularResponse, trendingResponse] = await Promise.all([
-          tmdbApi.getPopularMovies(1),
-          tmdbApi.getTrendingMovies(1)
-        ]);
+  const fetchMovies = useCallback(async () => {
+    try {
+      setLoading(true);
+      
+      const [popularResponse, trendingResponse] = await Promise.all([
+        tmdbApi.getPopularMovies(1),
+        tmdbApi.getTrendingMovies(1)
+      ]);
 
-        setPopularMovies(popularResponse.results);
-        setTrendingMovies(trendingResponse.results);
+      setPopularMovies(popularResponse.results);
+      setTrendingMovies(trendingResponse.results);
 
-        // Fetch personalized recommendations if user has preferences
-        if (user && user.genre_preferences && user.genre_preferences.length > 0) {
-          const recommendedResponse = await getPersonalizedRecommendations(user.genre_preferences, 1);
-          setRecommendedMovies(recommendedResponse.results);
-          setHasMoreRecommended(recommendedResponse.total_pages > 1);
-        } else {
-          // Fallback to popular movies for non-authenticated users
-          setRecommendedMovies(popularResponse.results);
-          setHasMoreRecommended(false);
-        }
-      } catch (error) {
-        console.error('Error fetching movies:', error);
-      } finally {
-        setLoading(false);
+      if (user && user.genre_preferences && user.genre_preferences.length > 0) {
+        const recommendedResponse = await getPersonalizedRecommendations(user.genre_preferences, 1);
+        setRecommendedMovies(recommendedResponse.results);
+        setHasMoreRecommended(recommendedResponse.total_pages > 1);
+      } else {
+        setRecommendedMovies(popularResponse.results);
+        setHasMoreRecommended(false);
       }
-    };
+    } catch (error) {
+      console.error('Error fetching movies:', error);
+    } finally {
+      setLoading(false);
+    }
+  }, [user?.genre_preferences]);
 
+  useEffect(() => {
     fetchMovies();
-  }, [user]);
+  }, [fetchMovies]);
 
-  const loadMoreRecommended = async () => {
+  const loadMoreRecommended = useCallback(async () => {
     if (!user || !user.genre_preferences || loadingMore || !hasMoreRecommended) return;
     
     setLoadingMore(true);
@@ -79,77 +76,13 @@ export const MovieSection = () => {
     } finally {
       setLoadingMore(false);
     }
-  };
+  }, [user, recommendedPage, loadingMore, hasMoreRecommended]);
 
-  const scrollSection = (sectionId: string, direction: 'left' | 'right') => {
-    const section = document.getElementById(sectionId);
-    if (section) {
-      const scrollAmount = window.innerWidth < 768 ? 200 : 400;
-      section.scrollBy({
-        left: direction === 'left' ? -scrollAmount : scrollAmount,
-        behavior: 'smooth'
-      });
-    }
-  };
-
-  const MovieRow = ({ 
-    title, 
-    movies, 
-    sectionId, 
-    showScrollButtons = true,
-    priority = false
-  }: { 
-    title: string; 
-    movies: Movie[]; 
-    sectionId: string; 
-    showScrollButtons?: boolean;
-    priority?: boolean;
-  }) => (
-    <section className="mb-8 md:mb-12">
-      <div className="flex items-center justify-between mb-4 md:mb-6 px-3 md:px-6">
-        <div className="flex items-center gap-2">
-          <div className="w-1 h-6 bg-gradient-to-b from-primary to-primary/50 rounded-full"></div>
-          <h2 className="text-lg md:text-2xl lg:text-3xl font-bold text-foreground bg-gradient-to-r from-foreground to-foreground/80 bg-clip-text">
-            {title}
-          </h2>
-        </div>
-        {showScrollButtons && (
-          <div className="hidden md:flex gap-2">
-            <button
-              onClick={() => scrollSection(sectionId, 'left')}
-              className="p-1.5 rounded-full bg-card/80 hover:bg-card border border-border hover:border-primary/50 transition-all duration-200 hover:scale-105 backdrop-blur-sm"
-            >
-              <ChevronLeft className="h-4 w-4 text-foreground" />
-            </button>
-            <button
-              onClick={() => scrollSection(sectionId, 'right')}
-              className="p-1.5 rounded-full bg-card/80 hover:bg-card border border-border hover:border-primary/50 transition-all duration-200 hover:scale-105 backdrop-blur-sm"
-            >
-              <ChevronRight className="h-4 w-4 text-foreground" />
-            </button>
-          </div>
-        )}
-      </div>
-      <div 
-        id={sectionId}
-        className="flex gap-3 md:gap-4 lg:gap-6 overflow-x-auto pb-4 px-3 md:px-6 scrollbar-hide scroll-smooth"
-        style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
-      >
-        {movies.map((movie, index) => (
-          <div 
-            key={movie.id} 
-            className="flex-shrink-0 w-32 sm:w-36 md:w-40 lg:w-48 xl:w-52"
-            ref={sectionId === 'recommended' && index === movies.length - 1 ? lastMovieElementRef : null}
-          >
-            <ImprovedMovieCard 
-              movie={movie} 
-              priority={priority && index < 6}
-              variant="default"
-            />
-          </div>
-        ))}
-      </div>
-    </section>
+  const recommendationTitle = useMemo(() => 
+    user && user.genre_preferences 
+      ? getRecommendationTitle(user.genre_preferences)
+      : 'Popular Movies',
+    [user?.genre_preferences]
   );
 
   if (loading) {
@@ -160,13 +93,8 @@ export const MovieSection = () => {
     );
   }
 
-  const recommendationTitle = user && user.genre_preferences 
-    ? getRecommendationTitle(user.genre_preferences)
-    : 'Popular Movies';
-
   return (
     <div className="space-y-6 md:space-y-8 lg:space-y-12">
-      {/* Personalized Recommendations */}
       <MovieRow
         title={recommendationTitle}
         movies={recommendedMovies}
@@ -175,7 +103,6 @@ export const MovieSection = () => {
         priority={true}
       />
 
-      {/* Trending Movies */}
       <MovieRow
         title="Trending Now"
         movies={trendingMovies}
@@ -183,7 +110,6 @@ export const MovieSection = () => {
         priority={false}
       />
 
-      {/* Popular Movies */}
       <MovieRow
         title="Popular Movies"
         movies={popularMovies}
