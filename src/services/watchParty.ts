@@ -34,9 +34,9 @@ class WatchPartyService {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) throw new Error('User not authenticated');
 
-    const sessionId = `wp_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    // Generate a simpler, more reliable session ID
+    const sessionId = Math.random().toString(36).substr(2, 8).toUpperCase();
     
-    // Store session in localStorage for now (in production, use Supabase realtime)
     const session: WatchPartySession = {
       id: sessionId,
       host_id: user.id,
@@ -46,10 +46,21 @@ class WatchPartyService {
       current_time: 0,
       is_playing: false,
       created_at: new Date().toISOString(),
-      participants: []
+      participants: [{
+        user_id: user.id,
+        username: user.email?.split('@')[0] || 'Host',
+        avatar: '👤',
+        joined_at: new Date().toISOString()
+      }]
     };
 
     localStorage.setItem(`watchParty_${sessionId}`, JSON.stringify(session));
+    
+    // Also store in a global sessions list for easier lookup
+    const allSessions = JSON.parse(localStorage.getItem('watchPartySessions') || '[]');
+    allSessions.push(sessionId);
+    localStorage.setItem('watchPartySessions', JSON.stringify(allSessions));
+    
     return sessionId;
   }
 
@@ -57,8 +68,14 @@ class WatchPartyService {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) throw new Error('User not authenticated');
 
-    const sessionData = localStorage.getItem(`watchParty_${sessionId}`);
-    if (!sessionData) return null;
+    // Clean the session ID
+    const cleanSessionId = sessionId.trim().toUpperCase();
+    
+    const sessionData = localStorage.getItem(`watchParty_${cleanSessionId}`);
+    if (!sessionData) {
+      console.log('Session not found:', cleanSessionId);
+      return null;
+    }
 
     const session: WatchPartySession = JSON.parse(sessionData);
     
@@ -71,7 +88,7 @@ class WatchPartyService {
         avatar: '👤',
         joined_at: new Date().toISOString()
       });
-      localStorage.setItem(`watchParty_${sessionId}`, JSON.stringify(session));
+      localStorage.setItem(`watchParty_${cleanSessionId}`, JSON.stringify(session));
     }
 
     return session;
@@ -110,6 +127,12 @@ class WatchPartyService {
   async getMessages(sessionId: string): Promise<WatchPartyMessage[]> {
     const messages = localStorage.getItem(`watchPartyChat_${sessionId}`);
     return messages ? JSON.parse(messages) : [];
+  }
+
+  // Helper method to check if session exists
+  sessionExists(sessionId: string): boolean {
+    const cleanSessionId = sessionId.trim().toUpperCase();
+    return localStorage.getItem(`watchParty_${cleanSessionId}`) !== null;
   }
 }
 
