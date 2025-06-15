@@ -6,11 +6,12 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
-import { Plus, Edit2, Trash2, User, LogIn } from 'lucide-react';
+import { Plus, Edit2, Trash2, User, LogIn, Baby } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
+import { AvatarSelector } from '@/components/AvatarSelector';
 
 interface UserProfile {
   id: string;
@@ -21,6 +22,15 @@ interface UserProfile {
   user_id: string;
 }
 
+// Age restriction dropdown entries
+const ageOptions = [
+  { label: "All Ages", value: 0 },
+  { label: "13+", value: 13 },
+  { label: "16+", value: 16 },
+  { label: "18+", value: 18 },
+  { label: "All Content (21+)", value: 21 },
+];
+
 export const ProfileManager: React.FC = () => {
   const [profiles, setProfiles] = useState<UserProfile[]>([]);
   const [loading, setLoading] = useState(true);
@@ -28,13 +38,21 @@ export const ProfileManager: React.FC = () => {
   const [newProfileName, setNewProfileName] = useState('');
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [currentProfile, setCurrentProfile] = useState<UserProfile | null>(null);
+  const [newProfileAvatar, setNewProfileAvatar] = useState('');
+  const [newIsChild, setNewIsChild] = useState(false);
+  const [newAgeRestriction, setNewAgeRestriction] = useState(21);
   const { user } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
 
+  // For editing modal fields
+  const [editName, setEditName] = useState('');
+  const [editAvatar, setEditAvatar] = useState('');
+  const [editIsChild, setEditIsChild] = useState(false);
+  const [editAgeRestriction, setEditAgeRestriction] = useState(21);
+
   const fetchProfiles = async () => {
     if (!user) return;
-
     try {
       const { data, error } = await supabase
         .from('user_profiles')
@@ -44,7 +62,6 @@ export const ProfileManager: React.FC = () => {
 
       if (error) throw error;
       setProfiles(data || []);
-      
       // Load current profile from localStorage
       const savedProfile = localStorage.getItem('selectedProfile');
       if (savedProfile) {
@@ -71,16 +88,15 @@ export const ProfileManager: React.FC = () => {
 
   const createProfile = async () => {
     if (!user || !newProfileName.trim()) return;
-
     try {
       const { data, error } = await supabase
         .from('user_profiles')
         .insert({
           user_id: user.id,
           name: newProfileName.trim(),
-          avatar: '👤',
-          age_restriction: 18,
-          is_child: false
+          avatar: newProfileAvatar || '👤',
+          age_restriction: newIsChild ? 0 : newAgeRestriction,
+          is_child: newIsChild
         })
         .select()
         .single();
@@ -89,8 +105,11 @@ export const ProfileManager: React.FC = () => {
 
       setProfiles(prev => [...prev, data]);
       setNewProfileName('');
+      setNewProfileAvatar('');
+      setNewIsChild(false);
+      setNewAgeRestriction(21);
       setShowCreateForm(false);
-      
+
       toast({
         title: "Success",
         description: "Profile created successfully!",
@@ -112,26 +131,37 @@ export const ProfileManager: React.FC = () => {
       title: "Profile switched",
       description: `Now using ${profile.name}'s profile`,
     });
-    navigate('/');
+    navigate('/'); // or window.location.reload() for hard reload
   };
 
-  const updateProfile = async (profile: UserProfile) => {
+  const startEditProfile = (profile: UserProfile) => {
+    setEditingProfile(profile);
+    setEditName(profile.name);
+    setEditAvatar(profile.avatar);
+    setEditIsChild(profile.is_child);
+    setEditAgeRestriction(profile.age_restriction);
+  };
+
+  const updateProfile = async () => {
+    if (!editingProfile) return;
     try {
       const { error } = await supabase
         .from('user_profiles')
         .update({
-          name: profile.name,
-          avatar: profile.avatar,
-          age_restriction: profile.age_restriction,
-          is_child: profile.is_child
+          name: editName,
+          avatar: editAvatar || '👤',
+          age_restriction: editIsChild ? 0 : editAgeRestriction,
+          is_child: editIsChild
         })
-        .eq('id', profile.id);
+        .eq('id', editingProfile.id);
 
       if (error) throw error;
 
-      setProfiles(prev => prev.map(p => p.id === profile.id ? profile : p));
+      setProfiles(prev => prev.map(p => p.id === editingProfile.id
+        ? { ...editingProfile, name: editName, avatar: editAvatar || '👤', age_restriction: editIsChild ? 0 : editAgeRestriction, is_child: editIsChild }
+        : p
+      ));
       setEditingProfile(null);
-      
       toast({
         title: "Success",
         description: "Profile updated successfully!",
@@ -156,13 +186,11 @@ export const ProfileManager: React.FC = () => {
       if (error) throw error;
 
       setProfiles(prev => prev.filter(p => p.id !== profileId));
-      
       // If deleted profile was current, clear it
       if (currentProfile?.id === profileId) {
         setCurrentProfile(null);
         localStorage.removeItem('selectedProfile');
       }
-      
       toast({
         title: "Success",
         description: "Profile deleted successfully!",
@@ -175,11 +203,6 @@ export const ProfileManager: React.FC = () => {
         variant: "destructive",
       });
     }
-  };
-
-  const generateAvatar = (name: string) => {
-    const seed = name.toLowerCase().replace(/\s/g, '');
-    return `https://api.dicebear.com/7.x/bottts/svg?seed=${seed}&backgroundColor=b6e3f4,c0aede,d1d4f9,ffd5dc,ffdfbf`;
   };
 
   useEffect(() => {
@@ -206,7 +229,7 @@ export const ProfileManager: React.FC = () => {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h2 className="text-2xl font-bold">Manage Profiles</h2>
-        <Button 
+        <Button
           onClick={() => setShowCreateForm(true)}
           className="gap-2"
           disabled={profiles.length >= 5}
@@ -215,7 +238,6 @@ export const ProfileManager: React.FC = () => {
           Add Profile
         </Button>
       </div>
-
       {/* Current Profile Display */}
       {currentProfile && (
         <Card className="border-blue-600">
@@ -224,7 +246,7 @@ export const ProfileManager: React.FC = () => {
           </CardHeader>
           <CardContent className="flex items-center gap-4">
             <Avatar className="w-16 h-16">
-              <AvatarImage src={generateAvatar(currentProfile.name)} />
+              <AvatarImage src={currentProfile.avatar} />
               <AvatarFallback>
                 <User className="h-8 w-8" />
               </AvatarFallback>
@@ -232,18 +254,13 @@ export const ProfileManager: React.FC = () => {
             <div>
               <h3 className="font-semibold text-lg">{currentProfile.name}</h3>
               <div className="flex gap-2 mt-1">
-                {currentProfile.is_child && (
-                  <Badge variant="secondary">Child</Badge>
-                )}
-                <Badge variant="outline">
-                  {currentProfile.age_restriction}+
-                </Badge>
+                {currentProfile.is_child && <Badge variant="secondary">Child</Badge>}
+                <Badge variant="outline">{currentProfile.age_restriction}+</Badge>
               </div>
             </div>
           </CardContent>
         </Card>
       )}
-
       {/* Create Profile Form */}
       {showCreateForm && (
         <Card>
@@ -261,15 +278,56 @@ export const ProfileManager: React.FC = () => {
                 maxLength={30}
               />
             </div>
+            <div>
+              <Label>Avatar</Label>
+              <AvatarSelector
+                selectedAvatar={newProfileAvatar}
+                onAvatarSelect={setNewProfileAvatar}
+              />
+            </div>
+            <div className="flex items-center gap-2">
+              <Label>Kids Profile</Label>
+              <input
+                type="checkbox"
+                className="ml-2"
+                checked={newIsChild}
+                onChange={(e) => {
+                  const checked = e.target.checked;
+                  setNewIsChild(checked);
+                  if (checked) setNewAgeRestriction(0);
+                  else setNewAgeRestriction(21);
+                }}
+                id="profile-is-child"
+              />
+              <span>{newIsChild ? <Baby className="h-4 w-4 text-green-500" /> : null}</span>
+            </div>
+            {!newIsChild && (
+              <div>
+                <Label htmlFor="profile-age-restriction">Age Restriction</Label>
+                <select
+                  className="w-full px-4 py-2 border rounded"
+                  id="profile-age-restriction"
+                  value={newAgeRestriction}
+                  onChange={e => setNewAgeRestriction(Number(e.target.value))}
+                >
+                  {ageOptions.map(opt => (
+                    <option key={opt.value} value={opt.value}>{opt.label}</option>
+                  ))}
+                </select>
+              </div>
+            )}
             <div className="flex gap-2">
               <Button onClick={createProfile} disabled={!newProfileName.trim()}>
                 Create Profile
               </Button>
-              <Button 
-                variant="outline" 
+              <Button
+                variant="outline"
                 onClick={() => {
                   setShowCreateForm(false);
                   setNewProfileName('');
+                  setNewProfileAvatar('');
+                  setNewIsChild(false);
+                  setNewAgeRestriction(21);
                 }}
               >
                 Cancel
@@ -278,7 +336,6 @@ export const ProfileManager: React.FC = () => {
           </CardContent>
         </Card>
       )}
-
       {/* Profiles Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {profiles.map(profile => (
@@ -287,14 +344,12 @@ export const ProfileManager: React.FC = () => {
           }`}>
             <CardContent className="p-6 text-center">
               <Avatar className="w-20 h-20 mx-auto mb-4">
-                <AvatarImage src={generateAvatar(profile.name)} />
+                <AvatarImage src={profile.avatar} />
                 <AvatarFallback>
                   <User className="h-10 w-10" />
                 </AvatarFallback>
               </Avatar>
-              
               <h3 className="font-semibold mb-2">{profile.name}</h3>
-              
               <div className="flex justify-center gap-2 mb-4">
                 {profile.is_child && (
                   <Badge variant="secondary">Child</Badge>
@@ -306,7 +361,6 @@ export const ProfileManager: React.FC = () => {
                   <Badge className="bg-blue-600">Current</Badge>
                 )}
               </div>
-
               {/* Switch Profile Button */}
               <Button
                 onClick={() => switchToProfile(profile)}
@@ -316,14 +370,13 @@ export const ProfileManager: React.FC = () => {
                 <LogIn className="h-4 w-4 mr-2" />
                 {currentProfile?.id === profile.id ? 'Current Profile' : 'Switch to Profile'}
               </Button>
-
               <div className="flex gap-2 justify-center opacity-0 group-hover:opacity-100 transition-opacity">
                 <Button
                   size="sm"
                   variant="outline"
                   onClick={(e) => {
                     e.stopPropagation();
-                    setEditingProfile(profile);
+                    startEditProfile(profile);
                   }}
                 >
                   <Edit2 className="h-3 w-3" />
@@ -344,7 +397,6 @@ export const ProfileManager: React.FC = () => {
           </Card>
         ))}
       </div>
-
       {/* Edit Profile Modal */}
       {editingProfile && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
@@ -357,18 +409,55 @@ export const ProfileManager: React.FC = () => {
                 <Label htmlFor="editName">Profile Name</Label>
                 <Input
                   id="editName"
-                  value={editingProfile.name}
-                  onChange={(e) => setEditingProfile({...editingProfile, name: e.target.value})}
+                  value={editName}
+                  onChange={(e) => setEditName(e.target.value)}
                   maxLength={30}
                 />
               </div>
-              
+              <div>
+                <Label>Avatar</Label>
+                <AvatarSelector
+                  selectedAvatar={editAvatar}
+                  onAvatarSelect={setEditAvatar}
+                />
+              </div>
+              <div className="flex items-center gap-2">
+                <Label>Kids Profile</Label>
+                <input
+                  type="checkbox"
+                  className="ml-2"
+                  checked={editIsChild}
+                  onChange={e => {
+                    const checked = e.target.checked;
+                    setEditIsChild(checked);
+                    if (checked) setEditAgeRestriction(0);
+                    else setEditAgeRestriction(21);
+                  }}
+                  id="edit-profile-is-child"
+                />
+                <span>{editIsChild ? <Baby className="h-4 w-4 text-green-500" /> : null}</span>
+              </div>
+              {!editIsChild && (
+                <div>
+                  <Label htmlFor="edit-profile-age-restriction">Age Restriction</Label>
+                  <select
+                    className="w-full px-4 py-2 border rounded"
+                    id="edit-profile-age-restriction"
+                    value={editAgeRestriction}
+                    onChange={e => setEditAgeRestriction(Number(e.target.value))}
+                  >
+                    {ageOptions.map(opt => (
+                      <option key={opt.value} value={opt.value}>{opt.label}</option>
+                    ))}
+                  </select>
+                </div>
+              )}
               <div className="flex gap-2">
-                <Button onClick={() => updateProfile(editingProfile)}>
+                <Button onClick={updateProfile}>
                   Save Changes
                 </Button>
-                <Button 
-                  variant="outline" 
+                <Button
+                  variant="outline"
                   onClick={() => setEditingProfile(null)}
                 >
                   Cancel
@@ -378,7 +467,6 @@ export const ProfileManager: React.FC = () => {
           </Card>
         </div>
       )}
-
       {profiles.length === 0 && (
         <Card>
           <CardContent className="p-8 text-center">
