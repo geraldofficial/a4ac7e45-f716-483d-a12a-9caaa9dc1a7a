@@ -30,23 +30,45 @@ export const useCommunity = () => {
 
   const fetchPosts = async () => {
     try {
-      const { data: postsData, error } = await supabase
+      // First, fetch posts without profile data
+      const { data: postsData, error: postsError } = await supabase
         .from('community_posts')
-        .select(`
-          *,
-          profiles!community_posts_user_id_fkey (
-            username,
-            avatar,
-            full_name
-          )
-        `)
+        .select('*')
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
+      if (postsError) throw postsError;
+
+      if (!postsData) {
+        setPosts([]);
+        return;
+      }
+
+      // Get unique user IDs from posts
+      const userIds = [...new Set(postsData.map(post => post.user_id))];
+
+      // Fetch profile data for these users
+      const { data: profilesData, error: profilesError } = await supabase
+        .from('profiles')
+        .select('id, username, avatar, full_name')
+        .in('id', userIds);
+
+      if (profilesError) {
+        console.error('Error fetching profiles:', profilesError);
+      }
+
+      // Create a map of user profiles for easy lookup
+      const profilesMap = new Map();
+      profilesData?.forEach(profile => {
+        profilesMap.set(profile.id, {
+          username: profile.username || 'anonymous',
+          avatar: profile.avatar || '👤',
+          full_name: profile.full_name || profile.username || 'Anonymous User'
+        });
+      });
 
       if (user) {
         // Fetch user likes and bookmarks
-        const postIds = postsData?.map(post => post.id) || [];
+        const postIds = postsData.map(post => post.id);
         
         const [likesData, bookmarksData] = await Promise.all([
           supabase
@@ -64,21 +86,29 @@ export const useCommunity = () => {
         const likedPosts = new Set(likesData.data?.map(like => like.post_id));
         const bookmarkedPosts = new Set(bookmarksData.data?.map(bookmark => bookmark.post_id));
 
-        const enrichedPosts = postsData?.map(post => ({
+        const enrichedPosts = postsData.map(post => ({
           ...post,
-          user_profile: post.profiles,
+          user_profile: profilesMap.get(post.user_id) || {
+            username: 'anonymous',
+            avatar: '👤',
+            full_name: 'Anonymous User'
+          },
           is_liked: likedPosts.has(post.id),
           is_bookmarked: bookmarkedPosts.has(post.id)
-        })) || [];
+        }));
 
         setPosts(enrichedPosts);
       } else {
-        const enrichedPosts = postsData?.map(post => ({
+        const enrichedPosts = postsData.map(post => ({
           ...post,
-          user_profile: post.profiles,
+          user_profile: profilesMap.get(post.user_id) || {
+            username: 'anonymous',
+            avatar: '👤',
+            full_name: 'Anonymous User'
+          },
           is_liked: false,
           is_bookmarked: false
-        })) || [];
+        }));
 
         setPosts(enrichedPosts);
       }
