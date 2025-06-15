@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { TrendingUp, Heart, Clock, Star, Users, Zap } from 'lucide-react';
 import { MovieCard } from '@/components/MovieCard';
@@ -193,9 +192,6 @@ export const ContentRecommendations: React.FC<ContentRecommendationsProps> = ({
                   <div key={`${section.title}-${item.id}-${itemIndex}`} className="flex-shrink-0">
                     <MovieCard
                       movie={formatMovieData(item)}
-                      size="md"
-                      showRating
-                      showType
                     />
                   </div>
                 ))}

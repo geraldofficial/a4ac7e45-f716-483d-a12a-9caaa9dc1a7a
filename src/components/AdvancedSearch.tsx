@@ -404,7 +404,6 @@ export const AdvancedSearch: React.FC<AdvancedSearchProps> = ({
                 <MovieCard
                   key={`${item.media_type || filters.type}-${item.id}`}
                   movie={formatMovieData(item)}
-                  size="sm"
                 />
               ))}
             </div>
