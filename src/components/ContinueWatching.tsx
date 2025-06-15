@@ -4,35 +4,62 @@ import { MovieCard } from './MovieCard';
 import { LoadingSpinner } from './LoadingSpinner';
 import { tmdbApi, Movie } from '@/services/tmdb';
 import { useAuth } from '@/contexts/AuthContext';
+import { watchHistoryService } from '@/services/watchHistory';
 import { Clock, ChevronLeft, ChevronRight } from 'lucide-react';
 
-export const ContinueWatching = () => {
+interface ContinueWatchingProps {
+  profile?: any;
+}
+
+export const ContinueWatching: React.FC<ContinueWatchingProps> = ({ profile }) => {
   const [continueWatchingMovies, setContinueWatchingMovies] = useState<Movie[]>([]);
   const [loading, setLoading] = useState(true);
   const { user } = useAuth();
 
   useEffect(() => {
     const fetchContinueWatching = async () => {
-      if (!user) {
+      if (!user || !profile) {
         setLoading(false);
         return;
       }
 
       try {
         setLoading(true);
-        // For now, we'll show popular movies as placeholder for continue watching
-        // In a real app, this would fetch from user's watch history
-        const response = await tmdbApi.getPopularMovies(1);
-        setContinueWatchingMovies(response.results.slice(0, 8));
+        console.log('ContinueWatching: Fetching for profile:', profile?.name || 'default');
+        
+        // Get continue watching items from watch history for this profile
+        const continueWatchingItems = watchHistoryService.getContinueWatching(8);
+        console.log('ContinueWatching: Found items:', continueWatchingItems.length);
+        
+        if (continueWatchingItems.length > 0) {
+          // Fetch full movie data for these items
+          const moviePromises = continueWatchingItems
+            .filter(item => item.type === 'movie')
+            .map(item => tmdbApi.getMovieDetails(item.tmdbId));
+          
+          const movies = await Promise.all(moviePromises);
+          setContinueWatchingMovies(movies.filter(Boolean));
+        } else {
+          // If no history, show popular movies as placeholder
+          const response = await tmdbApi.getPopularMovies(1);
+          setContinueWatchingMovies(response.results.slice(0, 6));
+        }
       } catch (error) {
         console.error('Error fetching continue watching:', error);
+        // Fallback to popular movies
+        try {
+          const response = await tmdbApi.getPopularMovies(1);
+          setContinueWatchingMovies(response.results.slice(0, 6));
+        } catch (fallbackError) {
+          console.error('Error fetching fallback movies:', fallbackError);
+        }
       } finally {
         setLoading(false);
       }
     };
 
     fetchContinueWatching();
-  }, [user]);
+  }, [user, profile?.id]);
 
   const scrollSection = (direction: 'left' | 'right') => {
     const section = document.getElementById('continue-watching-scroll');
@@ -45,7 +72,7 @@ export const ContinueWatching = () => {
     }
   };
 
-  if (!user || loading) {
+  if (!user || !profile || loading) {
     return loading ? (
       <div className="flex items-center justify-center py-8">
         <LoadingSpinner size="md" text="Loading your content..." />
@@ -63,7 +90,7 @@ export const ContinueWatching = () => {
         <div className="flex items-center gap-2">
           <Clock className="h-5 w-5 text-primary" />
           <h2 className="text-lg md:text-2xl lg:text-3xl font-bold text-foreground">
-            Continue Watching
+            Continue Watching {profile?.name && `(${profile.name})`}
           </h2>
         </div>
         <div className="hidden md:flex gap-2">

@@ -71,6 +71,14 @@ export const Navbar = () => {
             >
               Trending
             </Link>
+            <Link 
+              to="/donate" 
+              className={`text-sm lg:text-base font-medium transition-colors hover:text-primary ${
+                isActive('/donate') ? 'text-primary' : 'text-foreground/80'
+              }`}
+            >
+              Donate
+            </Link>
             {user && (
               <Link 
                 to="/watchlist" 
@@ -207,6 +215,15 @@ export const Navbar = () => {
                 onClick={() => setIsMenuOpen(false)}
               >
                 Trending
+              </Link>
+              <Link 
+                to="/donate" 
+                className={`text-sm font-medium transition-colors hover:text-primary px-2 py-1 ${
+                  isActive('/donate') ? 'text-primary' : 'text-foreground/80'
+                }`}
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Donate
               </Link>
               {user && (
                 <Link 

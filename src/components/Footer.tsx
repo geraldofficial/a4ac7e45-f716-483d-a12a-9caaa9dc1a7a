@@ -74,7 +74,7 @@ export const Footer = () => {
             <ul className="space-y-3">
               <li>
                 <button 
-                  onClick={() => navigate('/support')} 
+                  onClick={() => navigate('/donate')} 
                   className="text-muted-foreground hover:text-primary transition-colors flex items-center gap-2"
                 >
                   <Heart className="h-4 w-4" />

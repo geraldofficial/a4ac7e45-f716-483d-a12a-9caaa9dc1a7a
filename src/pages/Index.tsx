@@ -36,8 +36,8 @@ const Index = () => {
         <HeroCarousel profile={currentProfile} />
         
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 space-y-8 sm:space-y-12 relative z-10">
-          {user && <ContinueWatching />}
-          {user && <RecentlyWatched />}
+          {user && <ContinueWatching profile={currentProfile} />}
+          {user && <RecentlyWatched profile={currentProfile} />}
           
           <ContentRecommendations 
             userId={user?.id} 

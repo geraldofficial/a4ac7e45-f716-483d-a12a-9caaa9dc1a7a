@@ -4,35 +4,65 @@ import { MovieCard } from './MovieCard';
 import { LoadingSpinner } from './LoadingSpinner';
 import { tmdbApi, Movie } from '@/services/tmdb';
 import { useAuth } from '@/contexts/AuthContext';
+import { watchHistoryService } from '@/services/watchHistory';
 import { History, ChevronLeft, ChevronRight } from 'lucide-react';
 
-export const RecentlyWatched = () => {
+interface RecentlyWatchedProps {
+  profile?: any;
+}
+
+export const RecentlyWatched: React.FC<RecentlyWatchedProps> = ({ profile }) => {
   const [recentMovies, setRecentMovies] = useState<Movie[]>([]);
   const [loading, setLoading] = useState(true);
   const { user } = useAuth();
 
   useEffect(() => {
     const fetchRecentlyWatched = async () => {
-      if (!user) {
+      if (!user || !profile) {
         setLoading(false);
         return;
       }
 
       try {
         setLoading(true);
-        // For now, we'll show trending movies as placeholder for recently watched
-        // In a real app, this would fetch from user's watch history
-        const response = await tmdbApi.getTrendingMovies(1);
-        setRecentMovies(response.results.slice(0, 8));
+        console.log('RecentlyWatched: Fetching for profile:', profile?.name || 'default');
+        
+        // Get recently watched items from watch history for this profile
+        const recentItems = watchHistoryService.getFilteredHistory({
+          type: 'movie',
+          sortBy: 'lastWatched',
+          sortOrder: 'desc',
+          limit: 8
+        });
+        
+        console.log('RecentlyWatched: Found items:', recentItems.length);
+        
+        if (recentItems.length > 0) {
+          // Fetch full movie data for these items
+          const moviePromises = recentItems.map(item => tmdbApi.getMovieDetails(item.tmdbId));
+          const movies = await Promise.all(moviePromises);
+          setRecentMovies(movies.filter(Boolean));
+        } else {
+          // If no history, show trending movies as placeholder
+          const response = await tmdbApi.getTrendingMovies(1);
+          setRecentMovies(response.results.slice(0, 6));
+        }
       } catch (error) {
         console.error('Error fetching recently watched:', error);
+        // Fallback to trending movies
+        try {
+          const response = await tmdbApi.getTrendingMovies(1);
+          setRecentMovies(response.results.slice(0, 6));
+        } catch (fallbackError) {
+          console.error('Error fetching fallback movies:', fallbackError);
+        }
       } finally {
         setLoading(false);
       }
     };
 
     fetchRecentlyWatched();
-  }, [user]);
+  }, [user, profile?.id]);
 
   const scrollSection = (direction: 'left' | 'right') => {
     const section = document.getElementById('recently-watched-scroll');
@@ -45,7 +75,7 @@ export const RecentlyWatched = () => {
     }
   };
 
-  if (!user || loading) {
+  if (!user || !profile || loading) {
     return loading ? (
       <div className="flex items-center justify-center py-8">
         <LoadingSpinner size="md" text="Loading your history..." />
@@ -63,7 +93,7 @@ export const RecentlyWatched = () => {
         <div className="flex items-center gap-2">
           <History className="h-5 w-5 text-primary" />
           <h2 className="text-lg md:text-2xl lg:text-3xl font-bold text-foreground">
-            Recently Watched
+            Recently Watched {profile?.name && `(${profile.name})`}
           </h2>
         </div>
         <div className="hidden md:flex gap-2">
