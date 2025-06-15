@@ -8,7 +8,8 @@ import {
   X, 
   User,
   LogOut,
-  Settings
+  Settings,
+  Heart
 } from 'lucide-react';
 import { FlickPickLogo } from './FlickPickLogo';
 import { useAuth } from '@/contexts/AuthContext';
@@ -25,6 +26,7 @@ export const Navbar = () => {
     { name: 'Browse', href: '/browse' },
     { name: 'Trending', href: '/trending' },
     { name: 'Top Rated', href: '/top-rated' },
+    { name: 'Donate', href: '/donate', icon: Heart },
   ];
 
   const handleSignOut = async () => {
@@ -43,8 +45,7 @@ export const Navbar = () => {
         <div className="flex items-center justify-between h-16 md:h-20">
           {/* Logo */}
           <Link to="/" className="flex items-center space-x-2">
-            <FlickPickLogo className="h-8 w-8 md:h-10 md:w-10" />
-            <span className="text-xl md:text-2xl font-bold text-foreground">FlickPick</span>
+            <FlickPickLogo size="md" />
           </Link>
 
           {/* Desktop Navigation */}
@@ -53,12 +54,13 @@ export const Navbar = () => {
               <Link
                 key={item.name}
                 to={item.href}
-                className={`text-sm font-medium transition-colors hover:text-primary ${
+                className={`text-sm font-medium transition-colors hover:text-primary flex items-center gap-1 ${
                   location.pathname === item.href 
                     ? 'text-primary' 
                     : 'text-muted-foreground'
                 }`}
               >
+                {item.icon && <item.icon className="h-4 w-4" />}
                 {item.name}
               </Link>
             ))}
@@ -124,12 +126,13 @@ export const Navbar = () => {
                   key={item.name}
                   to={item.href}
                   onClick={() => setIsMenuOpen(false)}
-                  className={`text-base font-medium transition-colors hover:text-primary px-2 py-1 ${
+                  className={`text-base font-medium transition-colors hover:text-primary px-2 py-1 flex items-center gap-2 ${
                     location.pathname === item.href 
                       ? 'text-primary' 
                       : 'text-muted-foreground'
                   }`}
                 >
+                  {item.icon && <item.icon className="h-4 w-4" />}
                   {item.name}
                 </Link>
               ))}

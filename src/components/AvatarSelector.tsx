@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Check } from 'lucide-react';
+import { Check, RefreshCw } from 'lucide-react';
 
 interface AvatarSelectorProps {
   selectedAvatar?: string;
@@ -9,46 +9,42 @@ interface AvatarSelectorProps {
   className?: string;
 }
 
-// Emoji avatars as fallback and primary option
-const emojiAvatars = [
-  '👤', '👨', '👩', '🧑', '👦', '👧', '👶', '🧓', '👴', '👵',
-  '👨‍💼', '👩‍💼', '👨‍🎓', '👩‍🎓', '👨‍⚕️', '👩‍⚕️', '👨‍🚀', '👩‍🚀',
-  '🧑‍🎨', '👨‍🎨', '👩‍🎨', '🧑‍🍳', '👨‍🍳', '👩‍🍳'
+// Dicebear avatar styles and seeds
+const avatarStyles = ['avataaars', 'big-smile', 'bottts', 'fun-emoji', 'personas'];
+const avatarSeeds = [
+  'Alex', 'Emma', 'Liam', 'Olivia', 'Noah', 'Ava', 'William', 'Sophia', 
+  'James', 'Isabella', 'Benjamin', 'Charlotte', 'Lucas', 'Amelia', 'Mason',
+  'Mia', 'Ethan', 'Harper', 'Alexander', 'Evelyn', 'Henry', 'Abigail',
+  'Jacob', 'Emily', 'Michael', 'Elizabeth', 'Daniel', 'Sofia', 'Logan', 'Avery'
 ];
 
-// Alternative image avatars with better reliability
-const imageAvatars = [
-  'https://api.dicebear.com/7.x/avataaars/svg?seed=Alex',
-  'https://api.dicebear.com/7.x/avataaars/svg?seed=Emma',
-  'https://api.dicebear.com/7.x/avataaars/svg?seed=Liam',
-  'https://api.dicebear.com/7.x/avataaars/svg?seed=Olivia',
-  'https://api.dicebear.com/7.x/avataaars/svg?seed=Noah',
-  'https://api.dicebear.com/7.x/avataaars/svg?seed=Ava',
-  'https://api.dicebear.com/7.x/avataaars/svg?seed=William',
-  'https://api.dicebear.com/7.x/avataaars/svg?seed=Sophia',
-  'https://api.dicebear.com/7.x/avataaars/svg?seed=James',
-  'https://api.dicebear.com/7.x/avataaars/svg?seed=Isabella',
-  'https://api.dicebear.com/7.x/avataaars/svg?seed=Benjamin',
-  'https://api.dicebear.com/7.x/avataaars/svg?seed=Charlotte'
-];
+const generateDicebearUrl = (style: string, seed: string) => {
+  return `https://api.dicebear.com/7.x/${style}/svg?seed=${seed}&backgroundColor=b6e3f4,c0aede,d1d4f9,ffd5dc,ffdfbf`;
+};
 
 export const AvatarSelector: React.FC<AvatarSelectorProps> = ({
-  selectedAvatar = emojiAvatars[0],
+  selectedAvatar = generateDicebearUrl('avataaars', 'Alex'),
   onAvatarSelect,
   className = ''
 }) => {
-  const [useEmojis, setUseEmojis] = useState(true);
+  const [currentStyle, setCurrentStyle] = useState('avataaars');
   const [imageErrors, setImageErrors] = useState<Set<string>>(new Set());
 
-  const currentAvatars = useEmojis ? emojiAvatars : imageAvatars;
+  const currentAvatars = avatarSeeds.map(seed => generateDicebearUrl(currentStyle, seed));
 
   const handleImageError = (avatar: string) => {
     setImageErrors(prev => new Set(prev.add(avatar)));
   };
 
+  const generateRandomAvatar = () => {
+    const randomStyle = avatarStyles[Math.floor(Math.random() * avatarStyles.length)];
+    const randomSeed = Math.random().toString(36).substring(7);
+    const newAvatar = generateDicebearUrl(randomStyle, randomSeed);
+    onAvatarSelect(newAvatar);
+  };
+
   const renderAvatar = (avatar: string, index: number) => {
     const isSelected = selectedAvatar === avatar;
-    const isEmoji = emojiAvatars.includes(avatar);
     const hasError = imageErrors.has(avatar);
 
     return (
@@ -65,8 +61,10 @@ export const AvatarSelector: React.FC<AvatarSelectorProps> = ({
           }
         `}
       >
-        {isEmoji || hasError ? (
-          <span className="text-2xl">{isEmoji ? avatar : '👤'}</span>
+        {hasError ? (
+          <div className="w-full h-full bg-gradient-to-br from-primary/20 to-secondary/20 rounded-xl flex items-center justify-center">
+            <span className="text-2xl">👤</span>
+          </div>
         ) : (
           <img 
             src={avatar} 
@@ -90,21 +88,31 @@ export const AvatarSelector: React.FC<AvatarSelectorProps> = ({
         <h3 className="text-xl font-bold text-foreground">Choose Your Avatar</h3>
         <div className="flex gap-2">
           <Button
-            variant={useEmojis ? "default" : "outline"}
+            variant="outline"
             size="sm"
-            onClick={() => setUseEmojis(true)}
+            onClick={generateRandomAvatar}
+            className="flex items-center gap-2"
           >
-            😊 Emojis
-          </Button>
-          <Button
-            variant={!useEmojis ? "default" : "outline"}
-            size="sm"
-            onClick={() => setUseEmojis(false)}
-          >
-            🖼️ Images
+            <RefreshCw className="w-4 h-4" />
+            Random
           </Button>
         </div>
       </div>
+
+      <div className="flex gap-2 flex-wrap">
+        {avatarStyles.map(style => (
+          <Button
+            key={style}
+            variant={currentStyle === style ? "default" : "outline"}
+            size="sm"
+            onClick={() => setCurrentStyle(style)}
+            className="capitalize"
+          >
+            {style.replace('-', ' ')}
+          </Button>
+        ))}
+      </div>
+
       <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 gap-4">
         {currentAvatars.map(renderAvatar)}
       </div>

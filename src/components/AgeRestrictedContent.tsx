@@ -3,7 +3,7 @@ import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { tmdbApi } from '@/services/tmdb';
 import { MovieCard } from '@/components/MovieCard';
-import { Baby, Star, Heart } from 'lucide-react';
+import { Baby, Star, Heart, Sparkles } from 'lucide-react';
 
 interface AgeRestrictedContentProps {
   profile: {
@@ -25,6 +25,13 @@ export const AgeRestrictedContent: React.FC<AgeRestrictedContentProps> = ({ prof
   const { data: familyMovies } = useQuery({
     queryKey: ['family-movies'],
     queryFn: () => tmdbApi.getMoviesByGenre(10751), // Family genre
+    enabled: profile.is_child
+  });
+
+  // Popular animations for kids
+  const { data: popularAnimations } = useQuery({
+    queryKey: ['popular-animations'],
+    queryFn: () => tmdbApi.getPopularMovies(),
     enabled: profile.is_child
   });
 
@@ -56,61 +63,104 @@ export const AgeRestrictedContent: React.FC<AgeRestrictedContentProps> = ({ prof
   const filterContentByAge = (content: any[]) => {
     if (!content) return [];
     
+    if (profile.is_child) {
+      // For kids, show all content from family/animation genres
+      return content.slice(0, 12);
+    }
+    
     return content.filter(item => {
-      // For kids profiles, only show G, PG rated content
-      if (profile.is_child) {
-        return item.vote_average >= 6.0; // Only well-rated content for kids
-      }
-      
       // For teen profiles, exclude very mature content
       if (profile.age_restriction <= 16) {
-        return item.vote_average >= 5.0;
+        return item.vote_average >= 4.0;
       }
       
       // Adult profiles can see all content
       return true;
-    }).slice(0, 10);
+    }).slice(0, 12);
   };
 
   if (profile.is_child) {
     return (
       <div className="space-y-8">
         {/* Kids Header */}
-        <div className="text-center p-6 bg-gradient-to-r from-green-400/20 to-blue-400/20 rounded-2xl border border-green-400/30">
-          <div className="flex items-center justify-center gap-3 mb-4">
-            <Baby className="h-8 w-8 text-green-400" />
-            <h2 className="text-3xl font-bold text-white">Hey {profile.name}!</h2>
+        <div className="text-center p-8 bg-gradient-to-r from-pink-400/20 via-purple-400/20 to-blue-400/20 rounded-3xl border border-pink-400/30 relative overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-r from-pink-500/10 to-blue-500/10 animate-pulse"></div>
+          <div className="relative z-10">
+            <div className="flex items-center justify-center gap-3 mb-4">
+              <Baby className="h-10 w-10 text-pink-400 animate-bounce" />
+              <h2 className="text-4xl font-bold text-white">Hey {profile.name}! 🌟</h2>
+              <Sparkles className="h-10 w-10 text-yellow-400 animate-pulse" />
+            </div>
+            <p className="text-pink-300 text-xl font-medium">Let's watch some amazing cartoons and animations!</p>
+            <div className="mt-4 flex justify-center gap-4 text-2xl">
+              🎭 🎪 🎨 🎪 🎭
+            </div>
           </div>
-          <p className="text-green-300 text-lg">Here are some amazing animations and cartoons just for you!</p>
         </div>
 
         {/* Animation Movies */}
-        {animationMovies?.results && (
-          <div className="space-y-4">
+        {animationMovies?.results && animationMovies.results.length > 0 && (
+          <div className="space-y-6">
             <div className="flex items-center gap-3">
-              <Star className="h-6 w-6 text-yellow-400" />
-              <h3 className="text-2xl font-bold text-white">Animated Adventures</h3>
+              <div className="p-3 bg-gradient-to-r from-purple-500 to-pink-500 rounded-2xl">
+                <Star className="h-6 w-6 text-white" />
+              </div>
+              <h3 className="text-3xl font-bold text-white">Animated Adventures 🚀</h3>
             </div>
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-6">
               {filterContentByAge(animationMovies.results).map((movie) => (
-                <MovieCard key={movie.id} movie={formatMovieData(movie)} />
+                <div key={movie.id} className="transform hover:scale-105 transition-transform duration-300">
+                  <MovieCard movie={formatMovieData(movie)} />
+                </div>
               ))}
             </div>
           </div>
         )}
 
         {/* Family Movies */}
-        {familyMovies?.results && (
-          <div className="space-y-4">
+        {familyMovies?.results && familyMovies.results.length > 0 && (
+          <div className="space-y-6">
             <div className="flex items-center gap-3">
-              <Heart className="h-6 w-6 text-pink-400" />
-              <h3 className="text-2xl font-bold text-white">Family Fun</h3>
+              <div className="p-3 bg-gradient-to-r from-green-500 to-blue-500 rounded-2xl">
+                <Heart className="h-6 w-6 text-white" />
+              </div>
+              <h3 className="text-3xl font-bold text-white">Family Fun Time 🎪</h3>
             </div>
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-6">
               {filterContentByAge(familyMovies.results).map((movie) => (
-                <MovieCard key={movie.id} movie={formatMovieData(movie)} />
+                <div key={movie.id} className="transform hover:scale-105 transition-transform duration-300">
+                  <MovieCard movie={formatMovieData(movie)} />
+                </div>
               ))}
             </div>
+          </div>
+        )}
+
+        {/* Popular Content for Kids */}
+        {popularAnimations?.results && popularAnimations.results.length > 0 && (
+          <div className="space-y-6">
+            <div className="flex items-center gap-3">
+              <div className="p-3 bg-gradient-to-r from-yellow-500 to-orange-500 rounded-2xl">
+                <Sparkles className="h-6 w-6 text-white" />
+              </div>
+              <h3 className="text-3xl font-bold text-white">Popular Right Now 🔥</h3>
+            </div>
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-6">
+              {filterContentByAge(popularAnimations.results).map((movie) => (
+                <div key={movie.id} className="transform hover:scale-105 transition-transform duration-300">
+                  <MovieCard movie={formatMovieData(movie)} />
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Fun message if no content */}
+        {(!animationMovies?.results?.length && !familyMovies?.results?.length && !popularAnimations?.results?.length) && (
+          <div className="text-center p-12 bg-gradient-to-r from-purple-400/20 to-pink-400/20 rounded-3xl border border-purple-400/30">
+            <Baby className="h-16 w-16 text-purple-400 mx-auto mb-4 animate-bounce" />
+            <h3 className="text-2xl font-bold text-white mb-2">Getting your cartoons ready! 🎬</h3>
+            <p className="text-purple-300 text-lg">We're loading the best animations just for you!</p>
           </div>
         )}
       </div>

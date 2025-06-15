@@ -25,6 +25,12 @@ interface ProfileSelectorProps {
   currentProfileId?: string;
 }
 
+const generateDefaultAvatar = () => {
+  const seeds = ['Alex', 'Emma', 'Liam', 'Olivia', 'Noah', 'Ava'];
+  const randomSeed = seeds[Math.floor(Math.random() * seeds.length)];
+  return `https://api.dicebear.com/7.x/avataaars/svg?seed=${randomSeed}&backgroundColor=b6e3f4,c0aede,d1d4f9,ffd5dc,ffdfbf`;
+};
+
 export const ProfileSelector: React.FC<ProfileSelectorProps> = ({
   onProfileSelect,
   currentProfileId
@@ -33,7 +39,7 @@ export const ProfileSelector: React.FC<ProfileSelectorProps> = ({
   const [editingProfile, setEditingProfile] = useState<UserProfile | null>(null);
   const [formData, setFormData] = useState({
     name: '',
-    avatar: '👤',
+    avatar: generateDefaultAvatar(),
     is_child: false,
     age_restriction: 18
   });
@@ -137,7 +143,7 @@ export const ProfileSelector: React.FC<ProfileSelectorProps> = ({
   const resetForm = () => {
     setFormData({
       name: '',
-      avatar: '👤',
+      avatar: generateDefaultAvatar(),
       is_child: false,
       age_restriction: 18
     });
@@ -173,27 +179,17 @@ export const ProfileSelector: React.FC<ProfileSelectorProps> = ({
   };
 
   const renderAvatar = (avatar: string) => {
-    const isEmoji = avatar.length <= 2 || /^[\u{1F600}-\u{1F64F}]|[\u{1F300}-\u{1F5FF}]|[\u{1F680}-\u{1F6FF}]|[\u{1F1E0}-\u{1F1FF}]|[\u{2600}-\u{26FF}]|[\u{2700}-\u{27BF}]/u.test(avatar);
-    
-    if (isEmoji) {
-      return <span className="text-3xl">{avatar}</span>;
-    } else {
-      return (
-        <img 
-          src={avatar} 
-          alt="Profile avatar"
-          className="w-full h-full object-cover rounded-full"
-          onError={(e) => {
-            e.currentTarget.style.display = 'none';
-            e.currentTarget.nextElementSibling?.remove();
-            const fallback = document.createElement('span');
-            fallback.textContent = '👤';
-            fallback.className = 'text-3xl';
-            e.currentTarget.parentNode?.appendChild(fallback);
-          }}
-        />
-      );
-    }
+    return (
+      <img 
+        src={avatar} 
+        alt="Profile avatar"
+        className="w-full h-full object-cover rounded-full"
+        onError={(e) => {
+          // Fallback to a default Dicebear avatar if the current one fails
+          e.currentTarget.src = generateDefaultAvatar();
+        }}
+      />
+    );
   };
 
   const getAgeDisplay = (profile: UserProfile) => {
@@ -235,7 +231,7 @@ export const ProfileSelector: React.FC<ProfileSelectorProps> = ({
             >
               <div className="p-6 text-center">
                 <div className="relative mb-4">
-                  <div className={`w-20 h-20 mx-auto rounded-full flex items-center justify-center ${
+                  <div className={`w-20 h-20 mx-auto rounded-full flex items-center justify-center overflow-hidden ${
                     profile.is_child 
                       ? 'bg-gradient-to-br from-green-400 to-blue-400' 
                       : 'bg-gradient-to-br from-purple-500 to-blue-500'
@@ -296,13 +292,13 @@ export const ProfileSelector: React.FC<ProfileSelectorProps> = ({
                 </div>
               </Card>
             </DialogTrigger>
-            <DialogContent className="bg-gray-900 border-gray-700">
+            <DialogContent className="bg-gray-900 border-gray-700 max-w-2xl">
               <DialogHeader>
                 <DialogTitle className="text-white">
                   {editingProfile ? 'Edit Profile' : 'Create New Profile'}
                 </DialogTitle>
               </DialogHeader>
-              <form onSubmit={handleSubmit} className="space-y-4">
+              <form onSubmit={handleSubmit} className="space-y-6">
                 <div>
                   <Label htmlFor="name" className="text-white">Profile Name</Label>
                   <Input
