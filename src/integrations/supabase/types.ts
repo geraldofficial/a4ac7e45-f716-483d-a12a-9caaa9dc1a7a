@@ -9,6 +9,162 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      community_post_bookmarks: {
+        Row: {
+          created_at: string | null
+          id: string
+          post_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          post_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          post_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "community_post_bookmarks_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "community_posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      community_post_comments: {
+        Row: {
+          content: string
+          created_at: string | null
+          id: string
+          post_id: string
+          user_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string | null
+          id?: string
+          post_id: string
+          user_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string | null
+          id?: string
+          post_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "community_post_comments_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "community_posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      community_post_likes: {
+        Row: {
+          created_at: string | null
+          id: string
+          post_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          post_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          post_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "community_post_likes_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "community_posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      community_posts: {
+        Row: {
+          comments_count: number | null
+          content: string
+          created_at: string | null
+          id: string
+          likes_count: number | null
+          media_urls: string[] | null
+          shares_count: number | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          comments_count?: number | null
+          content: string
+          created_at?: string | null
+          id?: string
+          likes_count?: number | null
+          media_urls?: string[] | null
+          shares_count?: number | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          comments_count?: number | null
+          content?: string
+          created_at?: string | null
+          id?: string
+          likes_count?: number | null
+          media_urls?: string[] | null
+          shares_count?: number | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      community_stories: {
+        Row: {
+          caption: string | null
+          created_at: string | null
+          expires_at: string | null
+          id: string
+          media_type: string
+          media_url: string
+          user_id: string
+        }
+        Insert: {
+          caption?: string | null
+          created_at?: string | null
+          expires_at?: string | null
+          id?: string
+          media_type: string
+          media_url: string
+          user_id: string
+        }
+        Update: {
+          caption?: string | null
+          created_at?: string | null
+          expires_at?: string | null
+          id?: string
+          media_type?: string
+          media_url?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       content_ratings: {
         Row: {
           content_type: string
@@ -49,6 +205,36 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      direct_messages: {
+        Row: {
+          content: string
+          created_at: string | null
+          id: string
+          is_read: boolean | null
+          media_url: string | null
+          receiver_id: string
+          sender_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string | null
+          id?: string
+          is_read?: boolean | null
+          media_url?: string | null
+          receiver_id: string
+          sender_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string | null
+          id?: string
+          is_read?: boolean | null
+          media_url?: string | null
+          receiver_id?: string
+          sender_id?: string
+        }
+        Relationships: []
       }
       email_subscriptions: {
         Row: {
@@ -372,6 +558,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      cleanup_expired_stories: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
       cleanup_expired_watch_party_sessions: {
         Args: Record<PropertyKey, never>
         Returns: undefined
