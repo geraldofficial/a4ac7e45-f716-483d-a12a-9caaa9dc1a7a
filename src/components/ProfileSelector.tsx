@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Plus, Edit2, Trash2, User, Baby } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -41,7 +42,7 @@ export const ProfileSelector: React.FC<ProfileSelectorProps> = ({
     name: '',
     avatar: generateDefaultAvatar(),
     is_child: false,
-    age_restriction: 18
+    age_restriction: 21 // Changed default to 21 (All content)
   });
 
   const queryClient = useQueryClient();
@@ -143,7 +144,7 @@ export const ProfileSelector: React.FC<ProfileSelectorProps> = ({
       name: '',
       avatar: generateDefaultAvatar(),
       is_child: false,
-      age_restriction: 18
+      age_restriction: 21 // Changed default to 21 (All content)
     });
   };
 
@@ -197,6 +198,9 @@ export const ProfileSelector: React.FC<ProfileSelectorProps> = ({
           <span>Kids</span>
         </div>
       );
+    }
+    if (profile.age_restriction >= 21) {
+      return <span className="text-white/60">All Content</span>;
     }
     return <span className="text-white/60">{profile.age_restriction}+</span>;
   };
@@ -325,7 +329,7 @@ export const ProfileSelector: React.FC<ProfileSelectorProps> = ({
                     onCheckedChange={(checked) => setFormData({ 
                       ...formData, 
                       is_child: checked,
-                      age_restriction: checked ? 0 : 18 
+                      age_restriction: checked ? 0 : 21 
                     })}
                   />
                 </div>
@@ -345,6 +349,7 @@ export const ProfileSelector: React.FC<ProfileSelectorProps> = ({
                         <SelectItem value="13">13+</SelectItem>
                         <SelectItem value="16">16+</SelectItem>
                         <SelectItem value="18">18+</SelectItem>
+                        <SelectItem value="21">All Content (21+)</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
@@ -413,7 +418,7 @@ export const ProfileSelector: React.FC<ProfileSelectorProps> = ({
                   onCheckedChange={(checked) => setFormData({ 
                     ...formData, 
                     is_child: checked,
-                    age_restriction: checked ? 0 : 18 
+                    age_restriction: checked ? 0 : 21 
                   })}
                 />
               </div>
@@ -433,6 +438,7 @@ export const ProfileSelector: React.FC<ProfileSelectorProps> = ({
                       <SelectItem value="13">13+</SelectItem>
                       <SelectItem value="16">16+</SelectItem>
                       <SelectItem value="18">18+</SelectItem>
+                      <SelectItem value="21">All Content (21+)</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
