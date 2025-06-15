@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { TrendingUp, Heart, Clock, Star, Users, Zap, Baby } from 'lucide-react';
 import { MovieCard } from '@/components/MovieCard';
@@ -17,6 +18,14 @@ interface ContentRecommendationsProps {
     age_restriction: number;
   };
   className?: string;
+}
+
+interface RecommendationSection {
+  title: string;
+  description: string;
+  icon: React.ReactNode;
+  badge?: string;
+  items: any[];
 }
 
 export const ContentRecommendations: React.FC<ContentRecommendationsProps> = ({
