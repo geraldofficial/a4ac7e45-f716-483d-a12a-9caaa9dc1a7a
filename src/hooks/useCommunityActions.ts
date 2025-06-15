@@ -1,4 +1,3 @@
-
 import { useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -118,8 +117,59 @@ export const useCommunityActions = (
     }
   }, [user, posts, setPosts, toast]);
 
+  const deletePost = useCallback(
+    async (postId: string) => {
+      if (!user) {
+        toast({
+          title: "Authentication required",
+          description: "Sign in to delete posts.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      const post = posts.find((p) => p.id === postId);
+      if (!post) return;
+
+      // Only allow owner to delete
+      if (post.user_id !== user.id) {
+        toast({
+          title: "Permission denied",
+          description: "You can only delete your own posts.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      try {
+        const { error } = await supabase
+          .from('community_posts')
+          .delete()
+          .eq('id', postId)
+          .eq('user_id', user.id);
+
+        if (error) throw error;
+
+        setPosts((prev) => prev.filter((p) => p.id !== postId));
+
+        toast({
+          title: "Deleted",
+          description: "Your post has been deleted.",
+        });
+      } catch (error) {
+        toast({
+          title: "Error",
+          description: "Failed to delete post",
+          variant: "destructive",
+        });
+      }
+    },
+    [user, posts, setPosts, toast]
+  );
+
   return {
     toggleLike,
-    toggleBookmark
+    toggleBookmark,
+    deletePost
   };
 };

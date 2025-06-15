@@ -17,7 +17,7 @@ export const useCommunity = () => {
     createPost
   } = useCommunityPosts();
 
-  const { toggleLike, toggleBookmark } = useCommunityActions(posts, setPosts);
+  const { toggleLike, toggleBookmark, deletePost } = useCommunityActions(posts, setPosts);
   
   useCommunityRealtime(fetchPosts);
 
@@ -28,6 +28,7 @@ export const useCommunity = () => {
     createPost,
     toggleLike,
     toggleBookmark,
+    deletePost,
     refreshPosts: fetchPosts
   };
 };

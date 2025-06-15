@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { MinimalPostCard } from './MinimalPostCard';
 import { MinimalCreatePost } from './MinimalCreatePost';
@@ -13,7 +12,7 @@ interface MinimalCommunityFeedProps {
 }
 
 export const MinimalCommunityFeed: React.FC<MinimalCommunityFeedProps> = ({ searchQuery }) => {
-  const { posts, loading, error, toggleLike, toggleBookmark, refreshPosts } = useCommunity();
+  const { posts, loading, error, toggleLike, toggleBookmark, deletePost, refreshPosts } = useCommunity();
   const { user } = useAuth();
   const [refreshing, setRefreshing] = useState(false);
 
@@ -120,6 +119,7 @@ export const MinimalCommunityFeed: React.FC<MinimalCommunityFeedProps> = ({ sear
               onLike={() => toggleLike(post.id)}
               onBookmark={() => toggleBookmark(post.id)}
               onCommentAdded={() => refreshPosts()}
+              onDelete={user?.id === post.user_id ? () => deletePost(post.id) : undefined}
             />
           ))}
         </div>
