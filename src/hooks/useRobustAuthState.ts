@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { userApi } from '@/services/user';
@@ -9,19 +8,22 @@ export const useRobustAuthState = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const mountedRef = useRef(true);
+  const loadingRef = useRef(true); // Use ref for loading state
   const initializationAttempted = useRef(false);
 
   useEffect(() => {
     mountedRef.current = true;
+    loadingRef.current = true;
     let subscription: any;
     
     console.log('🔐 Starting robust auth initialization...');
     
-    // Safety timeout to prevent infinite loading
+    // Safety timeout using ref to avoid stale closure
     const safetyTimeout = setTimeout(() => {
-      if (mountedRef.current && loading) {
+      if (mountedRef.current && loadingRef.current) {
         console.log('⏰ Safety timeout: forcing loading to false');
         setLoading(false);
+        loadingRef.current = false;
         setError('Authentication took too long to initialize');
       }
     }, 5000);
@@ -31,10 +33,9 @@ export const useRobustAuthState = () => {
       return {
         id: authUser.id,
         email: authUser.email,
-        // Set safe defaults for required fields
         username: authUser.user_metadata?.username || null,
         full_name: authUser.user_metadata?.full_name || null,
-        avatar: authUser.user_metadata?.avatar || null,
+        avatar: authUser.user_metadata?.avatar || '👤',
         watchlist: [],
         genre_preferences: [],
         onboarding_completed: false,
@@ -42,15 +43,42 @@ export const useRobustAuthState = () => {
       };
     };
 
-    const fetchProfileSafely = async (userId: string): Promise<Partial<UserProfile> | null> => {
+    const fetchAndMergeProfile = async (userId: string, basicUser: UserProfile): Promise<UserProfile> => {
       try {
-        console.log('🔍 Fetching profile for user:', userId);
-        const profile = await userApi.getUserProfile(userId);
-        console.log('✅ Profile fetched successfully:', profile);
-        return profile;
+        console.log('🔍 Fetching extended profile for user:', userId);
+        let profile = await userApi.getUserProfile(userId);
+        
+        // If no profile exists, create one
+        if (!profile) {
+          console.log('📝 No profile found, creating one...');
+          try {
+            profile = await userApi.createUserProfile(userId, {
+              username: basicUser.username,
+              full_name: basicUser.full_name,
+              avatar: basicUser.avatar,
+            });
+          } catch (createError) {
+            console.warn('⚠️ Failed to create profile, using basic user data:', createError);
+            return basicUser;
+          }
+        }
+        
+        // Merge profile data with basic user data
+        const fullUser: UserProfile = {
+          ...basicUser,
+          ...profile,
+          // Ensure required fields are never null/undefined
+          watchlist: profile.watchlist || [],
+          genre_preferences: profile.genre_preferences || [],
+          onboarding_completed: profile.onboarding_completed || false,
+          email_welcomed: profile.email_welcomed || false,
+        };
+        
+        console.log('🎉 Full user profile merged:', fullUser.id);
+        return fullUser;
       } catch (error) {
-        console.warn('⚠️ Profile fetch failed, using basic profile:', error);
-        return null;
+        console.warn('⚠️ Profile fetch/merge failed, using basic profile:', error);
+        return basicUser;
       }
     };
 
@@ -86,18 +114,18 @@ export const useRobustAuthState = () => {
                 setError(null);
                 console.log('👤 Basic user set:', basicUser.id);
                 
-                // Defer extended profile fetching to avoid blocking
+                // Defer extended profile fetching with proper error handling
                 setTimeout(async () => {
                   if (mountedRef.current) {
-                    const extendedProfile = await fetchProfileSafely(session.user.id);
-                    
-                    if (mountedRef.current && extendedProfile) {
-                      const fullUser: UserProfile = {
-                        ...basicUser,
-                        ...extendedProfile,
-                      };
-                      setUser(fullUser);
-                      console.log('🎉 Full user profile loaded');
+                    try {
+                      const fullUser = await fetchAndMergeProfile(session.user.id, basicUser);
+                      if (mountedRef.current) {
+                        setUser(fullUser);
+                        console.log('🎉 Full user profile loaded successfully');
+                      }
+                    } catch (profileError) {
+                      console.warn('⚠️ Profile loading failed, keeping basic user:', profileError);
+                      // Keep the basic user, don't set error
                     }
                   }
                 }, 100);
@@ -114,6 +142,7 @@ export const useRobustAuthState = () => {
             // Always clear loading state after processing
             if (mountedRef.current) {
               setLoading(false);
+              loadingRef.current = false;
               clearTimeout(safetyTimeout);
             }
           } catch (error) {
@@ -121,6 +150,7 @@ export const useRobustAuthState = () => {
             if (mountedRef.current) {
               setError(error instanceof Error ? error.message : 'Authentication error');
               setLoading(false);
+              loadingRef.current = false;
               clearTimeout(safetyTimeout);
             }
           }
@@ -137,6 +167,7 @@ export const useRobustAuthState = () => {
           if (mountedRef.current) {
             setError('Failed to check authentication status');
             setLoading(false);
+            loadingRef.current = false;
             clearTimeout(safetyTimeout);
           }
         } else if (session?.user) {
@@ -149,29 +180,31 @@ export const useRobustAuthState = () => {
             setUser(basicUser);
             setError(null);
             
-            // Defer extended profile fetching
+            // Defer extended profile fetching with proper error handling
             setTimeout(async () => {
               if (mountedRef.current) {
-                const extendedProfile = await fetchProfileSafely(session.user.id);
-                
-                if (mountedRef.current && extendedProfile) {
-                  const fullUser: UserProfile = {
-                    ...basicUser,
-                    ...extendedProfile,
-                  };
-                  setUser(fullUser);
-                  console.log('🎉 Existing user profile loaded');
+                try {
+                  const fullUser = await fetchAndMergeProfile(session.user.id, basicUser);
+                  if (mountedRef.current) {
+                    setUser(fullUser);
+                    console.log('🎉 Existing user profile loaded successfully');
+                  }
+                } catch (profileError) {
+                  console.warn('⚠️ Existing profile loading failed, keeping basic user:', profileError);
+                  // Keep the basic user, don't set error
                 }
               }
             }, 100);
             
             setLoading(false);
+            loadingRef.current = false;
             clearTimeout(safetyTimeout);
           }
         } else {
           console.log('📍 No existing session found');
           if (mountedRef.current) {
             setLoading(false);
+            loadingRef.current = false;
             clearTimeout(safetyTimeout);
           }
         }
@@ -181,6 +214,7 @@ export const useRobustAuthState = () => {
         if (mountedRef.current) {
           setError(error instanceof Error ? error.message : 'Failed to initialize authentication');
           setLoading(false);
+          loadingRef.current = false;
           clearTimeout(safetyTimeout);
         }
       }
@@ -191,6 +225,7 @@ export const useRobustAuthState = () => {
     return () => {
       console.log('🧹 Cleaning up robust auth state');
       mountedRef.current = false;
+      loadingRef.current = false;
       clearTimeout(safetyTimeout);
       if (subscription) {
         subscription.unsubscribe();
