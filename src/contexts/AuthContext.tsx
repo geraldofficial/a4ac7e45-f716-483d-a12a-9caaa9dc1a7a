@@ -1,3 +1,4 @@
+
 import React, { createContext, useState, useEffect, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from "@/components/ui/use-toast";
@@ -82,6 +83,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                   email: session.user.email,
                   ...profile,
                 });
+                console.log('👤 User profile loaded:', profile);
               }
             } catch (error) {
               console.error("❌ Error fetching user profile:", error);
@@ -90,6 +92,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                   id: session.user.id,
                   email: session.user.email,
                 });
+                console.log('👤 Basic user data set without profile');
               }
             }
           } else if (event === 'SIGNED_OUT') {
@@ -101,23 +104,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           
           // Always set loading to false after auth state change
           if (mounted) {
+            console.log('✅ Setting loading to false');
             setLoading(false);
           }
         });
 
         subscription = data.subscription;
 
-        // Check for existing session with timeout
-        const sessionTimeout = setTimeout(() => {
-          console.log('⏰ Session check timeout, setting loading to false');
-          if (mounted) {
-            setLoading(false);
-          }
-        }, 3000); // 3 second timeout
-
+        // Check for existing session
         try {
+          console.log('🔍 Checking for existing session...');
           const { data: { session }, error } = await supabase.auth.getSession();
-          clearTimeout(sessionTimeout);
           
           if (error) {
             console.error("❌ Session check failed:", error);
@@ -132,33 +129,36 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                   email: session.user.email,
                   ...profile,
                 });
+                console.log('👤 Existing user profile loaded:', profile);
               }
             } catch (error) {
-              console.error("❌ Error fetching user profile:", error);
+              console.error("❌ Error fetching existing user profile:", error);
               if (mounted) {
                 setUser({
                   id: session.user.id,
                   email: session.user.email,
                 });
+                console.log('👤 Basic existing user data set without profile');
               }
             }
           } else {
             console.log('📍 No existing session found');
           }
         } catch (sessionError) {
-          clearTimeout(sessionTimeout);
           console.error("💥 Critical session error:", sessionError);
           cleanupAuthState();
         }
         
-        // Ensure loading is set to false
+        // Ensure loading is set to false after session check
         if (mounted) {
+          console.log('✅ Session check complete, setting loading to false');
           setLoading(false);
         }
 
       } catch (error) {
         console.error("💥 Auth initialization failed:", error);
         if (mounted) {
+          console.log('❌ Auth init failed, setting loading to false');
           setLoading(false);
         }
       }
@@ -167,6 +167,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     initializeAuth();
 
     return () => {
+      console.log('🧹 Cleaning up auth context');
       mounted = false;
       if (subscription) {
         subscription.unsubscribe();
@@ -334,6 +335,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     isInWatchlist,
     completeOnboarding,
   };
+
+  console.log('🎯 AuthProvider render - loading:', loading, 'user:', user?.id || 'none');
 
   return (
     <AuthContext.Provider value={value}>

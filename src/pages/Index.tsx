@@ -15,6 +15,8 @@ const Index = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
+    console.log('🏠 Index: useEffect triggered - loading:', loading, 'user:', user?.id || 'none');
+    
     // Only redirect if we're sure about the auth state
     if (!loading) {
       console.log('🏠 Index: Auth state resolved, user:', user?.id || 'none');
@@ -25,6 +27,8 @@ const Index = () => {
       }
     }
   }, [user, loading, navigate]);
+
+  console.log('🏠 Index: Render - loading:', loading, 'user:', user?.id || 'none');
 
   // Show loading state while auth is initializing
   if (loading) {
@@ -39,7 +43,7 @@ const Index = () => {
     );
   }
 
-  console.log('🎬 Index: Rendering main content');
+  console.log('🎬 Index: Rendering main content for user:', user?.id || 'anonymous');
 
   return (
     <div className="min-h-screen bg-background dark overflow-x-hidden">
