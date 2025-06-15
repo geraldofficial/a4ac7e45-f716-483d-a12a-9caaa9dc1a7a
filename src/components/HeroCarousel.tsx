@@ -55,14 +55,14 @@ export const HeroCarousel = () => {
 
   if (loading) {
     return (
-      <section className="relative w-full h-screen flex items-center justify-center bg-background">
+      <section className="relative w-full h-[100dvh] flex items-center justify-center bg-background">
         <div className="text-foreground text-xl">Loading...</div>
       </section>
     );
   }
 
   return (
-    <section className="relative w-full h-screen overflow-hidden">
+    <section className="relative w-full h-[100dvh] overflow-hidden touch-pan-y">
       <Carousel className="w-full h-full" opts={{ align: "start", loop: true }}>
         <CarouselContent className="h-full m-0">
           {movies.map((movie) => {
@@ -73,7 +73,7 @@ export const HeroCarousel = () => {
 
             return (
               <CarouselItem key={movie.id} className="h-full p-0 basis-full">
-                <div className="relative w-full h-screen">
+                <div className="relative w-full h-[100dvh]">
                   <div 
                     className="absolute inset-0 bg-cover bg-center bg-no-repeat"
                     style={{ backgroundImage: `url(${backdropUrl})` }}
@@ -82,64 +82,66 @@ export const HeroCarousel = () => {
                     <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
                   </div>
                   
-                  <div className="relative z-10 container mx-auto px-4 sm:px-6 lg:px-8 h-full flex items-center">
-                    <div className="max-w-4xl text-white pt-16 sm:pt-20">
-                      <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold mb-4 sm:mb-6 leading-tight animate-fade-in">
-                        {title}
-                      </h1>
-                      
-                      <div className="flex flex-wrap items-center gap-3 sm:gap-4 lg:gap-6 mb-4 sm:mb-6">
-                        <div className="flex items-center gap-2">
-                          <Star className="h-5 w-5 sm:h-6 sm:w-6 text-yellow-400 fill-current" />
-                          <span className="text-lg sm:text-xl font-semibold">{movie.vote_average.toFixed(1)}</span>
+                  <div className="relative z-10 h-full flex items-center">
+                    <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                      <div className="max-w-4xl text-white pt-16 sm:pt-20">
+                        <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold mb-4 sm:mb-6 leading-tight animate-fade-in">
+                          {title}
+                        </h1>
+                        
+                        <div className="flex flex-wrap items-center gap-3 sm:gap-4 lg:gap-6 mb-4 sm:mb-6">
+                          <div className="flex items-center gap-2">
+                            <Star className="h-5 w-5 sm:h-6 sm:w-6 text-yellow-400 fill-current" />
+                            <span className="text-lg sm:text-xl font-semibold">{movie.vote_average.toFixed(1)}</span>
+                          </div>
+                          
+                          {(movie.release_date || movie.first_air_date) && (
+                            <span className="text-base sm:text-lg font-medium">
+                              {new Date(movie.release_date || movie.first_air_date || '').getFullYear()}
+                            </span>
+                          )}
+                          
+                          <span className="px-2 sm:px-3 py-1 bg-primary/20 backdrop-blur-sm rounded-full text-xs sm:text-sm font-medium border border-primary/30">
+                            {movie.title ? 'Movie' : 'TV Series'}
+                          </span>
                         </div>
                         
-                        {(movie.release_date || movie.first_air_date) && (
-                          <span className="text-base sm:text-lg font-medium">
-                            {new Date(movie.release_date || movie.first_air_date || '').getFullYear()}
-                          </span>
-                        )}
+                        <p className="text-gray-200 text-sm sm:text-base lg:text-lg leading-relaxed mb-6 sm:mb-8 max-w-2xl line-clamp-3">
+                          {movie.overview}
+                        </p>
                         
-                        <span className="px-2 sm:px-3 py-1 bg-primary/20 backdrop-blur-sm rounded-full text-xs sm:text-sm font-medium border border-primary/30">
-                          {movie.title ? 'Movie' : 'TV Series'}
-                        </span>
-                      </div>
-                      
-                      <p className="text-gray-200 text-sm sm:text-base lg:text-lg leading-relaxed mb-6 sm:mb-8 max-w-2xl line-clamp-3">
-                        {movie.overview}
-                      </p>
-                      
-                      <div className="flex flex-col sm:flex-row flex-wrap gap-3 sm:gap-4 animate-fade-in">
-                        <Button 
-                          onClick={() => handleWatchClick(movie)}
-                          size="lg"
-                          className="bg-primary hover:bg-primary/90 text-primary-foreground px-6 sm:px-8 py-2 sm:py-3 text-base sm:text-lg font-semibold w-full sm:w-auto"
-                        >
-                          <Play className="h-5 w-5 sm:h-6 sm:w-6 mr-2 fill-current" />
-                          Watch Now
-                        </Button>
-                        
-                        <Button
-                          onClick={() => handleWatchClick(movie)}
-                          variant="outline"
-                          size="lg"
-                          className="border-white/30 text-white hover:bg-white/10 backdrop-blur-sm px-6 sm:px-8 py-2 sm:py-3 text-base sm:text-lg font-semibold w-full sm:w-auto"
-                        >
-                          <Info className="h-5 w-5 sm:h-6 sm:w-6 mr-2" />
-                          More Info
-                        </Button>
-                        
-                        {user && !isInWatchlist(movie.id) && (
+                        <div className="flex flex-col sm:flex-row flex-wrap gap-3 sm:gap-4 animate-fade-in">
+                          <Button 
+                            onClick={() => handleWatchClick(movie)}
+                            size="lg"
+                            className="bg-primary hover:bg-primary/90 text-primary-foreground px-6 sm:px-8 py-2 sm:py-3 text-base sm:text-lg font-semibold w-full sm:w-auto"
+                          >
+                            <Play className="h-5 w-5 sm:h-6 sm:w-6 mr-2 fill-current" />
+                            Watch Now
+                          </Button>
+                          
                           <Button
-                            onClick={() => handleWatchlistClick(movie)}
+                            onClick={() => handleWatchClick(movie)}
                             variant="outline"
                             size="lg"
                             className="border-white/30 text-white hover:bg-white/10 backdrop-blur-sm px-6 sm:px-8 py-2 sm:py-3 text-base sm:text-lg font-semibold w-full sm:w-auto"
                           >
-                            <Plus className="h-5 w-5 sm:h-6 sm:w-6 mr-2" />
-                            My List
+                            <Info className="h-5 w-5 sm:h-6 sm:w-6 mr-2" />
+                            More Info
                           </Button>
-                        )}
+                          
+                          {user && !isInWatchlist(movie.id) && (
+                            <Button
+                              onClick={() => handleWatchlistClick(movie)}
+                              variant="outline"
+                              size="lg"
+                              className="border-white/30 text-white hover:bg-white/10 backdrop-blur-sm px-6 sm:px-8 py-2 sm:py-3 text-base sm:text-lg font-semibold w-full sm:w-auto"
+                            >
+                              <Plus className="h-5 w-5 sm:h-6 sm:w-6 mr-2" />
+                              My List
+                            </Button>
+                          )}
+                        </div>
                       </div>
                     </div>
                   </div>
