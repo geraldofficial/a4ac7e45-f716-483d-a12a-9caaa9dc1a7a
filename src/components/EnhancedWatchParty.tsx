@@ -1,11 +1,12 @@
 
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Card } from '@/components/ui/card';
-import { Users, MessageCircle, Share, X, Copy, Check, Plus, Link, Send, UserCircle } from 'lucide-react';
 import { watchPartyService, WatchPartySession, WatchPartyMessage } from '@/services/watchParty';
 import { useToast } from '@/hooks/use-toast';
+import { WatchPartySetup } from './watchparty/WatchPartySetup';
+import { WatchPartyHeader } from './watchparty/WatchPartyHeader';
+import { WatchPartyParticipants } from './watchparty/WatchPartyParticipants';
+import { WatchPartyChat } from './watchparty/WatchPartyChat';
 
 interface EnhancedWatchPartyProps {
   movieId: number;
@@ -34,7 +35,6 @@ export const EnhancedWatchParty: React.FC<EnhancedWatchPartyProps> = ({
   useEffect(() => {
     if (session) {
       loadMessages();
-      // Set up polling for real-time updates
       const interval = setInterval(loadMessages, 2000);
       return () => clearInterval(interval);
     }
@@ -55,10 +55,7 @@ export const EnhancedWatchParty: React.FC<EnhancedWatchPartyProps> = ({
     
     setIsCreating(true);
     try {
-      console.log('Creating watch party...');
       const sessionId = await watchPartyService.createSession(movieId, movieTitle, movieType);
-      console.log('Session created:', sessionId);
-      
       const newSession = await watchPartyService.joinSession(sessionId);
       
       if (newSession) {
@@ -68,8 +65,6 @@ export const EnhancedWatchParty: React.FC<EnhancedWatchPartyProps> = ({
           title: "Watch party created!",
           description: `Party code: ${sessionId}`,
         });
-      } else {
-        throw new Error('Failed to join created session');
       }
     } catch (error) {
       console.error('Error creating party:', error);
@@ -90,8 +85,6 @@ export const EnhancedWatchParty: React.FC<EnhancedWatchPartyProps> = ({
     const cleanCode = code.trim().toUpperCase();
     
     try {
-      console.log('Attempting to join party:', cleanCode);
-      
       if (!watchPartyService.sessionExists(cleanCode)) {
         toast({
           title: "Party not found",
@@ -108,12 +101,6 @@ export const EnhancedWatchParty: React.FC<EnhancedWatchPartyProps> = ({
         toast({
           title: "Joined watch party!",
           description: `Now watching ${joinedSession.movie_title} with friends.`,
-        });
-      } else {
-        toast({
-          title: "Error",
-          description: "Failed to join the party. Please try again.",
-          variant: "destructive",
         });
       }
     } catch (error) {
@@ -202,252 +189,47 @@ export const EnhancedWatchParty: React.FC<EnhancedWatchPartyProps> = ({
     }
   };
 
-  // Initial Party Creation/Join Screen
   if (!session) {
     return (
-      <div className="fixed inset-0 bg-black/90 flex items-center justify-center z-50 p-4">
-        <Card className="w-full max-w-md bg-gray-900 border-gray-700 p-6">
-          <div className="flex items-center justify-between mb-6">
-            <div className="flex items-center gap-3">
-              <div className="w-12 h-12 bg-gradient-to-br from-red-600 to-red-700 rounded-xl flex items-center justify-center shadow-lg">
-                <Users className="h-6 w-6 text-white" />
-              </div>
-              <div>
-                <h3 className="text-xl font-bold text-white">Watch Party</h3>
-                <p className="text-sm text-gray-400 truncate max-w-48">{movieTitle}</p>
-              </div>
-            </div>
-            <Button variant="ghost" size="sm" onClick={onClose} className="text-gray-400 hover:text-white rounded-xl">
-              <X className="h-5 w-5" />
-            </Button>
-          </div>
-          
-          <div className="space-y-6">
-            <Button 
-              onClick={createParty}
-              disabled={isCreating}
-              className="w-full bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white h-14 text-base font-semibold rounded-xl shadow-lg"
-            >
-              {isCreating ? (
-                <div className="flex items-center gap-3">
-                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                  Creating Party...
-                </div>
-              ) : (
-                <>
-                  <Plus className="h-5 w-5 mr-2" />
-                  Create New Watch Party
-                </>
-              )}
-            </Button>
-            
-            <div className="relative">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-gray-700"></div>
-              </div>
-              <div className="relative flex justify-center text-sm">
-                <span className="bg-gray-900 px-4 text-gray-400 font-medium">or join existing party</span>
-              </div>
-            </div>
-            
-            <div className="space-y-4">
-              <Input
-                placeholder="Enter party code (e.g. ABC123)"
-                value={partyCode}
-                onChange={(e) => setPartyCode(e.target.value.toUpperCase())}
-                onKeyPress={(e) => e.key === 'Enter' && joinParty(partyCode)}
-                className="bg-gray-800 border-gray-600 text-white placeholder-gray-400 h-14 text-base text-center font-mono tracking-wider rounded-xl"
-                maxLength={6}
-              />
-              <Button 
-                variant="outline" 
-                className="w-full border-gray-600 text-gray-300 hover:text-white hover:bg-gray-800 h-14 text-base font-semibold rounded-xl"
-                onClick={() => joinParty(partyCode)}
-                disabled={!partyCode.trim() || isJoining}
-              >
-                {isJoining ? (
-                  <div className="flex items-center gap-3">
-                    <div className="w-5 h-5 border-2 border-gray-300 border-t-transparent rounded-full animate-spin" />
-                    Joining Party...
-                  </div>
-                ) : (
-                  'Join Party'
-                )}
-              </Button>
-            </div>
-          </div>
-        </Card>
-      </div>
+      <WatchPartySetup
+        movieTitle={movieTitle}
+        partyCode={partyCode}
+        setPartyCode={setPartyCode}
+        isCreating={isCreating}
+        isJoining={isJoining}
+        onCreateParty={createParty}
+        onJoinParty={joinParty}
+        onClose={onClose}
+      />
     );
   }
 
-  // Active Party Interface
   return (
     <div className="fixed inset-0 z-50 bg-black/95 md:bg-transparent md:bottom-4 md:right-4 md:top-auto md:left-auto md:w-96 md:max-h-[85vh]">
       <div className="h-full md:h-auto bg-gray-900 md:rounded-2xl md:shadow-2xl border-0 md:border md:border-gray-700 flex flex-col overflow-hidden">
         
-        {/* Header */}
-        <div className="p-6 md:p-4 border-b border-gray-700 bg-gradient-to-r from-red-900/30 to-gray-800 md:rounded-t-2xl">
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-3">
-              <div className="w-12 h-12 md:w-10 md:h-10 bg-gradient-to-br from-red-600 to-red-700 rounded-xl md:rounded-full flex items-center justify-center shadow-lg">
-                <Users className="h-6 w-6 md:h-5 md:w-5 text-white" />
-              </div>
-              <div>
-                <h3 className="text-xl md:text-base font-bold text-white">Watch Party</h3>
-                <div className="flex items-center gap-2 mt-1">
-                  <span className="text-sm md:text-xs bg-green-500/20 text-green-400 px-3 py-1 md:px-2 rounded-full font-semibold border border-green-500/30">
-                    {session.participants.length} watching
-                  </span>
-                  {isHost && (
-                    <span className="text-sm md:text-xs bg-yellow-500/20 text-yellow-400 px-3 py-1 md:px-2 rounded-full font-semibold border border-yellow-500/30">
-                      Host
-                    </span>
-                  )}
-                </div>
-              </div>
-            </div>
-            
-            <div className="flex gap-2">
-              <Button 
-                variant="ghost" 
-                size="sm" 
-                onClick={() => setShowChat(!showChat)}
-                className={`text-gray-300 hover:text-white hover:bg-white/10 h-12 w-12 md:h-8 md:w-8 p-0 rounded-xl md:rounded-full transition-all ${showChat ? 'bg-white/10 text-white' : ''}`}
-              >
-                <MessageCircle className="h-6 w-6 md:h-4 md:w-4" />
-              </Button>
-              <Button 
-                variant="ghost" 
-                size="sm" 
-                onClick={shareParty}
-                className="text-gray-300 hover:text-white hover:bg-white/10 h-12 w-12 md:h-8 md:w-8 p-0 rounded-xl md:rounded-full transition-all"
-              >
-                <Share className="h-6 w-6 md:h-4 md:w-4" />
-              </Button>
-              <Button 
-                variant="ghost" 
-                size="sm" 
-                onClick={onClose}
-                className="text-gray-300 hover:text-white hover:bg-white/10 h-12 w-12 md:h-8 md:w-8 p-0 rounded-xl md:rounded-full transition-all"
-              >
-                <X className="h-6 w-6 md:h-4 md:w-4" />
-              </Button>
-            </div>
-          </div>
+        <WatchPartyHeader
+          session={session}
+          isHost={isHost}
+          showChat={showChat}
+          copied={copied}
+          onToggleChat={() => setShowChat(!showChat)}
+          onShare={shareParty}
+          onCopyCode={copyPartyCode}
+          onClose={onClose}
+        />
 
-          {/* Party Code Section */}
-          <div className="bg-gray-800/50 rounded-xl p-4 md:p-3 border border-gray-600/30 backdrop-blur-sm">
-            <div className="flex items-center justify-between">
-              <div className="flex-1">
-                <div className="flex items-center gap-2 mb-2">
-                  <Link className="h-4 w-4 text-gray-400" />
-                  <span className="text-sm md:text-xs text-gray-400 font-medium">Party Code</span>
-                </div>
-                <code className="text-2xl md:text-lg font-mono font-bold text-white bg-gray-700/50 px-4 py-3 md:px-3 md:py-2 rounded-lg block border border-gray-600/30 tracking-wider">
-                  {session.id}
-                </code>
-              </div>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={copyPartyCode}
-                className="text-gray-300 hover:text-white hover:bg-gray-600/50 h-14 w-14 md:h-10 md:w-10 p-0 ml-4 rounded-xl transition-all"
-              >
-                {copied ? <Check className="h-6 w-6 md:h-5 md:w-5 text-green-400" /> : <Copy className="h-6 w-6 md:h-5 md:w-5" />}
-              </Button>
-            </div>
-          </div>
-        </div>
+        <WatchPartyParticipants participants={session.participants} />
 
-        {/* Participants Section */}
-        <div className="p-4 md:p-3 border-b border-gray-700/50">
-          <h4 className="text-lg md:text-sm text-white mb-3 md:mb-2 font-semibold flex items-center gap-2">
-            <Users className="h-5 w-5 md:h-4 md:w-4 text-red-400" />
-            Watching now
-          </h4>
-          <div className="grid grid-cols-2 md:flex md:flex-wrap gap-3 md:gap-2">
-            {session.participants.slice(0, 6).map((participant) => (
-              <div
-                key={participant.user_id}
-                className="flex items-center gap-3 md:gap-2 bg-gray-800/50 rounded-xl md:rounded-full px-4 py-3 md:px-3 md:py-2 border border-gray-600/30 backdrop-blur-sm"
-                title={participant.username}
-              >
-                <div className="w-8 h-8 md:w-6 md:h-6 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-semibold text-sm md:text-xs">
-                  <UserCircle className="h-4 w-4 md:h-3 md:w-3" />
-                </div>
-                <span className="text-sm md:text-xs text-gray-200 truncate font-medium">
-                  {participant.username}
-                </span>
-              </div>
-            ))}
-            {session.participants.length > 6 && (
-              <div className="bg-gray-800/50 rounded-xl md:rounded-full px-4 py-3 md:px-3 md:py-2 flex items-center justify-center border border-gray-600/30">
-                <span className="text-sm md:text-xs text-gray-400 font-semibold">
-                  +{session.participants.length - 6} more
-                </span>
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Chat Section */}
         {showChat && (
-          <div className="flex-1 flex flex-col border-b border-gray-700/50 md:border-b-0">
-            <div className="flex-1 overflow-y-auto p-4 md:p-3 space-y-4 md:space-y-3 max-h-80 md:max-h-40">
-              {messages.length === 0 ? (
-                <div className="text-center text-gray-500 py-12 md:py-6">
-                  <MessageCircle className="h-16 w-16 md:h-10 md:w-10 text-gray-600 mx-auto mb-4 md:mb-3" />
-                  <p className="text-lg md:text-sm font-semibold text-gray-400">No messages yet</p>
-                  <p className="text-sm md:text-xs text-gray-600 mt-2 md:mt-1">
-                    Start the conversation!
-                  </p>
-                </div>
-              ) : (
-                messages.map((message) => (
-                  <div key={message.id} className="bg-gray-800/30 rounded-xl p-4 md:p-3 border border-gray-600/20 backdrop-blur-sm">
-                    <div className="flex items-start gap-3 md:gap-2">
-                      <div className="w-8 h-8 md:w-6 md:h-6 bg-gradient-to-br from-green-500 to-blue-600 rounded-full flex items-center justify-center text-white font-semibold text-sm md:text-xs flex-shrink-0">
-                        <UserCircle className="h-4 w-4 md:h-3 md:w-3" />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <span className="font-semibold text-red-400 text-sm md:text-xs block mb-1">
-                          {message.username}
-                        </span>
-                        <p className="text-gray-200 text-base md:text-xs leading-relaxed break-words">
-                          {message.message}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                ))
-              )}
-            </div>
-            
-            {/* Chat Input */}
-            <div className="p-4 md:p-3 bg-gray-800/30 md:bg-transparent border-t border-gray-700/50 md:border-t-0">
-              <div className="flex gap-3 md:gap-2">
-                <Input
-                  placeholder="Type a message..."
-                  value={newMessage}
-                  onChange={(e) => setNewMessage(e.target.value)}
-                  onKeyPress={(e) => e.key === 'Enter' && sendMessage()}
-                  className="bg-gray-700/50 border-gray-600/50 text-white text-base md:text-sm h-14 md:h-9 rounded-xl backdrop-blur-sm"
-                />
-                <Button 
-                  size="sm" 
-                  onClick={sendMessage}
-                  disabled={!newMessage.trim()}
-                  className="bg-red-600 hover:bg-red-700 text-white h-14 md:h-9 px-6 md:px-4 rounded-xl font-semibold"
-                >
-                  <Send className="h-4 w-4" />
-                </Button>
-              </div>
-            </div>
-          </div>
+          <WatchPartyChat
+            messages={messages}
+            newMessage={newMessage}
+            setNewMessage={setNewMessage}
+            onSendMessage={sendMessage}
+          />
         )}
 
-        {/* Mobile Footer */}
         {!showChat && (
           <div className="p-4 md:hidden bg-gray-800/30">
             <Button
