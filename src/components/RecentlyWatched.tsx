@@ -112,9 +112,9 @@ export const RecentlyWatched: React.FC<RecentlyWatchedProps> = ({ profile }) => 
         </div>
       </div>
       
-      {/* Mobile: Optimized grid layout, Desktop: Horizontal scroll */}
+      {/* Mobile: Tight grid layout with minimal spacing, Desktop: Horizontal scroll */}
       <div className="block md:hidden">
-        <div className="grid grid-cols-2 gap-3 px-4">
+        <div className="grid grid-cols-2 gap-2 px-3">
           {recentMovies.slice(0, 6).map((movie) => (
             <MovieCard key={movie.id} movie={movie} />
           ))}
