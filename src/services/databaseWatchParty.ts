@@ -13,6 +13,7 @@ export interface DatabaseWatchPartySession {
   created_at: string;
   last_activity: string;
   expires_at: string;
+  current_time: number; // Add this property for compatibility
   participants: DatabaseWatchPartyParticipant[];
 }
 
@@ -245,7 +246,11 @@ class DatabaseWatchPartyService {
       return [];
     }
 
-    return data || [];
+    // Type cast to ensure proper typing
+    return (data || []).map(msg => ({
+      ...msg,
+      type: msg.type as 'message' | 'system' | 'sync'
+    }));
   }
 
   async getSession(sessionId: string): Promise<DatabaseWatchPartySession | null> {
@@ -273,9 +278,18 @@ class DatabaseWatchPartyService {
       return null;
     }
 
+    // Type cast and add current_time for compatibility
     return {
       ...session,
-      participants: participants || []
+      movie_type: session.movie_type as 'movie' | 'tv',
+      current_time: session.playback_time || 0,
+      participants: (participants || []).map(p => ({
+        ...p,
+        avatar: p.avatar || '👤',
+        is_active: p.is_active || false,
+        joined_at: p.joined_at || new Date().toISOString(),
+        last_seen: p.last_seen || new Date().toISOString()
+      }))
     };
   }
 
