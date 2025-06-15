@@ -44,26 +44,28 @@ const Index = () => {
         <Navbar />
       </SafeErrorBoundary>
       
-      <main className="relative pt-0 md:pt-24 pb-24 md:pb-8">
+      <main className="relative">
         <SafeErrorBoundary componentName="Hero Section">
           <HeroSection />
         </SafeErrorBoundary>
         
-        {user && (
-          <SafeErrorBoundary componentName="Continue Watching">
-            <ContinueWatching />
+        <div className="pb-24 md:pb-8">
+          {user && (
+            <SafeErrorBoundary componentName="Continue Watching">
+              <ContinueWatching />
+            </SafeErrorBoundary>
+          )}
+          
+          {user && (
+            <SafeErrorBoundary componentName="Recently Watched">
+              <RecentlyWatched />
+            </SafeErrorBoundary>
+          )}
+          
+          <SafeErrorBoundary componentName="Movie Section">
+            <MovieSection />
           </SafeErrorBoundary>
-        )}
-        
-        {user && (
-          <SafeErrorBoundary componentName="Recently Watched">
-            <RecentlyWatched />
-          </SafeErrorBoundary>
-        )}
-        
-        <SafeErrorBoundary componentName="Movie Section">
-          <MovieSection />
-        </SafeErrorBoundary>
+        </div>
       </main>
       
       <SafeErrorBoundary componentName="Footer">

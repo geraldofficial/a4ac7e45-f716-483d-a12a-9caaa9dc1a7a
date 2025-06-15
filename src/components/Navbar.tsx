@@ -1,256 +1,185 @@
 
-import React, { useState, useRef } from 'react';
-import { Search, Menu, X, User, LogOut } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState } from 'react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { 
+  Search, 
+  Menu, 
+  X, 
+  User,
+  LogOut,
+  Settings
+} from 'lucide-react';
 import { FlickPickLogo } from './FlickPickLogo';
-import { SearchSuggestions } from './SearchSuggestions';
-import { PWAInstallButton } from './PWAInstallButton';
 import { useAuth } from '@/contexts/AuthContext';
+import { ProfileSwitcher } from './ProfileSwitcher';
 
 export const Navbar = () => {
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const location = useLocation();
   const navigate = useNavigate();
   const { user, signOut } = useAuth();
-  const [searchQuery, setSearchQuery] = useState('');
-  const [isSearchOpen, setIsSearchOpen] = useState(false);
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const searchInputRef = useRef<HTMLInputElement>(null);
 
-  const handleLogoClick = () => {
-    navigate('/');
-  };
+  const navigation = [
+    { name: 'Home', href: '/' },
+    { name: 'Browse', href: '/browse' },
+    { name: 'Trending', href: '/trending' },
+    { name: 'Top Rated', href: '/top-rated' },
+  ];
 
   const handleSignOut = async () => {
-    try {
-      await signOut();
-      navigate('/');
-    } catch (error) {
-      console.error('Error signing out:', error);
-    }
+    await signOut();
+    setIsMenuOpen(false);
   };
 
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (searchQuery.trim()) {
-      navigate(`/search?q=${encodeURIComponent(searchQuery.trim())}`);
-      setSearchQuery('');
-      setIsSearchOpen(false);
-    }
+  const handleProfileClick = () => {
+    navigate('/profile');
+    setIsMenuOpen(false);
   };
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-3xl border-b border-border/50">
-      <div className="container mx-auto px-3 md:px-4">
-        <div className="flex items-center justify-between h-14 md:h-16">
+    <nav className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-lg border-b border-border/20">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex items-center justify-between h-16 md:h-20">
           {/* Logo */}
-          <div className="flex items-center">
-            <div onClick={handleLogoClick} className="cursor-pointer">
-              <FlickPickLogo />
-            </div>
-          </div>
+          <Link to="/" className="flex items-center space-x-2">
+            <FlickPickLogo className="h-8 w-8 md:h-10 md:w-10" />
+            <span className="text-xl md:text-2xl font-bold text-foreground">FlickPick</span>
+          </Link>
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-8">
-            <button 
-              onClick={() => navigate('/')}
-              className="text-foreground hover:text-primary transition-colors font-medium"
-            >
-              Home
-            </button>
-            <button 
-              onClick={() => navigate('/browse')}
-              className="text-foreground hover:text-primary transition-colors font-medium"
-            >
-              Browse
-            </button>
-            <button 
-              onClick={() => navigate('/trending')}
-              className="text-foreground hover:text-primary transition-colors font-medium"
-            >
-              Trending
-            </button>
-            <button 
-              onClick={() => navigate('/top-rated')}
-              className="text-foreground hover:text-primary transition-colors font-medium"
-            >
-              Top Rated
-            </button>
-            <button 
-              onClick={() => navigate('/support')}
-              className="text-foreground hover:text-primary transition-colors font-medium"
-            >
-              Support
-            </button>
-            {user && (
-              <button 
-                onClick={() => navigate('/history')}
-                className="text-foreground hover:text-primary transition-colors font-medium"
+            {navigation.map((item) => (
+              <Link
+                key={item.name}
+                to={item.href}
+                className={`text-sm font-medium transition-colors hover:text-primary ${
+                  location.pathname === item.href 
+                    ? 'text-primary' 
+                    : 'text-muted-foreground'
+                }`}
               >
-                History
-              </button>
-            )}
+                {item.name}
+              </Link>
+            ))}
           </div>
 
-          {/* Search & User Controls */}
-          <div className="flex items-center space-x-2 md:space-x-4">
-            {/* Desktop Search */}
-            <div className="hidden md:block relative">
-              <form onSubmit={handleSearch} className="relative">
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                  <input
-                    ref={searchInputRef}
-                    type="text"
-                    placeholder="Search movies, TV shows..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-64 pl-10 pr-4 py-2 bg-background/60 backdrop-blur-xl border border-border/50 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary/50 transition-all"
-                  />
-                </div>
-              </form>
-              {searchQuery && (
-                <SearchSuggestions
-                  query={searchQuery}
-                  onSelect={(item) => {
-                    navigate(`/${item.media_type}/${item.id}`);
-                    setSearchQuery('');
-                  }}
-                  onClose={() => setSearchQuery('')}
-                />
-              )}
-            </div>
-
-            {/* PWA Install Button */}
-            <PWAInstallButton />
-
-            {/* Mobile Search Button */}
+          {/* Desktop Actions */}
+          <div className="hidden md:flex items-center space-x-4">
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => setIsSearchOpen(true)}
-              className="md:hidden p-2 hover:bg-background/60"
+              onClick={() => navigate('/search')}
+              className="text-muted-foreground hover:text-foreground"
             >
               <Search className="h-5 w-5" />
             </Button>
 
-            {/* User Menu or Auth Buttons */}
             {user ? (
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" className="relative h-8 w-8 rounded-full">
-                    <Avatar className="h-8 w-8">
-                      <AvatarImage src={user.avatar || user.avatar_url || user.image} alt={user.name || user.username || 'User'} />
-                      <AvatarFallback>{(user.name || user.username || 'U').charAt(0)}</AvatarFallback>
-                    </Avatar>
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent className="w-56 bg-background/95 backdrop-blur-3xl border-border/50" align="end">
-                  <DropdownMenuItem onClick={() => navigate('/profile')} className="cursor-pointer">
-                    <User className="mr-2 h-4 w-4" />
-                    Profile
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => navigate('/watchlist')} className="cursor-pointer">
-                    <User className="mr-2 h-4 w-4" />
-                    Watchlist
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={handleSignOut} className="cursor-pointer">
-                    <LogOut className="mr-2 h-4 w-4" />
-                    Sign out
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            ) : (
-              <div className="hidden md:flex items-center space-x-2">
+              <>
+                <ProfileSwitcher />
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={() => navigate('/auth')}
-                  className="bg-background/50 backdrop-blur-xl border border-border/50 hover:bg-background/70"
+                  onClick={handleProfileClick}
+                  className="text-muted-foreground hover:text-foreground"
                 >
-                  Sign In
+                  <User className="h-5 w-5" />
                 </Button>
-              </div>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleSignOut}
+                  className="text-muted-foreground hover:text-foreground"
+                >
+                  <LogOut className="h-5 w-5" />
+                </Button>
+              </>
+            ) : (
+              <Button onClick={() => navigate('/auth')} size="sm">
+                Sign In
+              </Button>
             )}
+          </div>
 
-            {/* Mobile Menu Button */}
+          {/* Mobile menu button */}
+          <div className="md:hidden">
             <Button
               variant="ghost"
               size="sm"
               onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className="md:hidden p-2 hover:bg-background/60"
+              className="text-muted-foreground hover:text-foreground"
             >
-              {isMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+              {isMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
             </Button>
           </div>
         </div>
 
-        {/* Mobile Navigation Menu - Hidden since we'll use bottom nav */}
+        {/* Mobile Navigation */}
         {isMenuOpen && (
-          <div className="md:hidden border-t border-border/50 py-4">
+          <div className="md:hidden py-4 border-t border-border/20 bg-background/95 backdrop-blur-lg">
             <div className="flex flex-col space-y-4">
-              <button 
-                onClick={() => { navigate('/browse'); setIsMenuOpen(false); }}
-                className="text-left text-foreground hover:text-primary transition-colors font-medium"
-              >
-                Browse
-              </button>
-              
-              {!user && (
-                <div className="pt-2 border-t border-border/50">
-                  <Button
-                    onClick={() => { navigate('/auth'); setIsMenuOpen(false); }}
-                    className="w-full"
+              {navigation.map((item) => (
+                <Link
+                  key={item.name}
+                  to={item.href}
+                  onClick={() => setIsMenuOpen(false)}
+                  className={`text-base font-medium transition-colors hover:text-primary px-2 py-1 ${
+                    location.pathname === item.href 
+                      ? 'text-primary' 
+                      : 'text-muted-foreground'
+                  }`}
+                >
+                  {item.name}
+                </Link>
+              ))}
+
+              <div className="flex items-center justify-between px-2 py-2 border-t border-border/20 mt-4 pt-4">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => {
+                    navigate('/search');
+                    setIsMenuOpen(false);
+                  }}
+                  className="text-muted-foreground hover:text-foreground"
+                >
+                  <Search className="h-5 w-5 mr-2" />
+                  Search
+                </Button>
+
+                {user ? (
+                  <div className="flex items-center space-x-2">
+                    <ProfileSwitcher />
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={handleProfileClick}
+                      className="text-muted-foreground hover:text-foreground"
+                    >
+                      <User className="h-5 w-5" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={handleSignOut}
+                      className="text-muted-foreground hover:text-foreground"
+                    >
+                      <LogOut className="h-5 w-5" />
+                    </Button>
+                  </div>
+                ) : (
+                  <Button 
+                    onClick={() => {
+                      navigate('/auth');
+                      setIsMenuOpen(false);
+                    }} 
+                    size="sm"
                   >
                     Sign In
                   </Button>
-                </div>
-              )}
-            </div>
-          </div>
-        )}
-
-        {/* Mobile Search Overlay */}
-        {isSearchOpen && (
-          <div className="md:hidden fixed inset-0 bg-background/95 backdrop-blur-3xl z-50 flex flex-col">
-            <div className="flex items-center justify-between p-4 border-b border-border/50">
-              <h3 className="text-lg font-semibold text-foreground">Search</h3>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setIsSearchOpen(false)}
-                className="p-2"
-              >
-                <X className="h-5 w-5" />
-              </Button>
-            </div>
-            <div className="p-4 flex-1">
-              <form onSubmit={handleSearch} className="relative">
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-                  <input
-                    type="text"
-                    placeholder="Search movies, TV shows..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full pl-10 pr-4 py-3 bg-background/60 backdrop-blur-xl border border-border/50 rounded-xl text-base focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary/50 transition-all"
-                    autoFocus
-                  />
-                </div>
-              </form>
-              {searchQuery && (
-                <SearchSuggestions
-                  query={searchQuery}
-                  onSelect={(item) => {
-                    navigate(`/${item.media_type}/${item.id}`);
-                    setSearchQuery('');
-                    setIsSearchOpen(false);
-                  }}
-                  onClose={() => setSearchQuery('')}
-                  isMobile={true}
-                />
-              )}
+                )}
+              </div>
             </div>
           </div>
         )}

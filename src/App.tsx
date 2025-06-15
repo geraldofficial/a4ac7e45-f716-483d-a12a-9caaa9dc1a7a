@@ -27,6 +27,7 @@ import Terms from "./pages/Terms";
 import NotFound from "./pages/NotFound";
 import DetailPage from "./pages/DetailPage";
 import Profile from "./pages/Profile";
+import Profiles from "./pages/Profiles";
 import History from "./pages/History";
 import Support from "./pages/Support";
 
@@ -107,6 +108,7 @@ const App: React.FC = () => {
                   <Route path="/trending" element={<SafeRoute componentName="Trending"><Trending /></SafeRoute>} />
                   <Route path="/top-rated" element={<SafeRoute componentName="TopRated"><TopRated /></SafeRoute>} />
                   <Route path="/profile" element={<SafeRoute componentName="Profile"><Profile /></SafeRoute>} />
+                  <Route path="/profiles" element={<SafeRoute componentName="Profiles"><Profiles /></SafeRoute>} />
                   <Route path="/history" element={<SafeRoute componentName="History"><History /></SafeRoute>} />
                   <Route path="/support" element={<SafeRoute componentName="Support"><Support /></SafeRoute>} />
                   <Route path="/help" element={<SafeRoute componentName="Help"><Help /></SafeRoute>} />
