@@ -29,7 +29,7 @@ export const ContentRecommendations: React.FC<ContentRecommendationsProps> = ({
   // Get trending content
   const { data: trending } = useQuery({
     queryKey: ['trending-all'],
-    queryFn: () => tmdbApi.getTrending('all', 'day'),
+    queryFn: () => tmdbApi.getTrending(),
     staleTime: 1000 * 60 * 30 // 30 minutes
   });
 
@@ -86,7 +86,7 @@ export const ContentRecommendations: React.FC<ContentRecommendationsProps> = ({
       description: "What everyone's watching today",
       icon: <TrendingUp className="h-5 w-5" />,
       badge: "Hot",
-      items: trending?.results?.slice(0, 10) || []
+      items: trending?.slice(0, 10) || []
     },
     {
       title: "Popular Movies",
@@ -98,7 +98,7 @@ export const ContentRecommendations: React.FC<ContentRecommendationsProps> = ({
       title: "Popular TV Shows",
       description: "Binge-worthy series everyone loves",
       icon: <Users className="h-5 w-5" />,
-      items: popularTV?.results?.slice(0, 10) || []
+      items: popularTV?.slice(0, 10) || []
     },
     {
       title: "Top Rated",
@@ -137,9 +137,11 @@ export const ContentRecommendations: React.FC<ContentRecommendationsProps> = ({
   const formatMovieData = (item: any) => ({
     id: item.id,
     title: item.title || item.name,
-    poster_path: item.poster_path,
-    vote_average: item.vote_average,
-    release_date: item.release_date || item.first_air_date,
+    overview: item.overview || '',
+    poster_path: item.poster_path || '',
+    backdrop_path: item.backdrop_path || '',
+    vote_average: item.vote_average || 0,
+    release_date: item.release_date || item.first_air_date || '',
     media_type: item.media_type || (item.title ? 'movie' : 'tv')
   });
 

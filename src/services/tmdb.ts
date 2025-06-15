@@ -87,13 +87,31 @@ class TMDBApi {
     return data.results;
   }
 
-  async getTrending(): Promise<Movie[]> {
-    const data = await this.fetchFromTMDB('/trending/all/week');
+  async getTrending(mediaType: string = 'all', timeWindow: string = 'day'): Promise<Movie[]> {
+    const data = await this.fetchFromTMDB(`/trending/${mediaType}/${timeWindow}`);
     return data.results;
   }
 
   async getTrendingMovies(page: number = 1): Promise<SearchResults> {
     const data = await this.fetchFromTMDB(`/trending/all/week?page=${page}`);
+    return {
+      results: data.results,
+      total_pages: data.total_pages,
+      total_results: data.total_results
+    };
+  }
+
+  async getTopRatedMovies(page: number = 1): Promise<SearchResults> {
+    const data = await this.fetchFromTMDB(`/movie/top_rated?page=${page}`);
+    return {
+      results: data.results,
+      total_pages: data.total_pages,
+      total_results: data.total_results
+    };
+  }
+
+  async getUpcomingMovies(page: number = 1): Promise<SearchResults> {
+    const data = await this.fetchFromTMDB(`/movie/upcoming?page=${page}`);
     return {
       results: data.results,
       total_pages: data.total_pages,
@@ -152,6 +170,71 @@ class TMDBApi {
   async getTVGenres(): Promise<Genre[]> {
     const data = await this.fetchFromTMDB('/genre/tv/list');
     return data.genres;
+  }
+
+  async discover(params: {
+    type?: 'movie' | 'tv';
+    genre?: string;
+    year?: number;
+    rating_gte?: number;
+    rating_lte?: number;
+    runtime_gte?: number;
+    runtime_lte?: number;
+    language?: string;
+    sort_by?: string;
+    include_adult?: boolean;
+    page?: number;
+  }): Promise<SearchResults> {
+    const { 
+      type = 'movie', 
+      genre, 
+      year, 
+      rating_gte, 
+      rating_lte, 
+      runtime_gte, 
+      runtime_lte, 
+      language = 'en', 
+      sort_by = 'popularity.desc', 
+      include_adult = false, 
+      page = 1 
+    } = params;
+    
+    let endpoint = `/${type === 'movie' ? 'discover/movie' : 'discover/tv'}?page=${page}&sort_by=${sort_by}&language=${language}&include_adult=${include_adult}`;
+    
+    if (genre) {
+      endpoint += `&with_genres=${genre}`;
+    }
+    
+    if (year) {
+      if (type === 'movie') {
+        endpoint += `&year=${year}`;
+      } else {
+        endpoint += `&first_air_date_year=${year}`;
+      }
+    }
+    
+    if (rating_gte !== undefined) {
+      endpoint += `&vote_average.gte=${rating_gte}`;
+    }
+    
+    if (rating_lte !== undefined) {
+      endpoint += `&vote_average.lte=${rating_lte}`;
+    }
+    
+    if (runtime_gte !== undefined && type === 'movie') {
+      endpoint += `&with_runtime.gte=${runtime_gte}`;
+    }
+    
+    if (runtime_lte !== undefined && type === 'movie') {
+      endpoint += `&with_runtime.lte=${runtime_lte}`;
+    }
+    
+    const data = await this.fetchFromTMDB(endpoint);
+    return {
+      results: data.results,
+      total_pages: data.total_pages,
+      total_results: data.total_results
+    };
   }
 
   async discoverContent(params: {

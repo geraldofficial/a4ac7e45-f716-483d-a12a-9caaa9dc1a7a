@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Search, Filter, X, Calendar, Star, Clock, Globe } from 'lucide-react';
 import { Input } from '@/components/ui/input';
@@ -115,11 +114,7 @@ export const AdvancedSearch: React.FC<AdvancedSearchProps> = ({
       }
 
       // Search with filters
-      return tmdbApi.searchMulti(filters.query, {
-        page,
-        include_adult: filters.includeAdult,
-        language: filters.language
-      });
+      return tmdbApi.searchMulti(filters.query, page);
     },
     enabled: filters.query.trim().length > 0 || filters.genres.length > 0
   });
@@ -168,6 +163,17 @@ export const AdvancedSearch: React.FC<AdvancedSearchProps> = ({
 
   const currentYear = new Date().getFullYear();
   const years = Array.from({ length: currentYear - 1900 + 1 }, (_, i) => currentYear - i);
+
+  const formatMovieData = (item: any) => ({
+    id: item.id,
+    title: item.title || item.name,
+    overview: item.overview || '',
+    poster_path: item.poster_path || '',
+    backdrop_path: item.backdrop_path || '',
+    vote_average: item.vote_average || 0,
+    release_date: item.release_date || item.first_air_date || '',
+    media_type: item.media_type || (item.title ? 'movie' : 'tv')
+  });
 
   return (
     <div className={`bg-background min-h-screen ${className}`}>
@@ -397,14 +403,7 @@ export const AdvancedSearch: React.FC<AdvancedSearchProps> = ({
               {searchResults.results.map((item: any) => (
                 <MovieCard
                   key={`${item.media_type || filters.type}-${item.id}`}
-                  movie={{
-                    id: item.id,
-                    title: item.title || item.name,
-                    poster_path: item.poster_path,
-                    vote_average: item.vote_average,
-                    release_date: item.release_date || item.first_air_date,
-                    media_type: item.media_type || filters.type
-                  }}
+                  movie={formatMovieData(item)}
                   size="sm"
                 />
               ))}
