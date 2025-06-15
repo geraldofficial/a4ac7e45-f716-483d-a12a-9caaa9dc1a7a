@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
@@ -8,7 +7,16 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 
-export const HeroCarousel = () => {
+interface HeroCarouselProps {
+  profile?: {
+    id: string;
+    name: string;
+    is_child: boolean;
+    age_restriction: number;
+  };
+}
+
+export const HeroCarousel: React.FC<HeroCarouselProps> = ({ profile }) => {
   const [movies, setMovies] = useState<Movie[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -17,29 +25,96 @@ export const HeroCarousel = () => {
   const { toast } = useToast();
 
   useEffect(() => {
-    fetchPopularMovies();
-  }, []);
+    fetchAgeAppropriateMovies();
+  }, [profile]);
 
-  const fetchPopularMovies = async () => {
+  const filterContentByAge = (content: Movie[]) => {
+    if (!content) return [];
+    
+    return content.filter(item => {
+      if (profile?.is_child) {
+        // For children: only family-friendly content with good ratings
+        return item.vote_average >= 6.0 && !item.adult;
+      }
+      
+      if (profile && profile.age_restriction <= 16) {
+        // For teens: avoid adult content, prefer well-rated content
+        return item.vote_average >= 5.0 && !item.adult;
+      }
+      
+      // For adults or no profile: show all content
+      return true;
+    });
+  };
+
+  const fetchAgeAppropriateMovies = async () => {
     try {
       setLoading(true);
       setError(null);
-      const popularMoviesResponse = await tmdbApi.getPopularMovies();
       
-      if (popularMoviesResponse && popularMoviesResponse.results) {
-        setMovies(popularMoviesResponse.results.slice(0, 5));
+      let moviesResponse;
+      
+      if (profile?.is_child) {
+        // For children: get family and animation movies
+        const [familyMovies, animationMovies] = await Promise.all([
+          tmdbApi.getMoviesByGenre(10751), // Family genre
+          tmdbApi.getMoviesByGenre(16)     // Animation genre
+        ]);
+        
+        const combinedMovies = [
+          ...(familyMovies?.results || []),
+          ...(animationMovies?.results || [])
+        ];
+        
+        // Remove duplicates and filter
+        const uniqueMovies = combinedMovies.filter((movie, index, self) => 
+          index === self.findIndex(m => m.id === movie.id)
+        );
+        
+        moviesResponse = { results: filterContentByAge(uniqueMovies) };
+      } else if (profile && profile.age_restriction <= 16) {
+        // For teens: get adventure and comedy movies (teen-friendly genres)
+        const [adventureMovies, comedyMovies] = await Promise.all([
+          tmdbApi.getMoviesByGenre(12), // Adventure genre
+          tmdbApi.getMoviesByGenre(35)  // Comedy genre
+        ]);
+        
+        const combinedMovies = [
+          ...(adventureMovies?.results || []),
+          ...(comedyMovies?.results || [])
+        ];
+        
+        const uniqueMovies = combinedMovies.filter((movie, index, self) => 
+          index === self.findIndex(m => m.id === movie.id)
+        );
+        
+        moviesResponse = { results: filterContentByAge(uniqueMovies) };
       } else {
-        throw new Error('No movie data received');
+        // For adults or no profile: get popular movies
+        moviesResponse = await tmdbApi.getPopularMovies();
+        moviesResponse.results = filterContentByAge(moviesResponse.results || []);
+      }
+      
+      if (moviesResponse && moviesResponse.results && moviesResponse.results.length > 0) {
+        setMovies(moviesResponse.results.slice(0, 5));
+      } else {
+        throw new Error('No age-appropriate content available');
       }
     } catch (error) {
-      console.error('Error fetching popular movies:', error);
+      console.error('Error fetching age-appropriate movies:', error);
       setError('Failed to load content. Please check your API configuration.');
-      // Fallback to mock data
+      
+      // Fallback to mock data based on profile
+      const fallbackTitle = profile?.is_child ? 'Welcome to Kid-Friendly FlickPick' : 'Welcome to FlickPick';
+      const fallbackOverview = profile?.is_child 
+        ? 'Discover amazing cartoons and family movies! Configure your TMDB API key to start exploring kid-friendly content!'
+        : 'Discover amazing movies and TV shows. Configure your TMDB API key to start exploring!';
+      
       setMovies([
         {
           id: 1,
-          title: 'Welcome to FlickPick',
-          overview: 'Discover amazing movies and TV shows. Configure your TMDB API key to start exploring!',
+          title: fallbackTitle,
+          overview: fallbackOverview,
           poster_path: '',
           backdrop_path: '',
           vote_average: 8.5,
@@ -79,7 +154,9 @@ export const HeroCarousel = () => {
       <section className="relative w-full h-[100dvh] flex items-center justify-center bg-background">
         <div className="text-center space-y-4">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
-          <div className="text-foreground text-xl">Loading amazing content...</div>
+          <div className="text-foreground text-xl">
+            {profile?.is_child ? 'Loading amazing cartoons...' : 'Loading amazing content...'}
+          </div>
         </div>
       </section>
     );
@@ -92,7 +169,7 @@ export const HeroCarousel = () => {
           <div className="text-destructive text-6xl mb-4">⚠️</div>
           <h2 className="text-2xl font-bold text-foreground">Content Loading Issue</h2>
           <p className="text-muted-foreground">{error}</p>
-          <Button onClick={fetchPopularMovies} className="mt-4">
+          <Button onClick={fetchAgeAppropriateMovies} className="mt-4">
             <RefreshCw className="h-4 w-4 mr-2" />
             Try Again
           </Button>
@@ -144,6 +221,12 @@ export const HeroCarousel = () => {
                           <span className="px-2 sm:px-3 py-1 bg-primary/20 backdrop-blur-sm rounded-full text-xs sm:text-sm font-medium border border-primary/30">
                             {movie.title ? 'Movie' : 'TV Series'}
                           </span>
+                          
+                          {profile?.is_child && (
+                            <span className="px-2 sm:px-3 py-1 bg-green-500/20 backdrop-blur-sm rounded-full text-xs sm:text-sm font-medium border border-green-500/30 text-green-300">
+                              Kid-Friendly
+                            </span>
+                          )}
                         </div>
                         
                         <p className="text-gray-200 text-sm sm:text-base lg:text-lg leading-relaxed mb-6 sm:mb-8 max-w-2xl line-clamp-3">

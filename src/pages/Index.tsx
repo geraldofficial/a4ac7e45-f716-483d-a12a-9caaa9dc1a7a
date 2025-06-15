@@ -31,7 +31,7 @@ const Index = () => {
       <Navbar />
       
       <main className="relative pt-14 sm:pt-16 md:pt-20">
-        <HeroCarousel />
+        <HeroCarousel profile={currentProfile} />
         
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 space-y-8 sm:space-y-12 relative z-10">
           <ContentRecommendations 
