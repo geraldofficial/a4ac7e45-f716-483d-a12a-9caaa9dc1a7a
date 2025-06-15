@@ -13,8 +13,8 @@ export const useDetailPageState = (id: string | undefined) => {
   const [showShareModal, setShowShareModal] = useState(false);
   const [showWatchParty, setShowWatchParty] = useState(false);
 
-  // Determine type from the current route
-  const type = location.pathname.startsWith('/movie/') ? 'movie' : 'tv';
+  // Determine type from the current route with proper typing
+  const type: 'movie' | 'tv' = location.pathname.startsWith('/movie/') ? 'movie' : 'tv';
 
   // Parse URL parameters
   const urlParams = new URLSearchParams(location.search);
