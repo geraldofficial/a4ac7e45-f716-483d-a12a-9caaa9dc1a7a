@@ -75,16 +75,16 @@ export const EnhancedMovieCard: React.FC<EnhancedMovieCardProps> = ({ movie }) =
 
   return (
     <div 
-      className="group relative bg-gray-900 rounded-lg overflow-hidden border border-gray-800 hover:border-gray-600 cursor-pointer transition-all duration-200 w-full aspect-[2/3]"
+      className="group relative bg-gray-900 rounded-lg overflow-hidden border border-gray-800 hover:border-gray-600 cursor-pointer transition-all duration-200 w-full aspect-[3/4] sm:aspect-[2/3]"
       onClick={handleMoreInfo}
       onMouseEnter={() => setShowActions(true)}
       onMouseLeave={() => setShowActions(false)}
     >
-      {/* Image Container - Fixed aspect ratio */}
+      {/* Image Container - Responsive aspect ratio */}
       <div className="relative w-full h-full bg-gray-800">
         {!imageLoaded && (
           <div className="absolute inset-0 bg-gray-800 flex items-center justify-center">
-            <div className="w-8 h-8 border-2 border-red-600 border-t-transparent rounded-full animate-spin"></div>
+            <div className="w-6 h-6 sm:w-8 sm:h-8 border-2 border-red-600 border-t-transparent rounded-full animate-spin"></div>
           </div>
         )}
         
@@ -100,46 +100,44 @@ export const EnhancedMovieCard: React.FC<EnhancedMovieCardProps> = ({ movie }) =
         />
 
         {/* Rating Badge */}
-        <div className="absolute top-2 left-2">
+        <div className="absolute top-1 left-1 sm:top-2 sm:left-2">
           <Badge className="bg-black/70 text-white border-0 text-xs">
-            <Star className="h-3 w-3 mr-1 text-yellow-400 fill-current" />
+            <Star className="h-2 w-2 sm:h-3 sm:w-3 mr-1 text-yellow-400 fill-current" />
             {movie.vote_average.toFixed(1)}
           </Badge>
         </div>
 
         {/* Type Badge */}
-        <div className="absolute top-2 right-2">
+        <div className="absolute top-1 right-1 sm:top-2 sm:right-2">
           <Badge className="bg-red-600 text-white border-0 text-xs">
             {type === 'tv' ? 'TV' : 'Movie'}
           </Badge>
         </div>
 
-        {/* Desktop Hover Overlay */}
-        <div className={`absolute inset-0 bg-gradient-to-t from-black/90 via-transparent to-transparent transition-opacity duration-200 ${
-          showActions ? 'opacity-100' : 'opacity-0'
-        }`}>
+        {/* Mobile Overlay - Always visible on mobile */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-transparent to-transparent opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity duration-200">
           
           {/* Center Play Button */}
           <div className="absolute inset-0 flex items-center justify-center">
             <Button
               onClick={handleWatch}
-              size="lg"
-              className="bg-red-600 hover:bg-red-700 text-white rounded-full w-16 h-16 p-0"
+              size="sm"
+              className="bg-red-600 hover:bg-red-700 text-white rounded-full w-10 h-10 sm:w-16 sm:h-16 p-0"
             >
-              <Play className="h-6 w-6 fill-current" />
+              <Play className="h-4 w-4 sm:h-6 sm:w-6 fill-current" />
             </Button>
           </div>
 
           {/* Bottom Action Bar */}
-          <div className="absolute bottom-0 left-0 right-0 p-4">
-            <div className="flex gap-2 justify-center">
+          <div className="absolute bottom-0 left-0 right-0 p-2 sm:p-4">
+            <div className="flex gap-1 sm:gap-2 justify-center">
               <Button
                 onClick={handleMoreInfo}
                 variant="outline"
                 size="sm"
-                className="border-white/30 bg-white/10 text-white hover:bg-white/20 flex-1"
+                className="border-white/30 bg-white/10 text-white hover:bg-white/20 flex-1 text-xs sm:text-sm h-8 sm:h-9"
               >
-                <Info className="h-4 w-4 mr-2" />
+                <Info className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
                 Info
               </Button>
 
@@ -148,11 +146,11 @@ export const EnhancedMovieCard: React.FC<EnhancedMovieCardProps> = ({ movie }) =
                   onClick={handleWatchlistToggle}
                   variant="outline"
                   size="sm"
-                  className="border-white/30 bg-white/10 text-white hover:bg-white/20 w-10 p-0"
+                  className="border-white/30 bg-white/10 text-white hover:bg-white/20 w-8 sm:w-10 h-8 sm:h-9 p-0"
                 >
                   {isInWatchlist(movie.id) ? 
-                    <Check className="h-4 w-4" /> : 
-                    <Plus className="h-4 w-4" />
+                    <Check className="h-3 w-3 sm:h-4 sm:w-4" /> : 
+                    <Plus className="h-3 w-3 sm:h-4 sm:w-4" />
                   }
                 </Button>
               )}
