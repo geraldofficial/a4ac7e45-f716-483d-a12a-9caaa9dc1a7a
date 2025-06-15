@@ -2,7 +2,7 @@
 import React from 'react';
 import { ProductionLoadingSpinner } from '../ProductionLoadingSpinner';
 import { Button } from '@/components/ui/button';
-import { RefreshCw, SkipForward } from 'lucide-react';
+import { RefreshCw, SkipForward, AlertCircle } from 'lucide-react';
 
 interface VideoPlayerStateProps {
   isLoading: boolean;
@@ -11,6 +11,7 @@ interface VideoPlayerStateProps {
   currentSourceName: string;
   onRetry: () => void;
   onSwitchSource: () => void;
+  errorMessage?: string;
 }
 
 export const VideoPlayerState: React.FC<VideoPlayerStateProps> = ({
@@ -19,16 +20,20 @@ export const VideoPlayerState: React.FC<VideoPlayerStateProps> = ({
   title,
   currentSourceName,
   onRetry,
-  onSwitchSource
+  onSwitchSource,
+  errorMessage
 }) => {
   if (isLoading) {
     return (
       <div className="absolute inset-0 flex items-center justify-center bg-black z-10">
-        <ProductionLoadingSpinner 
-          size="lg" 
-          text={`Loading ${title}...`}
-          showLogo={true}
-        />
+        <div className="text-center space-y-4">
+          <ProductionLoadingSpinner 
+            size="lg" 
+            text={`Loading ${title}...`}
+            showLogo={true}
+          />
+          <p className="text-white/70 text-sm">Connecting to {currentSourceName}</p>
+        </div>
       </div>
     );
   }
@@ -37,8 +42,12 @@ export const VideoPlayerState: React.FC<VideoPlayerStateProps> = ({
     return (
       <div className="absolute inset-0 flex items-center justify-center bg-black z-10">
         <div className="text-center max-w-md mx-auto p-6">
-          <p className="text-white mb-4 text-xl">Playback Error</p>
-          <p className="text-white/70 mb-6">Failed to load from {currentSourceName}</p>
+          <AlertCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
+          <h3 className="text-white mb-2 text-xl font-semibold">Playback Error</h3>
+          <p className="text-white/70 mb-2">Failed to load from {currentSourceName}</p>
+          {errorMessage && (
+            <p className="text-white/60 mb-6 text-sm">{errorMessage}</p>
+          )}
           <div className="flex gap-3 justify-center">
             <Button
               onClick={onSwitchSource}

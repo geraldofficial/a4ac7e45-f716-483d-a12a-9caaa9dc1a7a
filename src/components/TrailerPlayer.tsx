@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { Volume2, VolumeX } from 'lucide-react';
+import { Volume2, VolumeX, Play } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 interface TrailerPlayerProps {
@@ -16,10 +16,48 @@ export const TrailerPlayer: React.FC<TrailerPlayerProps> = ({
   backdropPath,
   onClose 
 }) => {
-  const [isMuted, setIsMuted] = useState(true); // Start muted for better UX
+  const [isMuted, setIsMuted] = useState(true);
+  const [hasError, setHasError] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  
+  const handleLoad = () => {
+    setIsLoading(false);
+    setHasError(false);
+  };
+
+  const handleError = () => {
+    setIsLoading(false);
+    setHasError(true);
+  };
+
+  if (hasError) {
+    return (
+      <div className="relative w-full h-full bg-gray-900 flex items-center justify-center">
+        {backdropPath && (
+          <img 
+            src={`https://image.tmdb.org/t/p/w1280${backdropPath}`}
+            alt={title}
+            className="absolute inset-0 w-full h-full object-cover opacity-30"
+          />
+        )}
+        <div className="relative z-10 text-center text-white">
+          <Play className="h-16 w-16 mx-auto mb-4 opacity-70" />
+          <p className="text-lg">Trailer not available</p>
+          <p className="text-sm opacity-70 mt-2">Unable to load trailer for {title}</p>
+        </div>
+      </div>
+    );
+  }
   
   return (
     <div className="relative w-full h-full">
+      {/* Loading State */}
+      {isLoading && (
+        <div className="absolute inset-0 bg-gray-900 flex items-center justify-center z-20">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white"></div>
+        </div>
+      )}
+
       {/* Mute/Unmute Button */}
       <Button
         variant="ghost"
@@ -38,8 +76,10 @@ export const TrailerPlayer: React.FC<TrailerPlayerProps> = ({
         frameBorder="0"
         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
         allowFullScreen={false}
+        onLoad={handleLoad}
+        onError={handleError}
         style={{
-          pointerEvents: 'none', // Disable interaction with the iframe content
+          pointerEvents: 'none',
         }}
       />
       

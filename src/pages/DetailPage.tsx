@@ -1,84 +1,38 @@
-import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate, useLocation } from 'react-router-dom';
+
+import React from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
 import { Navbar } from '@/components/Navbar';
 import { Footer } from '@/components/Footer';
 import { Button } from '@/components/ui/button';
-import { VideoPlayer } from '@/components/VideoPlayer';
 import { DetailPageHeader } from '@/components/DetailPageHeader';
 import { DetailPageActions } from '@/components/DetailPageActions';
 import { DetailPageInfo } from '@/components/DetailPageInfo';
-import { tmdbApi, Movie } from '@/services/tmdb';
+import { DetailPageVideoPlayer } from '@/components/DetailPageVideoPlayer';
+import { DetailPageModals } from '@/components/DetailPageModals';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
-import { ShareModal } from '@/components/ShareModal';
-import { WatchParty } from '@/components/WatchParty';
+import { useDetailPageState } from '@/hooks/useDetailPageState';
 
 const DetailPage = () => {
   const { id } = useParams<{ id: string }>();
-  const location = useLocation();
   const navigate = useNavigate();
-  const [content, setContent] = useState<Movie | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [showShareModal, setShowShareModal] = useState(false);
-  const [showWatchParty, setShowWatchParty] = useState(false);
   const { user, addToWatchlist, removeFromWatchlist, isInWatchlist } = useAuth();
   const { toast } = useToast();
 
-  // Determine type from the current route
-  const type = location.pathname.startsWith('/movie/') ? 'movie' : 'tv';
-
-  // Parse URL parameters for series/episode information and resume functionality
-  const urlParams = new URLSearchParams(location.search);
-  const season = urlParams.get('season') ? parseInt(urlParams.get('season')!) : undefined;
-  const episode = urlParams.get('episode') ? parseInt(urlParams.get('episode')!) : undefined;
-  const shouldResume = urlParams.get('resume') === 'true';
-  const autoWatch = urlParams.get('watch') === 'true';
-
-  useEffect(() => {
-    if (id) {
-      console.log('Fetching content for:', { type, id, season, episode, shouldResume, autoWatch });
-      fetchContent();
-    } else {
-      console.log('Missing id:', { type, id });
-      setLoading(false);
-    }
-  }, [type, id, season, episode]);
-
-  useEffect(() => {
-    // Auto-start player if watch=true in URL
-    if (autoWatch && content && !loading) {
-      setIsPlaying(true);
-    }
-  }, [autoWatch, content, loading]);
-
-  const fetchContent = async () => {
-    if (!id) {
-      console.log('No id provided');
-      setLoading(false);
-      return;
-    }
-    
-    setLoading(true);
-    try {
-      console.log(`Fetching ${type} with id: ${id}`);
-      const data = type === 'movie' 
-        ? await tmdbApi.getMovieDetails(parseInt(id))
-        : await tmdbApi.getTVDetails(parseInt(id));
-      
-      console.log('Fetched content:', data);
-      setContent(data);
-    } catch (error) {
-      console.error('Error fetching content:', error);
-      toast({
-        title: "Error",
-        description: "Failed to load content details.",
-        variant: "destructive",
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
+  const {
+    content,
+    loading,
+    isPlaying,
+    showShareModal,
+    showWatchParty,
+    type,
+    season,
+    episode,
+    shouldResume,
+    setIsPlaying,
+    setShowShareModal,
+    setShowWatchParty
+  } = useDetailPageState(id);
 
   // Get the best trailer from videos
   const getTrailer = () => {
@@ -189,31 +143,22 @@ const DetailPage = () => {
   const title = content.title || content.name || 'Unknown Title';
   const trailer = getTrailer();
 
-  // Get display title with episode info for TV shows
-  const getDisplayTitle = () => {
-    if (type === 'tv' && season && episode) {
-      return `${title} - Season ${season} Episode ${episode}`;
-    }
-    return title;
-  };
-
   return (
     <div className="min-h-screen bg-background">
       {/* Video Player - Full Screen Overlay */}
-      {isPlaying && (
-        <VideoPlayer
-          title={getDisplayTitle()}
-          tmdbId={content.id}
-          type={type}
-          season={season}
-          episode={episode}
-          poster_path={content.poster_path}
-          backdrop_path={content.backdrop_path}
-          duration={content.runtime ? content.runtime * 60 : undefined}
-          shouldResume={shouldResume}
-          onClose={() => setIsPlaying(false)}
-        />
-      )}
+      <DetailPageVideoPlayer
+        isPlaying={isPlaying}
+        title={title}
+        contentId={content.id}
+        type={type}
+        season={season}
+        episode={episode}
+        posterPath={content.poster_path}
+        backdropPath={content.backdrop_path}
+        duration={content.runtime}
+        shouldResume={shouldResume}
+        onClose={() => setIsPlaying(false)}
+      />
 
       {!isPlaying && (
         <>
@@ -252,31 +197,15 @@ const DetailPage = () => {
           
           <Footer />
 
-          {/* Share Modal */}
-          {showShareModal && (
-            <ShareModal
-              content={{
-                id: content.id,
-                title,
-                type: type as 'movie' | 'tv',
-                poster_path: content.poster_path,
-                description: content.overview
-              }}
-              onClose={() => setShowShareModal(false)}
-            />
-          )}
-
-          {/* Watch Party Modal */}
-          {showWatchParty && (
-            <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-              <WatchParty
-                movieId={content.id}
-                movieTitle={title}
-                movieType={type as 'movie' | 'tv'}
-                onClose={() => setShowWatchParty(false)}
-              />
-            </div>
-          )}
+          {/* Modals */}
+          <DetailPageModals
+            showShareModal={showShareModal}
+            showWatchParty={showWatchParty}
+            content={content}
+            type={type}
+            onCloseShare={() => setShowShareModal(false)}
+            onCloseWatchParty={() => setShowWatchParty(false)}
+          />
         </>
       )}
     </div>
