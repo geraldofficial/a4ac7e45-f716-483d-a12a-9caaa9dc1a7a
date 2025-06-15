@@ -18,13 +18,16 @@ const Index = () => {
     console.log('🏠 Index: useEffect triggered - loading:', loading, 'user:', user?.id || 'none');
     
     // Only redirect if we're sure about the auth state
-    if (!loading) {
-      console.log('🏠 Index: Auth state resolved, user:', user?.id || 'none');
+    if (!loading && user) {
+      console.log('🏠 Index: Auth state resolved, user:', user.id);
       
-      if (user && !user.onboarding_completed) {
-        console.log('🚀 Redirecting to onboarding');
+      if (!user.onboarding_completed) {
+        console.log('🚀 Redirecting to onboarding - user has not completed onboarding');
         navigate('/onboarding');
+        return;
       }
+      
+      console.log('✅ User is authenticated and onboarded, showing main content');
     }
   }, [user, loading, navigate]);
 
@@ -43,21 +46,34 @@ const Index = () => {
     );
   }
 
+  // If user is not authenticated, allow them to see the public content
+  // (they can still browse movies without being logged in)
   console.log('🎬 Index: Rendering main content for user:', user?.id || 'anonymous');
 
-  return (
-    <div className="min-h-screen bg-background dark overflow-x-hidden">
-      <Navbar />
-      <main className="relative pt-0 md:pt-24 pb-24 md:pb-8">
-        <HeroSection />
-        {user && <ContinueWatching />}
-        {user && <RecentlyWatched />}
-        <MovieSection />
-      </main>
-      <Footer />
-      <PWAUpdatePrompt />
-    </div>
-  );
+  try {
+    return (
+      <div className="min-h-screen bg-background dark overflow-x-hidden">
+        <Navbar />
+        <main className="relative pt-0 md:pt-24 pb-24 md:pb-8">
+          <HeroSection />
+          {user && <ContinueWatching />}
+          {user && <RecentlyWatched />}
+          <MovieSection />
+        </main>
+        <Footer />
+        <PWAUpdatePrompt />
+      </div>
+    );
+  } catch (error) {
+    console.error('💥 Error rendering Index page:', error);
+    return (
+      <div className="min-h-screen bg-background dark flex items-center justify-center">
+        <div className="text-center space-y-4">
+          <p className="text-muted-foreground">Something went wrong. Please refresh the page.</p>
+        </div>
+      </div>
+    );
+  }
 };
 
 export default Index;

@@ -69,43 +69,54 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         
         // Set up auth state listener first
         const { data } = supabase.auth.onAuthStateChange(async (event, session) => {
-          console.log('🔄 Auth state changed:', event, session?.user?.id);
+          console.log('🔄 Auth state changed:', event, session?.user?.id || 'no-user');
           
-          if (!mounted) return;
-          
-          if (event === 'SIGNED_IN' && session?.user) {
-            console.log('✅ User signed in, fetching profile...');
-            try {
-              const profile = await userApi.getUserProfile(session.user.id);
-              if (mounted) {
-                setUser({
-                  id: session.user.id,
-                  email: session.user.email,
-                  ...profile,
-                });
-                console.log('👤 User profile loaded:', profile);
-              }
-            } catch (error) {
-              console.error("❌ Error fetching user profile:", error);
-              if (mounted) {
-                setUser({
-                  id: session.user.id,
-                  email: session.user.email,
-                });
-                console.log('👤 Basic user data set without profile');
-              }
-            }
-          } else if (event === 'SIGNED_OUT') {
-            console.log('🚪 User signed out');
-            if (mounted) {
-              setUser(null);
-            }
+          if (!mounted) {
+            console.log('🚫 Component unmounted, ignoring auth state change');
+            return;
           }
           
-          // Always set loading to false after auth state change
-          if (mounted) {
-            console.log('✅ Setting loading to false');
-            setLoading(false);
+          try {
+            if (event === 'SIGNED_IN' && session?.user) {
+              console.log('✅ User signed in, fetching profile...');
+              try {
+                const profile = await userApi.getUserProfile(session.user.id);
+                if (mounted) {
+                  setUser({
+                    id: session.user.id,
+                    email: session.user.email,
+                    ...profile,
+                  });
+                  console.log('👤 User profile loaded:', profile);
+                }
+              } catch (error) {
+                console.error("❌ Error fetching user profile:", error);
+                if (mounted) {
+                  setUser({
+                    id: session.user.id,
+                    email: session.user.email,
+                  });
+                  console.log('👤 Basic user data set without profile');
+                }
+              }
+            } else if (event === 'SIGNED_OUT') {
+              console.log('🚪 User signed out');
+              if (mounted) {
+                setUser(null);
+              }
+            }
+            
+            // Always set loading to false after processing auth state change
+            if (mounted) {
+              console.log('✅ Setting loading to false after auth state change');
+              setLoading(false);
+            }
+          } catch (error) {
+            console.error('❌ Error processing auth state change:', error);
+            if (mounted) {
+              console.log('❌ Error occurred, setting loading to false');
+              setLoading(false);
+            }
           }
         });
 
@@ -149,11 +160,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           cleanupAuthState();
         }
         
-        // Ensure loading is set to false after session check
-        if (mounted) {
-          console.log('✅ Session check complete, setting loading to false');
-          setLoading(false);
-        }
+        // Final safety net - ensure loading is always set to false
+        setTimeout(() => {
+          if (mounted && loading) {
+            console.log('🕒 Safety timeout: forcing loading to false');
+            setLoading(false);
+          }
+        }, 2000);
 
       } catch (error) {
         console.error("💥 Auth initialization failed:", error);
