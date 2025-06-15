@@ -19,6 +19,7 @@ export interface UserProfile {
 export interface AuthContextType {
   user: UserProfile | null;
   loading: boolean;
+  error: string | null;
   signIn: (email: string, password: string) => Promise<void>;
   signUp: (email: string, password: string, userData?: any) => Promise<void>;
   signOut: () => Promise<void>;

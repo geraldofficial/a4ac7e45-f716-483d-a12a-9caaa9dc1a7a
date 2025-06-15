@@ -8,8 +8,11 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { BottomNavigation } from "@/components/BottomNavigation";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
-import { LoadingFallback } from "@/components/LoadingFallback";
-import { LoadingWithTimeout } from "@/components/LoadingWithTimeout";
+import { SafeErrorBoundary } from "@/components/SafeErrorBoundary";
+import { SafeLoadingFallback } from "@/components/SafeLoadingFallback";
+import { ScrollToTop } from "./components/ScrollToTop";
+
+// Pages - wrapped in error boundaries for safety
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import Onboarding from "./pages/Onboarding";
@@ -27,80 +30,99 @@ import DetailPage from "./pages/DetailPage";
 import Profile from "./pages/Profile";
 import History from "./pages/History";
 import Support from "./pages/Support";
-import { ScrollToTop } from "./components/ScrollToTop";
 
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
       retry: (failureCount, error) => {
-        // Don't retry on 4xx errors
         if (error && typeof error === 'object' && 'status' in error) {
           const status = (error as any).status;
           if (status >= 400 && status < 500) return false;
         }
-        return failureCount < 2; // Retry up to 2 times
+        return failureCount < 2;
       },
       refetchOnWindowFocus: false,
-      staleTime: 5 * 60 * 1000, // 5 minutes
+      staleTime: 5 * 60 * 1000,
     },
   },
 });
 
+const SafeRoute: React.FC<{ children: React.ReactNode; componentName: string }> = ({ children, componentName }) => (
+  <SafeErrorBoundary 
+    componentName={componentName}
+    fallback={
+      <div className="min-h-screen bg-background flex items-center justify-center p-4">
+        <div className="text-center">
+          <h2 className="text-xl font-semibold mb-2">Page Not Available</h2>
+          <p className="text-muted-foreground mb-4">This page failed to load properly.</p>
+          <button 
+            onClick={() => window.location.href = '/'}
+            className="px-4 py-2 bg-primary text-primary-foreground rounded-lg"
+          >
+            Go Home
+          </button>
+        </div>
+      </div>
+    }
+  >
+    {children}
+  </SafeErrorBoundary>
+);
+
 const AppContent: React.FC = () => {
-  const { loading } = useAuth();
+  const { loading, error } = useAuth();
+
+  console.log('🎬 AppContent render - loading:', loading, 'error:', error);
 
   if (loading) {
-    return (
-      <LoadingWithTimeout 
-        timeout={15000}
-        onTimeout={() => {
-          console.warn('App loading timed out, forcing page reload');
-          window.location.reload();
-        }}
-        fallback={<LoadingFallback message="Initializing FlickPick..." />}
-      />
-    );
+    return <SafeLoadingFallback message="Initializing FlickPick..." error={error} />;
+  }
+
+  if (error) {
+    return <SafeLoadingFallback error={error} />;
   }
 
   return (
-    <ErrorBoundary>
+    <SafeErrorBoundary componentName="Main App Content">
       <div className="min-h-screen">
         <ScrollToTop />
         <Routes>
-          <Route path="/" element={<Index />} />
-          <Route path="/auth" element={<Auth />} />
-          <Route path="/onboarding" element={<Onboarding />} />
-          <Route path="/search" element={<Search />} />
-          <Route path="/watchlist" element={<Watchlist />} />
-          <Route path="/browse" element={<Browse />} />
-          <Route path="/trending" element={<Trending />} />
-          <Route path="/top-rated" element={<TopRated />} />
-          <Route path="/profile" element={<Profile />} />
-          <Route path="/history" element={<History />} />
-          <Route path="/support" element={<Support />} />
-          <Route path="/help" element={<Help />} />
-          <Route path="/contact" element={<Contact />} />
-          <Route path="/privacy" element={<Privacy />} />
-          <Route path="/terms" element={<Terms />} />
-          <Route path="/movie/:id" element={<DetailPage />} />
-          <Route path="/tv/:id" element={<DetailPage />} />
-          <Route path="*" element={<NotFound />} />
+          <Route path="/" element={<SafeRoute componentName="Index"><Index /></SafeRoute>} />
+          <Route path="/auth" element={<SafeRoute componentName="Auth"><Auth /></SafeRoute>} />
+          <Route path="/onboarding" element={<SafeRoute componentName="Onboarding"><Onboarding /></SafeRoute>} />
+          <Route path="/search" element={<SafeRoute componentName="Search"><Search /></SafeRoute>} />
+          <Route path="/watchlist" element={<SafeRoute componentName="Watchlist"><Watchlist /></SafeRoute>} />
+          <Route path="/browse" element={<SafeRoute componentName="Browse"><Browse /></SafeRoute>} />
+          <Route path="/trending" element={<SafeRoute componentName="Trending"><Trending /></SafeRoute>} />
+          <Route path="/top-rated" element={<SafeRoute componentName="TopRated"><TopRated /></SafeRoute>} />
+          <Route path="/profile" element={<SafeRoute componentName="Profile"><Profile /></SafeRoute>} />
+          <Route path="/history" element={<SafeRoute componentName="History"><History /></SafeRoute>} />
+          <Route path="/support" element={<SafeRoute componentName="Support"><Support /></SafeRoute>} />
+          <Route path="/help" element={<SafeRoute componentName="Help"><Help /></SafeRoute>} />
+          <Route path="/contact" element={<SafeRoute componentName="Contact"><Contact /></SafeRoute>} />
+          <Route path="/privacy" element={<SafeRoute componentName="Privacy"><Privacy /></SafeRoute>} />
+          <Route path="/terms" element={<SafeRoute componentName="Terms"><Terms /></SafeRoute>} />
+          <Route path="/movie/:id" element={<SafeRoute componentName="Movie Detail"><DetailPage /></SafeRoute>} />
+          <Route path="/tv/:id" element={<SafeRoute componentName="TV Detail"><DetailPage /></SafeRoute>} />
+          <Route path="*" element={<SafeRoute componentName="NotFound"><NotFound /></SafeRoute>} />
         </Routes>
-        <BottomNavigation />
+        <SafeErrorBoundary componentName="Bottom Navigation">
+          <BottomNavigation />
+        </SafeErrorBoundary>
       </div>
-    </ErrorBoundary>
+    </SafeErrorBoundary>
   );
 };
 
 const App: React.FC = () => {
   return (
-    <ErrorBoundary fallback={<LoadingFallback message="Something went wrong. Please refresh the page." />}>
+    <ErrorBoundary fallback={<SafeLoadingFallback error="Application failed to start. Please refresh the page." />}>
       <QueryClientProvider client={queryClient}>
         <TooltipProvider>
           <Toaster />
           <Sonner />
           <BrowserRouter>
-            <ErrorBoundary fallback={<LoadingFallback message="Authentication error. Please refresh the page." />}>
+            <ErrorBoundary fallback={<SafeLoadingFallback error="Authentication system failed. Please refresh the page." />}>
               <AuthProvider>
                 <AppContent />
               </AuthProvider>
