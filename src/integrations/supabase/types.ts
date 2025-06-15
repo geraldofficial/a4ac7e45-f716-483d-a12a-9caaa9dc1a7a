@@ -9,6 +9,47 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      content_ratings: {
+        Row: {
+          content_type: string
+          created_at: string
+          id: string
+          profile_id: string
+          rating: number | null
+          review: string | null
+          tmdb_id: number
+          updated_at: string
+        }
+        Insert: {
+          content_type: string
+          created_at?: string
+          id?: string
+          profile_id: string
+          rating?: number | null
+          review?: string | null
+          tmdb_id: number
+          updated_at?: string
+        }
+        Update: {
+          content_type?: string
+          created_at?: string
+          id?: string
+          profile_id?: string
+          rating?: number | null
+          review?: string | null
+          tmdb_id?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "content_ratings_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "user_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       email_subscriptions: {
         Row: {
           created_at: string
@@ -80,6 +121,133 @@ export type Database = {
           watchlist?: number[] | null
         }
         Relationships: []
+      }
+      user_profiles: {
+        Row: {
+          age_restriction: number | null
+          avatar: string | null
+          created_at: string
+          id: string
+          is_child: boolean | null
+          name: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          age_restriction?: number | null
+          avatar?: string | null
+          created_at?: string
+          id?: string
+          is_child?: boolean | null
+          name: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          age_restriction?: number | null
+          avatar?: string | null
+          created_at?: string
+          id?: string
+          is_child?: boolean | null
+          name?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      viewing_preferences: {
+        Row: {
+          auto_play: boolean | null
+          content_filter: string | null
+          created_at: string
+          id: string
+          preferred_genres: number[] | null
+          preferred_languages: string[] | null
+          profile_id: string
+          subtitle_language: string | null
+          updated_at: string
+        }
+        Insert: {
+          auto_play?: boolean | null
+          content_filter?: string | null
+          created_at?: string
+          id?: string
+          preferred_genres?: number[] | null
+          preferred_languages?: string[] | null
+          profile_id: string
+          subtitle_language?: string | null
+          updated_at?: string
+        }
+        Update: {
+          auto_play?: boolean | null
+          content_filter?: string | null
+          created_at?: string
+          id?: string
+          preferred_genres?: number[] | null
+          preferred_languages?: string[] | null
+          profile_id?: string
+          subtitle_language?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "viewing_preferences_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "user_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      watch_progress: {
+        Row: {
+          completed: boolean | null
+          content_type: string
+          created_at: string
+          duration_seconds: number | null
+          episode: number | null
+          id: string
+          last_watched_at: string
+          profile_id: string
+          progress_seconds: number | null
+          season: number | null
+          tmdb_id: number
+        }
+        Insert: {
+          completed?: boolean | null
+          content_type: string
+          created_at?: string
+          duration_seconds?: number | null
+          episode?: number | null
+          id?: string
+          last_watched_at?: string
+          profile_id: string
+          progress_seconds?: number | null
+          season?: number | null
+          tmdb_id: number
+        }
+        Update: {
+          completed?: boolean | null
+          content_type?: string
+          created_at?: string
+          duration_seconds?: number | null
+          episode?: number | null
+          id?: string
+          last_watched_at?: string
+          profile_id?: string
+          progress_seconds?: number | null
+          season?: number | null
+          tmdb_id?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "watch_progress_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "user_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {
