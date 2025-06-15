@@ -1,3 +1,4 @@
+
 const READ_ACCESS_TOKEN = 'eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiI5ZjRlMjI1ZDA3YTUyZGUwNmU1ZTE0ODdmNDU4MzdlMCIsIm5iZiI6MTc0OTU4MzU0OC40ODMsInN1YiI6IjY4NDg4NmJjZDdhZTVmMjkwNzFlYWY4MCIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.i9SAf8EuvGQbVnKVxQWWuA2cl6AjShk7F9NhlQaFEZM';
 const BASE_URL = 'https://api.themoviedb.org/3';
 
@@ -21,6 +22,7 @@ export interface Movie {
   genres?: { id: number; name: string }[];
   runtime?: number;
   number_of_seasons?: number;
+  adult?: boolean;
   credits?: {
     cast: Array<{
       id: number;
