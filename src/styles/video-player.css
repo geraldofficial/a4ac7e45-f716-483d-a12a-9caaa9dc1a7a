@@ -1,0 +1,67 @@
+
+/* Video Player Enhancements */
+.landscape-mode {
+  @apply w-screen h-screen;
+}
+
+.portrait-mode {
+  @apply w-full h-full;
+}
+
+/* Hide scrollbars in video player */
+.video-player-container {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.video-player-container::-webkit-scrollbar {
+  display: none;
+}
+
+/* Gesture feedback */
+.gesture-feedback {
+  @apply absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2;
+  @apply bg-black/70 text-white px-4 py-2 rounded-lg;
+  @apply transition-all duration-200 ease-out;
+  @apply pointer-events-none;
+}
+
+/* Touch target improvements */
+.touch-target {
+  @apply min-w-11 min-h-11;
+}
+
+/* Orientation specific styles */
+@media screen and (orientation: landscape) {
+  .mobile-landscape-controls {
+    @apply flex-row justify-between items-center;
+  }
+}
+
+@media screen and (orientation: portrait) {
+  .mobile-portrait-controls {
+    @apply flex-col space-y-2;
+  }
+}
+
+/* Prevent text selection during gestures */
+.video-player-container * {
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Loading animation for better UX */
+.video-loading {
+  @apply animate-pulse;
+}
+
+/* Better button hover states for touch devices */
+@media (hover: none) {
+  .video-control-button:active {
+    @apply scale-95 bg-white/30;
+  }
+}

@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { SimpleVideoPlayer } from './SimpleVideoPlayer';
+import { FullFeaturedVideoPlayer } from './FullFeaturedVideoPlayer';
 import { watchHistoryService } from '@/services/watchHistory';
 
 interface VideoPlayerProps {
@@ -36,6 +36,6 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = (props) => {
   }
 
   return (
-    <SimpleVideoPlayer {...props} resumeFrom={resumeFrom} />
+    <FullFeaturedVideoPlayer {...props} resumeFrom={resumeFrom} />
   );
 };
