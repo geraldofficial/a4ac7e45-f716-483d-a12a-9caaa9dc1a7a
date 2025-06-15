@@ -4,21 +4,60 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Image, Send } from 'lucide-react';
+import { Image, Send, Loader2 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useCommunity } from '@/hooks/useCommunity';
+import { useToast } from '@/hooks/use-toast';
+import { compressMedia } from '@/utils/mediaCompression';
 
 export const MinimalCreatePost: React.FC = () => {
   const [content, setContent] = useState('');
   const [mediaFiles, setMediaFiles] = useState<File[]>([]);
   const [isPosting, setIsPosting] = useState(false);
+  const [isCompressing, setIsCompressing] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { user } = useAuth();
   const { createPost } = useCommunity();
+  const { toast } = useToast();
 
-  const handleMediaUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleMediaUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(event.target.files || []);
-    setMediaFiles(files);
+    if (files.length === 0) return;
+
+    setIsCompressing(true);
+    try {
+      const compressedFiles = await Promise.all(
+        files.map(async (file) => {
+          try {
+            return await compressMedia(file);
+          } catch (error) {
+            console.error('Compression failed for file:', file.name, error);
+            toast({
+              title: "Compression failed",
+              description: `Failed to compress ${file.name}. File may be too large.`,
+              variant: "destructive",
+            });
+            return null;
+          }
+        })
+      );
+
+      const validFiles = compressedFiles.filter(Boolean) as File[];
+      setMediaFiles(prev => [...prev, ...validFiles]);
+      
+      toast({
+        title: "Media compressed",
+        description: `${validFiles.length} files compressed and ready to upload.`,
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to process media files.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsCompressing(false);
+    }
   };
 
   const handlePost = async () => {
@@ -66,9 +105,14 @@ export const MinimalCreatePost: React.FC = () => {
                   variant="ghost"
                   size="sm"
                   onClick={() => fileInputRef.current?.click()}
+                  disabled={isCompressing}
                   className="h-9 px-3 gap-2 text-muted-foreground hover:text-foreground"
                 >
-                  <Image className="h-4 w-4" />
+                  {isCompressing ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <Image className="h-4 w-4" />
+                  )}
                   Media
                 </Button>
               </div>
@@ -86,7 +130,7 @@ export const MinimalCreatePost: React.FC = () => {
 
             {mediaFiles.length > 0 && (
               <div className="text-xs text-muted-foreground">
-                {mediaFiles.length} file(s) selected
+                {mediaFiles.length} compressed file(s) ready
               </div>
             )}
           </div>

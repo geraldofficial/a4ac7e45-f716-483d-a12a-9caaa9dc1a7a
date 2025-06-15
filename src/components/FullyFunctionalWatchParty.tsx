@@ -45,7 +45,6 @@ export const FullyFunctionalWatchParty: React.FC<FullyFunctionalWatchPartyProps>
     if (session) {
       loadMessages();
       
-      // Subscribe to session updates
       const unsubscribeSession = enhancedDatabaseWatchPartyService.subscribeToSession(
         session.id, 
         (updatedSession) => {
@@ -53,7 +52,6 @@ export const FullyFunctionalWatchParty: React.FC<FullyFunctionalWatchPartyProps>
         }
       );
 
-      // Subscribe to message updates
       const unsubscribeMessages = enhancedDatabaseWatchPartyService.subscribeToMessages(
         session.id,
         (updatedMessages) => {
@@ -61,13 +59,11 @@ export const FullyFunctionalWatchParty: React.FC<FullyFunctionalWatchPartyProps>
         }
       );
 
-      // Subscribe to playback sync (for non-hosts)
       const unsubscribeSync = enhancedDatabaseWatchPartyService.subscribeToPlaybackSync(
         session.id,
         (syncData) => {
           if (!isHost && onPlaybackSync) {
             const timeSinceLastSync = Date.now() - lastSyncTime;
-            // Only sync if it's been more than 2 seconds since last sync to avoid conflicts
             if (timeSinceLastSync > 2000) {
               onPlaybackSync(syncData);
               setLastSyncTime(Date.now());
@@ -84,15 +80,12 @@ export const FullyFunctionalWatchParty: React.FC<FullyFunctionalWatchPartyProps>
     }
   }, [session, isHost, onPlaybackSync, lastSyncTime]);
 
-  // Sync host playback to other participants
   useEffect(() => {
     if (session && isHost) {
-      // Clear existing timeout
       if (syncTimeoutRef.current) {
         clearTimeout(syncTimeoutRef.current);
       }
 
-      // Debounce sync updates
       syncTimeoutRef.current = setTimeout(async () => {
         try {
           await enhancedDatabaseWatchPartyService.syncPlayback(
