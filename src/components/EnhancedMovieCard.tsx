@@ -75,7 +75,7 @@ export const EnhancedMovieCard: React.FC<EnhancedMovieCardProps> = ({ movie }) =
 
   return (
     <div 
-      className="group relative bg-gray-900 rounded-lg overflow-hidden border border-gray-800 hover:border-gray-600 cursor-pointer transition-all duration-200 w-full aspect-[3/4] sm:aspect-[2/3]"
+      className="group relative bg-gray-900 rounded-lg overflow-hidden border border-gray-800 hover:border-gray-600 cursor-pointer transition-all duration-200 w-full aspect-[2/3] sm:aspect-[2/3]"
       onClick={handleMoreInfo}
       onMouseEnter={() => setShowActions(true)}
       onMouseLeave={() => setShowActions(false)}
@@ -84,7 +84,7 @@ export const EnhancedMovieCard: React.FC<EnhancedMovieCardProps> = ({ movie }) =
       <div className="relative w-full h-full bg-gray-800">
         {!imageLoaded && (
           <div className="absolute inset-0 bg-gray-800 flex items-center justify-center">
-            <div className="w-6 h-6 sm:w-8 sm:h-8 border-2 border-red-600 border-t-transparent rounded-full animate-spin"></div>
+            <div className="w-4 h-4 sm:w-6 sm:h-6 border-2 border-red-600 border-t-transparent rounded-full animate-spin"></div>
           </div>
         )}
         
@@ -122,22 +122,22 @@ export const EnhancedMovieCard: React.FC<EnhancedMovieCardProps> = ({ movie }) =
             <Button
               onClick={handleWatch}
               size="sm"
-              className="bg-red-600 hover:bg-red-700 text-white rounded-full w-10 h-10 sm:w-16 sm:h-16 p-0"
+              className="bg-red-600 hover:bg-red-700 text-white rounded-full w-8 h-8 sm:w-12 sm:h-12 p-0"
             >
-              <Play className="h-4 w-4 sm:h-6 sm:w-6 fill-current" />
+              <Play className="h-3 w-3 sm:h-4 sm:w-4 fill-current" />
             </Button>
           </div>
 
           {/* Bottom Action Bar */}
-          <div className="absolute bottom-0 left-0 right-0 p-2 sm:p-4">
+          <div className="absolute bottom-0 left-0 right-0 p-1 sm:p-3">
             <div className="flex gap-1 sm:gap-2 justify-center">
               <Button
                 onClick={handleMoreInfo}
                 variant="outline"
                 size="sm"
-                className="border-white/30 bg-white/10 text-white hover:bg-white/20 flex-1 text-xs sm:text-sm h-8 sm:h-9"
+                className="border-white/30 bg-white/10 text-white hover:bg-white/20 flex-1 text-xs sm:text-sm h-6 sm:h-8"
               >
-                <Info className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+                <Info className="h-2 w-2 sm:h-3 sm:w-3 mr-1" />
                 Info
               </Button>
 
@@ -146,11 +146,11 @@ export const EnhancedMovieCard: React.FC<EnhancedMovieCardProps> = ({ movie }) =
                   onClick={handleWatchlistToggle}
                   variant="outline"
                   size="sm"
-                  className="border-white/30 bg-white/10 text-white hover:bg-white/20 w-8 sm:w-10 h-8 sm:h-9 p-0"
+                  className="border-white/30 bg-white/10 text-white hover:bg-white/20 w-6 sm:w-8 h-6 sm:h-8 p-0"
                 >
                   {isInWatchlist(movie.id) ? 
-                    <Check className="h-3 w-3 sm:h-4 sm:w-4" /> : 
-                    <Plus className="h-3 w-3 sm:h-4 sm:w-4" />
+                    <Check className="h-2 w-2 sm:h-3 sm:w-3" /> : 
+                    <Plus className="h-2 w-2 sm:h-3 sm:w-3" />
                   }
                 </Button>
               )}
