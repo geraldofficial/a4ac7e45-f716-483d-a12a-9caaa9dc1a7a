@@ -104,9 +104,8 @@ export const useAuthActions = (
     
     try {
       const updatedUser = await userApi.updateUser(updates);
-      setUser((prevUser) => {
-        return prevUser ? { ...prevUser, ...updatedUser } : updatedUser as UserProfile
-      });
+      const newUser = user ? { ...user, ...updatedUser } : updatedUser as UserProfile;
+      setUser(newUser);
       toast({
         title: "Profile updated!",
         description: "Your profile has been updated successfully.",
