@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { AdBlockingVideoPlayer } from './AdBlockingVideoPlayer';
+import { EnhancedVideoPlayerCore } from './video/EnhancedVideoPlayerCore';
 import { watchHistoryService } from '@/services/watchHistory';
 
 interface VideoPlayerProps {
@@ -37,17 +37,20 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = (props) => {
     }
   }
 
+  const handleCastToggle = (isCasting: boolean) => {
+    console.log(`Cast status changed: ${isCasting ? 'Started' : 'Stopped'} casting ${props.title}`);
+  };
+
   return (
-    <AdBlockingVideoPlayer
+    <EnhancedVideoPlayerCore
       title={props.title}
       tmdbId={props.tmdbId}
       type={props.type}
       season={props.season}
       episode={props.episode}
-      poster_path={props.poster_path}
-      backdrop_path={props.backdrop_path}
       resumeFrom={resumeFrom}
-      onClose={props.onClose}
+      onProgress={props.onProgress}
+      onCastToggle={handleCastToggle}
     />
   );
 };
