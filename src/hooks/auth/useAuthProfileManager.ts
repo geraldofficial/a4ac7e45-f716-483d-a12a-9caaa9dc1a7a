@@ -60,8 +60,7 @@ export const useAuthProfileManager = () => {
       console.log("🎉 Full user profile merged:", fullUser.id);
       return fullUser;
     } catch (error) {
-      const errorMessage =
-        error instanceof Error ? error.message : String(error);
+      const errorMessage = formatError(error);
       console.warn(
         "⚠️ Profile fetch/merge failed, using basic profile:",
         errorMessage,
