@@ -537,7 +537,10 @@ class EnhancedNotificationsService {
 
       if (error) throw error;
     } catch (error) {
-      console.error("Error bulk deleting notifications:", formatError(error));
+      console.error(
+        "Error bulk deleting notifications:",
+        error instanceof Error ? error.message : String(error),
+      );
       throw error;
     }
   }
