@@ -232,34 +232,31 @@ export const AdminDashboard: React.FC = () => {
         <Card className="border-gray-800 bg-gray-900/50">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium text-gray-300">
-              Total Revenue
+              Total Posts
             </CardTitle>
-            <DollarSign className="h-4 w-4 text-gray-400" />
+            <MessageCircle className="h-4 w-4 text-gray-400" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-white">
-              {formatCurrency(stats.totalRevenue)}
+              {stats.totalPosts.toLocaleString()}
             </div>
-            <p className="text-xs text-green-400">
-              +{formatCurrency(stats.monthlyRevenue)} this month
-            </p>
+            <p className="text-xs text-green-400">+{stats.postsToday} today</p>
           </CardContent>
         </Card>
 
         <Card className="border-gray-800 bg-gray-900/50">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium text-gray-300">
-              Content Library
+              Community Activity
             </CardTitle>
             <Film className="h-4 w-4 text-gray-400" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-white">
-              {stats.totalContent.toLocaleString()}
+              {stats.totalComments.toLocaleString()}
             </div>
             <p className="text-xs text-gray-400">
-              {Math.floor(stats.watchTime / 60).toLocaleString()}h total watch
-              time
+              {stats.totalLikes.toLocaleString()} total likes
             </p>
           </CardContent>
         </Card>
