@@ -1044,14 +1044,10 @@ class EnhancedNotificationsService {
       }
 
       if (error) {
-        const errorMessage = formatError(error);
-        if (
-          errorMessage &&
-          errorMessage !== "Unknown error" &&
-          errorMessage !== "{}"
-        ) {
-          console.error("Error sending bulk notification:", errorMessage);
-        }
+        console.error(
+          "Error sending bulk notification:",
+          error instanceof Error ? error.message : String(error),
+        );
       }
       throw error;
     }
