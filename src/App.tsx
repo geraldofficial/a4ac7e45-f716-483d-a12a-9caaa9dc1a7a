@@ -19,6 +19,8 @@ import Watchlist from "./pages/Watchlist";
 import Browse from "./pages/Browse";
 import Trending from "./pages/Trending";
 import TopRated from "./pages/TopRated";
+import Movies from "./pages/Movies";
+import TVShows from "./pages/TVShows";
 import Community from "./pages/Community";
 import Help from "./pages/Help";
 import Contact from "./pages/Contact";
@@ -171,6 +173,22 @@ const App: React.FC = () => {
                       element={
                         <SafeRoute componentName="Browse">
                           <Browse />
+                        </SafeRoute>
+                      }
+                    />
+                    <Route
+                      path="/movies"
+                      element={
+                        <SafeRoute componentName="Movies">
+                          <Movies />
+                        </SafeRoute>
+                      }
+                    />
+                    <Route
+                      path="/tv"
+                      element={
+                        <SafeRoute componentName="TV Shows">
+                          <TVShows />
                         </SafeRoute>
                       }
                     />
