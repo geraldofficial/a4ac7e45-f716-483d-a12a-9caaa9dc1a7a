@@ -174,10 +174,7 @@ export const ModernNavbar: React.FC = () => {
                       Account Settings
                     </Link>
                   </DropdownMenuItem>
-                      Profile
-                    </DropdownMenuItem>
-
-                    <DropdownMenuItem
+                  <DropdownMenuItem
                       onClick={() => navigate('/watchlist')}
                       className="text-gray-300 hover:text-white hover:bg-gray-800"
                     >
