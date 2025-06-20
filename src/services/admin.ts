@@ -92,10 +92,12 @@ class AdminService {
         supabase.from("community_posts").select("id", { count: "exact" }),
 
         // Total comments
-        supabase.from("post_comments").select("id", { count: "exact" }),
+        supabase
+          .from("community_post_comments")
+          .select("id", { count: "exact" }),
 
         // Total likes
-        supabase.from("post_likes").select("id", { count: "exact" }),
+        supabase.from("community_post_likes").select("id", { count: "exact" }),
 
         // New users today
         supabase
