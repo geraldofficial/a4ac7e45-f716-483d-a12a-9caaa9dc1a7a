@@ -9,6 +9,8 @@ export const useAuthState = () => {
   const [loading, setLoading] = useState(true);
   const mountedRef = useRef(true);
   const loadingTimeoutRef = useRef<NodeJS.Timeout>();
+  const retryCountRef = useRef(0);
+  const maxRetries = 3;
 
   useEffect(() => {
     mountedRef.current = true;
@@ -31,18 +33,32 @@ export const useAuthState = () => {
       try {
         console.log("🔐 Initializing auth...");
 
-        // Helper function to fetch profile with timeout
+        // Helper function to fetch profile with timeout and retry limiting
         const fetchProfileSafely = async (userId: string) => {
           try {
+            retryCountRef.current += 1;
+            console.log(
+              `🔍 Fetching profile (attempt ${retryCountRef.current}/${maxRetries})...`,
+            );
+
+            if (retryCountRef.current > maxRetries) {
+              console.warn(
+                "⚠️ Max retries reached for profile fetch, skipping...",
+              );
+              return null;
+            }
+
             const profile = await userApi.getUserProfile(userId);
+            retryCountRef.current = 0; // Reset on success
             return profile;
           } catch (error) {
             const errorMessage = formatError(error);
-            console.error(
-              "❌ Error fetching user profile:",
-              errorMessage,
-              error,
-            );
+            console.error("❌ Error fetching user profile:", errorMessage);
+
+            // Only log detailed error on first few attempts
+            if (retryCountRef.current <= 2) {
+              console.error("Full error details:", error);
+            }
             return null;
           }
         };
