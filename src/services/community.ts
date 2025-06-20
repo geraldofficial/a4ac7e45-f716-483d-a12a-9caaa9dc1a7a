@@ -118,7 +118,8 @@ class CommunityService {
 
       return postsWithCounts;
     } catch (error) {
-      console.error("Error fetching posts:", formatError(error));
+      const errorMessage = formatError(error);
+      console.error("Error fetching posts:", errorMessage);
       throw error;
     }
   }
@@ -176,7 +177,8 @@ class CommunityService {
           : undefined,
       };
     } catch (error) {
-      console.error("Error creating post:", formatError(error));
+      const errorMessage = formatError(error);
+      console.error("Error creating post:", errorMessage);
       throw error;
     }
   }
