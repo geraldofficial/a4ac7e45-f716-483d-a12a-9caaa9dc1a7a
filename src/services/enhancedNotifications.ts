@@ -204,9 +204,17 @@ class EnhancedNotificationsService {
 
       if (error) {
         if (error.code === "42P01") {
+          console.info(
+            "User notifications table not yet created. Using fallback stats.",
+          );
           return this.getFallbackStats();
         }
-        throw error;
+        // Don't use formatError here as it might cause body stream issues
+        console.error(
+          "Error fetching notification stats:",
+          error.message || error,
+        );
+        return this.getFallbackStats();
       }
 
       const stats: NotificationStats = {
@@ -228,7 +236,11 @@ class EnhancedNotificationsService {
 
       return stats;
     } catch (error) {
-      console.error("Error fetching notification stats:", formatError(error));
+      // Use simple error logging to avoid body stream issues
+      console.error(
+        "Error fetching notification stats:",
+        error instanceof Error ? error.message : String(error),
+      );
       return this.getFallbackStats();
     }
   }
