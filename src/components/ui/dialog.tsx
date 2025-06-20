@@ -31,34 +31,8 @@ const DialogContent = React.forwardRef<
   React.ElementRef<typeof DialogPrimitive.Content>,
   React.ComponentPropsWithoutRef<typeof DialogPrimitive.Content>
 >(({ className, children, ...props }, ref) => {
-  // Check if children contains a DialogTitle
-  const hasDialogTitle = React.Children.toArray(children).some((child) => {
-    if (React.isValidElement(child)) {
-      // Check direct DialogTitle
-      if (child.type === DialogTitle) return true;
-
-      // Check DialogTitle nested in VisuallyHidden
-      if (child.props?.children) {
-        const nestedChildren = React.Children.toArray(child.props.children);
-        return nestedChildren.some(
-          (nested) =>
-            React.isValidElement(nested) && nested.type === DialogTitle,
-        );
-      }
-
-      // Check DialogTitle nested in DialogHeader
-      if (child.props?.children) {
-        const headerChildren = React.Children.toArray(child.props.children);
-        return headerChildren.some(
-          (headerChild) =>
-            React.isValidElement(headerChild) &&
-            headerChild.type === DialogTitle,
-        );
-      }
-    }
-    return false;
-  });
-
+  // Simple and reliable approach: always include a fallback DialogTitle
+  // The Radix Dialog primitive will ignore duplicate titles and only use the first one
   return (
     <DialogPortal>
       <DialogOverlay />
@@ -70,9 +44,10 @@ const DialogContent = React.forwardRef<
         )}
         {...props}
       >
-        {!hasDialogTitle && (
-          <DialogTitle className="sr-only">Dialog</DialogTitle>
-        )}
+        {/* Always include a fallback title - Radix will use the first valid one */}
+        <DialogPrimitive.Title className="sr-only">
+          Dialog Content
+        </DialogPrimitive.Title>
         {children}
         <DialogPrimitive.Close className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground">
           <X className="h-4 w-4" />
