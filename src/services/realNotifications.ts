@@ -505,6 +505,26 @@ class RealNotificationsService {
   async sendSampleNotifications(): Promise<void> {
     if (!this.userId) return;
 
+    // First check if the table exists by trying a simple query
+    try {
+      const { error: testError } = await supabase
+        .from("user_notifications")
+        .select("id")
+        .limit(1);
+
+      if (testError && testError.code === "42P01") {
+        console.info(
+          "User notifications table not yet created. Cannot send sample notifications. Using fallback notifications instead.",
+        );
+        return;
+      }
+    } catch (error) {
+      console.info(
+        "User notifications table not accessible. Cannot send sample notifications. Using fallback notifications instead.",
+      );
+      return;
+    }
+
     const sampleNotifications = [
       {
         user_id: this.userId,
