@@ -289,7 +289,16 @@ class DatabaseWatchPartyService {
       .order("joined_at", { ascending: true });
 
     if (participantsError) {
-      console.error("Error getting participants:", participantsError);
+      const errorMessage =
+        participantsError.message ||
+        participantsError.details ||
+        participantsError.hint ||
+        "Unknown error";
+      console.error(
+        "Error getting participants:",
+        errorMessage,
+        participantsError,
+      );
       return null;
     }
 
