@@ -277,24 +277,58 @@ class CommunityService {
   // Comments
   async fetchComments(postId: string): Promise<CommunityComment[]> {
     try {
+      // First fetch comments
       const { data: comments, error } = await supabase
         .from("community_post_comments")
-        .select(
-          `
-          *,
-          profiles!community_post_comments_user_id_fkey (
-            id,
-            username,
-            full_name,
-            avatar
-          )
-        `,
-        )
+        .select("*")
         .eq("post_id", postId)
         .order("created_at", { ascending: true });
 
       if (error) throw error;
-      return comments || [];
+
+      if (!comments || comments.length === 0) {
+        return [];
+      }
+
+      // Get unique user IDs from comments
+      const userIds = [...new Set(comments.map((comment) => comment.user_id))];
+
+      // Fetch profile data for these users
+      const { data: profilesData, error: profilesError } = await supabase
+        .from("profiles")
+        .select("id, username, full_name, avatar")
+        .in("id", userIds);
+
+      if (profilesError) {
+        console.error(
+          "Error fetching comment profiles:",
+          formatError(profilesError),
+        );
+      }
+
+      // Create a map of user profiles for easy lookup
+      const profilesMap = new Map();
+      profilesData?.forEach((profile) => {
+        profilesMap.set(profile.id, {
+          id: profile.id,
+          username: profile.username || "anonymous",
+          full_name: profile.full_name || profile.username || "Anonymous User",
+          avatar: profile.avatar || "👤",
+        });
+      });
+
+      // Combine comments with profile data
+      const commentsWithProfiles = comments.map((comment) => ({
+        ...comment,
+        profiles: profilesMap.get(comment.user_id) || {
+          id: comment.user_id,
+          username: "anonymous",
+          full_name: "Anonymous User",
+          avatar: "👤",
+        },
+      }));
+
+      return commentsWithProfiles;
     } catch (error) {
       console.error("Error fetching comments:", formatError(error));
       throw error;
@@ -314,21 +348,35 @@ class CommunityService {
           user_id: userId,
           content: content.trim(),
         })
-        .select(
-          `
-          *,
-          profiles!community_post_comments_user_id_fkey (
-            id,
-            username,
-            full_name,
-            avatar
-          )
-        `,
-        )
+        .select("*")
         .single();
 
       if (error) throw error;
-      return comment;
+
+      // Fetch profile data separately
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("id, username, full_name, avatar")
+        .eq("id", userId)
+        .single();
+
+      return {
+        ...comment,
+        profiles: profile
+          ? {
+              id: profile.id,
+              username: profile.username || "anonymous",
+              full_name:
+                profile.full_name || profile.username || "Anonymous User",
+              avatar: profile.avatar || "👤",
+            }
+          : {
+              id: userId,
+              username: "anonymous",
+              full_name: "Anonymous User",
+              avatar: "👤",
+            },
+      };
     } catch (error) {
       console.error("Error creating comment:", formatError(error));
       throw error;
