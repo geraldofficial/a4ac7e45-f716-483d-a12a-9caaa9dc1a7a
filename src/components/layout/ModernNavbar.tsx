@@ -45,7 +45,7 @@ import {
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { useAuth } from "@/contexts/AuthContext";
 import { Link, useNavigate, useLocation } from "react-router-dom";
-import { NotificationBell } from "@/components/notifications/NotificationSystem";
+import { WorkingNotificationBell } from "@/components/notifications/WorkingNotificationBell";
 
 const navigation = [
   { name: "Home", href: "/", icon: Home },
@@ -144,7 +144,7 @@ export const ModernNavbar = () => {
               {user ? (
                 <>
                   {/* Notifications */}
-                  <NotificationBell />
+                  <WorkingNotificationBell />
 
                   {/* User Menu */}
                   <DropdownMenu>
