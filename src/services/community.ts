@@ -134,11 +134,7 @@ class CommunityService {
           user_id: data.user_id,
           content: data.content,
           media_urls: data.media_urls,
-          media_type: data.media_type,
-          movie_id: data.movie_id,
-          movie_title: data.movie_title,
-          movie_poster: data.movie_poster,
-          rating: data.rating,
+          // Note: media_type, movie_id, movie_title, movie_poster, rating columns don't exist in DB schema
         })
         .select("*")
         .single();
