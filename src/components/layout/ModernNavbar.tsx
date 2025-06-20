@@ -260,11 +260,6 @@ export const ModernNavbar = () => {
                     <div className="flex flex-col h-full">
                       {/* Mobile Header */}
                       <div className="flex items-center justify-between pb-6 border-b border-gray-800">
-                        <img
-                          src="/logo.svg"
-                          alt="FlickPick"
-                          className="h-8 w-auto"
-                        />
                         {user && (
                           <div className="flex items-center space-x-3">
                             <Avatar className="h-8 w-8">
