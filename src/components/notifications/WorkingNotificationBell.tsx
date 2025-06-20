@@ -176,9 +176,17 @@ export const WorkingNotificationBell: React.FC = () => {
         ),
       );
       fetchStats();
-      toast.success("Marked as read");
+
+      // Only show success toast for real notifications, not fallback ones
+      if (!notificationId.startsWith("fallback-")) {
+        toast.success("Marked as read");
+      }
     } catch (error) {
-      toast.error("Failed to mark as read");
+      console.error("Error marking notification as read:", error);
+      // Don't show error toast for fallback notifications
+      if (!notificationId.startsWith("fallback-")) {
+        toast.error("Failed to mark as read");
+      }
     }
   };
 
@@ -195,6 +203,7 @@ export const WorkingNotificationBell: React.FC = () => {
       fetchStats();
       toast.success("All notifications marked as read");
     } catch (error) {
+      console.error("Error marking all notifications as read:", error);
       toast.error("Failed to mark all as read");
     }
   };
@@ -216,11 +225,19 @@ export const WorkingNotificationBell: React.FC = () => {
         ),
       );
       fetchStats();
-      toast.success(
-        isCurrentlyStarred ? "Removed from favorites" : "Added to favorites",
-      );
+
+      // Only show success toast for real notifications, not fallback ones
+      if (!notificationId.startsWith("fallback-")) {
+        toast.success(
+          isCurrentlyStarred ? "Removed from favorites" : "Added to favorites",
+        );
+      }
     } catch (error) {
-      toast.error("Failed to update favorite status");
+      console.error("Error toggling notification star:", error);
+      // Don't show error toast for fallback notifications
+      if (!notificationId.startsWith("fallback-")) {
+        toast.error("Failed to update favorite status");
+      }
     }
   };
 
@@ -229,9 +246,17 @@ export const WorkingNotificationBell: React.FC = () => {
       await realNotificationsService.deleteNotification(notificationId);
       setNotifications((prev) => prev.filter((n) => n.id !== notificationId));
       fetchStats();
-      toast.success("Notification deleted");
+
+      // Only show success toast for real notifications, not fallback ones
+      if (!notificationId.startsWith("fallback-")) {
+        toast.success("Notification deleted");
+      }
     } catch (error) {
-      toast.error("Failed to delete notification");
+      console.error("Error deleting notification:", error);
+      // Don't show error toast for fallback notifications
+      if (!notificationId.startsWith("fallback-")) {
+        toast.error("Failed to delete notification");
+      }
     }
   };
 
