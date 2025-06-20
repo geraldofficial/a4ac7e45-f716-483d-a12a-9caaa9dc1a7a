@@ -10,7 +10,9 @@ export const useAuthState = () => {
   const mountedRef = useRef(true);
   const loadingTimeoutRef = useRef<NodeJS.Timeout>();
   const retryCountRef = useRef(0);
-  const maxRetries = 3;
+  const consecutiveTimeouts = useRef(0);
+  const maxRetries = 2; // Reduced from 3
+  const maxTimeouts = 2; // Stop after 2 consecutive timeouts
 
   useEffect(() => {
     mountedRef.current = true;
@@ -24,7 +26,7 @@ export const useAuthState = () => {
     // Safety timeout using ref to avoid stale closure
     loadingTimeoutRef.current = setTimeout(() => {
       if (mountedRef.current) {
-        console.log("🕒 Safety timeout: forcing loading to false");
+        console.log("���� Safety timeout: forcing loading to false");
         setLoading(false);
       }
     }, 3000); // Reduced from 2000ms for faster fallback
@@ -33,13 +35,18 @@ export const useAuthState = () => {
       try {
         console.log("🔐 Initializing auth...");
 
-        // Helper function to fetch profile with timeout and retry limiting
+        // Helper function to fetch profile with circuit breaker pattern
         const fetchProfileSafely = async (userId: string) => {
           try {
             retryCountRef.current += 1;
-            console.log(
-              `🔍 Fetching profile (attempt ${retryCountRef.current}/${maxRetries})...`,
-            );
+
+            // Circuit breaker: stop if too many consecutive timeouts
+            if (consecutiveTimeouts.current >= maxTimeouts) {
+              console.warn(
+                "🚫 Circuit breaker: too many timeouts, skipping profile fetch",
+              );
+              return null;
+            }
 
             if (retryCountRef.current > maxRetries) {
               console.warn(
@@ -48,12 +55,16 @@ export const useAuthState = () => {
               return null;
             }
 
-            // Add timeout promise to prevent hanging requests
+            console.log(
+              `🔍 Fetching profile (attempt ${retryCountRef.current}/${maxRetries}, timeouts: ${consecutiveTimeouts.current})...`,
+            );
+
+            // Reduced timeout to 5 seconds to fail faster
             const timeoutPromise = new Promise((_, reject) => {
               setTimeout(
                 () => reject(new Error("Profile fetch timeout")),
-                10000,
-              ); // 10 second timeout
+                5000,
+              );
             });
 
             const profile = await Promise.race([
@@ -61,22 +72,32 @@ export const useAuthState = () => {
               timeoutPromise,
             ]);
 
-            retryCountRef.current = 0; // Reset on success
+            // Reset counters on success
+            retryCountRef.current = 0;
+            consecutiveTimeouts.current = 0;
+            console.log("✅ Profile fetch successful");
             return profile;
           } catch (error) {
             const errorMessage = formatError(error);
-            console.error("❌ Error fetching user profile:", errorMessage);
 
-            // Only log detailed error on first few attempts
-            if (retryCountRef.current <= 2) {
-              console.error("Full error details:", error);
-            }
+            // Track timeouts specifically
+            if (errorMessage.includes("timeout")) {
+              consecutiveTimeouts.current += 1;
+              console.error(
+                `❌ Error fetching user profile: ${errorMessage} (timeout #${consecutiveTimeouts.current})`,
+              );
 
-            // Add exponential backoff for retries
-            if (retryCountRef.current < maxRetries) {
-              const delay = Math.pow(2, retryCountRef.current) * 1000; // 1s, 2s, 4s delays
-              console.log(`⏳ Waiting ${delay}ms before retry...`);
-              await new Promise((resolve) => setTimeout(resolve, delay));
+              // Stop retrying after consecutive timeouts
+              if (consecutiveTimeouts.current >= maxTimeouts) {
+                console.warn(
+                  "🚫 Too many consecutive timeouts, stopping profile fetch attempts",
+                );
+                return null;
+              }
+            } else {
+              console.error("❌ Error fetching user profile:", errorMessage);
+              // Reset timeout counter for non-timeout errors
+              consecutiveTimeouts.current = 0;
             }
 
             return null;
