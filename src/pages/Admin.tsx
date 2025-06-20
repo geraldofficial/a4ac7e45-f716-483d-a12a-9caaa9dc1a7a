@@ -1,5 +1,5 @@
 import React from "react";
-import { AdminDashboard } from "@/components/admin/enhanced/AdminDashboard";
+import { EnhancedAdminDashboard } from "@/components/admin/EnhancedAdminDashboard";
 import { useAuthState } from "@/hooks/useAuthState";
 import { Navigate } from "react-router-dom";
 
@@ -8,18 +8,28 @@ const Admin = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-950 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-500" />
+      <div className="flex items-center justify-center min-h-screen bg-gray-950">
+        <div className="text-center">
+          <img
+            src="/logo.svg"
+            alt="FlickPick"
+            className="h-12 w-auto mx-auto mb-4 animate-pulse"
+          />
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-red-600 mx-auto"></div>
+        </div>
       </div>
     );
   }
 
-  // Check if user is admin (you may want to add an admin role check)
   if (!user) {
     return <Navigate to="/auth" replace />;
   }
 
-  return <AdminDashboard />;
+  return (
+    <div className="min-h-screen bg-gray-950">
+      <EnhancedAdminDashboard />
+    </div>
+  );
 };
 
 export default Admin;

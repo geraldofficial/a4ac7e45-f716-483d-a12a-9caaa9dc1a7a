@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { HeroCarousel } from "@/components/HeroCarousel";
+import { EnhancedHeroCarousel } from "@/components/hero/EnhancedHeroCarousel";
 import { EnhancedMovieSection } from "@/components/EnhancedMovieSection";
 import { ContinueWatching } from "@/components/ContinueWatching";
 import { RecentlyWatched } from "@/components/RecentlyWatched";
@@ -55,47 +55,7 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-gray-950">
       {/* Hero Section */}
-      <section className="relative min-h-screen overflow-hidden">
-        {/* Background Carousel */}
-        <div className="absolute inset-0 z-0">
-          <HeroCarousel profile={currentProfile} />
-        </div>
-
-        {/* Gradient Overlay */}
-        <div className="absolute inset-0 z-10 bg-gradient-to-t from-gray-950 via-gray-950/40 to-transparent" />
-
-        {/* Hero Content */}
-        <div className="flex flex-row">
-          <Button
-            size="lg"
-            className="bg-red-600 hover:bg-red-700 text-white shadow-xl hover:shadow-red-500/25 transition-all"
-          >
-            <Play className="h-5 w-5 mr-2" />
-            Continue Watching
-          </Button>
-          <div className="relative z-20 min-h-screen flex items-center">
-            <div className="container mx-auto px-4 py-20">
-              <div className="max-w-3xl">
-                <Badge className="bg-red-600/20 text-red-400 border-red-600/30 mb-6 inline-flex items-center">
-                  <Film className="h-3 w-3 mr-1" />
-                  Featured Today
-                </Badge>
-
-                <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold mb-6 leading-tight text-white"></h1>
-
-                <div className="flex flex-col sm:flex-row gap-4 items-start"></div>
-              </div>
-            </div>
-          </div>
-          <Button
-            size="lg"
-            variant="outline"
-            className="border-gray-600 text-white hover:bg-gray-800 hover:border-gray-500 transition-all"
-          >
-            Browse Library
-          </Button>
-        </div>
-      </section>
+      <EnhancedHeroCarousel profile={currentProfile} />
 
       {/* Featured Categories */}
       <section className="bg-gray-950 relative z-10">
