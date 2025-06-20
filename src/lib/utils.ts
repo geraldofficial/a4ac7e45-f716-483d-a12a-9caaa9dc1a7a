@@ -12,6 +12,11 @@ export function cn(...inputs: ClassValue[]) {
 export function formatError(error: any): string {
   if (!error) return "Unknown error";
 
+  // Handle nested error structures
+  if (error.error && typeof error.error === "object") {
+    return formatError(error.error);
+  }
+
   // Handle Supabase error structure
   if (error.message || error.details || error.code) {
     const message =
@@ -23,7 +28,7 @@ export function formatError(error: any): string {
 
   // Handle standard Error objects
   if (error instanceof Error) {
-    return error.message;
+    return error.message || error.toString();
   }
 
   // Handle string errors
@@ -31,10 +36,38 @@ export function formatError(error: any): string {
     return error;
   }
 
-  // Fallback for other objects
+  // Handle objects with toString method
+  if (error && typeof error.toString === "function") {
+    const stringified = error.toString();
+    if (stringified !== "[object Object]") {
+      return stringified;
+    }
+  }
+
+  // Fallback for other objects - try to extract meaningful info
   try {
-    return JSON.stringify(error);
-  } catch {
+    if (typeof error === "object" && error !== null) {
+      // Try to find any meaningful error properties
+      const meaningfulProps = [
+        "message",
+        "error",
+        "description",
+        "detail",
+        "reason",
+        "statusText",
+      ];
+      for (const prop of meaningfulProps) {
+        if (error[prop] && typeof error[prop] === "string") {
+          return error[prop];
+        }
+      }
+
+      // Last resort: JSON stringify but limit size
+      const jsonStr = JSON.stringify(error);
+      return jsonStr.length > 200 ? jsonStr.substring(0, 200) + "..." : jsonStr;
+    }
     return String(error);
+  } catch {
+    return "Error: Unable to format error message";
   }
 }
