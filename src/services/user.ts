@@ -54,8 +54,15 @@ export const userApi = {
       .single();
 
     if (error) {
-      console.error("❌ Profile creation error:", error);
-      throw error;
+      const errorMessage =
+        error.message || error.details || JSON.stringify(error);
+      console.error("❌ Profile creation error:", errorMessage, error);
+      // Create a more informative error
+      const creationError = new Error(
+        `Profile creation failed: ${errorMessage}`,
+      );
+      creationError.cause = error;
+      throw creationError;
     }
 
     console.log("✅ Profile created:", data);
