@@ -329,35 +329,35 @@ export const AdminDashboard: React.FC = () => {
               </CardContent>
             </Card>
 
-            {/* Revenue Chart */}
+            {/* Community Activity Chart */}
             <Card className="border-gray-800 bg-gray-900/50">
               <CardHeader>
-                <CardTitle className="text-white">Revenue Overview</CardTitle>
+                <CardTitle className="text-white">Community Activity</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
                   <div className="text-3xl font-bold text-white">
-                    {formatCurrency(stats.monthlyRevenue)}
+                    {stats.postsThisMonth.toLocaleString()}
                   </div>
-                  <p className="text-sm text-gray-400">This month</p>
+                  <p className="text-sm text-gray-400">Posts this month</p>
 
                   <div className="space-y-2">
                     <div className="flex justify-between text-sm">
-                      <span className="text-gray-400">Subscriptions</span>
+                      <span className="text-gray-400">Today</span>
                       <span className="text-white">
-                        {formatCurrency(stats.monthlyRevenue * 0.8)}
+                        {stats.postsToday} posts
                       </span>
                     </div>
                     <div className="flex justify-between text-sm">
-                      <span className="text-gray-400">Rentals</span>
+                      <span className="text-gray-400">This Week</span>
                       <span className="text-white">
-                        {formatCurrency(stats.monthlyRevenue * 0.15)}
+                        {stats.postsThisWeek} posts
                       </span>
                     </div>
                     <div className="flex justify-between text-sm">
-                      <span className="text-gray-400">Purchases</span>
+                      <span className="text-gray-400">Total Comments</span>
                       <span className="text-white">
-                        {formatCurrency(stats.monthlyRevenue * 0.05)}
+                        {stats.totalComments.toLocaleString()}
                       </span>
                     </div>
                   </div>
