@@ -27,7 +27,13 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { supabase } from "@/integrations/supabase/client";
+import {
+  adminService,
+  AdminStats,
+  AdminUser,
+  AdminPost,
+  AdminComment,
+} from "@/services/admin";
 import { formatError } from "@/lib/utils";
 import { toast } from "sonner";
 
