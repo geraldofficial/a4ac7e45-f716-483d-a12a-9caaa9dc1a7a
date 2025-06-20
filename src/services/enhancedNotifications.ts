@@ -1,4 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
+import { safeLogError } from "@/utils/safeErrorFormat";
 
 // Enhanced notification types
 export interface NotificationPreferences {
