@@ -306,6 +306,14 @@ const App: React.FC = () => {
                       }
                     />
                     <Route
+                      path="/notifications/settings"
+                      element={
+                        <SafeRoute componentName="Notification Settings">
+                          <NotificationSettings />
+                        </SafeRoute>
+                      }
+                    />
+                    <Route
                       path="/movie/:id"
                       element={
                         <SafeRoute componentName="Movie Detail">
