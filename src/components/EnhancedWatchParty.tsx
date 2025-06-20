@@ -1,39 +1,24 @@
-import React, { useState, useRef, useEffect } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { toast } from "@/components/ui/use-toast";
-import { watchPartyService } from "@/services/watchParty";
-import {
-  Loader2,
-  Users,
-  Share2,
-  Play,
-  Pause,
-  Volume2,
-  VolumeX,
-  X,
-  Copy,
-  Settings,
-} from "lucide-react";
-import { formatError } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
-import {
-  watchPartyService,
-  WatchPartySession,
-  WatchPartyMessage,
-} from "@/services/watchParty";
-import { useToast } from "@/hooks/use-toast";
-import { WatchPartySetup } from "./watchparty/WatchPartySetup";
-import { WatchPartyHeader } from "./watchparty/WatchPartyHeader";
-import { WatchPartyParticipants } from "./watchparty/WatchPartyParticipants";
-import { WatchPartyChat } from "./watchparty/WatchPartyChat";
+import React, { useState, useRef, useEffect } from 'react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { toast } from '@/components/ui/use-toast';
+import { watchPartyService } from '@/services/watchParty';
+import { Loader2, Users, Share2, Play, Pause, Volume2, VolumeX, X, Copy, Settings } from 'lucide-react';
+import { formatError } from '@/lib/utils';
+import { Button } from '@/components/ui/button';
+import { watchPartyService, WatchPartySession, WatchPartyMessage } from '@/services/watchParty';
+import { useToast } from '@/hooks/use-toast';
+import { WatchPartySetup } from './watchparty/WatchPartySetup';
+import { WatchPartyHeader } from './watchparty/WatchPartyHeader';
+import { WatchPartyParticipants } from './watchparty/WatchPartyParticipants';
+import { WatchPartyChat } from './watchparty/WatchPartyChat';
 
 interface EnhancedWatchPartyProps {
   movieId: number;
   movieTitle: string;
-  movieType: "movie" | "tv";
+  movieType: 'movie' | 'tv';
   onClose: () => void;
 }
 
@@ -41,14 +26,14 @@ export const EnhancedWatchParty: React.FC<EnhancedWatchPartyProps> = ({
   movieId,
   movieTitle,
   movieType,
-  onClose,
+  onClose
 }) => {
   const [session, setSession] = useState<WatchPartySession | null>(null);
   const [messages, setMessages] = useState<WatchPartyMessage[]>([]);
-  const [newMessage, setNewMessage] = useState("");
+  const [newMessage, setNewMessage] = useState('');
   const [showChat, setShowChat] = useState(false);
   const [isHost, setIsHost] = useState(false);
-  const [partyCode, setPartyCode] = useState("");
+  const [partyCode, setPartyCode] = useState('');
   const [copied, setCopied] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
   const [isJoining, setIsJoining] = useState(false);
@@ -68,7 +53,7 @@ export const EnhancedWatchParty: React.FC<EnhancedWatchPartyProps> = ({
       const sessionMessages = await watchPartyService.getMessages(session.id);
       setMessages(sessionMessages);
     } catch (error) {
-      console.error("Error loading messages:", error);
+      console.error('Error loading messages:', error);
     }
   };
 
@@ -77,11 +62,7 @@ export const EnhancedWatchParty: React.FC<EnhancedWatchPartyProps> = ({
 
     setIsCreating(true);
     try {
-      const sessionId = await watchPartyService.createSession(
-        movieId,
-        movieTitle,
-        movieType,
-      );
+      const sessionId = await watchPartyService.createSession(movieId, movieTitle, movieType);
       const newSession = await watchPartyService.joinSession(sessionId);
 
       if (newSession) {
@@ -93,7 +74,7 @@ export const EnhancedWatchParty: React.FC<EnhancedWatchPartyProps> = ({
         });
       }
     } catch (error) {
-      console.error("Error creating party:", error);
+      console.error('Error creating party:', error);
       toast({
         title: "Error",
         description: "Failed to create watch party.",
@@ -130,12 +111,14 @@ export const EnhancedWatchParty: React.FC<EnhancedWatchPartyProps> = ({
         });
       }
     } catch (error) {
-      console.error("Error joining party:", error);
+      const errorMessage = formatError(error);
+      console.error('Error joining party:', errorMessage, error);
       toast({
         title: "Error",
-        description: "Failed to join watch party.",
+        description: `Failed to join watch party: ${errorMessage}`,
         variant: "destructive",
       });
+    }
     } finally {
       setIsJoining(false);
     }
@@ -146,10 +129,10 @@ export const EnhancedWatchParty: React.FC<EnhancedWatchPartyProps> = ({
 
     try {
       await watchPartyService.sendMessage(session.id, newMessage);
-      setNewMessage("");
+      setNewMessage('');
       await loadMessages();
     } catch (error) {
-      console.error("Error sending message:", error);
+      console.error('Error sending message:', error);
       toast({
         title: "Error",
         description: "Failed to send message.",
@@ -165,12 +148,7 @@ export const EnhancedWatchParty: React.FC<EnhancedWatchPartyProps> = ({
     const shareText = `Join my watch party for "${movieTitle}"!\n\nParty Code: ${session.id}\nLink: ${shareUrl}`;
 
     try {
-      if (
-        navigator.share &&
-        /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
-          navigator.userAgent,
-        )
-      ) {
+      if (navigator.share && /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)) {
         await navigator.share({
           title: `Watch Party: ${movieTitle}`,
           text: shareText,
@@ -238,6 +216,7 @@ export const EnhancedWatchParty: React.FC<EnhancedWatchPartyProps> = ({
   return (
     <div className="fixed inset-0 z-50 bg-black/95 md:bg-transparent md:bottom-4 md:right-4 md:top-auto md:left-auto md:w-96 md:max-h-[85vh]">
       <div className="h-full md:h-auto bg-gray-900 md:rounded-2xl md:shadow-2xl border-0 md:border md:border-gray-700 flex flex-col overflow-hidden">
+
         <WatchPartyHeader
           session={session}
           isHost={isHost}
