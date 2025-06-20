@@ -47,6 +47,18 @@ export const useAuthState = () => {
           }
 
           try {
+            // Quick health check - test if Supabase is responsive
+            if (retryCountRef.current === 1) {
+              try {
+                await supabase.from("profiles").select("count").limit(1);
+              } catch (healthError) {
+                console.warn(
+                  "⚠️ Supabase health check failed, skipping profile fetch",
+                );
+                profileFetchDisabled.current = true;
+                return null;
+              }
+            }
             retryCountRef.current += 1;
 
             // Circuit breaker: stop if too many consecutive timeouts
