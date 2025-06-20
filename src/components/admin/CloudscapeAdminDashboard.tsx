@@ -754,8 +754,8 @@ export const CloudscapeAdminDashboard: React.FC = () => {
                         size="sm"
                         className="text-blue-600"
                         onClick={() => {
-                          setActiveTab("content");
-                          toast.success("Showing all recent activity");
+                          setActiveTab("users");
+                          toast.success("Showing all users");
                         }}
                       >
                         View all
