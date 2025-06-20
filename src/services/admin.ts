@@ -157,36 +157,101 @@ class AdminService {
 
   async getUsers(limit = 20, offset = 0): Promise<AdminUser[]> {
     try {
-      const { data: users, error } = await supabase
-        .from("profiles")
-        .select("id, username, full_name, avatar, created_at")
-        .order("created_at", { ascending: false })
-        .range(offset, offset + limit - 1);
+      // Get users from auth.users and their profiles
+      const { data: authUsers, error: authError } =
+        await supabase.auth.admin.listUsers({
+          page: Math.floor(offset / limit) + 1,
+          perPage: limit,
+        });
 
-      if (error) throw error;
+      if (authError) {
+        console.warn(
+          "Cannot access auth admin API, falling back to profiles table",
+        );
+        // Fallback to profiles table
+        const { data: profiles, error: profileError } = await supabase
+          .from("profiles")
+          .select("id, username, full_name, avatar, created_at")
+          .order("created_at", { ascending: false })
+          .range(offset, offset + limit - 1);
 
-      // Get activity counts for each user
+        if (profileError) throw profileError;
+
+        const usersWithStats = await Promise.all(
+          (profiles || []).map(async (profile) => {
+            const [postsResult, commentsResult, likesResult] =
+              await Promise.all([
+                supabase
+                  .from("community_posts")
+                  .select("id", { count: "exact" })
+                  .eq("user_id", profile.id),
+
+                supabase
+                  .from("community_post_comments")
+                  .select("id", { count: "exact" })
+                  .eq("user_id", profile.id),
+
+                supabase
+                  .from("community_post_likes")
+                  .select("id", { count: "exact" })
+                  .eq("user_id", profile.id),
+              ]);
+
+            return {
+              id: profile.id,
+              username: profile.username || "Unknown",
+              full_name: profile.full_name || "Unknown User",
+              avatar: profile.avatar || "",
+              created_at: profile.created_at,
+              post_count: postsResult.count || 0,
+              comment_count: commentsResult.count || 0,
+              like_count: likesResult.count || 0,
+            };
+          }),
+        );
+
+        return usersWithStats;
+      }
+
+      // Process auth users and get their profiles
       const usersWithStats = await Promise.all(
-        (users || []).map(async (user) => {
+        (authUsers.users || []).map(async (authUser) => {
+          // Get profile data
+          const { data: profile } = await supabase
+            .from("profiles")
+            .select("username, full_name, avatar")
+            .eq("id", authUser.id)
+            .single();
+
           const [postsResult, commentsResult, likesResult] = await Promise.all([
             supabase
               .from("community_posts")
               .select("id", { count: "exact" })
-              .eq("user_id", user.id),
+              .eq("user_id", authUser.id),
 
             supabase
               .from("community_post_comments")
               .select("id", { count: "exact" })
-              .eq("user_id", user.id),
+              .eq("user_id", authUser.id),
 
             supabase
               .from("community_post_likes")
               .select("id", { count: "exact" })
-              .eq("user_id", user.id),
+              .eq("user_id", authUser.id),
           ]);
 
           return {
-            ...user,
+            id: authUser.id,
+            username:
+              profile?.username ||
+              authUser.user_metadata?.username ||
+              "Unknown",
+            full_name:
+              profile?.full_name ||
+              authUser.user_metadata?.full_name ||
+              "Unknown User",
+            avatar: profile?.avatar || "",
+            created_at: authUser.created_at,
             post_count: postsResult.count || 0,
             comment_count: commentsResult.count || 0,
             like_count: likesResult.count || 0,
