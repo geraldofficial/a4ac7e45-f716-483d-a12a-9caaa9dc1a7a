@@ -26,7 +26,7 @@ export const useAuthState = () => {
     // Safety timeout using ref to avoid stale closure
     loadingTimeoutRef.current = setTimeout(() => {
       if (mountedRef.current) {
-        console.log("���� Safety timeout: forcing loading to false");
+        console.log("🕒 Safety timeout: forcing loading to false");
         setLoading(false);
       }
     }, 3000); // Reduced from 2000ms for faster fallback
@@ -141,14 +141,21 @@ export const useAuthState = () => {
                     console.log("🔍 Fetching detailed profile...");
                     const profile = await fetchProfileSafely(session.user.id);
 
-                    if (mountedRef.current && profile) {
-                      const fullUser: UserProfile = {
-                        id: session.user.id,
-                        email: session.user.email,
-                        ...profile,
-                      };
-                      setUser(fullUser);
-                      console.log("👤 Full user profile loaded:", profile);
+                    if (mountedRef.current) {
+                      if (profile) {
+                        const fullUser: UserProfile = {
+                          id: session.user.id,
+                          email: session.user.email,
+                          ...profile,
+                        };
+                        setUser(fullUser);
+                        console.log("👤 Full user profile loaded:", profile);
+                      } else {
+                        // Keep basic user data even if profile fetch fails
+                        console.log(
+                          "⚠️ Profile fetch failed, keeping basic user data",
+                        );
+                      }
                     }
                   }
                 }, 0);
@@ -219,14 +226,24 @@ export const useAuthState = () => {
                 console.log("🔍 Fetching existing user profile...");
                 const profile = await fetchProfileSafely(session.user.id);
 
-                if (mountedRef.current && profile) {
-                  const fullUser: UserProfile = {
-                    id: session.user.id,
-                    email: session.user.email,
-                    ...profile,
-                  };
-                  setUser(fullUser);
-                  console.log("👤 Existing full user profile loaded:", profile);
+                if (mountedRef.current) {
+                  if (profile) {
+                    const fullUser: UserProfile = {
+                      id: session.user.id,
+                      email: session.user.email,
+                      ...profile,
+                    };
+                    setUser(fullUser);
+                    console.log(
+                      "👤 Existing full user profile loaded:",
+                      profile,
+                    );
+                  } else {
+                    // Keep basic user data even if profile fetch fails
+                    console.log(
+                      "⚠️ Existing profile fetch failed, keeping basic user data",
+                    );
+                  }
                 }
               }
             }, 0);
