@@ -4,16 +4,21 @@ import { userApi } from "@/services/user";
 import { UserProfile } from "@/types/auth";
 import { formatError } from "@/lib/utils";
 
+// Global state to prevent multiple simultaneous profile fetches
+let globalProfileFetchState = {
+  isProfileFetching: false,
+  consecutiveTimeouts: 0,
+  profileFetchDisabled: false,
+  maxTimeouts: 2,
+};
+
 export const useAuthState = () => {
   const [user, setUser] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const mountedRef = useRef(true);
   const loadingTimeoutRef = useRef<NodeJS.Timeout>();
   const retryCountRef = useRef(0);
-  const consecutiveTimeouts = useRef(0);
-  const maxRetries = 2; // Reduced from 3
-  const maxTimeouts = 2; // Stop after 2 consecutive timeouts
-  const profileFetchDisabled = useRef(false); // Emergency circuit breaker
+  const maxRetries = 1; // Reduced to just 1 retry to minimize timeouts
 
   useEffect(() => {
     mountedRef.current = true;
@@ -36,37 +41,35 @@ export const useAuthState = () => {
       try {
         console.log("🔐 Initializing auth...");
 
-        // Helper function to fetch profile with circuit breaker pattern
+        // Helper function to fetch profile with global circuit breaker pattern
         const fetchProfileSafely = async (userId: string) => {
-          // Emergency circuit breaker - completely disable profile fetching if too many issues
-          if (profileFetchDisabled.current) {
+          // Check global circuit breaker
+          if (globalProfileFetchState.profileFetchDisabled) {
             console.warn(
-              "🚫 Profile fetching disabled due to persistent issues",
+              "🚫 Profile fetching globally disabled due to persistent issues",
             );
             return null;
           }
 
+          // Prevent concurrent profile fetches
+          if (globalProfileFetchState.isProfileFetching) {
+            console.log("⏳ Profile fetch already in progress, skipping...");
+            return null;
+          }
+
           try {
-            // Quick health check - test if Supabase is responsive
-            if (retryCountRef.current === 1) {
-              try {
-                await supabase.from("profiles").select("count").limit(1);
-              } catch (healthError) {
-                console.warn(
-                  "⚠️ Supabase health check failed, skipping profile fetch",
-                );
-                profileFetchDisabled.current = true;
-                return null;
-              }
-            }
+            globalProfileFetchState.isProfileFetching = true;
             retryCountRef.current += 1;
 
-            // Circuit breaker: stop if too many consecutive timeouts
-            if (consecutiveTimeouts.current >= maxTimeouts) {
+            // Circuit breaker: stop if too many consecutive timeouts globally
+            if (
+              globalProfileFetchState.consecutiveTimeouts >=
+              globalProfileFetchState.maxTimeouts
+            ) {
               console.warn(
-                "🚫 Circuit breaker: too many timeouts, disabling profile fetch",
+                "🚫 Global circuit breaker: too many timeouts, disabling profile fetch",
               );
-              profileFetchDisabled.current = true;
+              globalProfileFetchState.profileFetchDisabled = true;
               return null;
             }
 
@@ -78,14 +81,14 @@ export const useAuthState = () => {
             }
 
             console.log(
-              `🔍 Fetching profile (attempt ${retryCountRef.current}/${maxRetries}, timeouts: ${consecutiveTimeouts.current})...`,
+              `🔍 Fetching profile (attempt ${retryCountRef.current}/${maxRetries}, global timeouts: ${globalProfileFetchState.consecutiveTimeouts})...`,
             );
 
-            // Reduced timeout to 3 seconds to fail even faster
+            // Very short timeout - fail fast
             const timeoutPromise = new Promise((_, reject) => {
               setTimeout(
                 () => reject(new Error("Profile fetch timeout")),
-                3000,
+                2000,
               );
             });
 
@@ -96,37 +99,42 @@ export const useAuthState = () => {
 
             // Reset counters on success
             retryCountRef.current = 0;
-            consecutiveTimeouts.current = 0;
+            globalProfileFetchState.consecutiveTimeouts = 0;
             console.log("✅ Profile fetch successful");
             return profile;
           } catch (error) {
             const errorMessage = formatError(error);
 
-            // Track timeouts specifically
+            // Track timeouts globally
             if (errorMessage.includes("timeout")) {
-              consecutiveTimeouts.current += 1;
+              globalProfileFetchState.consecutiveTimeouts += 1;
 
-              // Only log the first few timeouts to avoid spam
-              if (consecutiveTimeouts.current <= 2) {
+              // Only log the first timeout to avoid spam
+              if (globalProfileFetchState.consecutiveTimeouts === 1) {
                 console.error(
-                  `❌ Error fetching user profile: ${errorMessage} (timeout #${consecutiveTimeouts.current})`,
+                  `❌ Error fetching user profile: ${errorMessage} (global timeout #${globalProfileFetchState.consecutiveTimeouts})`,
                 );
               }
 
               // Disable profile fetching after consecutive timeouts
-              if (consecutiveTimeouts.current >= maxTimeouts) {
+              if (
+                globalProfileFetchState.consecutiveTimeouts >=
+                globalProfileFetchState.maxTimeouts
+              ) {
                 console.warn(
-                  "🚫 Too many consecutive timeouts, disabling profile fetch permanently",
+                  "🚫 Too many consecutive timeouts globally, disabling profile fetch permanently",
                 );
-                profileFetchDisabled.current = true;
+                globalProfileFetchState.profileFetchDisabled = true;
               }
             } else {
               console.error("❌ Error fetching user profile:", errorMessage);
               // Reset timeout counter for non-timeout errors
-              consecutiveTimeouts.current = 0;
+              globalProfileFetchState.consecutiveTimeouts = 0;
             }
 
             return null;
+          } finally {
+            globalProfileFetchState.isProfileFetching = false;
           }
         };
 
