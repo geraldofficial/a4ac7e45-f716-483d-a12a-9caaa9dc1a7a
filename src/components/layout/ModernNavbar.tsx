@@ -43,8 +43,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { useAuthState } from "@/hooks/useAuthState";
-import { useAuthActions } from "@/hooks/useAuthActions";
+import { useAuth } from "@/contexts/AuthContext";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { NotificationBell } from "@/components/notifications/NotificationSystem";
 
