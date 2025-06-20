@@ -198,17 +198,15 @@ class RealNotificationsService {
         // If table doesn't exist, just log and continue
         if (error.code === "42P01") {
           console.info(
-            "User notifications table not yet created. Cannot mark all as read.",
+            "User notifications table not yet created. Marking fallback notifications as read (client-side only).",
           );
           return;
         }
         throw error;
       }
     } catch (error) {
-      console.error(
-        "Error marking all notifications as read:",
-        formatError(error),
-      );
+      const errorMessage = formatError(error);
+      console.error("Error marking all notifications as read:", errorMessage);
       // Don't throw error for missing table, just log it
       if (
         error &&
@@ -216,6 +214,9 @@ class RealNotificationsService {
         "code" in error &&
         error.code === "42P01"
       ) {
+        console.info(
+          "Fallback: marking all notifications as read (client-side only).",
+        );
         return;
       }
       throw error;
