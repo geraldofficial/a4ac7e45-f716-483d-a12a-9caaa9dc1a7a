@@ -55,65 +55,74 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-gray-950">
       {/* Hero Section */}
-      <section className="relative">
-        <HeroCarousel profile={currentProfile} />
+      <section className="relative min-h-screen overflow-hidden">
+        {/* Background Carousel */}
+        <div className="absolute inset-0 z-0">
+          <HeroCarousel profile={currentProfile} />
+        </div>
 
-        {/* Hero Overlay Content */}
-        <div className="absolute inset-0 bg-gradient-to-t from-gray-950 via-gray-950/60 to-transparent">
-          <div className="container mx-auto px-4 h-full flex items-end pb-20">
-            <div className="max-w-2xl text-white">
-              <Badge className="bg-red-600/20 text-red-400 border-red-600/30 mb-4">
+        {/* Gradient Overlay */}
+        <div className="absolute inset-0 z-10 bg-gradient-to-t from-gray-950 via-gray-950/40 to-transparent" />
+
+        {/* Hero Content */}
+        <div className="relative z-20 min-h-screen flex items-center">
+          <div className="container mx-auto px-4 py-20">
+            <div className="max-w-3xl">
+              <Badge className="bg-red-600/20 text-red-400 border-red-600/30 mb-6 inline-flex items-center">
                 <Film className="h-3 w-3 mr-1" />
                 Featured Today
               </Badge>
-              <h1 className="text-4xl md:text-6xl font-bold mb-4 leading-tight">
+
+              <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold mb-6 leading-tight text-white">
                 Your Next Great
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-red-400 to-red-600">
-                  {" "}
+                <span className="block text-transparent bg-clip-text bg-gradient-to-r from-red-400 to-red-600">
                   Adventure
                 </span>
               </h1>
-              <p className="text-xl text-gray-300 mb-8 leading-relaxed">
+
+              <p className="text-xl md:text-2xl text-gray-300 mb-8 leading-relaxed max-w-2xl">
                 Discover thousands of movies and TV shows. Stream instantly,
                 watch with friends, and join a community of entertainment
                 lovers.
               </p>
 
-              {!user ? (
-                <div className="flex flex-col sm:flex-row gap-4">
-                  <Button
-                    size="lg"
-                    className="bg-red-600 hover:bg-red-700 text-white"
-                  >
-                    <Play className="h-5 w-5 mr-2" />
-                    Start Watching Free
-                  </Button>
-                  <Button
-                    size="lg"
-                    variant="outline"
-                    className="border-gray-700 text-white hover:bg-gray-800"
-                  >
-                    Learn More
-                  </Button>
-                </div>
-              ) : (
-                <div className="flex items-center gap-4">
-                  <Button
-                    size="lg"
-                    className="bg-red-600 hover:bg-red-700 text-white"
-                  >
-                    <Play className="h-5 w-5 mr-2" />
-                    Continue Watching
-                  </Button>
-                  <Button
-                    size="lg"
-                    variant="outline"
-                    className="border-gray-700 text-white hover:bg-gray-800"
-                  >
-                    Browse Library
-                  </Button>
-                </div>
-              )}
+              <div className="flex flex-col sm:flex-row gap-4 items-start">
+                {!user ? (
+                  <>
+                    <Button
+                      size="lg"
+                      className="bg-red-600 hover:bg-red-700 text-white shadow-xl hover:shadow-red-500/25 transition-all"
+                    >
+                      <Play className="h-5 w-5 mr-2" />
+                      Start Watching Free
+                    </Button>
+                    <Button
+                      size="lg"
+                      variant="outline"
+                      className="border-gray-600 text-white hover:bg-gray-800 hover:border-gray-500 transition-all"
+                    >
+                      Learn More
+                    </Button>
+                  </>
+                ) : (
+                  <>
+                    <Button
+                      size="lg"
+                      className="bg-red-600 hover:bg-red-700 text-white shadow-xl hover:shadow-red-500/25 transition-all"
+                    >
+                      <Play className="h-5 w-5 mr-2" />
+                      Continue Watching
+                    </Button>
+                    <Button
+                      size="lg"
+                      variant="outline"
+                      className="border-gray-600 text-white hover:bg-gray-800 hover:border-gray-500 transition-all"
+                    >
+                      Browse Library
+                    </Button>
+                  </>
+                )}
+              </div>
             </div>
           </div>
         </div>
