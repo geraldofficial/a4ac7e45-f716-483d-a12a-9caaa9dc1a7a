@@ -1,7 +1,10 @@
 import { useToast } from "@/hooks/use-toast";
 import { userApi } from "@/services/user";
+import { authApi } from "@/services/auth";
 import { UserProfile } from "@/types/auth";
 import { formatError } from "@/lib/utils";
+import { supabase } from "@/integrations/supabase/client";
+import { cleanupAuthState } from "@/utils/authCleanup";
 
 export const useAuthActions = (
   user: UserProfile | null,
