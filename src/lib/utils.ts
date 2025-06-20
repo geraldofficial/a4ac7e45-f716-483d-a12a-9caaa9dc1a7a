@@ -23,7 +23,14 @@ export function formatError(error: any): string {
       error.message || error.details || error.hint || "Unknown error";
     const code = error.code ? `[${error.code}]` : "";
     const status = error.status ? ` (${error.status})` : "";
-    return `${code}${status} ${message}`.trim();
+
+    // Add helpful context for common database errors
+    let helpText = "";
+    if (error.code === "42703" && message.includes("does not exist")) {
+      helpText = " (Check database schema - column may not exist)";
+    }
+
+    return `${code}${status} ${message}${helpText}`.trim();
   }
 
   // Handle standard Error objects
