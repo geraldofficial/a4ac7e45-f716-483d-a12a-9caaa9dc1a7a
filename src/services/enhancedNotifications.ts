@@ -390,8 +390,10 @@ class EnhancedNotificationsService {
 
       if (error) throw error;
     } catch (error) {
-      const errorMessage = formatError(error);
-      console.error("Error marking all notifications as read:", errorMessage);
+      console.error(
+        "Error marking all notifications as read:",
+        error instanceof Error ? error.message : String(error),
+      );
       throw error;
     }
   }
