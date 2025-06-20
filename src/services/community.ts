@@ -73,10 +73,22 @@ class CommunityService {
       // Get likes and comments counts
       const postsWithCounts = await Promise.all(
         (posts || []).map(async (post) => {
-          const [likesResult, commentsResult] = await Promise.all([
-            supabase.from("post_likes").select("id").eq("post_id", post.id),
-            supabase.from("post_comments").select("id").eq("post_id", post.id),
-          ]);
+          const [likesResult, commentsResult, profileResult] =
+            await Promise.all([
+              supabase
+                .from("community_post_likes")
+                .select("id, user_id")
+                .eq("post_id", post.id),
+              supabase
+                .from("community_post_comments")
+                .select("id")
+                .eq("post_id", post.id),
+              supabase
+                .from("profiles")
+                .select("id, username, full_name, avatar")
+                .eq("id", post.user_id)
+                .single(),
+            ]);
 
           return {
             ...post,
