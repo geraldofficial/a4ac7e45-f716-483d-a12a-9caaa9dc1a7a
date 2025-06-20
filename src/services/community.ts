@@ -193,7 +193,7 @@ class CommunityService {
     try {
       // Check if already liked
       const { data: existingLike, error: checkError } = await supabase
-        .from("post_likes")
+        .from("community_post_likes")
         .select("id")
         .eq("post_id", postId)
         .eq("user_id", userId)
@@ -204,7 +204,7 @@ class CommunityService {
       if (existingLike) {
         // Unlike
         const { error } = await supabase
-          .from("post_likes")
+          .from("community_post_likes")
           .delete()
           .eq("post_id", postId)
           .eq("user_id", userId);
@@ -214,7 +214,7 @@ class CommunityService {
       } else {
         // Like
         const { error } = await supabase
-          .from("post_likes")
+          .from("community_post_likes")
           .insert({ post_id: postId, user_id: userId });
 
         if (error) throw error;
