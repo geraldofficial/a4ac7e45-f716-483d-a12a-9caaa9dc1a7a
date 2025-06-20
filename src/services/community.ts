@@ -278,11 +278,11 @@ class CommunityService {
   async fetchComments(postId: string): Promise<CommunityComment[]> {
     try {
       const { data: comments, error } = await supabase
-        .from("post_comments")
+        .from("community_post_comments")
         .select(
           `
           *,
-          profiles!post_comments_user_id_fkey (
+          profiles!community_post_comments_user_id_fkey (
             id,
             username,
             full_name,
@@ -308,7 +308,7 @@ class CommunityService {
   ): Promise<CommunityComment> {
     try {
       const { data: comment, error } = await supabase
-        .from("post_comments")
+        .from("community_post_comments")
         .insert({
           post_id: postId,
           user_id: userId,
@@ -317,7 +317,7 @@ class CommunityService {
         .select(
           `
           *,
-          profiles!post_comments_user_id_fkey (
+          profiles!community_post_comments_user_id_fkey (
             id,
             username,
             full_name,
@@ -338,7 +338,7 @@ class CommunityService {
   async deleteComment(commentId: string, userId: string): Promise<void> {
     try {
       const { error } = await supabase
-        .from("post_comments")
+        .from("community_post_comments")
         .delete()
         .eq("id", commentId)
         .eq("user_id", userId);
