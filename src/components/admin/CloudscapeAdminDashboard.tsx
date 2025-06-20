@@ -280,12 +280,14 @@ export const CloudscapeAdminDashboard: React.FC = () => {
       let targetUserIds: string[] = [];
 
       if (newNotification.targetUsers === "all") {
-        targetUserIds = users.map(user => user.id);
+        targetUserIds = users.map((user) => user.id);
       } else if (newNotification.targetUsers === "active") {
-        targetUserIds = users.filter(user => user.last_sign_in_at).map(user => user.id);
+        targetUserIds = users
+          .filter((user) => user.last_sign_in_at)
+          .map((user) => user.id);
       } else {
         // For now, send to all users if no specific targeting
-        targetUserIds = users.map(user => user.id);
+        targetUserIds = users.map((user) => user.id);
       }
 
       if (targetUserIds.length === 0) {
@@ -378,7 +380,9 @@ export const CloudscapeAdminDashboard: React.FC = () => {
     const Icon = icons[status as keyof typeof icons] || CheckCircle;
 
     return (
-      <Badge className={`${variants[status as keyof typeof variants] || "bg-gray-100 text-gray-800"} border`}>
+      <Badge
+        className={`${variants[status as keyof typeof variants] || "bg-gray-100 text-gray-800"} border`}
+      >
         <Icon className="h-3 w-3 mr-1" />
         {status.charAt(0).toUpperCase() + status.slice(1)}
       </Badge>
@@ -386,16 +390,18 @@ export const CloudscapeAdminDashboard: React.FC = () => {
   };
 
   const getMetricStatus = (value: number, threshold: number) => {
-    if (value < threshold * 0.6) return { color: "text-green-600", bg: "bg-green-100" };
-    if (value < threshold * 0.8) return { color: "text-yellow-600", bg: "bg-yellow-100" };
+    if (value < threshold * 0.6)
+      return { color: "text-green-600", bg: "bg-green-100" };
+    if (value < threshold * 0.8)
+      return { color: "text-yellow-600", bg: "bg-yellow-100" };
     return { color: "text-red-600", bg: "bg-red-100" };
   };
 
   const filteredUsers = users.filter((user) => {
     const matchesSearch =
-      (user.email?.toLowerCase().includes(searchTerm.toLowerCase())) ||
-      (user.username?.toLowerCase().includes(searchTerm.toLowerCase())) ||
-      (user.full_name?.toLowerCase().includes(searchTerm.toLowerCase()));
+      user.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      user.username?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      user.full_name?.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesFilter =
       userFilter === "all" ||
       (userFilter === "active" && user.last_sign_in_at) ||
@@ -440,8 +446,12 @@ export const CloudscapeAdminDashboard: React.FC = () => {
                 <Shield className="h-6 w-6 text-white" />
               </div>
               <div>
-                <h1 className="text-2xl font-semibold text-slate-900">FlickPick Admin</h1>
-                <p className="text-sm text-slate-600">System management console</p>
+                <h1 className="text-2xl font-semibold text-slate-900">
+                  FlickPick Admin
+                </h1>
+                <p className="text-sm text-slate-600">
+                  System management console
+                </p>
               </div>
             </div>
           </div>
@@ -456,10 +466,18 @@ export const CloudscapeAdminDashboard: React.FC = () => {
               disabled={refreshing}
               className="border-slate-300"
             >
-              <RefreshCw className={`h-4 w-4 mr-2 ${refreshing ? 'animate-spin' : ''}`} />
+              <RefreshCw
+                className={`h-4 w-4 mr-2 ${refreshing ? "animate-spin" : ""}`}
+              />
               Refresh
             </Button>
-            <Button className="bg-blue-600 hover:bg-blue-700">
+            <Button
+              className="bg-blue-600 hover:bg-blue-700"
+              onClick={() => {
+                setActiveTab("settings");
+                toast.success("Navigated to settings");
+              }}
+            >
               <Settings className="h-4 w-4 mr-2" />
               Settings
             </Button>
@@ -484,11 +502,15 @@ export const CloudscapeAdminDashboard: React.FC = () => {
               </div>
               <div className="flex items-center space-x-6">
                 <div className="text-center">
-                  <div className="text-lg font-semibold">{systemMetrics.activeConnections}</div>
+                  <div className="text-lg font-semibold">
+                    {systemMetrics.activeConnections}
+                  </div>
                   <div className="text-xs opacity-75">Active Sessions</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-lg font-semibold">{systemMetrics.apiResponseTime}ms</div>
+                  <div className="text-lg font-semibold">
+                    {systemMetrics.apiResponseTime}ms
+                  </div>
                   <div className="text-xs opacity-75">Response Time</div>
                 </div>
               </div>
@@ -500,7 +522,9 @@ export const CloudscapeAdminDashboard: React.FC = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           <Card className="border-slate-200 bg-white shadow-sm hover:shadow-md transition-shadow">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-slate-700">Total Users</CardTitle>
+              <CardTitle className="text-sm font-medium text-slate-700">
+                Total Users
+              </CardTitle>
               <div className="h-8 w-8 bg-blue-100 rounded-lg flex items-center justify-center">
                 <Users className="h-4 w-4 text-blue-600" />
               </div>
@@ -510,15 +534,17 @@ export const CloudscapeAdminDashboard: React.FC = () => {
                 {stats.totalUsers.toLocaleString()}
               </div>
               <p className="text-xs text-green-600 flex items-center mt-1">
-                <TrendingUp className="h-3 w-3 mr-1" />
-                +{stats.newUsersToday} today
+                <TrendingUp className="h-3 w-3 mr-1" />+{stats.newUsersToday}{" "}
+                today
               </p>
             </CardContent>
           </Card>
 
           <Card className="border-slate-200 bg-white shadow-sm hover:shadow-md transition-shadow">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-slate-700">Active Users</CardTitle>
+              <CardTitle className="text-sm font-medium text-slate-700">
+                Active Users
+              </CardTitle>
               <div className="h-8 w-8 bg-green-100 rounded-lg flex items-center justify-center">
                 <Activity className="h-4 w-4 text-green-600" />
               </div>
@@ -528,14 +554,20 @@ export const CloudscapeAdminDashboard: React.FC = () => {
                 {stats.activeUsers.toLocaleString()}
               </div>
               <p className="text-xs text-slate-600 mt-1">
-                {((stats.activeUsers / Math.max(stats.totalUsers, 1)) * 100).toFixed(1)}% of total
+                {(
+                  (stats.activeUsers / Math.max(stats.totalUsers, 1)) *
+                  100
+                ).toFixed(1)}
+                % of total
               </p>
             </CardContent>
           </Card>
 
           <Card className="border-slate-200 bg-white shadow-sm hover:shadow-md transition-shadow">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-slate-700">Content Posts</CardTitle>
+              <CardTitle className="text-sm font-medium text-slate-700">
+                Content Posts
+              </CardTitle>
               <div className="h-8 w-8 bg-purple-100 rounded-lg flex items-center justify-center">
                 <FileText className="h-4 w-4 text-purple-600" />
               </div>
@@ -545,15 +577,16 @@ export const CloudscapeAdminDashboard: React.FC = () => {
                 {stats.totalPosts.toLocaleString()}
               </div>
               <p className="text-xs text-green-600 flex items-center mt-1">
-                <TrendingUp className="h-3 w-3 mr-1" />
-                +{stats.postsToday} today
+                <TrendingUp className="h-3 w-3 mr-1" />+{stats.postsToday} today
               </p>
             </CardContent>
           </Card>
 
           <Card className="border-slate-200 bg-white shadow-sm hover:shadow-md transition-shadow">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-slate-700">Engagement</CardTitle>
+              <CardTitle className="text-sm font-medium text-slate-700">
+                Engagement
+              </CardTitle>
               <div className="h-8 w-8 bg-red-100 rounded-lg flex items-center justify-center">
                 <Heart className="h-4 w-4 text-red-600" />
               </div>
@@ -583,36 +616,38 @@ export const CloudscapeAdminDashboard: React.FC = () => {
                 <div>
                   <div className="flex justify-between text-sm mb-1">
                     <span className="text-slate-600">CPU Usage</span>
-                    <span className={`font-medium ${getMetricStatus(systemMetrics.cpuUsage, 100).color}`}>
+                    <span
+                      className={`font-medium ${getMetricStatus(systemMetrics.cpuUsage, 100).color}`}
+                    >
                       {systemMetrics.cpuUsage}%
                     </span>
                   </div>
-                  <Progress
-                    value={systemMetrics.cpuUsage}
-                    className="h-2"
-                  />
+                  <Progress value={systemMetrics.cpuUsage} className="h-2" />
                 </div>
                 <div>
                   <div className="flex justify-between text-sm mb-1">
                     <span className="text-slate-600">Memory Usage</span>
-                    <span className={`font-medium ${getMetricStatus(systemMetrics.memoryUsage, 100).color}`}>
+                    <span
+                      className={`font-medium ${getMetricStatus(systemMetrics.memoryUsage, 100).color}`}
+                    >
                       {systemMetrics.memoryUsage}%
                     </span>
                   </div>
-                  <Progress
-                    value={systemMetrics.memoryUsage}
-                    className="h-2"
-                  />
+                  <Progress value={systemMetrics.memoryUsage} className="h-2" />
                 </div>
                 <div>
                   <div className="flex justify-between text-sm mb-1">
                     <span className="text-slate-600">Storage</span>
                     <span className="font-medium text-slate-900">
-                      {systemMetrics.storageUsed}/{systemMetrics.storageTotal} GB
+                      {systemMetrics.storageUsed}/{systemMetrics.storageTotal}{" "}
+                      GB
                     </span>
                   </div>
                   <Progress
-                    value={(systemMetrics.storageUsed / systemMetrics.storageTotal) * 100}
+                    value={
+                      (systemMetrics.storageUsed / systemMetrics.storageTotal) *
+                      100
+                    }
                     className="h-2"
                   />
                 </div>
@@ -630,19 +665,27 @@ export const CloudscapeAdminDashboard: React.FC = () => {
             <CardContent>
               <div className="grid grid-cols-2 gap-4">
                 <div className="text-center p-3 bg-slate-50 rounded-lg">
-                  <div className="text-lg font-semibold text-slate-900">{systemMetrics.apiResponseTime}ms</div>
+                  <div className="text-lg font-semibold text-slate-900">
+                    {systemMetrics.apiResponseTime}ms
+                  </div>
                   <div className="text-xs text-slate-600">API Response</div>
                 </div>
                 <div className="text-center p-3 bg-slate-50 rounded-lg">
-                  <div className="text-lg font-semibold text-slate-900">{systemMetrics.activeConnections}</div>
+                  <div className="text-lg font-semibold text-slate-900">
+                    {systemMetrics.activeConnections}
+                  </div>
                   <div className="text-xs text-slate-600">Connections</div>
                 </div>
                 <div className="text-center p-3 bg-slate-50 rounded-lg">
-                  <div className="text-lg font-semibold text-slate-900">{systemMetrics.bandwidthUsed.toFixed(1)} GB</div>
+                  <div className="text-lg font-semibold text-slate-900">
+                    {systemMetrics.bandwidthUsed.toFixed(1)} GB
+                  </div>
                   <div className="text-xs text-slate-600">Bandwidth</div>
                 </div>
                 <div className="text-center p-3 bg-slate-50 rounded-lg">
-                  <div className="text-lg font-semibold text-slate-900">{(systemMetrics.errorRate * 100).toFixed(2)}%</div>
+                  <div className="text-lg font-semibold text-slate-900">
+                    {(systemMetrics.errorRate * 100).toFixed(2)}%
+                  </div>
                   <div className="text-xs text-slate-600">Error Rate</div>
                 </div>
               </div>
@@ -652,7 +695,11 @@ export const CloudscapeAdminDashboard: React.FC = () => {
 
         {/* Main Content Tabs */}
         <Card className="border-slate-200 bg-white shadow-sm">
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+          <Tabs
+            value={activeTab}
+            onValueChange={setActiveTab}
+            className="w-full"
+          >
             <div className="border-b border-slate-200">
               <TabsList className="grid w-full grid-cols-6 bg-transparent h-auto p-0">
                 <TabsTrigger
@@ -706,33 +753,37 @@ export const CloudscapeAdminDashboard: React.FC = () => {
                   {/* Recent Activity */}
                   <div>
                     <div className="flex items-center justify-between mb-4">
-                      <h3 className="text-lg font-semibold text-slate-900">Recent Activity</h3>
-            <Button
-              variant="outline"
-              onClick={refreshData}
-              disabled={refreshing}
-              className="border-slate-300"
-            >
-              <RefreshCw className={`h-4 w-4 mr-2 ${refreshing ? 'animate-spin' : ''}`} />
-              Refresh
-            </Button>
-            <Button
-              className="bg-blue-600 hover:bg-blue-700"
-              onClick={() => {
-                setActiveTab("settings");
-                toast.success("Navigated to settings");
-              }}
-            >
-              <Settings className="h-4 w-4 mr-2" />
-              Settings
-            </Button>
+                      <h3 className="text-lg font-semibold text-slate-900">
+                        Recent Activity
+                      </h3>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="text-blue-600"
+                        onClick={() => {
+                          setActiveTab("content");
+                          toast.success("Showing all recent activity");
+                        }}
+                      >
+                        View all
+                        <ExternalLink className="h-3 w-3 ml-1" />
+                      </Button>
+                    </div>
+                    <div className="space-y-3">
+                      {posts.slice(0, 5).map((post) => (
+                        <div
+                          key={post.id}
+                          className="flex items-start space-x-3 p-3 bg-slate-50 rounded-lg"
+                        >
                           <div className="flex-shrink-0">
                             <div className="h-8 w-8 rounded-full bg-purple-100 flex items-center justify-center">
                               <FileText className="h-4 w-4 text-purple-600" />
                             </div>
                           </div>
                           <div className="flex-1 min-w-0">
-                            <p className="text-sm font-medium text-slate-900">New post created</p>
+                            <p className="text-sm font-medium text-slate-900">
+                              New post created
+                            </p>
                             <p className="text-xs text-slate-600 truncate">
                               {post.content.substring(0, 50)}...
                             </p>
@@ -748,7 +799,9 @@ export const CloudscapeAdminDashboard: React.FC = () => {
                   {/* Top Users */}
                   <div>
                     <div className="flex items-center justify-between mb-4">
-                      <h3 className="text-lg font-semibold text-slate-900">Most Active Users</h3>
+                      <h3 className="text-lg font-semibold text-slate-900">
+                        Most Active Users
+                      </h3>
                       <Button
                         variant="ghost"
                         size="sm"
@@ -764,11 +817,16 @@ export const CloudscapeAdminDashboard: React.FC = () => {
                     </div>
                     <div className="space-y-3">
                       {users.slice(0, 5).map((user) => (
-                        <div key={user.id} className="flex items-center space-x-3 p-3 bg-slate-50 rounded-lg">
+                        <div
+                          key={user.id}
+                          className="flex items-center space-x-3 p-3 bg-slate-50 rounded-lg"
+                        >
                           <Avatar className="h-8 w-8">
                             <AvatarImage src={user.avatar} />
                             <AvatarFallback className="bg-blue-100 text-blue-600">
-                              {(user.email || user.username || "U").charAt(0).toUpperCase()}
+                              {(user.email || user.username || "U")
+                                .charAt(0)
+                                .toUpperCase()}
                             </AvatarFallback>
                           </Avatar>
                           <div className="flex-1 min-w-0">
@@ -780,8 +838,12 @@ export const CloudscapeAdminDashboard: React.FC = () => {
                             </p>
                           </div>
                           <div className="text-right">
-                            <p className="text-xs font-medium text-slate-900">{user.post_count} posts</p>
-                            <p className="text-xs text-slate-600">{user.like_count} likes</p>
+                            <p className="text-xs font-medium text-slate-900">
+                              {user.post_count} posts
+                            </p>
+                            <p className="text-xs text-slate-600">
+                              {user.like_count} likes
+                            </p>
                           </div>
                         </div>
                       ))}
@@ -793,7 +855,9 @@ export const CloudscapeAdminDashboard: React.FC = () => {
               <TabsContent value="users" className="mt-0">
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
-                    <h3 className="text-lg font-semibold text-slate-900">User Management</h3>
+                    <h3 className="text-lg font-semibold text-slate-900">
+                      User Management
+                    </h3>
                     <div className="flex items-center space-x-3">
                       <div className="relative">
                         <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-slate-400" />
@@ -815,20 +879,12 @@ export const CloudscapeAdminDashboard: React.FC = () => {
                         </SelectContent>
                       </Select>
                       <Button
-                        variant="ghost"
-                        size="sm"
-                        className="text-blue-600"
+                        className="bg-blue-600 hover:bg-blue-700"
                         onClick={() => {
-                          setActiveTab("users");
-                          toast.success("Showing all users");
+                          toast.success("Add User feature coming soon!");
+                          // In a real app, this would open a user creation modal
                         }}
                       >
-                        View all
-                        <ExternalLink className="h-3 w-3 ml-1" />
-                      </Button>
-                    </div>
-                    <div className="space-y-3">
-                      {users.slice(0, 5).map((user) => (
                         <UserPlus className="h-4 w-4 mr-2" />
                         Add User
                       </Button>
@@ -839,12 +895,24 @@ export const CloudscapeAdminDashboard: React.FC = () => {
                     <Table>
                       <TableHeader>
                         <TableRow className="bg-slate-50">
-                          <TableHead className="text-slate-700 font-medium">User</TableHead>
-                          <TableHead className="text-slate-700 font-medium">Email</TableHead>
-                          <TableHead className="text-slate-700 font-medium">Activity</TableHead>
-                          <TableHead className="text-slate-700 font-medium">Last Active</TableHead>
-                          <TableHead className="text-slate-700 font-medium">Status</TableHead>
-                          <TableHead className="text-slate-700 font-medium">Actions</TableHead>
+                          <TableHead className="text-slate-700 font-medium">
+                            User
+                          </TableHead>
+                          <TableHead className="text-slate-700 font-medium">
+                            Email
+                          </TableHead>
+                          <TableHead className="text-slate-700 font-medium">
+                            Activity
+                          </TableHead>
+                          <TableHead className="text-slate-700 font-medium">
+                            Last Active
+                          </TableHead>
+                          <TableHead className="text-slate-700 font-medium">
+                            Status
+                          </TableHead>
+                          <TableHead className="text-slate-700 font-medium">
+                            Actions
+                          </TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
@@ -855,12 +923,16 @@ export const CloudscapeAdminDashboard: React.FC = () => {
                                 <Avatar className="h-8 w-8">
                                   <AvatarImage src={user.avatar} />
                                   <AvatarFallback className="bg-blue-100 text-blue-600">
-                                    {(user.email || user.username || "U").charAt(0).toUpperCase()}
+                                    {(user.email || user.username || "U")
+                                      .charAt(0)
+                                      .toUpperCase()}
                                   </AvatarFallback>
                                 </Avatar>
                                 <div>
                                   <div className="font-medium text-slate-900">
-                                    {user.full_name || user.username || "Anonymous"}
+                                    {user.full_name ||
+                                      user.username ||
+                                      "Anonymous"}
                                   </div>
                                   <div className="text-sm text-slate-500">
                                     ID: {user.id.substring(0, 8)}...
@@ -874,7 +946,9 @@ export const CloudscapeAdminDashboard: React.FC = () => {
                             <TableCell>
                               <div className="text-sm text-slate-700">
                                 <div>{user.post_count} posts</div>
-                                <div className="text-slate-500">{user.like_count} likes</div>
+                                <div className="text-slate-500">
+                                  {user.like_count} likes
+                                </div>
                               </div>
                             </TableCell>
                             <TableCell className="text-slate-700">
@@ -895,11 +969,23 @@ export const CloudscapeAdminDashboard: React.FC = () => {
                                   </Button>
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent align="end">
-                                  <DropdownMenuItem>
+                                  <DropdownMenuItem
+                                    onClick={() =>
+                                      toast.success(
+                                        "Edit user feature coming soon!",
+                                      )
+                                    }
+                                  >
                                     <Edit className="h-3 w-3 mr-2" />
                                     Edit User
                                   </DropdownMenuItem>
-                                  <DropdownMenuItem>
+                                  <DropdownMenuItem
+                                    onClick={() =>
+                                      toast.success(
+                                        "View profile feature coming soon!",
+                                      )
+                                    }
+                                  >
                                     <Eye className="h-3 w-3 mr-2" />
                                     View Profile
                                   </DropdownMenuItem>
@@ -925,7 +1011,9 @@ export const CloudscapeAdminDashboard: React.FC = () => {
               <TabsContent value="content" className="mt-0">
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
-                    <h3 className="text-lg font-semibold text-slate-900">Content Management</h3>
+                    <h3 className="text-lg font-semibold text-slate-900">
+                      Content Management
+                    </h3>
                     <div className="flex items-center space-x-3">
                       <div className="relative">
                         <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-slate-400" />
@@ -936,7 +1024,10 @@ export const CloudscapeAdminDashboard: React.FC = () => {
                           className="pl-10 w-64 border-slate-300"
                         />
                       </div>
-                      <Select value={contentFilter} onValueChange={setContentFilter}>
+                      <Select
+                        value={contentFilter}
+                        onValueChange={setContentFilter}
+                      >
                         <SelectTrigger className="w-32 border-slate-300">
                           <SelectValue />
                         </SelectTrigger>
@@ -953,18 +1044,30 @@ export const CloudscapeAdminDashboard: React.FC = () => {
                     <Table>
                       <TableHeader>
                         <TableRow className="bg-slate-50">
-                          <TableHead className="text-slate-700 font-medium">Content</TableHead>
-                          <TableHead className="text-slate-700 font-medium">Author</TableHead>
-                          <TableHead className="text-slate-700 font-medium">Engagement</TableHead>
-                          <TableHead className="text-slate-700 font-medium">Date</TableHead>
-                          <TableHead className="text-slate-700 font-medium">Actions</TableHead>
+                          <TableHead className="text-slate-700 font-medium">
+                            Content
+                          </TableHead>
+                          <TableHead className="text-slate-700 font-medium">
+                            Author
+                          </TableHead>
+                          <TableHead className="text-slate-700 font-medium">
+                            Engagement
+                          </TableHead>
+                          <TableHead className="text-slate-700 font-medium">
+                            Date
+                          </TableHead>
+                          <TableHead className="text-slate-700 font-medium">
+                            Actions
+                          </TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
                         {filteredPosts.map((post) => (
                           <TableRow key={post.id} className="hover:bg-slate-50">
                             <TableCell className="max-w-xs">
-                              <div className="truncate text-slate-900">{post.content}</div>
+                              <div className="truncate text-slate-900">
+                                {post.content}
+                              </div>
                               {post.has_media && (
                                 <Badge className="mt-1 bg-purple-100 text-purple-800 border-purple-200">
                                   Has Media
@@ -976,10 +1079,14 @@ export const CloudscapeAdminDashboard: React.FC = () => {
                                 <Avatar className="h-6 w-6">
                                   <AvatarImage src={post.author.avatar} />
                                   <AvatarFallback className="bg-blue-100 text-blue-600 text-xs">
-                                    {post.author.username.charAt(0).toUpperCase()}
+                                    {post.author.username
+                                      .charAt(0)
+                                      .toUpperCase()}
                                   </AvatarFallback>
                                 </Avatar>
-                                <span className="text-slate-700">{post.author.username}</span>
+                                <span className="text-slate-700">
+                                  {post.author.username}
+                                </span>
                               </div>
                             </TableCell>
                             <TableCell>
@@ -1005,11 +1112,23 @@ export const CloudscapeAdminDashboard: React.FC = () => {
                                   </Button>
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent align="end">
-                                  <DropdownMenuItem>
+                                  <DropdownMenuItem
+                                    onClick={() =>
+                                      toast.success(
+                                        "View post feature coming soon!",
+                                      )
+                                    }
+                                  >
                                     <Eye className="h-3 w-3 mr-2" />
                                     View Post
                                   </DropdownMenuItem>
-                                  <DropdownMenuItem>
+                                  <DropdownMenuItem
+                                    onClick={() =>
+                                      toast.success(
+                                        "Edit post feature coming soon!",
+                                      )
+                                    }
+                                  >
                                     <Edit className="h-3 w-3 mr-2" />
                                     Edit Post
                                   </DropdownMenuItem>
@@ -1036,10 +1155,14 @@ export const CloudscapeAdminDashboard: React.FC = () => {
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                   {/* Send New Notification */}
                   <div>
-                    <h3 className="text-lg font-semibold text-slate-900 mb-4">Send Notification</h3>
+                    <h3 className="text-lg font-semibold text-slate-900 mb-4">
+                      Send Notification
+                    </h3>
                     <div className="space-y-4 p-6 border border-slate-200 rounded-lg bg-slate-50">
                       <div>
-                        <Label className="text-slate-700 font-medium">Title</Label>
+                        <Label className="text-slate-700 font-medium">
+                          Title
+                        </Label>
                         <Input
                           placeholder="Notification title"
                           value={newNotification.title}
@@ -1053,7 +1176,9 @@ export const CloudscapeAdminDashboard: React.FC = () => {
                         />
                       </div>
                       <div>
-                        <Label className="text-slate-700 font-medium">Message</Label>
+                        <Label className="text-slate-700 font-medium">
+                          Message
+                        </Label>
                         <Textarea
                           placeholder="Notification message"
                           value={newNotification.message}
@@ -1069,11 +1194,16 @@ export const CloudscapeAdminDashboard: React.FC = () => {
                       </div>
                       <div className="grid grid-cols-2 gap-4">
                         <div>
-                          <Label className="text-slate-700 font-medium">Type</Label>
+                          <Label className="text-slate-700 font-medium">
+                            Type
+                          </Label>
                           <Select
                             value={newNotification.type}
                             onValueChange={(value: any) =>
-                              setNewNotification((prev) => ({ ...prev, type: value }))
+                              setNewNotification((prev) => ({
+                                ...prev,
+                                type: value,
+                              }))
                             }
                           >
                             <SelectTrigger className="mt-1 border-slate-300">
@@ -1088,7 +1218,9 @@ export const CloudscapeAdminDashboard: React.FC = () => {
                           </Select>
                         </div>
                         <div>
-                          <Label className="text-slate-700 font-medium">Target</Label>
+                          <Label className="text-slate-700 font-medium">
+                            Target
+                          </Label>
                           <Select
                             value={newNotification.targetUsers}
                             onValueChange={(value: any) =>
@@ -1103,8 +1235,12 @@ export const CloudscapeAdminDashboard: React.FC = () => {
                             </SelectTrigger>
                             <SelectContent>
                               <SelectItem value="all">All Users</SelectItem>
-                              <SelectItem value="active">Active Users</SelectItem>
-                              <SelectItem value="premium">Premium Users</SelectItem>
+                              <SelectItem value="active">
+                                Active Users
+                              </SelectItem>
+                              <SelectItem value="premium">
+                                Premium Users
+                              </SelectItem>
                             </SelectContent>
                           </Select>
                         </div>
@@ -1112,7 +1248,9 @@ export const CloudscapeAdminDashboard: React.FC = () => {
                       <Button
                         onClick={sendNotification}
                         className="w-full bg-blue-600 hover:bg-blue-700"
-                        disabled={!newNotification.title || !newNotification.message}
+                        disabled={
+                          !newNotification.title || !newNotification.message
+                        }
                       >
                         <Send className="h-4 w-4 mr-2" />
                         Send Notification
@@ -1122,7 +1260,9 @@ export const CloudscapeAdminDashboard: React.FC = () => {
 
                   {/* Notification History */}
                   <div>
-                    <h3 className="text-lg font-semibold text-slate-900 mb-4">Recent Notifications</h3>
+                    <h3 className="text-lg font-semibold text-slate-900 mb-4">
+                      Recent Notifications
+                    </h3>
                     <div className="space-y-4">
                       {notifications.map((notification) => (
                         <div
@@ -1133,15 +1273,17 @@ export const CloudscapeAdminDashboard: React.FC = () => {
                             <h4 className="font-medium text-slate-900">
                               {notification.title}
                             </h4>
-                            <Badge className={
-                              notification.type === "error"
-                                ? "bg-red-100 text-red-800 border-red-200"
-                                : notification.type === "warning"
-                                ? "bg-yellow-100 text-yellow-800 border-yellow-200"
-                                : notification.type === "success"
-                                ? "bg-green-100 text-green-800 border-green-200"
-                                : "bg-blue-100 text-blue-800 border-blue-200"
-                            }>
+                            <Badge
+                              className={
+                                notification.type === "error"
+                                  ? "bg-red-100 text-red-800 border-red-200"
+                                  : notification.type === "warning"
+                                    ? "bg-yellow-100 text-yellow-800 border-yellow-200"
+                                    : notification.type === "success"
+                                      ? "bg-green-100 text-green-800 border-green-200"
+                                      : "bg-blue-100 text-blue-800 border-blue-200"
+                              }
+                            >
                               {notification.type}
                             </Badge>
                           </div>
@@ -1163,7 +1305,9 @@ export const CloudscapeAdminDashboard: React.FC = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                   <Card className="border-slate-200 bg-white shadow-sm">
                     <CardHeader>
-                      <CardTitle className="text-slate-900">User Growth</CardTitle>
+                      <CardTitle className="text-slate-900">
+                        User Growth
+                      </CardTitle>
                     </CardHeader>
                     <CardContent>
                       <div className="space-y-3">
@@ -1191,23 +1335,33 @@ export const CloudscapeAdminDashboard: React.FC = () => {
 
                   <Card className="border-slate-200 bg-white shadow-sm">
                     <CardHeader>
-                      <CardTitle className="text-slate-900">Content Stats</CardTitle>
+                      <CardTitle className="text-slate-900">
+                        Content Stats
+                      </CardTitle>
                     </CardHeader>
                     <CardContent>
                       <div className="space-y-3">
                         <div className="flex justify-between items-center">
-                          <span className="text-slate-600">Posts This Month</span>
+                          <span className="text-slate-600">
+                            Posts This Month
+                          </span>
                           <span className="font-semibold text-green-600">
                             {stats.postsThisMonth}
                           </span>
                         </div>
                         <div className="flex justify-between items-center">
-                          <span className="text-slate-600">Posts This Week</span>
-                          <span className="font-semibold text-blue-600">{stats.postsThisWeek}</span>
+                          <span className="text-slate-600">
+                            Posts This Week
+                          </span>
+                          <span className="font-semibold text-blue-600">
+                            {stats.postsThisWeek}
+                          </span>
                         </div>
                         <div className="flex justify-between items-center">
                           <span className="text-slate-600">Posts Today</span>
-                          <span className="font-semibold text-purple-600">{stats.postsToday}</span>
+                          <span className="font-semibold text-purple-600">
+                            {stats.postsToday}
+                          </span>
                         </div>
                       </div>
                     </CardContent>
@@ -1215,17 +1369,23 @@ export const CloudscapeAdminDashboard: React.FC = () => {
 
                   <Card className="border-slate-200 bg-white shadow-sm">
                     <CardHeader>
-                      <CardTitle className="text-slate-900">Engagement</CardTitle>
+                      <CardTitle className="text-slate-900">
+                        Engagement
+                      </CardTitle>
                     </CardHeader>
                     <CardContent>
                       <div className="space-y-3">
                         <div className="flex justify-between items-center">
                           <span className="text-slate-600">Total Likes</span>
-                          <span className="font-semibold text-red-600">{stats.totalLikes}</span>
+                          <span className="font-semibold text-red-600">
+                            {stats.totalLikes}
+                          </span>
                         </div>
                         <div className="flex justify-between items-center">
                           <span className="text-slate-600">Total Comments</span>
-                          <span className="font-semibold text-blue-600">{stats.totalComments}</span>
+                          <span className="font-semibold text-blue-600">
+                            {stats.totalComments}
+                          </span>
                         </div>
                         <div className="flex justify-between items-center">
                           <span className="text-slate-600">Avg. per Post</span>
@@ -1244,66 +1404,108 @@ export const CloudscapeAdminDashboard: React.FC = () => {
               <TabsContent value="settings" className="mt-0">
                 <div className="space-y-6">
                   <div>
-                    <h3 className="text-lg font-semibold text-slate-900 mb-4">Platform Settings</h3>
+                    <h3 className="text-lg font-semibold text-slate-900 mb-4">
+                      Platform Settings
+                    </h3>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       <div className="space-y-4 p-6 border border-slate-200 rounded-lg bg-slate-50">
-                        <h4 className="font-medium text-slate-900">General Settings</h4>
+                        <h4 className="font-medium text-slate-900">
+                          General Settings
+                        </h4>
                         <div className="space-y-3">
                           <div className="flex items-center justify-between">
-                            <Label className="text-slate-700">Maintenance Mode</Label>
+                            <Label className="text-slate-700">
+                              Maintenance Mode
+                            </Label>
                             <Switch
                               onCheckedChange={(checked) => {
-                                toast.success(checked ? "Maintenance mode enabled" : "Maintenance mode disabled");
+                                toast.success(
+                                  checked
+                                    ? "Maintenance mode enabled"
+                                    : "Maintenance mode disabled",
+                                );
                               }}
                             />
                           </div>
                           <div className="flex items-center justify-between">
-                            <Label className="text-slate-700">User Registration</Label>
+                            <Label className="text-slate-700">
+                              User Registration
+                            </Label>
                             <Switch
                               defaultChecked
                               onCheckedChange={(checked) => {
-                                toast.success(checked ? "User registration enabled" : "User registration disabled");
+                                toast.success(
+                                  checked
+                                    ? "User registration enabled"
+                                    : "User registration disabled",
+                                );
                               }}
                             />
                           </div>
                           <div className="flex items-center justify-between">
-                            <Label className="text-slate-700">Email Notifications</Label>
+                            <Label className="text-slate-700">
+                              Email Notifications
+                            </Label>
                             <Switch
                               defaultChecked
                               onCheckedChange={(checked) => {
-                                toast.success(checked ? "Email notifications enabled" : "Email notifications disabled");
+                                toast.success(
+                                  checked
+                                    ? "Email notifications enabled"
+                                    : "Email notifications disabled",
+                                );
                               }}
                             />
                           </div>
                         </div>
                       </div>
                       <div className="space-y-4 p-6 border border-slate-200 rounded-lg bg-slate-50">
-                        <h4 className="font-medium text-slate-900">Security Settings</h4>
+                        <h4 className="font-medium text-slate-900">
+                          Security Settings
+                        </h4>
                         <div className="space-y-3">
                           <div className="flex items-center justify-between">
-                            <Label className="text-slate-700">Two-Factor Auth</Label>
+                            <Label className="text-slate-700">
+                              Two-Factor Auth
+                            </Label>
                             <Switch
                               defaultChecked
                               onCheckedChange={(checked) => {
-                                toast.success(checked ? "Two-factor authentication enabled" : "Two-factor authentication disabled");
+                                toast.success(
+                                  checked
+                                    ? "Two-factor authentication enabled"
+                                    : "Two-factor authentication disabled",
+                                );
                               }}
                             />
                           </div>
                           <div className="flex items-center justify-between">
-                            <Label className="text-slate-700">Rate Limiting</Label>
+                            <Label className="text-slate-700">
+                              Rate Limiting
+                            </Label>
                             <Switch
                               defaultChecked
                               onCheckedChange={(checked) => {
-                                toast.success(checked ? "Rate limiting enabled" : "Rate limiting disabled");
+                                toast.success(
+                                  checked
+                                    ? "Rate limiting enabled"
+                                    : "Rate limiting disabled",
+                                );
                               }}
                             />
                           </div>
                           <div className="flex items-center justify-between">
-                            <Label className="text-slate-700">Content Moderation</Label>
+                            <Label className="text-slate-700">
+                              Content Moderation
+                            </Label>
                             <Switch
                               defaultChecked
                               onCheckedChange={(checked) => {
-                                toast.success(checked ? "Content moderation enabled" : "Content moderation disabled");
+                                toast.success(
+                                  checked
+                                    ? "Content moderation enabled"
+                                    : "Content moderation disabled",
+                                );
                               }}
                             />
                           </div>
