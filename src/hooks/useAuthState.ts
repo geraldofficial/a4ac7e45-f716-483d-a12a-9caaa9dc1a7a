@@ -48,7 +48,19 @@ export const useAuthState = () => {
               return null;
             }
 
-            const profile = await userApi.getUserProfile(userId);
+            // Add timeout promise to prevent hanging requests
+            const timeoutPromise = new Promise((_, reject) => {
+              setTimeout(
+                () => reject(new Error("Profile fetch timeout")),
+                10000,
+              ); // 10 second timeout
+            });
+
+            const profile = await Promise.race([
+              userApi.getUserProfile(userId),
+              timeoutPromise,
+            ]);
+
             retryCountRef.current = 0; // Reset on success
             return profile;
           } catch (error) {
@@ -59,6 +71,14 @@ export const useAuthState = () => {
             if (retryCountRef.current <= 2) {
               console.error("Full error details:", error);
             }
+
+            // Add exponential backoff for retries
+            if (retryCountRef.current < maxRetries) {
+              const delay = Math.pow(2, retryCountRef.current) * 1000; // 1s, 2s, 4s delays
+              console.log(`⏳ Waiting ${delay}ms before retry...`);
+              await new Promise((resolve) => setTimeout(resolve, delay));
+            }
+
             return null;
           }
         };
