@@ -89,6 +89,7 @@ import {
 } from "@/services/admin";
 import { formatError } from "@/lib/utils";
 import { toast } from "sonner";
+import { realNotificationsService } from "@/services/realNotifications";
 
 interface Notification {
   id: string;
@@ -270,14 +271,46 @@ export const CloudscapeAdminDashboard: React.FC = () => {
 
   const sendNotification = async () => {
     try {
+      if (!newNotification.title || !newNotification.message) {
+        toast.error("Please fill in all required fields");
+        return;
+      }
+
+      // Get target user IDs based on selection
+      let targetUserIds: string[] = [];
+
+      if (newNotification.targetUsers === "all") {
+        targetUserIds = users.map((user) => user.id);
+      } else if (newNotification.targetUsers === "active") {
+        targetUserIds = users
+          .filter((user) => user.last_sign_in_at)
+          .map((user) => user.id);
+      } else {
+        // For now, send to all users if no specific targeting
+        targetUserIds = users.map((user) => user.id);
+      }
+
+      if (targetUserIds.length === 0) {
+        toast.error("No target users found");
+        return;
+      }
+
+      // Send bulk notification using real service
+      await realNotificationsService.sendBulkNotification(targetUserIds, {
+        title: newNotification.title,
+        message: newNotification.message,
+        type: newNotification.type as any,
+        priority: "medium",
+      });
+
+      // Add to local notifications list for display
       const notification: Notification = {
         id: Date.now().toString(),
         ...newNotification,
-        sent: false,
+        sent: true,
         created_at: new Date().toISOString(),
       };
 
-      // Here you would call your notification service
       setNotifications((prev) => [notification, ...prev]);
       setNewNotification({
         title: "",
@@ -287,8 +320,9 @@ export const CloudscapeAdminDashboard: React.FC = () => {
         scheduledAt: "",
       });
 
-      toast.success("Notification sent successfully!");
+      toast.success(`Notification sent to ${targetUserIds.length} users!`);
     } catch (error) {
+      console.error("Error sending notification:", error);
       toast.error(`Failed to send notification: ${formatError(error)}`);
     }
   };
