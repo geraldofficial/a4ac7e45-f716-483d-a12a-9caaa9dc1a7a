@@ -15,7 +15,7 @@ import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { useCommunityPosts } from "@/hooks/useCommunityPosts";
 import { useCommunityActions } from "@/hooks/useCommunityActions";
-import { useAuthState } from "@/hooks/useAuthState";
+import { useAuth } from "@/contexts/AuthContext";
 import { cn, formatError } from "@/lib/utils";
 import { toast } from "sonner";
 
@@ -44,7 +44,7 @@ interface CommunityFeedProps {
 }
 
 export const CommunityFeed: React.FC<CommunityFeedProps> = ({ className }) => {
-  const { user } = useAuthState();
+  const { user } = useAuth();
   const { posts, loading, fetchPosts, createPost } = useCommunityPosts();
   const { toggleLike, toggleBookmark, addComment } = useCommunityActions();
 
