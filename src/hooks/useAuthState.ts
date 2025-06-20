@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { userApi } from "@/services/user";
 import { UserProfile } from "@/types/auth";
+import { formatError } from "@/lib/utils";
 
 export const useAuthState = () => {
   const [user, setUser] = useState<UserProfile | null>(null);
