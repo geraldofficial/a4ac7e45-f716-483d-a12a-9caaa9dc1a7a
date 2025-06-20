@@ -46,7 +46,7 @@ interface User {
   id: string;
   email: string;
   created_at: string;
-  last_sign_in_at: string;
+  last_sign_in_at?: string; // Optional since not available from profiles table
   profiles?: {
     username: string;
     full_name: string;
