@@ -133,6 +133,14 @@ class RealNotificationsService {
   }
 
   async markAsRead(notificationId: string): Promise<void> {
+    // Handle fallback notifications that don't exist in database
+    if (notificationId.startsWith("fallback-")) {
+      console.info(
+        `Marking fallback notification ${notificationId} as read (client-side only)`,
+      );
+      return;
+    }
+
     try {
       const { error } = await supabase
         .from("user_notifications")
@@ -154,7 +162,8 @@ class RealNotificationsService {
         throw error;
       }
     } catch (error) {
-      console.error("Error marking notification as read:", formatError(error));
+      const errorMessage = formatError(error);
+      console.error("Error marking notification as read:", errorMessage);
       // Don't throw error for missing table, just log it
       if (
         error &&
@@ -162,6 +171,10 @@ class RealNotificationsService {
         "code" in error &&
         error.code === "42P01"
       ) {
+        return;
+      }
+      // Don't throw error for operations on fallback notifications
+      if (errorMessage.includes("fallback") || errorMessage.includes("42P01")) {
         return;
       }
       throw error;
@@ -210,6 +223,14 @@ class RealNotificationsService {
   }
 
   async toggleStar(notificationId: string, isStarred: boolean): Promise<void> {
+    // Handle fallback notifications that don't exist in database
+    if (notificationId.startsWith("fallback-")) {
+      console.info(
+        `Toggling star for fallback notification ${notificationId} (client-side only)`,
+      );
+      return;
+    }
+
     try {
       const { error } = await supabase
         .from("user_notifications")
@@ -228,7 +249,8 @@ class RealNotificationsService {
         throw error;
       }
     } catch (error) {
-      console.error("Error toggling notification star:", formatError(error));
+      const errorMessage = formatError(error);
+      console.error("Error toggling notification star:", errorMessage);
       // Don't throw error for missing table, just log it
       if (
         error &&
@@ -243,6 +265,14 @@ class RealNotificationsService {
   }
 
   async deleteNotification(notificationId: string): Promise<void> {
+    // Handle fallback notifications that don't exist in database
+    if (notificationId.startsWith("fallback-")) {
+      console.info(
+        `Deleting fallback notification ${notificationId} (client-side only)`,
+      );
+      return;
+    }
+
     try {
       const { error } = await supabase
         .from("user_notifications")
@@ -261,7 +291,8 @@ class RealNotificationsService {
         throw error;
       }
     } catch (error) {
-      console.error("Error deleting notification:", formatError(error));
+      const errorMessage = formatError(error);
+      console.error("Error deleting notification:", errorMessage);
       // Don't throw error for missing table, just log it
       if (
         error &&
