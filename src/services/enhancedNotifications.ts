@@ -511,7 +511,7 @@ class EnhancedNotificationsService {
     } catch (error) {
       console.error(
         "Error bulk marking notifications as read:",
-        formatError(error),
+        error instanceof Error ? error.message : String(error),
       );
       throw error;
     }
