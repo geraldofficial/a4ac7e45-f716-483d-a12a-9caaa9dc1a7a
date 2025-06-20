@@ -14,6 +14,7 @@ import { ScrollToTop } from "./components/ScrollToTop";
 import "./utils/networkDiagnostics";
 import "./utils/globalErrorHandler";
 import "./utils/migrationRunner";
+import "./utils/errorSuppression";
 
 // Pages - wrapped in error boundaries for safety
 import Index from "./pages/Index";
