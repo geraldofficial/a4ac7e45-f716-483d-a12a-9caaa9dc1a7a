@@ -131,7 +131,7 @@ const WatchParty: React.FC = () => {
     );
   }
 
-  if (!party) {
+  if (!session) {
     return (
       <div className="min-h-screen bg-gray-950 flex items-center justify-center p-4">
         <Card className="max-w-md border-gray-800 bg-gray-900">
@@ -163,20 +163,13 @@ const WatchParty: React.FC = () => {
         <Card className="max-w-lg border-gray-800 bg-gray-900">
           <CardHeader>
             <div className="text-center">
-              {party.movie_poster && (
-                <img
-                  src={party.movie_poster}
-                  alt={party.movie_title}
-                  className="w-24 h-36 object-cover rounded-lg mx-auto mb-4"
-                />
-              )}
               <CardTitle className="text-white text-xl">
                 Join Watch Party
               </CardTitle>
               <p className="text-gray-400 mt-2">
                 You're invited to watch{" "}
                 <span className="text-white font-medium">
-                  {party.movie_title}
+                  {session.movie_title}
                 </span>
               </p>
             </div>
@@ -184,16 +177,21 @@ const WatchParty: React.FC = () => {
           <CardContent className="space-y-6">
             <div className="bg-gray-800 rounded-lg p-4">
               <div className="flex items-center justify-between text-sm">
-                <span className="text-gray-400">Party Status</span>
-                <span className="text-green-400 flex items-center">
-                  <div className="w-2 h-2 bg-green-400 rounded-full mr-2" />
-                  Active
+                <span className="text-gray-400">Party Code</span>
+                <span className="text-green-400 font-mono text-lg">
+                  {session.id}
                 </span>
               </div>
               <div className="flex items-center justify-between text-sm mt-2">
                 <span className="text-gray-400">Created</span>
                 <span className="text-gray-300">
-                  {new Date(party.created_at).toLocaleDateString()}
+                  {new Date(session.created_at).toLocaleDateString()}
+                </span>
+              </div>
+              <div className="flex items-center justify-between text-sm mt-2">
+                <span className="text-gray-400">Participants</span>
+                <span className="text-gray-300">
+                  {session.participants.length}
                 </span>
               </div>
             </div>
@@ -227,13 +225,13 @@ const WatchParty: React.FC = () => {
     );
   }
 
+  // Once joined, show the full functional watch party component
   return (
-    <WatchPartyRoom
-      partyId={party.id}
-      movieSrc={party.movie_src}
-      movieTitle={party.movie_title}
-      moviePoster={party.movie_poster}
-      onLeave={handleLeave}
+    <FullyFunctionalWatchParty
+      movieId={session.movie_id}
+      movieTitle={session.movie_title}
+      movieType={session.movie_type}
+      onClose={handleLeave}
     />
   );
 };
