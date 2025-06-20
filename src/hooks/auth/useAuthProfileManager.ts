@@ -36,10 +36,7 @@ export const useAuthProfileManager = () => {
             avatar: basicUser.avatar,
           });
         } catch (createError) {
-          const errorMessage =
-            createError instanceof Error
-              ? createError.message
-              : String(createError);
+          const errorMessage = formatError(createError);
           console.warn(
             "⚠️ Failed to create profile, using basic user data:",
             errorMessage,
