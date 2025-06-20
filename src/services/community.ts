@@ -92,6 +92,12 @@ class CommunityService {
 
           return {
             ...post,
+            // Add default values for fields that don't exist in DB schema
+            media_type: undefined,
+            movie_id: undefined,
+            movie_title: undefined,
+            movie_poster: undefined,
+            rating: undefined,
             likes_count: likesResult.data?.length || 0,
             comments_count: commentsResult.data?.length || 0,
             is_liked: userId
