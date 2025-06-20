@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect } from 'react';
 import {
   Users,
   Film,
@@ -11,25 +11,25 @@ import {
   Shield,
   AlertTriangle,
   CheckCircle,
-  XCircle,
-} from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+  XCircle
+} from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Progress } from '@/components/ui/progress';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   Table,
   TableBody,
   TableCell,
   TableHead,
   TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { supabase } from "@/integrations/supabase/client";
-import { formatError } from "@/lib/utils";
-import { toast } from "sonner";
+  TableRow
+} from '@/components/ui/table';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { supabase } from '@/integrations/supabase/client';
+import { formatError } from '@/lib/utils';
+import { toast } from 'sonner';
 
 interface DashboardStats {
   totalUsers: number;
@@ -58,7 +58,7 @@ interface ContentItem {
   id: string;
   title: string;
   type: string;
-  status: "active" | "pending" | "disabled";
+  status: 'active' | 'pending' | 'disabled';
   views: number;
   created_at: string;
   updated_at: string;
@@ -68,7 +68,7 @@ interface Transaction {
   id: string;
   user_id: string;
   amount: number;
-  status: "completed" | "pending" | "failed";
+  status: 'completed' | 'pending' | 'failed';
   created_at: string;
   profiles?: {
     username: string;
@@ -117,23 +117,19 @@ export const AdminDashboard: React.FC = () => {
     try {
       // Fetch user stats
       const { data: usersData, error: usersError } = await supabase
-        .from("profiles")
-        .select("id, created_at");
+        .from('profiles')
+        .select('id, created_at');
 
       if (usersError) throw usersError;
 
       // Fetch revenue stats (mock for now)
       const totalUsers = usersData?.length || 0;
       const today = new Date();
-      const todayStart = new Date(
-        today.getFullYear(),
-        today.getMonth(),
-        today.getDate(),
-      );
+      const todayStart = new Date(today.getFullYear(), today.getMonth(), today.getDate());
 
-      const newUsersToday =
-        usersData?.filter((user) => new Date(user.created_at) >= todayStart)
-          .length || 0;
+      const newUsersToday = usersData?.filter(user =>
+        new Date(user.created_at) >= todayStart
+      ).length || 0;
 
       // Mock active users since we can't access auth.users.last_sign_in_at
       // In production, you'd want to track this in the profiles table or via a separate service
@@ -142,53 +138,50 @@ export const AdminDashboard: React.FC = () => {
       setStats({
         totalUsers,
         activeUsers,
-        totalRevenue: 15420.5, // Mock data
-        monthlyRevenue: 3240.8, // Mock data
+        totalRevenue: 15420.50, // Mock data
+        monthlyRevenue: 3240.80, // Mock data
         totalContent: 1250, // Mock data
         watchTime: 45600, // Mock data (minutes)
         newUsersToday,
         conversionRate: 12.5, // Mock data
       });
     } catch (error) {
-      console.error("Error fetching stats:", formatError(error));
+      console.error('Error fetching stats:', formatError(error));
     }
   };
 
   const fetchUsers = async () => {
     try {
       const { data, error } = await supabase
-        .from("profiles")
-        .select(
-          `
+        .from('profiles')
+        .select(`
           id,
           created_at,
           username,
           full_name,
           avatar
-        `,
-        )
-        .order("created_at", { ascending: false })
+        `)
+        .order('created_at', { ascending: false })
         .limit(10);
 
       if (error) throw error;
 
       // Transform data to match User interface
-      const transformedUsers =
-        data?.map((profile) => ({
-          id: profile.id,
-          email: "", // Would need to join with auth.users
-          created_at: profile.created_at,
-          last_sign_in_at: "", // Not available from profiles table
-          profiles: {
-            username: profile.username,
-            full_name: profile.full_name,
-            avatar: profile.avatar,
-          },
-        })) || [];
+      const transformedUsers = data?.map(profile => ({
+        id: profile.id,
+        email: '', // Would need to join with auth.users
+        created_at: profile.created_at,
+        last_sign_in_at: '', // Not available from profiles table
+        profiles: {
+          username: profile.username,
+          full_name: profile.full_name,
+          avatar: profile.avatar,
+        }
+      })) || [];
 
       setUsers(transformedUsers);
     } catch (error) {
-      console.error("Error fetching users:", formatError(error));
+      console.error('Error fetching users:', formatError(error));
     }
   };
 
@@ -196,31 +189,31 @@ export const AdminDashboard: React.FC = () => {
     // Mock content data - replace with actual content table query
     const mockContent: ContentItem[] = [
       {
-        id: "1",
-        title: "The Matrix",
-        type: "Movie",
-        status: "active",
+        id: '1',
+        title: 'The Matrix',
+        type: 'Movie',
+        status: 'active',
         views: 12500,
-        created_at: "2024-01-15T10:00:00Z",
-        updated_at: "2024-01-15T10:00:00Z",
+        created_at: '2024-01-15T10:00:00Z',
+        updated_at: '2024-01-15T10:00:00Z',
       },
       {
-        id: "2",
-        title: "Breaking Bad S1E1",
-        type: "TV Show",
-        status: "active",
+        id: '2',
+        title: 'Breaking Bad S1E1',
+        type: 'TV Show',
+        status: 'active',
         views: 8400,
-        created_at: "2024-01-14T14:30:00Z",
-        updated_at: "2024-01-14T14:30:00Z",
+        created_at: '2024-01-14T14:30:00Z',
+        updated_at: '2024-01-14T14:30:00Z',
       },
       {
-        id: "3",
-        title: "Inception",
-        type: "Movie",
-        status: "pending",
+        id: '3',
+        title: 'Inception',
+        type: 'Movie',
+        status: 'pending',
         views: 0,
-        created_at: "2024-01-16T09:15:00Z",
-        updated_at: "2024-01-16T09:15:00Z",
+        created_at: '2024-01-16T09:15:00Z',
+        updated_at: '2024-01-16T09:15:00Z',
       },
     ];
     setContent(mockContent);
@@ -230,35 +223,35 @@ export const AdminDashboard: React.FC = () => {
     // Mock transaction data - replace with actual payments table query
     const mockTransactions: Transaction[] = [
       {
-        id: "1",
-        user_id: "user1",
+        id: '1',
+        user_id: 'user1',
         amount: 9.99,
-        status: "completed",
-        created_at: "2024-01-16T12:00:00Z",
+        status: 'completed',
+        created_at: '2024-01-16T12:00:00Z',
         profiles: {
-          username: "johndoe",
-          full_name: "John Doe",
-        },
+          username: 'johndoe',
+          full_name: 'John Doe',
+        }
       },
       {
-        id: "2",
-        user_id: "user2",
+        id: '2',
+        user_id: 'user2',
         amount: 19.99,
-        status: "pending",
-        created_at: "2024-01-16T11:30:00Z",
+        status: 'pending',
+        created_at: '2024-01-16T11:30:00Z',
         profiles: {
-          username: "janedoe",
-          full_name: "Jane Doe",
-        },
+          username: 'janedoe',
+          full_name: 'Jane Doe',
+        }
       },
     ];
     setTransactions(mockTransactions);
   };
 
   const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency: "USD",
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
     }).format(amount);
   };
 
@@ -268,11 +261,11 @@ export const AdminDashboard: React.FC = () => {
 
   const getStatusBadge = (status: string) => {
     const variants = {
-      active: "default",
-      pending: "secondary",
-      disabled: "destructive",
-      completed: "default",
-      failed: "destructive",
+      active: 'default',
+      pending: 'secondary',
+      disabled: 'destructive',
+      completed: 'default',
+      failed: 'destructive',
     } as const;
 
     const icons = {
@@ -286,7 +279,7 @@ export const AdminDashboard: React.FC = () => {
     const Icon = icons[status as keyof typeof icons];
 
     return (
-      <Badge variant={variants[status as keyof typeof variants] || "secondary"}>
+      <Badge variant={variants[status as keyof typeof variants] || 'secondary'}>
         <Icon className="h-3 w-3 mr-1" />
         {status.charAt(0).toUpperCase() + status.slice(1)}
       </Badge>
@@ -336,15 +329,11 @@ export const AdminDashboard: React.FC = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <Card className="border-gray-800 bg-gray-900/50">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-gray-300">
-              Total Users
-            </CardTitle>
+            <CardTitle className="text-sm font-medium text-gray-300">Total Users</CardTitle>
             <Users className="h-4 w-4 text-gray-400" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-white">
-              {stats.totalUsers.toLocaleString()}
-            </div>
+            <div className="text-2xl font-bold text-white">{stats.totalUsers.toLocaleString()}</div>
             <p className="text-xs text-green-400">
               +{stats.newUsersToday} today
             </p>
@@ -353,33 +342,24 @@ export const AdminDashboard: React.FC = () => {
 
         <Card className="border-gray-800 bg-gray-900/50">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-gray-300">
-              Active Users
-            </CardTitle>
+            <CardTitle className="text-sm font-medium text-gray-300">Active Users</CardTitle>
             <TrendingUp className="h-4 w-4 text-gray-400" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-white">
-              {stats.activeUsers.toLocaleString()}
-            </div>
+            <div className="text-2xl font-bold text-white">{stats.activeUsers.toLocaleString()}</div>
             <p className="text-xs text-gray-400">
-              {((stats.activeUsers / stats.totalUsers) * 100).toFixed(1)}% of
-              total
+              {((stats.activeUsers / stats.totalUsers) * 100).toFixed(1)}% of total
             </p>
           </CardContent>
         </Card>
 
         <Card className="border-gray-800 bg-gray-900/50">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-gray-300">
-              Total Revenue
-            </CardTitle>
+            <CardTitle className="text-sm font-medium text-gray-300">Total Revenue</CardTitle>
             <DollarSign className="h-4 w-4 text-gray-400" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-white">
-              {formatCurrency(stats.totalRevenue)}
-            </div>
+            <div className="text-2xl font-bold text-white">{formatCurrency(stats.totalRevenue)}</div>
             <p className="text-xs text-green-400">
               +{formatCurrency(stats.monthlyRevenue)} this month
             </p>
@@ -388,18 +368,13 @@ export const AdminDashboard: React.FC = () => {
 
         <Card className="border-gray-800 bg-gray-900/50">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-gray-300">
-              Content Library
-            </CardTitle>
+            <CardTitle className="text-sm font-medium text-gray-300">Content Library</CardTitle>
             <Film className="h-4 w-4 text-gray-400" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-white">
-              {stats.totalContent.toLocaleString()}
-            </div>
+            <div className="text-2xl font-bold text-white">{stats.totalContent.toLocaleString()}</div>
             <p className="text-xs text-gray-400">
-              {Math.floor(stats.watchTime / 60).toLocaleString()}h total watch
-              time
+              {Math.floor(stats.watchTime / 60).toLocaleString()}h total watch time
             </p>
           </CardContent>
         </Card>
@@ -408,28 +383,16 @@ export const AdminDashboard: React.FC = () => {
       {/* Main Content Tabs */}
       <Tabs defaultValue="overview" className="space-y-4">
         <TabsList className="bg-gray-900 border-gray-800">
-          <TabsTrigger
-            value="overview"
-            className="text-gray-300 data-[state=active]:text-white"
-          >
+          <TabsTrigger value="overview" className="text-gray-300 data-[state=active]:text-white">
             Overview
           </TabsTrigger>
-          <TabsTrigger
-            value="users"
-            className="text-gray-300 data-[state=active]:text-white"
-          >
+          <TabsTrigger value="users" className="text-gray-300 data-[state=active]:text-white">
             Users
           </TabsTrigger>
-          <TabsTrigger
-            value="content"
-            className="text-gray-300 data-[state=active]:text-white"
-          >
+          <TabsTrigger value="content" className="text-gray-300 data-[state=active]:text-white">
             Content
           </TabsTrigger>
-          <TabsTrigger
-            value="payments"
-            className="text-gray-300 data-[state=active]:text-white"
-          >
+          <TabsTrigger value="payments" className="text-gray-300 data-[state=active]:text-white">
             Payments
           </TabsTrigger>
         </TabsList>
@@ -445,27 +408,19 @@ export const AdminDashboard: React.FC = () => {
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
                     <span className="text-sm text-gray-400">New Users</span>
-                    <span className="text-sm text-white">
-                      {stats.newUsersToday}
-                    </span>
+                    <span className="text-sm text-white">{stats.newUsersToday}</span>
                   </div>
                   <Progress value={75} className="h-2" />
 
                   <div className="flex items-center justify-between">
                     <span className="text-sm text-gray-400">Active Users</span>
-                    <span className="text-sm text-white">
-                      {stats.activeUsers}
-                    </span>
+                    <span className="text-sm text-white">{stats.activeUsers}</span>
                   </div>
                   <Progress value={60} className="h-2" />
 
                   <div className="flex items-center justify-between">
-                    <span className="text-sm text-gray-400">
-                      Conversion Rate
-                    </span>
-                    <span className="text-sm text-white">
-                      {stats.conversionRate}%
-                    </span>
+                    <span className="text-sm text-gray-400">Conversion Rate</span>
+                    <span className="text-sm text-white">{stats.conversionRate}%</span>
                   </div>
                   <Progress value={stats.conversionRate} className="h-2" />
                 </div>
@@ -487,21 +442,15 @@ export const AdminDashboard: React.FC = () => {
                   <div className="space-y-2">
                     <div className="flex justify-between text-sm">
                       <span className="text-gray-400">Subscriptions</span>
-                      <span className="text-white">
-                        {formatCurrency(stats.monthlyRevenue * 0.8)}
-                      </span>
+                      <span className="text-white">{formatCurrency(stats.monthlyRevenue * 0.8)}</span>
                     </div>
                     <div className="flex justify-between text-sm">
                       <span className="text-gray-400">Rentals</span>
-                      <span className="text-white">
-                        {formatCurrency(stats.monthlyRevenue * 0.15)}
-                      </span>
+                      <span className="text-white">{formatCurrency(stats.monthlyRevenue * 0.15)}</span>
                     </div>
                     <div className="flex justify-between text-sm">
                       <span className="text-gray-400">Purchases</span>
-                      <span className="text-white">
-                        {formatCurrency(stats.monthlyRevenue * 0.05)}
-                      </span>
+                      <span className="text-white">{formatCurrency(stats.monthlyRevenue * 0.05)}</span>
                     </div>
                   </div>
                 </div>
@@ -533,32 +482,26 @@ export const AdminDashboard: React.FC = () => {
                           <Avatar className="w-8 h-8">
                             <AvatarImage src={user.profiles?.avatar} />
                             <AvatarFallback>
-                              {user.profiles?.username?.[0] ||
-                                user.email?.[0] ||
-                                "?"}
+                              {user.profiles?.username?.[0] || user.email?.[0] || '?'}
                             </AvatarFallback>
                           </Avatar>
                           <div>
                             <div className="font-medium text-white">
-                              {user.profiles?.full_name ||
-                                user.profiles?.username ||
-                                "Anonymous"}
+                              {user.profiles?.full_name || user.profiles?.username || 'Anonymous'}
                             </div>
-                            <div className="text-sm text-gray-400">
-                              {user.email}
-                            </div>
+                            <div className="text-sm text-gray-400">{user.email}</div>
                           </div>
                         </div>
                       </TableCell>
                       <TableCell className="text-gray-300">
-                        {formatDate(user.created_at)}
-                      </TableCell>
-                      <TableCell className="text-gray-300">
                         {user.last_sign_in_at
                           ? formatDate(user.last_sign_in_at)
-                          : "Never"}
+                          : "Not available"}
                       </TableCell>
-                      <TableCell>{getStatusBadge("active")}</TableCell>
+                      </TableCell>
+                      <TableCell>
+                        {getStatusBadge('active')}
+                      </TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
@@ -586,19 +529,11 @@ export const AdminDashboard: React.FC = () => {
                 <TableBody>
                   {content.map((item) => (
                     <TableRow key={item.id} className="border-gray-800">
-                      <TableCell className="font-medium text-white">
-                        {item.title}
-                      </TableCell>
-                      <TableCell className="text-gray-300">
-                        {item.type}
-                      </TableCell>
-                      <TableCell className="text-gray-300">
-                        {item.views.toLocaleString()}
-                      </TableCell>
+                      <TableCell className="font-medium text-white">{item.title}</TableCell>
+                      <TableCell className="text-gray-300">{item.type}</TableCell>
+                      <TableCell className="text-gray-300">{item.views.toLocaleString()}</TableCell>
                       <TableCell>{getStatusBadge(item.status)}</TableCell>
-                      <TableCell className="text-gray-300">
-                        {formatDate(item.created_at)}
-                      </TableCell>
+                      <TableCell className="text-gray-300">{formatDate(item.created_at)}</TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
@@ -626,16 +561,12 @@ export const AdminDashboard: React.FC = () => {
                   {transactions.map((transaction) => (
                     <TableRow key={transaction.id} className="border-gray-800">
                       <TableCell className="text-white">
-                        {transaction.profiles?.full_name ||
-                          transaction.profiles?.username ||
-                          "Unknown"}
+                        {transaction.profiles?.full_name || transaction.profiles?.username || 'Unknown'}
                       </TableCell>
                       <TableCell className="text-gray-300">
                         {formatCurrency(transaction.amount)}
                       </TableCell>
-                      <TableCell>
-                        {getStatusBadge(transaction.status)}
-                      </TableCell>
+                      <TableCell>{getStatusBadge(transaction.status)}</TableCell>
                       <TableCell className="text-gray-300">
                         {formatDate(transaction.created_at)}
                       </TableCell>
