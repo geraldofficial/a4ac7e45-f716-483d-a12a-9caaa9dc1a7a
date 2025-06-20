@@ -206,10 +206,15 @@ class EnhancedNotificationsService {
       }
 
       // Use simple error logging to avoid body stream issues
-      console.error(
-        "Error fetching notifications:",
-        error instanceof Error ? error.message : String(error),
-      );
+      const errorMsg =
+        error instanceof Error
+          ? error.message
+          : error && typeof error === "object" && error.message
+            ? error.message
+            : error && typeof error === "object" && error.code
+              ? `Error code: ${error.code}`
+              : String(error);
+      console.error("Error fetching notifications:", errorMsg);
       return this.getFallbackNotifications();
     }
   }
