@@ -699,18 +699,16 @@ class EnhancedNotificationsService {
         } else {
           console.warn(
             "Failed to save push subscription to database:",
-            formatError(dbError),
+            dbError instanceof Error ? dbError.message : String(dbError),
           );
         }
       }
     } catch (error) {
-      console.error("Error setting up push subscription:", formatError(error));
+      console.error(
+        "Error setting up push subscription:",
+        error instanceof Error ? error.message : String(error),
+      );
     }
-  }
-
-  private async sendPushNotification(
-    notification: UserNotification,
-  ): Promise<void> {
     if (!this.pushSubscription) return;
 
     // This would be handled by your backend service
