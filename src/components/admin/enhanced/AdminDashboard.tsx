@@ -431,32 +431,14 @@ export const AdminDashboard: React.FC = () => {
               <Table>
                 <TableHeader>
                   <TableRow className="border-gray-800">
-                    <TableHead className="text-gray-300">Title</TableHead>
-                    <TableHead className="text-gray-300">Type</TableHead>
-                    <TableHead className="text-gray-300">Views</TableHead>
-                    <TableHead className="text-gray-300">Status</TableHead>
-                    <TableHead className="text-gray-300">Added</TableHead>
+                    <TableHead className="text-gray-300">Content</TableHead>
+                    <TableHead className="text-gray-300">User ID</TableHead>
+                    <TableHead className="text-gray-300">Likes</TableHead>
+                    <TableHead className="text-gray-300">Comments</TableHead>
+                    <TableHead className="text-gray-300">Date</TableHead>
+                    <TableHead className="text-gray-300">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
-                <TableBody>
-                  {content.map((item) => (
-                    <TableRow key={item.id} className="border-gray-800">
-                      <TableCell className="font-medium text-white">
-                        {item.title}
-                      </TableCell>
-                      <TableCell className="text-gray-300">
-                        {item.type}
-                      </TableCell>
-                      <TableCell className="text-gray-300">
-                        {item.views.toLocaleString()}
-                      </TableCell>
-                      <TableCell>{getStatusBadge(item.status)}</TableCell>
-                      <TableCell className="text-gray-300">
-                        {formatDate(item.created_at)}
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
               </Table>
             </CardContent>
           </Card>
