@@ -1,15 +1,12 @@
-
-import { useToast } from "@/components/ui/use-toast";
-import { authApi } from '@/services/auth';
-import { userApi } from '@/services/user';
-import { supabase } from '@/integrations/supabase/client';
-import { cleanupAuthState } from '@/utils/authCleanup';
-import { UserProfile } from '@/types/auth';
+import { useToast } from "@/hooks/use-toast";
+import { userApi } from "@/services/user";
+import { UserProfile } from "@/types/auth";
+import { formatError } from "@/lib/utils";
 
 export const useAuthActions = (
   user: UserProfile | null,
   setUser: (user: UserProfile | null) => void,
-  setLoading: (loading: boolean) => void
+  setLoading: (loading: boolean) => void,
 ) => {
   const { toast } = useToast();
 
@@ -17,9 +14,9 @@ export const useAuthActions = (
     setLoading(true);
     try {
       cleanupAuthState();
-      
+
       try {
-        await supabase.auth.signOut({ scope: 'global' });
+        await supabase.auth.signOut({ scope: "global" });
       } catch (err) {
         // Continue even if this fails
       }
@@ -31,10 +28,10 @@ export const useAuthActions = (
           description: `Welcome back!`,
         });
         // Force a complete page reload to ensure clean state
-        window.location.href = '/';
+        window.location.href = "/";
       }
     } catch (error: any) {
-      console.error("Sign-in error:", error);
+      console.error("Sign-in error:", formatError(error));
       toast({
         variant: "destructive",
         title: "Sign in failed",
@@ -45,19 +42,23 @@ export const useAuthActions = (
     }
   };
 
-  const signUp = async (email: string, password: string, userData: any = {}) => {
+  const signUp = async (
+    email: string,
+    password: string,
+    userData: any = {},
+  ) => {
     setLoading(true);
     try {
       cleanupAuthState();
-      
+
       const response = await authApi.signUp(email, password, userData);
       if (response?.user) {
         toast({
           title: "Sign up successful!",
           description: `Welcome to FlickPick! Please check your email to verify your account.`,
         });
-        
-        window.location.href = '/onboarding';
+
+        window.location.href = "/onboarding";
       }
     } catch (error: any) {
       console.error("Sign-up error:", error);
@@ -76,22 +77,22 @@ export const useAuthActions = (
     try {
       // Clear state immediately
       setUser(null);
-      
+
       // Clean up all auth state including profiles
       cleanupAuthState();
-      
+
       try {
-        await supabase.auth.signOut({ scope: 'global' });
+        await supabase.auth.signOut({ scope: "global" });
       } catch (err) {
-        console.warn('Sign out error:', err);
+        console.warn("Sign out error:", err);
       }
-      
+
       toast({
         description: "Signed out successfully!",
       });
-      
+
       // Force complete page reload to clear all state
-      window.location.href = '/auth';
+      window.location.href = "/auth";
     } catch (error: any) {
       console.error("Sign-out error:", error);
       toast({
@@ -106,10 +107,12 @@ export const useAuthActions = (
 
   const updateProfile = async (updates: Partial<UserProfile>) => {
     if (!user) return;
-    
+
     try {
       const updatedUser = await userApi.updateUser(updates);
-      const newUser = user ? { ...user, ...updatedUser } : updatedUser as UserProfile;
+      const newUser = user
+        ? { ...user, ...updatedUser }
+        : (updatedUser as UserProfile);
       setUser(newUser);
       toast({
         title: "Profile updated!",
@@ -131,6 +134,7 @@ export const useAuthActions = (
     signOut,
     updateProfile,
     login: signIn,
-    signup: (email: string, password: string, username?: string) => signUp(email, password, { username }),
+    signup: (email: string, password: string, username?: string) =>
+      signUp(email, password, { username }),
   };
 };
