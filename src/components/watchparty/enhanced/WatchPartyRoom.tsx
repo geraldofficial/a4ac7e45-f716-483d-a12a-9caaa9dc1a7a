@@ -74,7 +74,7 @@ export const WatchPartyRoom: React.FC<WatchPartyRoomProps> = ({
   moviePoster,
   onLeave,
 }) => {
-  const { user } = useAuthState();
+  const { user } = useAuth();
 
   // State
   const [participants, setParticipants] = useState<WatchPartyParticipant[]>([]);
