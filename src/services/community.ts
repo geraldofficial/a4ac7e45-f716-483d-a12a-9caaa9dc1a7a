@@ -140,17 +140,7 @@ class CommunityService {
           movie_poster: data.movie_poster,
           rating: data.rating,
         })
-        .select(
-          `
-          *,
-          profiles!community_posts_user_id_fkey (
-            id,
-            username,
-            full_name,
-            avatar
-          )
-        `,
-        )
+        .select("*")
         .single();
 
       if (error) throw error;
