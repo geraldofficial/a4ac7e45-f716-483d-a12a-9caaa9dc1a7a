@@ -40,20 +40,23 @@ import { toast } from "sonner";
 // Using interfaces from admin service
 
 export const AdminDashboard: React.FC = () => {
-  const [stats, setStats] = useState<DashboardStats>({
+  const [stats, setStats] = useState<AdminStats>({
     totalUsers: 0,
     activeUsers: 0,
-    totalRevenue: 0,
-    monthlyRevenue: 0,
-    totalContent: 0,
-    watchTime: 0,
+    totalPosts: 0,
+    totalComments: 0,
+    totalLikes: 0,
     newUsersToday: 0,
-    conversionRate: 0,
+    newUsersThisWeek: 0,
+    newUsersThisMonth: 0,
+    postsToday: 0,
+    postsThisWeek: 0,
+    postsThisMonth: 0,
   });
 
-  const [users, setUsers] = useState<User[]>([]);
-  const [content, setContent] = useState<ContentItem[]>([]);
-  const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [users, setUsers] = useState<AdminUser[]>([]);
+  const [posts, setPosts] = useState<AdminPost[]>([]);
+  const [comments, setComments] = useState<AdminComment[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
