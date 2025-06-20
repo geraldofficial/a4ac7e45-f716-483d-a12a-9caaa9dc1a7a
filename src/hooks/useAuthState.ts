@@ -13,6 +13,7 @@ export const useAuthState = () => {
   const consecutiveTimeouts = useRef(0);
   const maxRetries = 2; // Reduced from 3
   const maxTimeouts = 2; // Stop after 2 consecutive timeouts
+  const profileFetchDisabled = useRef(false); // Emergency circuit breaker
 
   useEffect(() => {
     mountedRef.current = true;
@@ -37,14 +38,23 @@ export const useAuthState = () => {
 
         // Helper function to fetch profile with circuit breaker pattern
         const fetchProfileSafely = async (userId: string) => {
+          // Emergency circuit breaker - completely disable profile fetching if too many issues
+          if (profileFetchDisabled.current) {
+            console.warn(
+              "🚫 Profile fetching disabled due to persistent issues",
+            );
+            return null;
+          }
+
           try {
             retryCountRef.current += 1;
 
             // Circuit breaker: stop if too many consecutive timeouts
             if (consecutiveTimeouts.current >= maxTimeouts) {
               console.warn(
-                "🚫 Circuit breaker: too many timeouts, skipping profile fetch",
+                "🚫 Circuit breaker: too many timeouts, disabling profile fetch",
               );
+              profileFetchDisabled.current = true;
               return null;
             }
 
@@ -59,11 +69,11 @@ export const useAuthState = () => {
               `🔍 Fetching profile (attempt ${retryCountRef.current}/${maxRetries}, timeouts: ${consecutiveTimeouts.current})...`,
             );
 
-            // Reduced timeout to 5 seconds to fail faster
+            // Reduced timeout to 3 seconds to fail even faster
             const timeoutPromise = new Promise((_, reject) => {
               setTimeout(
                 () => reject(new Error("Profile fetch timeout")),
-                5000,
+                3000,
               );
             });
 
@@ -83,16 +93,20 @@ export const useAuthState = () => {
             // Track timeouts specifically
             if (errorMessage.includes("timeout")) {
               consecutiveTimeouts.current += 1;
-              console.error(
-                `❌ Error fetching user profile: ${errorMessage} (timeout #${consecutiveTimeouts.current})`,
-              );
 
-              // Stop retrying after consecutive timeouts
+              // Only log the first few timeouts to avoid spam
+              if (consecutiveTimeouts.current <= 2) {
+                console.error(
+                  `❌ Error fetching user profile: ${errorMessage} (timeout #${consecutiveTimeouts.current})`,
+                );
+              }
+
+              // Disable profile fetching after consecutive timeouts
               if (consecutiveTimeouts.current >= maxTimeouts) {
                 console.warn(
-                  "🚫 Too many consecutive timeouts, stopping profile fetch attempts",
+                  "🚫 Too many consecutive timeouts, disabling profile fetch permanently",
                 );
-                return null;
+                profileFetchDisabled.current = true;
               }
             } else {
               console.error("❌ Error fetching user profile:", errorMessage);
