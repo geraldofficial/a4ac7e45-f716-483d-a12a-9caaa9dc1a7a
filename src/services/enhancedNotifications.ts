@@ -255,16 +255,8 @@ class EnhancedNotificationsService {
 
       return stats;
     } catch (error) {
-      // Use simple error logging to avoid body stream issues
-      const errorMsg =
-        error instanceof Error
-          ? error.message
-          : error && typeof error === "object" && error.message
-            ? error.message
-            : error && typeof error === "object" && error.code
-              ? `Error code: ${error.code}`
-              : String(error);
-      console.error("Error fetching notification stats:", errorMsg);
+      // Use safe error logging to avoid body stream issues
+      safeLogError("Error fetching notification stats", error);
       return this.getFallbackStats();
     }
   }
