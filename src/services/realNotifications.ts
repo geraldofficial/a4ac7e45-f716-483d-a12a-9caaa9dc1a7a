@@ -135,7 +135,15 @@ class RealNotificationsService {
           ).length,
         };
       }
-      console.error("Error fetching notification stats:", formatError(error));
+      const errorMsg =
+        error instanceof Error
+          ? error.message
+          : error && typeof error === "object" && error.message
+            ? error.message
+            : error && typeof error === "object" && error.code
+              ? `Error code: ${error.code}`
+              : String(error);
+      console.error("Error fetching notification stats:", errorMsg);
       return { total: 0, unread: 0, starred: 0, urgent: 0 };
     }
   }
