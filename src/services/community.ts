@@ -95,13 +95,17 @@ class CommunityService {
             likes_count: likesResult.data?.length || 0,
             comments_count: commentsResult.data?.length || 0,
             is_liked: userId
-              ? post.post_likes?.some((like: any) => like.user_id === userId)
+              ? likesResult.data?.some((like: any) => like.user_id === userId)
               : false,
-            is_bookmarked: userId
-              ? post.post_bookmarks?.some(
-                  (bookmark: any) => bookmark.user_id === userId,
-                )
-              : false,
+            is_bookmarked: false, // Will implement later
+            profiles: profileResult.data
+              ? {
+                  id: profileResult.data.id,
+                  username: profileResult.data.username,
+                  full_name: profileResult.data.full_name,
+                  avatar: profileResult.data.avatar,
+                }
+              : undefined,
           };
         }),
       );
