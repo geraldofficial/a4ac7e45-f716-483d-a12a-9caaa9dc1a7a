@@ -211,13 +211,7 @@ class AdminService {
           user_id,
           content,
           created_at,
-          media_urls,
-          movie_title,
-          profiles!community_posts_user_id_fkey (
-            username,
-            full_name,
-            avatar
-          )
+          media_urls
         `,
         )
         .order("created_at", { ascending: false })
