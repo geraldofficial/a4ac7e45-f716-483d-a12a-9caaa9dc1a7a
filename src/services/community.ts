@@ -241,7 +241,7 @@ class CommunityService {
     try {
       // Check if already bookmarked
       const { data: existingBookmark, error: checkError } = await supabase
-        .from("post_bookmarks")
+        .from("community_post_bookmarks")
         .select("id")
         .eq("post_id", postId)
         .eq("user_id", userId)
@@ -252,7 +252,7 @@ class CommunityService {
       if (existingBookmark) {
         // Remove bookmark
         const { error } = await supabase
-          .from("post_bookmarks")
+          .from("community_post_bookmarks")
           .delete()
           .eq("post_id", postId)
           .eq("user_id", userId);
@@ -262,7 +262,7 @@ class CommunityService {
       } else {
         // Add bookmark
         const { error } = await supabase
-          .from("post_bookmarks")
+          .from("community_post_bookmarks")
           .insert({ post_id: postId, user_id: userId });
 
         if (error) throw error;
