@@ -33,6 +33,7 @@ import Support from "./pages/Support";
 import Donate from "./pages/Donate";
 import Admin from "./pages/Admin";
 import WatchParty from "./pages/WatchParty";
+import Settings from "./pages/Settings";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -226,6 +227,14 @@ const App: React.FC = () => {
                       element={
                         <SafeRoute componentName="Profiles">
                           <Profiles />
+                        </SafeRoute>
+                      }
+                    />
+                    <Route
+                      path="/settings"
+                      element={
+                        <SafeRoute componentName="Settings">
+                          <Settings />
                         </SafeRoute>
                       }
                     />
