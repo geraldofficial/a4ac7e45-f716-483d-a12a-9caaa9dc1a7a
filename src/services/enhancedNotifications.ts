@@ -595,9 +595,10 @@ class EnhancedNotificationsService {
       this.preferences = data;
       return data;
     } catch (error) {
+      // Use simple error logging to avoid body stream issues
       console.error(
         "Error updating notification preferences:",
-        formatError(error),
+        error instanceof Error ? error.message : String(error),
       );
       return null;
     }
