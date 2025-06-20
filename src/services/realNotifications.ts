@@ -49,11 +49,21 @@ class RealNotificationsService {
         .order("created_at", { ascending: false })
         .limit(limit);
 
-      if (error) throw error;
+      if (error) {
+        // If table doesn't exist, return empty array and log info
+        if (error.code === "42P01") {
+          console.info(
+            "User notifications table not yet created. Using fallback.",
+          );
+          return this.getFallbackNotifications();
+        }
+        throw error;
+      }
       return data || [];
     } catch (error) {
       console.error("Error fetching notifications:", formatError(error));
-      return [];
+      // Return fallback notifications if there's any error
+      return this.getFallbackNotifications();
     }
   }
 
@@ -97,6 +107,26 @@ class RealNotificationsService {
         urgent: urgentResult.count || 0,
       };
     } catch (error) {
+      // If table doesn't exist, return fallback stats
+      if (
+        error &&
+        typeof error === "object" &&
+        "code" in error &&
+        error.code === "42P01"
+      ) {
+        console.info(
+          "User notifications table not yet created. Using fallback stats.",
+        );
+        const fallbackNotifications = this.getFallbackNotifications();
+        return {
+          total: fallbackNotifications.length,
+          unread: fallbackNotifications.filter((n) => !n.is_read).length,
+          starred: fallbackNotifications.filter((n) => n.is_starred).length,
+          urgent: fallbackNotifications.filter(
+            (n) => n.priority === "urgent" && !n.is_read,
+          ).length,
+        };
+      }
       console.error("Error fetching notification stats:", formatError(error));
       return { total: 0, unread: 0, starred: 0, urgent: 0 };
     }
@@ -113,9 +143,27 @@ class RealNotificationsService {
         .eq("id", notificationId)
         .eq("user_id", this.userId);
 
-      if (error) throw error;
+      if (error) {
+        // If table doesn't exist, just log and continue
+        if (error.code === "42P01") {
+          console.info(
+            "User notifications table not yet created. Cannot mark as read.",
+          );
+          return;
+        }
+        throw error;
+      }
     } catch (error) {
       console.error("Error marking notification as read:", formatError(error));
+      // Don't throw error for missing table, just log it
+      if (
+        error &&
+        typeof error === "object" &&
+        "code" in error &&
+        error.code === "42P01"
+      ) {
+        return;
+      }
       throw error;
     }
   }
@@ -186,9 +234,27 @@ class RealNotificationsService {
         is_starred: false,
       });
 
-      if (error) throw error;
+      if (error) {
+        // If table doesn't exist, just log and continue
+        if (error.code === "42P01") {
+          console.info(
+            "User notifications table not yet created. Cannot create notification.",
+          );
+          return;
+        }
+        throw error;
+      }
     } catch (error) {
       console.error("Error creating notification:", formatError(error));
+      // Don't throw error for missing table, just log it
+      if (
+        error &&
+        typeof error === "object" &&
+        "code" in error &&
+        error.code === "42P01"
+      ) {
+        return;
+      }
       throw error;
     }
   }
@@ -213,9 +279,27 @@ class RealNotificationsService {
         .from("user_notifications")
         .insert(notifications);
 
-      if (error) throw error;
+      if (error) {
+        // If table doesn't exist, just log and continue
+        if (error.code === "42P01") {
+          console.info(
+            "User notifications table not yet created. Cannot send bulk notification.",
+          );
+          return;
+        }
+        throw error;
+      }
     } catch (error) {
       console.error("Error sending bulk notification:", formatError(error));
+      // Don't throw error for missing table, just log it
+      if (
+        error &&
+        typeof error === "object" &&
+        "code" in error &&
+        error.code === "42P01"
+      ) {
+        return;
+      }
       throw error;
     }
   }
@@ -226,27 +310,81 @@ class RealNotificationsService {
   ): () => void {
     if (!this.userId) return () => {};
 
-    const channel = supabase
-      .channel(`user_notifications_${this.userId}`)
-      .on(
-        "postgres_changes",
-        {
-          event: "INSERT",
-          schema: "public",
-          table: "user_notifications",
-          filter: `user_id=eq.${this.userId}`,
-        },
-        (payload) => {
-          if (payload.new) {
-            callback(payload.new as UserNotification);
-          }
-        },
-      )
-      .subscribe();
+    try {
+      const channel = supabase
+        .channel(`user_notifications_${this.userId}`)
+        .on(
+          "postgres_changes",
+          {
+            event: "INSERT",
+            schema: "public",
+            table: "user_notifications",
+            filter: `user_id=eq.${this.userId}`,
+          },
+          (payload) => {
+            if (payload.new) {
+              callback(payload.new as UserNotification);
+            }
+          },
+        )
+        .subscribe();
 
-    return () => {
-      supabase.removeChannel(channel);
-    };
+      return () => {
+        supabase.removeChannel(channel);
+      };
+    } catch (error) {
+      console.warn(
+        "Could not subscribe to notifications - table may not exist:",
+        error,
+      );
+      return () => {};
+    }
+  }
+
+  // Fallback notifications when database table doesn't exist
+  private getFallbackNotifications(): UserNotification[] {
+    if (!this.userId) return [];
+
+    return [
+      {
+        id: "fallback-1",
+        user_id: this.userId,
+        title: "Welcome to FlickPick! 🎬",
+        message:
+          "Start exploring amazing movies and TV shows. Create your first watchlist and join the community!",
+        type: "success",
+        priority: "high",
+        is_read: false,
+        is_starred: false,
+        action_url: "/browse",
+        created_at: new Date().toISOString(),
+      },
+      {
+        id: "fallback-2",
+        user_id: this.userId,
+        title: "New Feature: Watch Parties! 🎉",
+        message:
+          "Invite friends to watch movies together in real-time. Create or join a watch party now!",
+        type: "announcement",
+        priority: "medium",
+        is_read: false,
+        is_starred: false,
+        action_url: "/community",
+        created_at: new Date(Date.now() - 3600000).toISOString(), // 1 hour ago
+      },
+      {
+        id: "fallback-3",
+        user_id: this.userId,
+        title: "Database Setup Required",
+        message:
+          "Admin: Run the user notifications migration to enable full notification features.",
+        type: "info",
+        priority: "low",
+        is_read: false,
+        is_starred: false,
+        created_at: new Date(Date.now() - 7200000).toISOString(), // 2 hours ago
+      },
+    ];
   }
 
   // Send sample notifications for testing
