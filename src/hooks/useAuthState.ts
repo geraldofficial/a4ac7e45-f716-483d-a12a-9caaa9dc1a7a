@@ -39,6 +39,13 @@ export const useAuthState = () => {
     mountedRef.current = true;
     let subscription: any;
 
+    // Notify about profile fetching status
+    if (globalProfileFetchState.profileFetchDisabled) {
+      console.log(
+        "ℹ️ Profile fetching is currently disabled due to timeout issues. Basic auth will work normally.",
+      );
+    }
+
     // Clear any existing timeout
     if (loadingTimeoutRef.current) {
       clearTimeout(loadingTimeoutRef.current);
