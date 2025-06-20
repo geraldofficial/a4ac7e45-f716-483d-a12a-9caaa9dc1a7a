@@ -27,7 +27,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useAuthState } from "@/hooks/useAuthState";
+import { useAuth } from "@/contexts/AuthContext";
 import {
   communityService,
   CommunityPost,
@@ -44,7 +44,7 @@ interface FullFunctionalCommunityFeedProps {
 export const FullFunctionalCommunityFeed: React.FC<
   FullFunctionalCommunityFeedProps
 > = ({ className, searchQuery = "" }) => {
-  const { user } = useAuthState();
+  const { user } = useAuth();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [posts, setPosts] = useState<CommunityPost[]>([]);
