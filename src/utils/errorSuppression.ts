@@ -10,16 +10,17 @@ class ErrorSuppression {
 
   private setupConsoleInterception() {
     const originalError = console.error;
+    const originalWarn = console.warn;
 
     console.error = (...args: any[]) => {
-      const message = args.join(" ");
+      const message = this.argsToString(args);
 
       // Check for known database table missing errors
       if (this.shouldSuppressError(message)) {
         // Only show the migration guidance once
         if (!this.warningShown) {
           this.warningShown = true;
-          originalError.warn(
+          originalWarn(
             "📝 Notification database tables are missing. Run migration 20250621000002-enhanced-notifications-system.sql to enable full functionality.",
           );
         }
@@ -29,6 +30,21 @@ class ErrorSuppression {
       // Allow all other errors
       originalError(...args);
     };
+  }
+
+  private argsToString(args: any[]): string {
+    return args
+      .map((arg) => {
+        if (typeof arg === "string") return arg;
+        if (typeof arg === "object" && arg !== null) {
+          if (arg.code || arg.message) {
+            return JSON.stringify(arg);
+          }
+          return String(arg);
+        }
+        return String(arg);
+      })
+      .join(" ");
   }
 
   private shouldSuppressError(message: string): boolean {
