@@ -81,40 +81,8 @@ export const AdminDashboard: React.FC = () => {
 
   const fetchStats = async () => {
     try {
-      // Fetch user stats
-      const { data: usersData, error: usersError } = await supabase
-        .from("profiles")
-        .select("id, created_at");
-
-      if (usersError) throw usersError;
-
-      // Fetch revenue stats (mock for now)
-      const totalUsers = usersData?.length || 0;
-      const today = new Date();
-      const todayStart = new Date(
-        today.getFullYear(),
-        today.getMonth(),
-        today.getDate(),
-      );
-
-      const newUsersToday =
-        usersData?.filter((user) => new Date(user.created_at) >= todayStart)
-          .length || 0;
-
-      // Mock active users since we can't access auth.users.last_sign_in_at
-      // In production, you'd want to track this in the profiles table or via a separate service
-      const activeUsers = Math.floor(totalUsers * 0.6); // Assume 60% are active
-
-      setStats({
-        totalUsers,
-        activeUsers,
-        totalRevenue: 15420.5, // Mock data
-        monthlyRevenue: 3240.8, // Mock data
-        totalContent: 1250, // Mock data
-        watchTime: 45600, // Mock data (minutes)
-        newUsersToday,
-        conversionRate: 12.5, // Mock data
-      });
+      const statsData = await adminService.getStats();
+      setStats(statsData);
     } catch (error) {
       console.error("Error fetching stats:", formatError(error));
     }
@@ -122,103 +90,29 @@ export const AdminDashboard: React.FC = () => {
 
   const fetchUsers = async () => {
     try {
-      const { data, error } = await supabase
-        .from("profiles")
-        .select(
-          `
-          id,
-          created_at,
-          username,
-          full_name,
-          avatar
-        `,
-        )
-        .order("created_at", { ascending: false })
-        .limit(10);
-
-      if (error) throw error;
-
-      // Transform data to match User interface
-      const transformedUsers =
-        data?.map((profile) => ({
-          id: profile.id,
-          email: "", // Would need to join with auth.users
-          created_at: profile.created_at,
-          last_sign_in_at: "", // Not available from profiles table
-          profiles: {
-            username: profile.username,
-            full_name: profile.full_name,
-            avatar: profile.avatar,
-          },
-        })) || [];
-
-      setUsers(transformedUsers);
+      const usersData = await adminService.getUsers(10);
+      setUsers(usersData);
     } catch (error) {
       console.error("Error fetching users:", formatError(error));
     }
   };
 
-  const fetchContent = async () => {
-    // Mock content data - replace with actual content table query
-    const mockContent: ContentItem[] = [
-      {
-        id: "1",
-        title: "The Matrix",
-        type: "Movie",
-        status: "active",
-        views: 12500,
-        created_at: "2024-01-15T10:00:00Z",
-        updated_at: "2024-01-15T10:00:00Z",
-      },
-      {
-        id: "2",
-        title: "Breaking Bad S1E1",
-        type: "TV Show",
-        status: "active",
-        views: 8400,
-        created_at: "2024-01-14T14:30:00Z",
-        updated_at: "2024-01-14T14:30:00Z",
-      },
-      {
-        id: "3",
-        title: "Inception",
-        type: "Movie",
-        status: "pending",
-        views: 0,
-        created_at: "2024-01-16T09:15:00Z",
-        updated_at: "2024-01-16T09:15:00Z",
-      },
-    ];
-    setContent(mockContent);
+  const fetchPosts = async () => {
+    try {
+      const postsData = await adminService.getPosts(10);
+      setPosts(postsData);
+    } catch (error) {
+      console.error("Error fetching posts:", formatError(error));
+    }
   };
 
-  const fetchTransactions = async () => {
-    // Mock transaction data - replace with actual payments table query
-    const mockTransactions: Transaction[] = [
-      {
-        id: "1",
-        user_id: "user1",
-        amount: 9.99,
-        status: "completed",
-        created_at: "2024-01-16T12:00:00Z",
-        profiles: {
-          username: "johndoe",
-          full_name: "John Doe",
-        },
-      },
-      {
-        id: "2",
-        user_id: "user2",
-        amount: 19.99,
-        status: "pending",
-        created_at: "2024-01-16T11:30:00Z",
-        profiles: {
-          username: "janedoe",
-          full_name: "Jane Doe",
-        },
-      },
-    ];
-    setTransactions(mockTransactions);
+  const fetchComments = async () => {
+    try {
+      const commentsData = await adminService.getComments(10);
+      setComments(commentsData);
+    } catch (error) {
+      console.error("Error fetching comments:", formatError(error));
+    }
   };
 
   const formatCurrency = (amount: number) => {
