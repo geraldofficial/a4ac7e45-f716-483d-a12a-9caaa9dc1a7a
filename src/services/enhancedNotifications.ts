@@ -121,6 +121,24 @@ class EnhancedNotificationsService {
   setUserId(userId: string | null) {
     this.userId = userId;
     if (userId) {
+      this.initializeService();
+    }
+  }
+
+  private async initializeService() {
+    try {
+      // Check if tables exist and log status
+      const { migrationRunner } = await import("@/utils/migrationRunner");
+      await migrationRunner.checkTablesExist();
+
+      this.loadPreferences();
+      this.requestPushPermission();
+    } catch (error) {
+      console.warn(
+        "Error initializing notification service:",
+        error instanceof Error ? error.message : String(error),
+      );
+      // Continue with basic initialization
       this.loadPreferences();
       this.requestPushPermission();
     }
