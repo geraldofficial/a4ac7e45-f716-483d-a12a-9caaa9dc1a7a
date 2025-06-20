@@ -188,7 +188,11 @@ class EnhancedNotificationsService {
         return this.getFallbackNotifications();
       }
 
-      console.error("Error fetching notifications:", formatError(error));
+      // Use simple error logging to avoid body stream issues
+      console.error(
+        "Error fetching notifications:",
+        error instanceof Error ? error.message : String(error),
+      );
       return this.getFallbackNotifications();
     }
   }
