@@ -392,14 +392,20 @@ export const WorkingNotificationBell: React.FC = () => {
                         : "No notifications yet"}
                   </p>
                   {filter === "all" && (
-                    <Button
-                      onClick={createSampleNotifications}
-                      className="mt-4 bg-blue-600 hover:bg-blue-700"
-                      size="sm"
-                    >
-                      <Gift className="h-4 w-4 mr-2" />
-                      Create sample notifications
-                    </Button>
+                    <div className="space-y-3 mt-4">
+                      <Button
+                        onClick={createSampleNotifications}
+                        className="bg-blue-600 hover:bg-blue-700"
+                        size="sm"
+                      >
+                        <Gift className="h-4 w-4 mr-2" />
+                        Create sample notifications
+                      </Button>
+                      <div className="text-xs text-gray-500 max-w-sm mx-auto leading-relaxed">
+                        Note: Full notification features require database setup.
+                        Current notifications are temporary demos.
+                      </div>
+                    </div>
                   )}
                 </div>
               ) : (
