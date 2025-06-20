@@ -22,11 +22,23 @@ export const userApi = {
       .maybeSingle(); // Changed from .single() to .maybeSingle()
 
     if (error) {
+      // Handle Supabase error structure: message, details, code, status
       const errorMessage =
-        error.message || error.details || JSON.stringify(error);
-      console.error("❌ Profile fetch error:", errorMessage, error);
+        error.message || error.details || error.hint || "Unknown error";
+      const errorCode = error.code || "UNKNOWN";
+      const statusCode = error.status || "";
+
+      console.error("❌ Profile fetch error:", {
+        message: errorMessage,
+        code: errorCode,
+        status: statusCode,
+        originalError: error,
+      });
+
       // Create a more informative error
-      const fetchError = new Error(`Profile fetch failed: ${errorMessage}`);
+      const fetchError = new Error(
+        `Profile fetch failed [${errorCode}]: ${errorMessage}`,
+      );
       fetchError.cause = error;
       throw fetchError;
     }
