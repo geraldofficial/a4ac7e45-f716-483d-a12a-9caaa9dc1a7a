@@ -165,7 +165,7 @@ const Movies = () => {
                     <TrendingUp className="h-5 w-5 text-primary" />
                     <h2 className="text-2xl font-bold">Popular Movies</h2>
                     <Badge variant="secondary">
-                      {popularMovies.length} movies
+                      {popularMovies?.length || 0} movies
                     </Badge>
                   </div>
                   <p className="text-muted-foreground mb-6">
@@ -174,9 +174,9 @@ const Movies = () => {
                 </div>
 
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
-                  {popularMovies.map((movie) => (
+                  {popularMovies?.map((movie) => (
                     <MovieCard key={movie.id} movie={movie} type="movie" />
-                  ))}
+                  )) || []}
                 </div>
               </TabsContent>
 
@@ -186,7 +186,7 @@ const Movies = () => {
                     <Star className="h-5 w-5 text-primary" />
                     <h2 className="text-2xl font-bold">Top Rated Movies</h2>
                     <Badge variant="secondary">
-                      {topRatedMovies.length} movies
+                      {topRatedMovies?.length || 0} movies
                     </Badge>
                   </div>
                   <p className="text-muted-foreground mb-6">
@@ -195,9 +195,9 @@ const Movies = () => {
                 </div>
 
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
-                  {topRatedMovies.map((movie) => (
+                  {topRatedMovies?.map((movie) => (
                     <MovieCard key={movie.id} movie={movie} type="movie" />
-                  ))}
+                  )) || []}
                 </div>
               </TabsContent>
 
@@ -207,7 +207,7 @@ const Movies = () => {
                     <Clock className="h-5 w-5 text-primary" />
                     <h2 className="text-2xl font-bold">Now Playing</h2>
                     <Badge variant="secondary">
-                      {nowPlayingMovies.length} movies
+                      {nowPlayingMovies?.length || 0} movies
                     </Badge>
                   </div>
                   <p className="text-muted-foreground mb-6">
@@ -216,9 +216,9 @@ const Movies = () => {
                 </div>
 
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
-                  {nowPlayingMovies.map((movie) => (
+                  {nowPlayingMovies?.map((movie) => (
                     <MovieCard key={movie.id} movie={movie} type="movie" />
-                  ))}
+                  )) || []}
                 </div>
               </TabsContent>
 
@@ -228,7 +228,7 @@ const Movies = () => {
                     <Calendar className="h-5 w-5 text-primary" />
                     <h2 className="text-2xl font-bold">Upcoming Movies</h2>
                     <Badge variant="secondary">
-                      {upcomingMovies.length} movies
+                      {upcomingMovies?.length || 0} movies
                     </Badge>
                   </div>
                   <p className="text-muted-foreground mb-6">
@@ -237,9 +237,9 @@ const Movies = () => {
                 </div>
 
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
-                  {upcomingMovies.map((movie) => (
+                  {upcomingMovies?.map((movie) => (
                     <MovieCard key={movie.id} movie={movie} type="movie" />
-                  ))}
+                  )) || []}
                 </div>
               </TabsContent>
             </Tabs>
@@ -249,7 +249,7 @@ const Movies = () => {
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 <div className="bg-card p-4 rounded-lg border">
                   <div className="text-2xl font-bold text-primary">
-                    {popularMovies.length}
+                    {popularMovies?.length || 0}
                   </div>
                   <div className="text-sm text-muted-foreground">
                     Popular Movies
@@ -257,13 +257,13 @@ const Movies = () => {
                 </div>
                 <div className="bg-card p-4 rounded-lg border">
                   <div className="text-2xl font-bold text-primary">
-                    {topRatedMovies.length}
+                    {topRatedMovies?.length || 0}
                   </div>
                   <div className="text-sm text-muted-foreground">Top Rated</div>
                 </div>
                 <div className="bg-card p-4 rounded-lg border">
                   <div className="text-2xl font-bold text-primary">
-                    {nowPlayingMovies.length}
+                    {nowPlayingMovies?.length || 0}
                   </div>
                   <div className="text-sm text-muted-foreground">
                     Now Playing
@@ -271,7 +271,7 @@ const Movies = () => {
                 </div>
                 <div className="bg-card p-4 rounded-lg border">
                   <div className="text-2xl font-bold text-primary">
-                    {upcomingMovies.length}
+                    {upcomingMovies?.length || 0}
                   </div>
                   <div className="text-sm text-muted-foreground">Upcoming</div>
                 </div>
