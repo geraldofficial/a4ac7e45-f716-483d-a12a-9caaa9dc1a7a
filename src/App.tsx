@@ -30,6 +30,7 @@ import Profiles from "./pages/Profiles";
 import History from "./pages/History";
 import Support from "./pages/Support";
 import Donate from "./pages/Donate";
+import Admin from "./pages/Admin";
 
 const queryClient = new QueryClient({
   defaultOptions: {
