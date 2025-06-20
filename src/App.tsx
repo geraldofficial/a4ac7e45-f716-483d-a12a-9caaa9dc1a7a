@@ -27,6 +27,7 @@ import Contact from "./pages/Contact";
 import Privacy from "./pages/Privacy";
 import Terms from "./pages/Terms";
 import NotFound from "./pages/NotFound";
+import NotificationSettings from "./pages/NotificationSettings";
 import DetailPage from "./pages/DetailPage";
 import Profile from "./pages/Profile";
 import Profiles from "./pages/Profiles";
