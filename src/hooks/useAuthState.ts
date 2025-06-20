@@ -69,10 +69,19 @@ export const useAuthState = () => {
                   "✅ User signed in, setting basic user data first...",
                 );
 
-                // Set basic user data immediately
+                // Set basic user data immediately with sensible defaults
                 const basicUser: UserProfile = {
                   id: session.user.id,
                   email: session.user.email,
+                  username: session.user.email?.split("@")[0] || "user",
+                  full_name:
+                    session.user.user_metadata?.full_name ||
+                    session.user.email?.split("@")[0] ||
+                    "Anonymous User",
+                  avatar: "👤",
+                  watchlist: [],
+                  genre_preferences: [],
+                  onboarding_completed: false,
                 };
 
                 if (mountedRef.current) {
@@ -154,10 +163,19 @@ export const useAuthState = () => {
           } else if (session?.user) {
             console.log("📍 Found existing session for user:", session.user.id);
 
-            // Set basic user data immediately
+            // Set basic user data immediately with sensible defaults
             const basicUser: UserProfile = {
               id: session.user.id,
               email: session.user.email,
+              username: session.user.email?.split("@")[0] || "user",
+              full_name:
+                session.user.user_metadata?.full_name ||
+                session.user.email?.split("@")[0] ||
+                "Anonymous User",
+              avatar: "👤",
+              watchlist: [],
+              genre_preferences: [],
+              onboarding_completed: false,
             };
 
             if (mountedRef.current) {
