@@ -302,7 +302,7 @@ export const ModernNavbar = () => {
                       </div>
 
                       {/* Mobile Navigation */}
-                      <div className="flex-1 py-4">
+                      <div className="flex-1 py-4 overflow-y-auto lg:hidden">
                         <div className="space-y-1">
                           {navigation.map((item) => {
                             const Icon = item.icon;
