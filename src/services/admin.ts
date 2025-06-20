@@ -447,11 +447,11 @@ class AdminService {
         (posts || []).map(async (post) => {
           const [likesResult, commentsResult] = await Promise.all([
             supabase
-              .from("post_likes")
+              .from("community_post_likes")
               .select("id", { count: "exact" })
               .eq("post_id", post.id),
             supabase
-              .from("post_comments")
+              .from("community_post_comments")
               .select("id", { count: "exact" })
               .eq("post_id", post.id),
           ]);
