@@ -270,23 +270,14 @@ class AdminService {
   async getComments(limit = 20, offset = 0): Promise<AdminComment[]> {
     try {
       const { data: comments, error } = await supabase
-        .from("post_comments")
+        .from("community_post_comments")
         .select(
           `
           id,
           post_id,
           user_id,
           content,
-          created_at,
-          profiles!post_comments_user_id_fkey (
-            username,
-            full_name,
-            avatar
-          ),
-          community_posts!post_comments_post_id_fkey (
-            id,
-            content
-          )
+          created_at
         `,
         )
         .order("created_at", { ascending: false })
