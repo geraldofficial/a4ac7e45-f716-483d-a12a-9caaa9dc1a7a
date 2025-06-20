@@ -28,6 +28,9 @@ export function formatError(error: any): string {
     let helpText = "";
     if (error.code === "42703" && message.includes("does not exist")) {
       helpText = " (Check database schema - column may not exist)";
+    } else if (error.code === "42P01" && message.includes("does not exist")) {
+      helpText =
+        " (Check database schema - table may not exist or have different name)";
     }
 
     return `${code}${status} ${message}${helpText}`.trim();
