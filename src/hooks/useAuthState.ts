@@ -1,8 +1,7 @@
-
-import { useState, useEffect, useRef } from 'react';
-import { supabase } from '@/integrations/supabase/client';
-import { userApi } from '@/services/user';
-import { UserProfile } from '@/types/auth';
+import { useState, useEffect, useRef } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { userApi } from "@/services/user";
+import { UserProfile } from "@/types/auth";
 
 export const useAuthState = () => {
   const [user, setUser] = useState<UserProfile | null>(null);
@@ -13,138 +12,156 @@ export const useAuthState = () => {
   useEffect(() => {
     mountedRef.current = true;
     let subscription: any;
-    
+
     // Clear any existing timeout
     if (loadingTimeoutRef.current) {
       clearTimeout(loadingTimeoutRef.current);
     }
-    
+
     // Safety timeout using ref to avoid stale closure
     loadingTimeoutRef.current = setTimeout(() => {
       if (mountedRef.current) {
-        console.log('🕒 Safety timeout: forcing loading to false');
+        console.log("🕒 Safety timeout: forcing loading to false");
         setLoading(false);
       }
     }, 3000); // Reduced from 2000ms for faster fallback
-    
+
     const initializeAuth = async () => {
       try {
-        console.log('🔐 Initializing auth...');
-        
+        console.log("🔐 Initializing auth...");
+
         // Helper function to fetch profile with timeout
         const fetchProfileSafely = async (userId: string) => {
           try {
             const profile = await userApi.getUserProfile(userId);
             return profile;
           } catch (error) {
-            console.error("❌ Error fetching user profile:", error);
+            const errorMessage =
+              error instanceof Error ? error.message : String(error);
+            console.error(
+              "❌ Error fetching user profile:",
+              errorMessage,
+              error,
+            );
             return null;
           }
         };
 
         // Set up auth state listener first
-        const { data } = supabase.auth.onAuthStateChange(async (event, session) => {
-          console.log('🔄 Auth state changed:', event, session?.user?.id || 'no-user');
-          
-          if (!mountedRef.current) {
-            console.log('🚫 Component unmounted, ignoring auth state change');
-            return;
-          }
-          
-          try {
-            if (event === 'SIGNED_IN' && session?.user) {
-              console.log('✅ User signed in, setting basic user data first...');
-              
-              // Set basic user data immediately
-              const basicUser: UserProfile = {
-                id: session.user.id,
-                email: session.user.email,
-              };
-              
-              if (mountedRef.current) {
-                setUser(basicUser);
-                console.log('👤 Basic user data set:', basicUser);
-              }
-              
-              // Defer profile fetching to avoid deadlocks
-              setTimeout(async () => {
+        const { data } = supabase.auth.onAuthStateChange(
+          async (event, session) => {
+            console.log(
+              "🔄 Auth state changed:",
+              event,
+              session?.user?.id || "no-user",
+            );
+
+            if (!mountedRef.current) {
+              console.log("🚫 Component unmounted, ignoring auth state change");
+              return;
+            }
+
+            try {
+              if (event === "SIGNED_IN" && session?.user) {
+                console.log(
+                  "✅ User signed in, setting basic user data first...",
+                );
+
+                // Set basic user data immediately
+                const basicUser: UserProfile = {
+                  id: session.user.id,
+                  email: session.user.email,
+                };
+
                 if (mountedRef.current) {
-                  console.log('🔍 Fetching detailed profile...');
-                  const profile = await fetchProfileSafely(session.user.id);
-                  
-                  if (mountedRef.current && profile) {
-                    const fullUser: UserProfile = {
-                      id: session.user.id,
-                      email: session.user.email,
-                      ...profile,
-                    };
-                    setUser(fullUser);
-                    console.log('👤 Full user profile loaded:', profile);
-                  }
+                  setUser(basicUser);
+                  console.log("👤 Basic user data set:", basicUser);
                 }
-              }, 0);
-              
-            } else if (event === 'SIGNED_OUT') {
-              console.log('🚪 User signed out');
+
+                // Defer profile fetching to avoid deadlocks
+                setTimeout(async () => {
+                  if (mountedRef.current) {
+                    console.log("🔍 Fetching detailed profile...");
+                    const profile = await fetchProfileSafely(session.user.id);
+
+                    if (mountedRef.current && profile) {
+                      const fullUser: UserProfile = {
+                        id: session.user.id,
+                        email: session.user.email,
+                        ...profile,
+                      };
+                      setUser(fullUser);
+                      console.log("👤 Full user profile loaded:", profile);
+                    }
+                  }
+                }, 0);
+              } else if (event === "SIGNED_OUT") {
+                console.log("🚪 User signed out");
+                if (mountedRef.current) {
+                  setUser(null);
+                }
+              }
+
+              // Always set loading to false after processing auth state change
               if (mountedRef.current) {
-                setUser(null);
+                console.log(
+                  "✅ Setting loading to false after auth state change",
+                );
+                setLoading(false);
+                // Clear the safety timeout since we're done
+                if (loadingTimeoutRef.current) {
+                  clearTimeout(loadingTimeoutRef.current);
+                }
+              }
+            } catch (error) {
+              console.error("❌ Error processing auth state change:", error);
+              if (mountedRef.current) {
+                console.log("❌ Error occurred, setting loading to false");
+                setLoading(false);
+                // Clear the safety timeout
+                if (loadingTimeoutRef.current) {
+                  clearTimeout(loadingTimeoutRef.current);
+                }
               }
             }
-            
-            // Always set loading to false after processing auth state change
-            if (mountedRef.current) {
-              console.log('✅ Setting loading to false after auth state change');
-              setLoading(false);
-              // Clear the safety timeout since we're done
-              if (loadingTimeoutRef.current) {
-                clearTimeout(loadingTimeoutRef.current);
-              }
-            }
-          } catch (error) {
-            console.error('❌ Error processing auth state change:', error);
-            if (mountedRef.current) {
-              console.log('❌ Error occurred, setting loading to false');
-              setLoading(false);
-              // Clear the safety timeout
-              if (loadingTimeoutRef.current) {
-                clearTimeout(loadingTimeoutRef.current);
-              }
-            }
-          }
-        });
+          },
+        );
 
         subscription = data.subscription;
 
         // Check for existing session
         try {
-          console.log('🔍 Checking for existing session...');
-          const { data: { session }, error } = await supabase.auth.getSession();
-          
+          console.log("🔍 Checking for existing session...");
+          const {
+            data: { session },
+            error,
+          } = await supabase.auth.getSession();
+
           if (error) {
             console.error("❌ Session check failed:", error);
             if (mountedRef.current) {
               setLoading(false);
             }
           } else if (session?.user) {
-            console.log('📍 Found existing session for user:', session.user.id);
-            
+            console.log("📍 Found existing session for user:", session.user.id);
+
             // Set basic user data immediately
             const basicUser: UserProfile = {
               id: session.user.id,
               email: session.user.email,
             };
-            
+
             if (mountedRef.current) {
               setUser(basicUser);
-              console.log('👤 Basic existing user data set:', basicUser);
+              console.log("👤 Basic existing user data set:", basicUser);
             }
-            
+
             // Defer profile fetching
             setTimeout(async () => {
               if (mountedRef.current) {
-                console.log('🔍 Fetching existing user profile...');
+                console.log("🔍 Fetching existing user profile...");
                 const profile = await fetchProfileSafely(session.user.id);
-                
+
                 if (mountedRef.current && profile) {
                   const fullUser: UserProfile = {
                     id: session.user.id,
@@ -152,11 +169,11 @@ export const useAuthState = () => {
                     ...profile,
                   };
                   setUser(fullUser);
-                  console.log('👤 Existing full user profile loaded:', profile);
+                  console.log("👤 Existing full user profile loaded:", profile);
                 }
               }
             }, 0);
-            
+
             if (mountedRef.current) {
               setLoading(false);
               // Clear the safety timeout
@@ -165,7 +182,7 @@ export const useAuthState = () => {
               }
             }
           } else {
-            console.log('📍 No existing session found');
+            console.log("📍 No existing session found");
             if (mountedRef.current) {
               setLoading(false);
               // Clear the safety timeout
@@ -184,11 +201,10 @@ export const useAuthState = () => {
             }
           }
         }
-
       } catch (error) {
         console.error("💥 Auth initialization failed:", error);
         if (mountedRef.current) {
-          console.log('❌ Auth init failed, setting loading to false');
+          console.log("❌ Auth init failed, setting loading to false");
           setLoading(false);
           // Clear the safety timeout
           if (loadingTimeoutRef.current) {
@@ -201,7 +217,7 @@ export const useAuthState = () => {
     initializeAuth();
 
     return () => {
-      console.log('🧹 Cleaning up auth context');
+      console.log("🧹 Cleaning up auth context");
       mountedRef.current = false;
       if (loadingTimeoutRef.current) {
         clearTimeout(loadingTimeoutRef.current);
