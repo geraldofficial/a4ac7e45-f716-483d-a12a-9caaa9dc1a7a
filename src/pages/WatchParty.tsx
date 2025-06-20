@@ -1,30 +1,25 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { WatchPartyRoom } from "@/components/watchparty/enhanced/WatchPartyRoom";
-import { useAuthState } from "@/hooks/useAuthState";
-import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Users, Play, ArrowLeft } from "lucide-react";
 import { formatError } from "@/lib/utils";
 import { toast } from "sonner";
-
-interface WatchParty {
-  id: string;
-  movie_title: string;
-  movie_poster?: string;
-  movie_src: string;
-  created_by: string;
-  created_at: string;
-  is_active: boolean;
-}
+import {
+  enhancedDatabaseWatchPartyService,
+  EnhancedWatchPartySession,
+} from "@/services/enhancedDatabaseWatchParty";
+import { FullyFunctionalWatchParty } from "@/components/FullyFunctionalWatchParty";
 
 const WatchParty: React.FC = () => {
   const { partyId } = useParams<{ partyId: string }>();
   const navigate = useNavigate();
-  const { user, loading: authLoading } = useAuthState();
+  const { user, loading: authLoading } = useAuth();
 
-  const [party, setParty] = useState<WatchParty | null>(null);
+  const [session, setSession] = useState<EnhancedWatchPartySession | null>(
+    null,
+  );
   const [loading, setLoading] = useState(true);
   const [joining, setJoining] = useState(false);
   const [hasJoined, setHasJoined] = useState(false);
@@ -34,55 +29,52 @@ const WatchParty: React.FC = () => {
       navigate("/");
       return;
     }
-    fetchPartyDetails();
-  }, [partyId]);
+    fetchSessionDetails();
+  }, [partyId, user]);
 
-  const fetchPartyDetails = async () => {
+  const fetchSessionDetails = async () => {
     try {
-      const { data, error } = await supabase
-        .from("watch_parties")
-        .select("*")
-        .eq("id", partyId)
-        .single();
+      setLoading(true);
 
-      if (error) throw error;
-      setParty(data);
+      // First check if session exists
+      const exists =
+        await enhancedDatabaseWatchPartyService.sessionExists(partyId);
+      if (!exists) {
+        toast.error("Watch party not found");
+        navigate("/community");
+        return;
+      }
 
-      // Check if user is already a participant
+      // If user is authenticated, try to join the session
       if (user) {
-        const { data: participantData } = await supabase
-          .from("watch_party_participants")
-          .select("id")
-          .eq("watch_party_id", partyId)
-          .eq("user_id", user.id)
-          .single();
-
-        setHasJoined(!!participantData);
+        const sessionData =
+          await enhancedDatabaseWatchPartyService.joinSession(partyId);
+        if (sessionData) {
+          setSession(sessionData);
+          setHasJoined(true);
+        }
       }
     } catch (error) {
-      console.error("Error fetching party:", formatError(error));
+      console.error("Error fetching session:", formatError(error));
       toast.error("Failed to load watch party");
-      navigate("/");
+      navigate("/community");
     } finally {
       setLoading(false);
     }
   };
 
   const joinParty = async () => {
-    if (!user || !party) return;
+    if (!user || !partyId) return;
 
     try {
       setJoining(true);
-
-      const { error } = await supabase.from("watch_party_participants").insert({
-        watch_party_id: party.id,
-        user_id: user.id,
-        is_host: false,
-      });
-
-      if (error) throw error;
-      setHasJoined(true);
-      toast.success("Joined watch party!");
+      const sessionData =
+        await enhancedDatabaseWatchPartyService.joinSession(partyId);
+      if (sessionData) {
+        setSession(sessionData);
+        setHasJoined(true);
+        toast.success("Joined watch party!");
+      }
     } catch (error) {
       toast.error(`Failed to join party: ${formatError(error)}`);
     } finally {
