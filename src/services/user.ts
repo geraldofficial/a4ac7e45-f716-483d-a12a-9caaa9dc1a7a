@@ -16,12 +16,10 @@ export const userApi = {
 
   async getUserProfile(userId: string) {
     console.log("🔍 Fetching profile for user:", userId);
-    // Fetch only essential fields to reduce query complexity and avoid timeouts
+    // Fetch only fields that actually exist in the profiles table
     const { data, error } = await supabase
       .from("profiles")
-      .select(
-        "id, username, full_name, avatar, email, watchlist, genre_preferences, onboarding_completed",
-      )
+      .select("id, username, created_at, updated_at, watchlist")
       .eq("id", userId)
       .maybeSingle();
 
