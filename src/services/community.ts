@@ -387,7 +387,7 @@ class CommunityService {
           )
         `,
         )
-        .or(`content.ilike.%${query}%,movie_title.ilike.%${query}%`)
+        .ilike("content", `%${query}%`)
         .order("created_at", { ascending: false })
         .limit(20);
 
