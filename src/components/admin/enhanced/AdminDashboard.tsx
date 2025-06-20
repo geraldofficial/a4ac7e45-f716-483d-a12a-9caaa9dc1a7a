@@ -162,7 +162,6 @@ export const AdminDashboard: React.FC = () => {
           `
           id,
           created_at,
-          last_sign_in_at,
           username,
           full_name,
           avatar
@@ -179,7 +178,7 @@ export const AdminDashboard: React.FC = () => {
           id: profile.id,
           email: "", // Would need to join with auth.users
           created_at: profile.created_at,
-          last_sign_in_at: profile.last_sign_in_at,
+          last_sign_in_at: "", // Not available from profiles table
           profiles: {
             username: profile.username,
             full_name: profile.full_name,
