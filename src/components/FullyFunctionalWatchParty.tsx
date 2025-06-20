@@ -4,7 +4,11 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "@/components/ui/use-toast";
-import { enhancedDatabaseWatchPartyService } from "@/services/enhancedDatabaseWatchParty";
+import {
+  enhancedDatabaseWatchPartyService,
+  EnhancedWatchPartySession,
+  EnhancedWatchPartyMessage,
+} from "@/services/enhancedDatabaseWatchParty";
 import {
   Loader2,
   Users,
@@ -18,20 +22,12 @@ import {
   Settings,
 } from "lucide-react";
 import { formatError } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import {
-  enhancedDatabaseWatchPartyService,
-  EnhancedWatchPartySession,
-  EnhancedWatchPartyMessage,
-} from "@/services/enhancedDatabaseWatchParty";
 import { useToast } from "@/hooks/use-toast";
 import { EnhancedWatchPartyHeader } from "./watchparty/EnhancedWatchPartyHeader";
 import { EnhancedWatchPartyParticipants } from "./watchparty/EnhancedWatchPartyParticipants";
 import { EnhancedWatchPartyChat } from "./watchparty/EnhancedWatchPartyChat";
 import { WatchPartyVideoSync } from "./watchparty/WatchPartyVideoSync";
 import { WatchPartyControls } from "./watchparty/WatchPartyControls";
-import { X, Users, Play } from "lucide-react";
 
 interface FullyFunctionalWatchPartyProps {
   movieId: number;
