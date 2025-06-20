@@ -31,6 +31,7 @@ import History from "./pages/History";
 import Support from "./pages/Support";
 import Donate from "./pages/Donate";
 import Admin from "./pages/Admin";
+import WatchParty from "./pages/WatchParty";
 
 const queryClient = new QueryClient({
   defaultOptions: {
