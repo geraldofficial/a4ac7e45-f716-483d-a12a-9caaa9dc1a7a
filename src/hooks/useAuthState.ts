@@ -8,9 +8,24 @@ import { formatError } from "@/lib/utils";
 let globalProfileFetchState = {
   isProfileFetching: false,
   consecutiveTimeouts: 0,
-  profileFetchDisabled: false,
+  profileFetchDisabled: true, // Temporarily disabled
   maxTimeouts: 2,
 };
+
+// Add to window for easy re-enabling in console: window.enableProfileFetch()
+if (typeof window !== "undefined") {
+  (window as any).enableProfileFetch = () => {
+    globalProfileFetchState.profileFetchDisabled = false;
+    globalProfileFetchState.consecutiveTimeouts = 0;
+    console.log(
+      "✅ Profile fetching re-enabled. Refresh the page to attempt profile loading.",
+    );
+  };
+  (window as any).disableProfileFetch = () => {
+    globalProfileFetchState.profileFetchDisabled = true;
+    console.log("🚫 Profile fetching disabled.");
+  };
+}
 
 export const useAuthState = () => {
   const [user, setUser] = useState<UserProfile | null>(null);
@@ -41,12 +56,25 @@ export const useAuthState = () => {
       try {
         console.log("🔐 Initializing auth...");
 
-        // Temporarily disable profile fetching to eliminate timeout errors
+        // Profile fetching with global disable check
         const fetchProfileSafely = async (userId: string) => {
-          console.log(
-            "🔍 Profile fetching temporarily disabled to prevent timeout errors",
-          );
-          return null;
+          if (globalProfileFetchState.profileFetchDisabled) {
+            console.log(
+              "🔍 Profile fetching disabled to prevent timeout errors. Use window.enableProfileFetch() to re-enable.",
+            );
+            return null;
+          }
+
+          try {
+            console.log("🔍 Fetching user profile...");
+            const profile = await userApi.getUserProfile(userId);
+            console.log("✅ Profile fetch successful");
+            return profile;
+          } catch (error) {
+            const errorMessage = formatError(error);
+            console.error("❌ Error fetching user profile:", errorMessage);
+            return null;
+          }
         };
 
         // Set up auth state listener first
