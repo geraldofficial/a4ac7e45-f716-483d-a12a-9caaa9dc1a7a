@@ -390,15 +390,29 @@ class RealNotificationsService {
         throw error;
       }
     } catch (error) {
-      console.error("Error sending bulk notification:", formatError(error));
-      // Don't throw error for missing table, just log it
+      // Don't log or throw error for missing table, just handle gracefully
       if (
         error &&
         typeof error === "object" &&
         "code" in error &&
         error.code === "42P01"
       ) {
+        console.info(
+          "User notifications table not yet created. Cannot send bulk notification.",
+        );
         return;
+      }
+
+      // Only log meaningful errors
+      if (error) {
+        const errorMessage = formatError(error);
+        if (
+          errorMessage &&
+          errorMessage !== "Unknown error" &&
+          errorMessage !== "{}"
+        ) {
+          console.error("Error sending bulk notification:", errorMessage);
+        }
       }
       throw error;
     }
