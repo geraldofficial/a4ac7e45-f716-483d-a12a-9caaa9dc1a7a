@@ -285,22 +285,43 @@ class AdminService {
 
       if (error) throw error;
 
-      return (comments || []).map((comment) => ({
-        id: comment.id,
-        post_id: comment.post_id,
-        user_id: comment.user_id,
-        content: comment.content,
-        created_at: comment.created_at,
-        author: {
-          username: comment.profiles?.username || "Unknown",
-          full_name: comment.profiles?.full_name || "Unknown User",
-          avatar: comment.profiles?.avatar || "",
-        },
-        post: {
-          id: comment.community_posts?.id || "",
-          content: comment.community_posts?.content || "",
-        },
-      }));
+      // Get profile and post data for each comment
+      const commentsWithData = await Promise.all(
+        (comments || []).map(async (comment) => {
+          const [profileResult, postResult] = await Promise.all([
+            supabase
+              .from("profiles")
+              .select("username, full_name, avatar")
+              .eq("id", comment.user_id)
+              .single(),
+
+            supabase
+              .from("community_posts")
+              .select("id, content")
+              .eq("id", comment.post_id)
+              .single(),
+          ]);
+
+          return {
+            id: comment.id,
+            post_id: comment.post_id,
+            user_id: comment.user_id,
+            content: comment.content,
+            created_at: comment.created_at,
+            author: {
+              username: profileResult.data?.username || "Unknown",
+              full_name: profileResult.data?.full_name || "Unknown User",
+              avatar: profileResult.data?.avatar || "",
+            },
+            post: {
+              id: postResult.data?.id || "",
+              content: postResult.data?.content || "",
+            },
+          };
+        }),
+      );
+
+      return commentsWithData;
     } catch (error) {
       console.error("Error fetching admin comments:", formatError(error));
       throw error;
