@@ -195,6 +195,14 @@ const App: React.FC = () => {
                     }
                   />
                   <Route
+                    path="/admin"
+                    element={
+                      <SafeRoute componentName="Admin">
+                        <Admin />
+                      </SafeRoute>
+                    }
+                  />
+                  <Route
                     path="/donate"
                     element={
                       <SafeRoute componentName="Donate">
