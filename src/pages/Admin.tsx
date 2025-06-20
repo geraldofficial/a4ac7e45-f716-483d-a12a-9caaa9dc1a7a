@@ -1,10 +1,10 @@
 import React from "react";
 import { EnhancedAdminDashboard } from "@/components/admin/EnhancedAdminDashboard";
-import { useAuthState } from "@/hooks/useAuthState";
+import { useAuth } from "@/contexts/AuthContext";
 import { Navigate } from "react-router-dom";
 
 const Admin = () => {
-  const { user, loading } = useAuthState();
+  const { user, loading } = useAuth();
 
   if (loading) {
     return (

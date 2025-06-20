@@ -3,7 +3,7 @@ import { EnhancedHeroCarousel } from "@/components/hero/EnhancedHeroCarousel";
 import { EnhancedMovieSection } from "@/components/EnhancedMovieSection";
 import { ContinueWatching } from "@/components/ContinueWatching";
 import { RecentlyWatched } from "@/components/RecentlyWatched";
-import { useAuthState } from "@/hooks/useAuthState";
+import { useAuth } from "@/contexts/AuthContext";
 import { Play, TrendingUp, Star, Users, Film } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -11,7 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { Link } from "react-router-dom";
 
 const Index = () => {
-  const { user } = useAuthState();
+  const { user } = useAuth();
   const [currentProfile, setCurrentProfile] = useState(null);
 
   useEffect(() => {

@@ -3,11 +3,11 @@ import { Input } from "@/components/ui/input";
 import { Search } from "lucide-react";
 import { FullFunctionalCommunityFeed } from "@/components/community/FullFunctionalCommunityFeed";
 import { CommunityErrorBoundary } from "@/components/community/CommunityErrorBoundary";
-import { useAuthState } from "@/hooks/useAuthState";
+import { useAuth } from "@/contexts/AuthContext";
 
 const Community = () => {
   const [searchQuery, setSearchQuery] = useState("");
-  const { user } = useAuthState();
+  const { user } = useAuth();
 
   return (
     <CommunityErrorBoundary>
