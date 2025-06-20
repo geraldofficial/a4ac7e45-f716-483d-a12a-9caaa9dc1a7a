@@ -161,7 +161,7 @@ const NotificationCard = ({
           <div className="flex items-center gap-2">
             <div
               className={`
-              p-1 rounded-full 
+              p-1 rounded-full
               ${
                 notification.type === "success"
                   ? "bg-green-600/20 text-green-400"
@@ -740,11 +740,14 @@ export default function EnhancedNotificationBell() {
 
             <div className="flex items-center gap-2">
               <Select
-                value={filters.type || ""}
+                value={filters.type || "all_types"}
                 onValueChange={(value) =>
                   setFilters((prev) => ({
                     ...prev,
-                    type: (value as NotificationType) || undefined,
+                    type:
+                      value === "all_types"
+                        ? undefined
+                        : (value as NotificationType),
                   }))
                 }
               >
@@ -752,7 +755,7 @@ export default function EnhancedNotificationBell() {
                   <SelectValue placeholder="Type" />
                 </SelectTrigger>
                 <SelectContent className="bg-gray-800 border-gray-700">
-                  <SelectItem value="">All Types</SelectItem>
+                  <SelectItem value="all_types">All Types</SelectItem>
                   <SelectItem value="info">Info</SelectItem>
                   <SelectItem value="success">Success</SelectItem>
                   <SelectItem value="warning">Warning</SelectItem>
@@ -770,11 +773,14 @@ export default function EnhancedNotificationBell() {
               </Select>
 
               <Select
-                value={filters.priority || ""}
+                value={filters.priority || "all_priorities"}
                 onValueChange={(value) =>
                   setFilters((prev) => ({
                     ...prev,
-                    priority: (value as NotificationPriority) || undefined,
+                    priority:
+                      value === "all_priorities"
+                        ? undefined
+                        : (value as NotificationPriority),
                   }))
                 }
               >
@@ -782,7 +788,7 @@ export default function EnhancedNotificationBell() {
                   <SelectValue placeholder="Priority" />
                 </SelectTrigger>
                 <SelectContent className="bg-gray-800 border-gray-700">
-                  <SelectItem value="">All Priorities</SelectItem>
+                  <SelectItem value="all_priorities">All Priorities</SelectItem>
                   <SelectItem value="low">Low</SelectItem>
                   <SelectItem value="medium">Medium</SelectItem>
                   <SelectItem value="high">High</SelectItem>
