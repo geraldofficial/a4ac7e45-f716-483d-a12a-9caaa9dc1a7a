@@ -278,16 +278,16 @@ export const AdminDashboard: React.FC = () => {
             Users
           </TabsTrigger>
           <TabsTrigger
-            value="content"
+            value="posts"
             className="text-gray-300 data-[state=active]:text-white"
           >
-            Content
+            Posts
           </TabsTrigger>
           <TabsTrigger
-            value="payments"
+            value="comments"
             className="text-gray-300 data-[state=active]:text-white"
           >
-            Payments
+            Comments
           </TabsTrigger>
         </TabsList>
 
