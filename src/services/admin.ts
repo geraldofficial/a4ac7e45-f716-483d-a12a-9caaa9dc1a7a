@@ -219,20 +219,27 @@ class AdminService {
 
       if (error) throw error;
 
-      // Get likes and comments counts
+      // Get likes and comments counts and profile data
       const postsWithCounts = await Promise.all(
         (posts || []).map(async (post) => {
-          const [likesResult, commentsResult] = await Promise.all([
-            supabase
-              .from("post_likes")
-              .select("id", { count: "exact" })
-              .eq("post_id", post.id),
+          const [likesResult, commentsResult, profileResult] =
+            await Promise.all([
+              supabase
+                .from("community_post_likes")
+                .select("id", { count: "exact" })
+                .eq("post_id", post.id),
 
-            supabase
-              .from("post_comments")
-              .select("id", { count: "exact" })
-              .eq("post_id", post.id),
-          ]);
+              supabase
+                .from("community_post_comments")
+                .select("id", { count: "exact" })
+                .eq("post_id", post.id),
+
+              supabase
+                .from("profiles")
+                .select("username, full_name, avatar")
+                .eq("id", post.user_id)
+                .single(),
+            ]);
 
           return {
             id: post.id,
@@ -242,12 +249,12 @@ class AdminService {
             likes_count: likesResult.count || 0,
             comments_count: commentsResult.count || 0,
             has_media: !!(post.media_urls && post.media_urls.length > 0),
-            has_movie: !!post.movie_title,
-            movie_title: post.movie_title,
+            has_movie: false, // Not in current schema
+            movie_title: undefined,
             author: {
-              username: post.profiles?.username || "Unknown",
-              full_name: post.profiles?.full_name || "Unknown User",
-              avatar: post.profiles?.avatar || "",
+              username: profileResult.data?.username || "Unknown",
+              full_name: profileResult.data?.full_name || "Unknown User",
+              avatar: profileResult.data?.avatar || "",
             },
           };
         }),
