@@ -61,7 +61,7 @@ export const useAuthActions = (
         window.location.href = "/onboarding";
       }
     } catch (error: any) {
-      console.error("Sign-up error:", error);
+      console.error("Sign-up error:", formatError(error));
       toast({
         variant: "destructive",
         title: "Sign up failed",
@@ -94,7 +94,7 @@ export const useAuthActions = (
       // Force complete page reload to clear all state
       window.location.href = "/auth";
     } catch (error: any) {
-      console.error("Sign-out error:", error);
+      console.error("Sign-out error:", formatError(error));
       toast({
         variant: "destructive",
         title: "Sign out failed",
@@ -119,7 +119,7 @@ export const useAuthActions = (
         description: "Your profile has been updated successfully.",
       });
     } catch (error: any) {
-      console.error("Profile update error:", error);
+      console.error("Profile update error:", formatError(error));
       toast({
         variant: "destructive",
         title: "Profile update failed",
