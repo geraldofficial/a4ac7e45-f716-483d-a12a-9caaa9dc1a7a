@@ -150,6 +150,12 @@ class CommunityService {
 
       return {
         ...post,
+        // Add fields that don't exist in DB but are expected by the interface
+        media_type: data.media_type,
+        movie_id: data.movie_id,
+        movie_title: data.movie_title,
+        movie_poster: data.movie_poster,
+        rating: data.rating,
         likes_count: 0,
         comments_count: 0,
         is_liked: false,
