@@ -53,6 +53,12 @@ class ErrorSuppression {
       'relation "public.notification_preferences" does not exist',
       'relation "public.push_subscriptions" does not exist',
       "Failed to execute 'text' on 'Response': body stream already read",
+      '"code":"42P01"',
+      "Error code: 42P01",
+      "HTTP error: 404",
+      "Error fetching notifications: [object Object]",
+      "Error fetching notification stats:",
+      "Error fetching notification preferences:",
     ];
 
     return suppressPatterns.some((pattern) => message.includes(pattern));
