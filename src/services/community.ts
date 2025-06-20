@@ -63,19 +63,7 @@ class CommunityService {
     try {
       let query = supabase
         .from("community_posts")
-        .select(
-          `
-          *,
-          profiles!community_posts_user_id_fkey (
-            id,
-            username,
-            full_name,
-            avatar
-          ),
-          post_likes!left (id, user_id),
-          post_bookmarks!left (id, user_id)
-        `,
-        )
+        .select("*")
         .order("created_at", { ascending: false })
         .range(offset, offset + limit - 1);
 
