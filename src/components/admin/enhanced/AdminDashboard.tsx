@@ -37,50 +37,7 @@ import {
 import { formatError } from "@/lib/utils";
 import { toast } from "sonner";
 
-interface DashboardStats {
-  totalUsers: number;
-  activeUsers: number;
-  totalRevenue: number;
-  monthlyRevenue: number;
-  totalContent: number;
-  watchTime: number;
-  newUsersToday: number;
-  conversionRate: number;
-}
-
-interface User {
-  id: string;
-  email: string;
-  created_at: string;
-  last_sign_in_at?: string; // Optional since not available from profiles table
-  profiles?: {
-    username: string;
-    full_name: string;
-    avatar: string;
-  };
-}
-
-interface ContentItem {
-  id: string;
-  title: string;
-  type: string;
-  status: "active" | "pending" | "disabled";
-  views: number;
-  created_at: string;
-  updated_at: string;
-}
-
-interface Transaction {
-  id: string;
-  user_id: string;
-  amount: number;
-  status: "completed" | "pending" | "failed";
-  created_at: string;
-  profiles?: {
-    username: string;
-    full_name: string;
-  };
-}
+// Using interfaces from admin service
 
 export const AdminDashboard: React.FC = () => {
   const [stats, setStats] = useState<DashboardStats>({
