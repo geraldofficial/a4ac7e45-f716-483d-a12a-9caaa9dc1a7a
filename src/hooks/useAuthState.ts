@@ -37,8 +37,7 @@ export const useAuthState = () => {
             const profile = await userApi.getUserProfile(userId);
             return profile;
           } catch (error) {
-            const errorMessage =
-              error instanceof Error ? error.message : String(error);
+            const errorMessage = formatError(error);
             console.error(
               "❌ Error fetching user profile:",
               errorMessage,
