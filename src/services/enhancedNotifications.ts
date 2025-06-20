@@ -1,5 +1,4 @@
 import { supabase } from "@/integrations/supabase/client";
-import { formatError } from "@/lib/utils";
 
 // Enhanced notification types
 export interface NotificationPreferences {
