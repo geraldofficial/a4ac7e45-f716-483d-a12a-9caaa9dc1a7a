@@ -249,6 +249,7 @@ class AdminService {
 
           return {
             id: authUser.id,
+            email: authUser.email,
             username:
               profile?.username ||
               authUser.user_metadata?.username ||
@@ -259,9 +260,15 @@ class AdminService {
               "Unknown User",
             avatar: profile?.avatar || "",
             created_at: authUser.created_at,
+            last_sign_in_at: authUser.last_sign_in_at,
             post_count: postsResult.count || 0,
             comment_count: commentsResult.count || 0,
             like_count: likesResult.count || 0,
+            profiles: {
+              username: profile?.username,
+              full_name: profile?.full_name,
+              avatar: profile?.avatar,
+            },
           };
         }),
       );
