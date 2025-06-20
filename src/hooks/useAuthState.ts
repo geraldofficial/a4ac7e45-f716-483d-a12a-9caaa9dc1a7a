@@ -41,101 +41,12 @@ export const useAuthState = () => {
       try {
         console.log("🔐 Initializing auth...");
 
-        // Helper function to fetch profile with global circuit breaker pattern
+        // Temporarily disable profile fetching to eliminate timeout errors
         const fetchProfileSafely = async (userId: string) => {
-          // Check global circuit breaker
-          if (globalProfileFetchState.profileFetchDisabled) {
-            console.warn(
-              "🚫 Profile fetching globally disabled due to persistent issues",
-            );
-            return null;
-          }
-
-          // Prevent concurrent profile fetches
-          if (globalProfileFetchState.isProfileFetching) {
-            console.log("⏳ Profile fetch already in progress, skipping...");
-            return null;
-          }
-
-          try {
-            globalProfileFetchState.isProfileFetching = true;
-            retryCountRef.current += 1;
-
-            // Circuit breaker: stop if too many consecutive timeouts globally
-            if (
-              globalProfileFetchState.consecutiveTimeouts >=
-              globalProfileFetchState.maxTimeouts
-            ) {
-              console.warn(
-                "🚫 Global circuit breaker: too many timeouts, disabling profile fetch",
-              );
-              globalProfileFetchState.profileFetchDisabled = true;
-              return null;
-            }
-
-            if (retryCountRef.current > maxRetries) {
-              console.warn(
-                "⚠️ Max retries reached for profile fetch, skipping...",
-              );
-              return null;
-            }
-
-            console.log(
-              `🔍 Fetching profile (attempt ${retryCountRef.current}/${maxRetries}, global timeouts: ${globalProfileFetchState.consecutiveTimeouts})...`,
-            );
-
-            // Very short timeout - fail fast
-            const timeoutPromise = new Promise((_, reject) => {
-              setTimeout(
-                () => reject(new Error("Profile fetch timeout")),
-                2000,
-              );
-            });
-
-            const profile = await Promise.race([
-              userApi.getUserProfile(userId),
-              timeoutPromise,
-            ]);
-
-            // Reset counters on success
-            retryCountRef.current = 0;
-            globalProfileFetchState.consecutiveTimeouts = 0;
-            console.log("✅ Profile fetch successful");
-            return profile;
-          } catch (error) {
-            const errorMessage = formatError(error);
-
-            // Track timeouts globally
-            if (errorMessage.includes("timeout")) {
-              globalProfileFetchState.consecutiveTimeouts += 1;
-
-              // Only log the first timeout to avoid spam
-              if (globalProfileFetchState.consecutiveTimeouts === 1) {
-                console.error(
-                  `❌ Error fetching user profile: ${errorMessage} (global timeout #${globalProfileFetchState.consecutiveTimeouts})`,
-                );
-              }
-
-              // Disable profile fetching after consecutive timeouts
-              if (
-                globalProfileFetchState.consecutiveTimeouts >=
-                globalProfileFetchState.maxTimeouts
-              ) {
-                console.warn(
-                  "🚫 Too many consecutive timeouts globally, disabling profile fetch permanently",
-                );
-                globalProfileFetchState.profileFetchDisabled = true;
-              }
-            } else {
-              console.error("❌ Error fetching user profile:", errorMessage);
-              // Reset timeout counter for non-timeout errors
-              globalProfileFetchState.consecutiveTimeouts = 0;
-            }
-
-            return null;
-          } finally {
-            globalProfileFetchState.isProfileFetching = false;
-          }
+          console.log(
+            "🔍 Profile fetching temporarily disabled to prevent timeout errors",
+          );
+          return null;
         };
 
         // Set up auth state listener first
