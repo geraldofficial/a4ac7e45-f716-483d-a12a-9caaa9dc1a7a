@@ -1,24 +1,36 @@
-
-@import url("https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap");
-@import url('./styles/video-player.css');
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Montserrat:wght@400;500;600;700;800&display=swap");
+@import url("./styles/video-player.css");
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 :root {
-  font-family: "Inter", sans-serif;
-  line-height: 1.5;
+  font-family:
+    "Inter",
+    system-ui,
+    -apple-system,
+    sans-serif;
+  line-height: 1.6;
   font-weight: 400;
 
   color-scheme: dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #000000;
+  color: rgba(255, 255, 255, 0.95);
+  background-color: #030712;
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   -webkit-text-size-adjust: 100%;
+
+  /* Modern design tokens */
+  --brand-red: #ef4444;
+  --brand-red-dark: #dc2626;
+  --brand-red-light: #f87171;
+
+  --gray-50: #fafafa;
+  --gray-900: #111827;
+  --gray-950: #030712;
 }
 
 @layer base {
