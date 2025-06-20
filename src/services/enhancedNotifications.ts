@@ -592,25 +592,59 @@ class EnhancedNotificationsService {
 
   private async setupPushSubscription(): Promise<void> {
     try {
+      // Check if service worker is supported
+      if (!("serviceWorker" in navigator) || !("PushManager" in window)) {
+        console.info("Push notifications not supported in this browser");
+        return;
+      }
+
       const registration = await navigator.serviceWorker.ready;
+
+      // Check if push manager is available
+      if (!registration.pushManager) {
+        console.info("Push manager not available");
+        return;
+      }
+
+      // Check if VAPID key is configured
+      const vapidKey = process.env.REACT_APP_VAPID_PUBLIC_KEY;
+      if (!vapidKey) {
+        console.info(
+          "VAPID public key not configured, skipping push subscription setup",
+        );
+        return;
+      }
+
       const subscription = await registration.pushManager.subscribe({
         userVisibleOnly: true,
-        applicationServerKey: this.urlBase64ToUint8Array(
-          process.env.REACT_APP_VAPID_PUBLIC_KEY || "",
-        ),
+        applicationServerKey: this.urlBase64ToUint8Array(vapidKey),
       });
 
       this.pushSubscription = subscription;
 
-      // Save subscription to database
-      await supabase.from("push_subscriptions").upsert({
-        user_id: this.userId,
-        endpoint: subscription.endpoint,
-        keys: JSON.stringify(subscription.toJSON()),
-        updated_at: new Date().toISOString(),
-      });
+      // Save subscription to database with fallback handling
+      try {
+        await supabase.from("push_subscriptions").upsert({
+          user_id: this.userId,
+          endpoint: subscription.endpoint,
+          keys: JSON.stringify(subscription.toJSON()),
+          updated_at: new Date().toISOString(),
+        });
+        console.info("Push subscription saved to database");
+      } catch (dbError: any) {
+        if (dbError.code === "42P01") {
+          console.info(
+            "Push subscriptions table not yet created. Subscription will be stored locally only.",
+          );
+        } else {
+          console.warn(
+            "Failed to save push subscription to database:",
+            formatError(dbError),
+          );
+        }
+      }
     } catch (error) {
-      console.error("Error setting up push subscription:", error);
+      console.error("Error setting up push subscription:", formatError(error));
     }
   }
 
