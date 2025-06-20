@@ -59,22 +59,13 @@ export const userApi = {
       .single();
 
     if (error) {
-      // Handle Supabase error structure: message, details, code, status
-      const errorMessage =
-        error.message || error.details || error.hint || "Unknown error";
-      const errorCode = error.code || "UNKNOWN";
-      const statusCode = error.status || "";
-
-      console.error("❌ Profile creation error:", {
-        message: errorMessage,
-        code: errorCode,
-        status: statusCode,
-        originalError: error,
-      });
+      // Use formatError to properly format the error message
+      const formattedError = formatError(error);
+      console.error("❌ Profile creation error:", formattedError);
 
       // Create a more informative error
       const creationError = new Error(
-        `Profile creation failed [${errorCode}]: ${errorMessage}`,
+        `Profile creation failed: ${formattedError}`,
       );
       creationError.cause = error;
       throw creationError;
