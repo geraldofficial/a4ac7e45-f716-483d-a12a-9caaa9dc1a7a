@@ -69,8 +69,8 @@ export const AdminDashboard: React.FC = () => {
       await Promise.all([
         fetchStats(),
         fetchUsers(),
-        fetchContent(),
-        fetchTransactions(),
+        fetchPosts(),
+        fetchComments(),
       ]);
     } catch (error) {
       toast.error(`Failed to load dashboard data: ${formatError(error)}`);
