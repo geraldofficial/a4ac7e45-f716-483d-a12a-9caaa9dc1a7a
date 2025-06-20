@@ -12,6 +12,11 @@ export function cn(...inputs: ClassValue[]) {
 export function formatError(error: any): string {
   if (!error) return "Unknown error";
 
+  // Handle Response objects (to avoid body stream issues)
+  if (error instanceof Response) {
+    return `HTTP ${error.status}: ${error.statusText}`;
+  }
+
   // Handle nested error structures
   if (error.error && typeof error.error === "object") {
     return formatError(error.error);
