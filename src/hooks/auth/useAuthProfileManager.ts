@@ -1,5 +1,6 @@
 import { userApi } from "@/services/user";
 import { UserProfile } from "@/types/auth";
+import { formatError } from "@/lib/utils";
 
 export const useAuthProfileManager = () => {
   const createBasicUserProfile = (authUser: any): UserProfile => {
