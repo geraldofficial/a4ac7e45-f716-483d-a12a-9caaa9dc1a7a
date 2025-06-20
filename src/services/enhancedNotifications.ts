@@ -442,9 +442,11 @@ class EnhancedNotificationsService {
 
       if (error) throw error;
     } catch (error) {
-      const errorMessage = formatError(error);
-      if (!notificationId.startsWith("fallback-") && errorMessage !== "{}") {
-        console.error("Error toggling notification star:", errorMessage);
+      if (!notificationId.startsWith("fallback-")) {
+        console.error(
+          "Error toggling notification star:",
+          error instanceof Error ? error.message : String(error),
+        );
       }
       throw error;
     }
