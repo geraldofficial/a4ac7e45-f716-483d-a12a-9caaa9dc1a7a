@@ -130,19 +130,19 @@ export const AdminDashboard: React.FC = () => {
   const getStatusBadge = (status: string) => {
     const variants = {
       active: "default",
-      pending: "secondary",
-      disabled: "destructive",
+      inactive: "secondary",
+      pending: "destructive",
       completed: "default",
       failed: "destructive",
     } as const;
 
     const icons = {
       active: CheckCircle,
+      inactive: XCircle,
       pending: AlertTriangle,
-      disabled: XCircle,
       completed: CheckCircle,
       failed: XCircle,
-    };
+    } as const;
 
     const Icon = icons[status as keyof typeof icons];
 
@@ -152,6 +152,17 @@ export const AdminDashboard: React.FC = () => {
         {status.charAt(0).toUpperCase() + status.slice(1)}
       </Badge>
     );
+  };
+
+  const handleDeletePost = async (postId: string) => {
+    try {
+      await adminService.deletePost(postId);
+      toast.success("Post deleted successfully");
+      // Refresh posts
+      await fetchPosts();
+    } catch (error) {
+      toast.error(`Failed to delete post: ${formatError(error)}`);
+    }
   };
 
   if (loading) {
