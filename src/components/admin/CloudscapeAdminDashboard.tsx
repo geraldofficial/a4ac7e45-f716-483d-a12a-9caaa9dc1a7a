@@ -1373,19 +1373,45 @@ export const CloudscapeAdminDashboard: React.FC = () => {
                             <Label className="text-slate-700">
                               Maintenance Mode
                             </Label>
-                            <Switch />
+                            <Switch
+                              onCheckedChange={(checked) => {
+                                toast.success(
+                                  checked
+                                    ? "Maintenance mode enabled"
+                                    : "Maintenance mode disabled",
+                                );
+                              }}
+                            />
                           </div>
                           <div className="flex items-center justify-between">
                             <Label className="text-slate-700">
                               User Registration
                             </Label>
-                            <Switch defaultChecked />
+                            <Switch
+                              defaultChecked
+                              onCheckedChange={(checked) => {
+                                toast.success(
+                                  checked
+                                    ? "User registration enabled"
+                                    : "User registration disabled",
+                                );
+                              }}
+                            />
                           </div>
                           <div className="flex items-center justify-between">
                             <Label className="text-slate-700">
                               Email Notifications
                             </Label>
-                            <Switch defaultChecked />
+                            <Switch
+                              defaultChecked
+                              onCheckedChange={(checked) => {
+                                toast.success(
+                                  checked
+                                    ? "Email notifications enabled"
+                                    : "Email notifications disabled",
+                                );
+                              }}
+                            />
                           </div>
                         </div>
                       </div>
@@ -1398,19 +1424,46 @@ export const CloudscapeAdminDashboard: React.FC = () => {
                             <Label className="text-slate-700">
                               Two-Factor Auth
                             </Label>
-                            <Switch defaultChecked />
+                            <Switch
+                              defaultChecked
+                              onCheckedChange={(checked) => {
+                                toast.success(
+                                  checked
+                                    ? "Two-factor authentication enabled"
+                                    : "Two-factor authentication disabled",
+                                );
+                              }}
+                            />
                           </div>
                           <div className="flex items-center justify-between">
                             <Label className="text-slate-700">
                               Rate Limiting
                             </Label>
-                            <Switch defaultChecked />
+                            <Switch
+                              defaultChecked
+                              onCheckedChange={(checked) => {
+                                toast.success(
+                                  checked
+                                    ? "Rate limiting enabled"
+                                    : "Rate limiting disabled",
+                                );
+                              }}
+                            />
                           </div>
                           <div className="flex items-center justify-between">
                             <Label className="text-slate-700">
                               Content Moderation
                             </Label>
-                            <Switch defaultChecked />
+                            <Switch
+                              defaultChecked
+                              onCheckedChange={(checked) => {
+                                toast.success(
+                                  checked
+                                    ? "Content moderation enabled"
+                                    : "Content moderation disabled",
+                                );
+                              }}
+                            />
                           </div>
                         </div>
                       </div>
