@@ -144,12 +144,28 @@ class CommunityService {
         .single();
 
       if (error) throw error;
+
+      // Get profile data
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("id, username, full_name, avatar")
+        .eq("id", data.user_id)
+        .single();
+
       return {
         ...post,
         likes_count: 0,
         comments_count: 0,
         is_liked: false,
         is_bookmarked: false,
+        profiles: profile
+          ? {
+              id: profile.id,
+              username: profile.username,
+              full_name: profile.full_name,
+              avatar: profile.avatar,
+            }
+          : undefined,
       };
     } catch (error) {
       console.error("Error creating post:", formatError(error));
