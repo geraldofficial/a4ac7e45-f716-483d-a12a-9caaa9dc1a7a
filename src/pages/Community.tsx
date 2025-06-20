@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Search } from "lucide-react";
-import { CommunityFeed } from "@/components/community/enhanced/CommunityFeed";
+import { FullFunctionalCommunityFeed } from "@/components/community/FullFunctionalCommunityFeed";
 import { CommunityErrorBoundary } from "@/components/community/CommunityErrorBoundary";
 import { useAuthState } from "@/hooks/useAuthState";
 
