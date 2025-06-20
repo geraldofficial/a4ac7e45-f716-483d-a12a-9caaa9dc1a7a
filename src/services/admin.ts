@@ -17,13 +17,20 @@ export interface AdminStats {
 
 export interface AdminUser {
   id: string;
+  email?: string;
   username: string;
   full_name: string;
   avatar: string;
   created_at: string;
+  last_sign_in_at?: string;
   post_count: number;
   comment_count: number;
   like_count: number;
+  profiles?: {
+    username?: string;
+    full_name?: string;
+    avatar?: string;
+  };
 }
 
 export interface AdminPost {
