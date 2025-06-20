@@ -1,5 +1,5 @@
 import React from "react";
-import { EnhancedAdminDashboard } from "@/components/admin/EnhancedAdminDashboard";
+import { CloudscapeAdminDashboard } from "@/components/admin/CloudscapeAdminDashboard";
 import { useAuth } from "@/contexts/AuthContext";
 import { Navigate } from "react-router-dom";
 
@@ -25,11 +25,7 @@ const Admin = () => {
     return <Navigate to="/auth" replace />;
   }
 
-  return (
-    <div className="min-h-screen bg-gray-950">
-      <EnhancedAdminDashboard />
-    </div>
-  );
+  return <CloudscapeAdminDashboard />;
 };
 
 export default Admin;
