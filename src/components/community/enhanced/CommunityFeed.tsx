@@ -62,13 +62,8 @@ export const CommunityFeed: React.FC<CommunityFeedProps> = ({ className }) => {
     if (!newPost.trim() && !selectedMovie) return;
 
     try {
-      await createPost({
-        content: newPost.trim(),
-        movie_id: selectedMovie?.id,
-        movie_title: selectedMovie?.title,
-        movie_poster: selectedMovie?.poster,
-        rating: selectedMovie ? rating : undefined,
-      });
+      // Note: movie data cannot be stored due to DB schema limitations
+      await createPost(newPost.trim(), []);
 
       setNewPost("");
       setSelectedMovie(null);
