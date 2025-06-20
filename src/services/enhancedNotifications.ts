@@ -542,14 +542,21 @@ class EnhancedNotificationsService {
         return this.getDefaultPreferences();
       }
 
-      if (error) throw error;
+      if (error) {
+        console.error(
+          "Error fetching notification preferences:",
+          error.message || error,
+        );
+        return this.getDefaultPreferences();
+      }
 
       this.preferences = data;
       return data;
     } catch (error) {
+      // Use simple error logging to avoid body stream issues
       console.error(
         "Error fetching notification preferences:",
-        formatError(error),
+        error instanceof Error ? error.message : String(error),
       );
       return this.getDefaultPreferences();
     }
