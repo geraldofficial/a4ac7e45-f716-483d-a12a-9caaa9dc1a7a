@@ -16,28 +16,54 @@ export const userApi = {
 
   async getUserProfile(userId: string) {
     console.log("🔍 Fetching profile for user:", userId);
-    // Fetch all available fields from the profiles table (email is in auth.users, not profiles)
-    const { data, error } = await supabase
-      .from("profiles")
-      .select(
-        "id, username, created_at, updated_at, watchlist, avatar, genre_preferences, onboarding_completed, email_welcomed, full_name",
-      )
-      .eq("id", userId)
-      .maybeSingle();
 
-    if (error) {
-      // Use formatError to properly format the error message
-      const formattedError = formatError(error);
-      console.error("❌ Profile fetch error:", formattedError);
+    try {
+      // Fetch all available fields from the profiles table (email is in auth.users, not profiles)
+      const { data, error } = await supabase
+        .from("profiles")
+        .select(
+          "id, username, created_at, updated_at, watchlist, avatar, genre_preferences, onboarding_completed, email_welcomed, full_name",
+        )
+        .eq("id", userId)
+        .maybeSingle();
 
-      // Create a more informative error
-      const fetchError = new Error(`Profile fetch failed: ${formattedError}`);
-      fetchError.cause = error;
-      throw fetchError;
+      if (error) {
+        // Handle specific error types
+        if (error.code === "42P01") {
+          console.info(
+            "Profiles table not yet created. User profile unavailable.",
+          );
+          return null;
+        }
+
+        // Use formatError to properly format the error message
+        const formattedError = formatError(error);
+        console.error("❌ Profile fetch error:", formattedError);
+
+        // Create a more informative error
+        const fetchError = new Error(`Profile fetch failed: ${formattedError}`);
+        fetchError.cause = error;
+        throw fetchError;
+      }
+
+      console.log("✅ Profile fetch result:", data);
+      return data;
+    } catch (error) {
+      // Handle network and other fetch errors
+      if (
+        error instanceof TypeError &&
+        error.message.includes("Failed to fetch")
+      ) {
+        console.warn(
+          "❌ Network error fetching profile. Check internet connection or Supabase configuration.",
+        );
+        // Return null instead of throwing to prevent app crashes
+        return null;
+      }
+
+      // Re-throw other errors
+      throw error;
     }
-
-    console.log("✅ Profile fetch result:", data);
-    return data;
   },
 
   async createUserProfile(userId: string, basicData: any = {}) {
