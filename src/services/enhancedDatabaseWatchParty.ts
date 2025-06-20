@@ -99,7 +99,13 @@ class EnhancedDatabaseWatchPartyService {
       .single();
 
     if (sessionError || !session) {
-      console.error("Session not found:", sessionError);
+      const errorMessage = sessionError
+        ? sessionError.message ||
+          sessionError.details ||
+          sessionError.hint ||
+          "Unknown error"
+        : "Session does not exist";
+      console.error("Session not found:", errorMessage, sessionError);
       return null;
     }
 
