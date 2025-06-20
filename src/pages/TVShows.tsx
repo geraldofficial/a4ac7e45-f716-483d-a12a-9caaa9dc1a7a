@@ -165,7 +165,7 @@ const TVShows = () => {
                     <TrendingUp className="h-5 w-5 text-primary" />
                     <h2 className="text-2xl font-bold">Popular TV Shows</h2>
                     <Badge variant="secondary">
-                      {popularShows.length} shows
+                      {popularShows?.length || 0} shows
                     </Badge>
                   </div>
                   <p className="text-muted-foreground mb-6">
@@ -174,9 +174,9 @@ const TVShows = () => {
                 </div>
 
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
-                  {popularShows.map((show) => (
+                  {popularShows?.map((show) => (
                     <MovieCard key={show.id} movie={show} type="tv" />
-                  ))}
+                  )) || []}
                 </div>
               </TabsContent>
 
@@ -186,7 +186,7 @@ const TVShows = () => {
                     <Star className="h-5 w-5 text-primary" />
                     <h2 className="text-2xl font-bold">Top Rated TV Shows</h2>
                     <Badge variant="secondary">
-                      {topRatedShows.length} shows
+                      {topRatedShows?.length || 0} shows
                     </Badge>
                   </div>
                   <p className="text-muted-foreground mb-6">
@@ -195,9 +195,9 @@ const TVShows = () => {
                 </div>
 
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
-                  {topRatedShows.map((show) => (
+                  {topRatedShows?.map((show) => (
                     <MovieCard key={show.id} movie={show} type="tv" />
-                  ))}
+                  )) || []}
                 </div>
               </TabsContent>
 
@@ -207,7 +207,7 @@ const TVShows = () => {
                     <Clock className="h-5 w-5 text-primary" />
                     <h2 className="text-2xl font-bold">Currently On Air</h2>
                     <Badge variant="secondary">
-                      {onTheAirShows.length} shows
+                      {onTheAirShows?.length || 0} shows
                     </Badge>
                   </div>
                   <p className="text-muted-foreground mb-6">
@@ -216,9 +216,9 @@ const TVShows = () => {
                 </div>
 
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
-                  {onTheAirShows.map((show) => (
+                  {onTheAirShows?.map((show) => (
                     <MovieCard key={show.id} movie={show} type="tv" />
-                  ))}
+                  )) || []}
                 </div>
               </TabsContent>
 
@@ -228,7 +228,7 @@ const TVShows = () => {
                     <Calendar className="h-5 w-5 text-primary" />
                     <h2 className="text-2xl font-bold">Airing Today</h2>
                     <Badge variant="secondary">
-                      {airingTodayShows.length} shows
+                      {airingTodayShows?.length || 0} shows
                     </Badge>
                   </div>
                   <p className="text-muted-foreground mb-6">
@@ -237,9 +237,9 @@ const TVShows = () => {
                 </div>
 
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
-                  {airingTodayShows.map((show) => (
+                  {airingTodayShows?.map((show) => (
                     <MovieCard key={show.id} movie={show} type="tv" />
-                  ))}
+                  )) || []}
                 </div>
               </TabsContent>
             </Tabs>
@@ -249,7 +249,7 @@ const TVShows = () => {
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 <div className="bg-card p-4 rounded-lg border">
                   <div className="text-2xl font-bold text-primary">
-                    {popularShows.length}
+                    {popularShows?.length || 0}
                   </div>
                   <div className="text-sm text-muted-foreground">
                     Popular Shows
@@ -257,19 +257,19 @@ const TVShows = () => {
                 </div>
                 <div className="bg-card p-4 rounded-lg border">
                   <div className="text-2xl font-bold text-primary">
-                    {topRatedShows.length}
+                    {topRatedShows?.length || 0}
                   </div>
                   <div className="text-sm text-muted-foreground">Top Rated</div>
                 </div>
                 <div className="bg-card p-4 rounded-lg border">
                   <div className="text-2xl font-bold text-primary">
-                    {onTheAirShows.length}
+                    {onTheAirShows?.length || 0}
                   </div>
                   <div className="text-sm text-muted-foreground">On Air</div>
                 </div>
                 <div className="bg-card p-4 rounded-lg border">
                   <div className="text-2xl font-bold text-primary">
-                    {airingTodayShows.length}
+                    {airingTodayShows?.length || 0}
                   </div>
                   <div className="text-sm text-muted-foreground">
                     Airing Today
