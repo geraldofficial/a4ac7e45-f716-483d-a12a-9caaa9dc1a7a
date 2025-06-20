@@ -1,46 +1,25 @@
-
-import React, { useState } from 'react';
-import { AdminHeader } from '@/components/admin/AdminHeader';
-import { AdminSidebar } from '@/components/admin/AdminSidebar';
-import { ContentManagement } from '@/components/admin/ContentManagement';
-import { UserManagement } from '@/components/admin/UserManagement';
-import { AnalyticsDashboard } from '@/components/admin/AnalyticsDashboard';
-import { PaymentManagement } from '@/components/admin/PaymentManagement';
-
-type AdminSection = 'dashboard' | 'content' | 'users' | 'payments' | 'analytics';
+import React from "react";
+import { AdminDashboard } from "@/components/admin/enhanced/AdminDashboard";
+import { useAuthState } from "@/hooks/useAuthState";
+import { Navigate } from "react-router-dom";
 
 const Admin = () => {
-  const [activeSection, setActiveSection] = useState<AdminSection>('dashboard');
+  const { user, loading } = useAuthState();
 
-  const renderContent = () => {
-    switch (activeSection) {
-      case 'content':
-        return <ContentManagement />;
-      case 'users':
-        return <UserManagement />;
-      case 'payments':
-        return <PaymentManagement />;
-      case 'analytics':
-        return <AnalyticsDashboard />;
-      default:
-        return <AnalyticsDashboard />;
-    }
-  };
-
-  return (
-    <div className="min-h-screen bg-background">
-      <AdminHeader />
-      <div className="flex">
-        <AdminSidebar 
-          activeSection={activeSection}
-          onSectionChange={setActiveSection}
-        />
-        <main className="flex-1 p-6">
-          {renderContent()}
-        </main>
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-950 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-500" />
       </div>
-    </div>
-  );
+    );
+  }
+
+  // Check if user is admin (you may want to add an admin role check)
+  if (!user) {
+    return <Navigate to="/auth" replace />;
+  }
+
+  return <AdminDashboard />;
 };
 
 export default Admin;
