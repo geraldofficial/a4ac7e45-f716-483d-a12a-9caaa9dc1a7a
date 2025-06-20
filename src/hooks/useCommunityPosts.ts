@@ -64,7 +64,10 @@ export const useCommunityPosts = () => {
         .in("id", userIds);
 
       if (profilesError) {
-        console.error("⚠️ Error fetching profiles:", profilesError);
+        console.error(
+          "⚠️ Error fetching profiles:",
+          formatError(profilesError),
+        );
       }
 
       // Create a map of user profiles for easy lookup
@@ -133,9 +136,8 @@ export const useCommunityPosts = () => {
         setPosts(enrichedPosts);
       }
     } catch (error) {
-      console.error("💥 Critical error in fetchPosts:", error);
-      const errorMessage =
-        error instanceof Error ? error.message : "Failed to load posts";
+      console.error("💥 Critical error in fetchPosts:", formatError(error));
+      const errorMessage = formatError(error);
       setError(errorMessage);
       toast({
         title: "Error",
@@ -202,7 +204,7 @@ export const useCommunityPosts = () => {
 
         fetchPosts(); // Refresh posts
       } catch (error) {
-        console.error("Error creating post:", error);
+        console.error("Error creating post:", formatError(error));
         toast({
           title: "Error",
           description: "Failed to create post",
