@@ -177,6 +177,17 @@ class EnhancedNotificationsService {
 
       return data || [];
     } catch (error) {
+      // Handle network errors gracefully
+      if (
+        error instanceof TypeError &&
+        error.message.includes("Failed to fetch")
+      ) {
+        console.warn(
+          "❌ Network error fetching notifications. Using fallback notifications.",
+        );
+        return this.getFallbackNotifications();
+      }
+
       console.error("Error fetching notifications:", formatError(error));
       return this.getFallbackNotifications();
     }
