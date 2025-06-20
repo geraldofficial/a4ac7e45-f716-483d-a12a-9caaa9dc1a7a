@@ -13,6 +13,7 @@ import { ScrollToTop } from "./components/ScrollToTop";
 // Import network diagnostics and error handling for debugging
 import "./utils/networkDiagnostics";
 import "./utils/globalErrorHandler";
+import "./utils/migrationRunner";
 
 // Pages - wrapped in error boundaries for safety
 import Index from "./pages/Index";
