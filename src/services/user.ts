@@ -15,11 +15,14 @@ export const userApi = {
 
   async getUserProfile(userId: string) {
     console.log("🔍 Fetching profile for user:", userId);
+    // Fetch only essential fields to reduce query complexity and avoid timeouts
     const { data, error } = await supabase
       .from("profiles")
-      .select("*")
+      .select(
+        "id, username, full_name, avatar, email, watchlist, genre_preferences, onboarding_completed",
+      )
       .eq("id", userId)
-      .maybeSingle(); // Changed from .single() to .maybeSingle()
+      .maybeSingle();
 
     if (error) {
       // Handle Supabase error structure: message, details, code, status
