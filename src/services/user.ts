@@ -1,4 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
+import { formatError } from "@/lib/utils";
 
 export const userApi = {
   async updateUser(updates: any) {
@@ -25,23 +26,12 @@ export const userApi = {
       .maybeSingle();
 
     if (error) {
-      // Handle Supabase error structure: message, details, code, status
-      const errorMessage =
-        error.message || error.details || error.hint || "Unknown error";
-      const errorCode = error.code || "UNKNOWN";
-      const statusCode = error.status || "";
-
-      console.error("❌ Profile fetch error:", {
-        message: errorMessage,
-        code: errorCode,
-        status: statusCode,
-        originalError: error,
-      });
+      // Use formatError to properly format the error message
+      const formattedError = formatError(error);
+      console.error("❌ Profile fetch error:", formattedError);
 
       // Create a more informative error
-      const fetchError = new Error(
-        `Profile fetch failed [${errorCode}]: ${errorMessage}`,
-      );
+      const fetchError = new Error(`Profile fetch failed: ${formattedError}`);
       fetchError.cause = error;
       throw fetchError;
     }
