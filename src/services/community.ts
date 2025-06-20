@@ -1,12 +1,12 @@
-import { supabase } from '@/integrations/supabase/client';
-import { formatError } from '@/lib/utils';
+import { supabase } from "@/integrations/supabase/client";
+import { formatError } from "@/lib/utils";
 
 export interface CommunityPost {
   id: string;
   user_id: string;
   content: string;
   media_urls?: string[];
-  media_type?: 'image' | 'video' | 'mixed';
+  media_type?: "image" | "video" | "mixed";
   movie_id?: string;
   movie_title?: string;
   movie_poster?: string;
@@ -55,12 +55,16 @@ export interface PostBookmark {
 
 class CommunityService {
   // Posts
-  async fetchPosts(userId?: string, limit = 20, offset = 0): Promise<CommunityPost[]> {
+  async fetchPosts(
+    userId?: string,
+    limit = 20,
+    offset = 0,
+  ): Promise<CommunityPost[]> {
     try {
       let query = supabase
-        .from('community_posts')
-        .select('*')
-        .order('created_at', { ascending: false })
+        .from("community_posts")
+        .select("*")
+        .order("created_at", { ascending: false })
         .range(offset, offset + limit - 1);
 
       const { data: posts, error } = await query;
@@ -69,21 +73,22 @@ class CommunityService {
       // Get likes and comments counts
       const postsWithCounts = await Promise.all(
         (posts || []).map(async (post) => {
-          const [likesResult, commentsResult, profileResult] = await Promise.all([
-            supabase
-              .from('community_post_likes')
-              .select('id, user_id')
-              .eq('post_id', post.id),
-            supabase
-              .from('community_post_comments')
-              .select('id')
-              .eq('post_id', post.id),
-            supabase
-              .from('profiles')
-              .select('id, username, full_name, avatar')
-              .eq('id', post.user_id)
-              .single()
-          ]);
+          const [likesResult, commentsResult, profileResult] =
+            await Promise.all([
+              supabase
+                .from("community_post_likes")
+                .select("id, user_id")
+                .eq("post_id", post.id),
+              supabase
+                .from("community_post_comments")
+                .select("id")
+                .eq("post_id", post.id),
+              supabase
+                .from("profiles")
+                .select("id, username, full_name, avatar")
+                .eq("id", post.user_id)
+                .single(),
+            ]);
 
           return {
             ...post,
@@ -95,26 +100,27 @@ class CommunityService {
             rating: undefined,
             likes_count: likesResult.data?.length || 0,
             comments_count: commentsResult.data?.length || 0,
-            is_liked: userId ? likesResult.data?.some((like: any) => like.user_id === userId) : false,
+            is_liked: userId
+              ? likesResult.data?.some((like: any) => like.user_id === userId)
+              : false,
             is_bookmarked: false, // Will implement later
-            profiles: profileResult.data ? {
-              id: profileResult.data.id,
-              username: profileResult.data.username,
-              full_name: profileResult.data.full_name,
-              avatar: profileResult.data.avatar,
-            } : undefined,
+            profiles: profileResult.data
+              ? {
+                  id: profileResult.data.id,
+                  username: profileResult.data.username,
+                  full_name: profileResult.data.full_name,
+                  avatar: profileResult.data.avatar,
+                }
+              : undefined,
           };
-        })
+        }),
       );
 
       return postsWithCounts;
     } catch (error) {
       const errorMessage = formatError(error);
-      console.error("Error toggling bookmark:", errorMessage);
+      console.error("Error fetching posts:", errorMessage);
       throw error;
-    }
-    }
-    }
     }
   }
 
@@ -122,7 +128,7 @@ class CommunityService {
     user_id: string;
     content: string;
     media_urls?: string[];
-    media_type?: 'image' | 'video' | 'mixed';
+    media_type?: "image" | "video" | "mixed";
     movie_id?: string;
     movie_title?: string;
     movie_poster?: string;
@@ -130,23 +136,23 @@ class CommunityService {
   }): Promise<CommunityPost> {
     try {
       const { data: post, error } = await supabase
-        .from('community_posts')
+        .from("community_posts")
         .insert({
           user_id: data.user_id,
           content: data.content,
           media_urls: data.media_urls,
           // Note: media_type, movie_id, movie_title, movie_poster, rating columns don't exist in DB schema
         })
-        .select('*')
+        .select("*")
         .single();
 
       if (error) throw error;
 
       // Get profile data
       const { data: profile } = await supabase
-        .from('profiles')
-        .select('id, username, full_name, avatar')
-        .eq('id', data.user_id)
+        .from("profiles")
+        .select("id, username, full_name, avatar")
+        .eq("id", data.user_id)
         .single();
 
       return {
@@ -161,16 +167,18 @@ class CommunityService {
         comments_count: 0,
         is_liked: false,
         is_bookmarked: false,
-        profiles: profile ? {
-          id: profile.id,
-          username: profile.username,
-          full_name: profile.full_name,
-          avatar: profile.avatar,
-        } : undefined,
+        profiles: profile
+          ? {
+              id: profile.id,
+              username: profile.username,
+              full_name: profile.full_name,
+              avatar: profile.avatar,
+            }
+          : undefined,
       };
     } catch (error) {
       const errorMessage = formatError(error);
-      console.error('Error creating post:', errorMessage);
+      console.error("Error creating post:", errorMessage);
       throw error;
     }
   }
@@ -178,14 +186,14 @@ class CommunityService {
   async deletePost(postId: string, userId: string): Promise<void> {
     try {
       const { error } = await supabase
-        .from('community_posts')
+        .from("community_posts")
         .delete()
-        .eq('id', postId)
-        .eq('user_id', userId);
+        .eq("id", postId)
+        .eq("user_id", userId);
 
       if (error) throw error;
     } catch (error) {
-      console.error('Error deleting post:', formatError(error));
+      console.error("Error deleting post:", formatError(error));
       throw error;
     }
   }
@@ -195,35 +203,35 @@ class CommunityService {
     try {
       // Check if already liked
       const { data: existingLike, error: checkError } = await supabase
-        .from('community_post_likes')
-        .select('id')
-        .eq('post_id', postId)
-        .eq('user_id', userId)
+        .from("community_post_likes")
+        .select("id")
+        .eq("post_id", postId)
+        .eq("user_id", userId)
         .single();
 
-      if (checkError && checkError.code !== 'PGRST116') throw checkError;
+      if (checkError && checkError.code !== "PGRST116") throw checkError;
 
       if (existingLike) {
         // Unlike
         const { error } = await supabase
-          .from('community_post_likes')
+          .from("community_post_likes")
           .delete()
-          .eq('post_id', postId)
-          .eq('user_id', userId);
+          .eq("post_id", postId)
+          .eq("user_id", userId);
 
         if (error) throw error;
         return false;
       } else {
         // Like
         const { error } = await supabase
-          .from('community_post_likes')
+          .from("community_post_likes")
           .insert({ post_id: postId, user_id: userId });
 
         if (error) throw error;
         return true;
       }
     } catch (error) {
-      console.error('Error toggling like:', formatError(error));
+      console.error("Error toggling like:", formatError(error));
       throw error;
     }
   }
@@ -233,35 +241,35 @@ class CommunityService {
     try {
       // Check if already bookmarked
       const { data: existingBookmark, error: checkError } = await supabase
-        .from('post_bookmarks')
-        .select('id')
-        .eq('post_id', postId)
-        .eq('user_id', userId)
+        .from("post_bookmarks")
+        .select("id")
+        .eq("post_id", postId)
+        .eq("user_id", userId)
         .single();
 
-      if (checkError && checkError.code !== 'PGRST116') throw checkError;
+      if (checkError && checkError.code !== "PGRST116") throw checkError;
 
       if (existingBookmark) {
         // Remove bookmark
         const { error } = await supabase
-          .from('post_bookmarks')
+          .from("post_bookmarks")
           .delete()
-          .eq('post_id', postId)
-          .eq('user_id', userId);
+          .eq("post_id", postId)
+          .eq("user_id", userId);
 
         if (error) throw error;
         return false;
       } else {
         // Add bookmark
         const { error } = await supabase
-          .from('post_bookmarks')
+          .from("post_bookmarks")
           .insert({ post_id: postId, user_id: userId });
 
         if (error) throw error;
         return true;
       }
     } catch (error) {
-      console.error('Error toggling bookmark:', formatError(error));
+      console.error("Error toggling bookmark:", formatError(error));
       throw error;
     }
   }
@@ -270,8 +278,9 @@ class CommunityService {
   async fetchComments(postId: string): Promise<CommunityComment[]> {
     try {
       const { data: comments, error } = await supabase
-        .from('post_comments')
-        .select(`
+        .from("post_comments")
+        .select(
+          `
           *,
           profiles!post_comments_user_id_fkey (
             id,
@@ -279,28 +288,34 @@ class CommunityService {
             full_name,
             avatar
           )
-        `)
-        .eq('post_id', postId)
-        .order('created_at', { ascending: true });
+        `,
+        )
+        .eq("post_id", postId)
+        .order("created_at", { ascending: true });
 
       if (error) throw error;
       return comments || [];
     } catch (error) {
-      console.error('Error fetching comments:', formatError(error));
+      console.error("Error fetching comments:", formatError(error));
       throw error;
     }
   }
 
-  async createComment(postId: string, userId: string, content: string): Promise<CommunityComment> {
+  async createComment(
+    postId: string,
+    userId: string,
+    content: string,
+  ): Promise<CommunityComment> {
     try {
       const { data: comment, error } = await supabase
-        .from('post_comments')
+        .from("post_comments")
         .insert({
           post_id: postId,
           user_id: userId,
           content: content.trim(),
         })
-        .select(`
+        .select(
+          `
           *,
           profiles!post_comments_user_id_fkey (
             id,
@@ -308,13 +323,14 @@ class CommunityService {
             full_name,
             avatar
           )
-        `)
+        `,
+        )
         .single();
 
       if (error) throw error;
       return comment;
     } catch (error) {
-      console.error('Error creating comment:', formatError(error));
+      console.error("Error creating comment:", formatError(error));
       throw error;
     }
   }
@@ -322,14 +338,14 @@ class CommunityService {
   async deleteComment(commentId: string, userId: string): Promise<void> {
     try {
       const { error } = await supabase
-        .from('post_comments')
+        .from("post_comments")
         .delete()
-        .eq('id', commentId)
-        .eq('user_id', userId);
+        .eq("id", commentId)
+        .eq("user_id", userId);
 
       if (error) throw error;
     } catch (error) {
-      console.error('Error deleting comment:', formatError(error));
+      console.error("Error deleting comment:", formatError(error));
       throw error;
     }
   }
@@ -337,22 +353,22 @@ class CommunityService {
   // Media Upload
   async uploadMedia(file: File, userId: string): Promise<string> {
     try {
-      const fileExt = file.name.split('.').pop();
+      const fileExt = file.name.split(".").pop();
       const fileName = `${userId}/${Date.now()}.${fileExt}`;
 
       const { data, error } = await supabase.storage
-        .from('community-media')
+        .from("community-media")
         .upload(fileName, file);
 
       if (error) throw error;
 
-      const { data: { publicUrl } } = supabase.storage
-        .from('community-media')
-        .getPublicUrl(fileName);
+      const {
+        data: { publicUrl },
+      } = supabase.storage.from("community-media").getPublicUrl(fileName);
 
       return publicUrl;
     } catch (error) {
-      console.error('Error uploading media:', formatError(error));
+      console.error("Error uploading media:", formatError(error));
       throw error;
     }
   }
@@ -361,8 +377,9 @@ class CommunityService {
   async searchPosts(query: string, userId?: string): Promise<CommunityPost[]> {
     try {
       const { data: posts, error } = await supabase
-        .from('community_posts')
-        .select(`
+        .from("community_posts")
+        .select(
+          `
           *,
           profiles!community_posts_user_id_fkey (
             id,
@@ -370,9 +387,10 @@ class CommunityService {
             full_name,
             avatar
           )
-        `)
-        .ilike('content', `%${query}%`)
-        .order('created_at', { ascending: false })
+        `,
+        )
+        .ilike("content", `%${query}%`)
+        .order("created_at", { ascending: false })
         .limit(20);
 
       if (error) throw error;
@@ -381,8 +399,8 @@ class CommunityService {
       const postsWithCounts = await Promise.all(
         (posts || []).map(async (post) => {
           const [likesResult, commentsResult] = await Promise.all([
-            supabase.from('post_likes').select('id').eq('post_id', post.id),
-            supabase.from('post_comments').select('id').eq('post_id', post.id)
+            supabase.from("post_likes").select("id").eq("post_id", post.id),
+            supabase.from("post_comments").select("id").eq("post_id", post.id),
           ]);
 
           return {
@@ -398,12 +416,12 @@ class CommunityService {
             is_liked: false,
             is_bookmarked: false,
           };
-        })
+        }),
       );
 
       return postsWithCounts;
     } catch (error) {
-      console.error('Error searching posts:', formatError(error));
+      console.error("Error searching posts:", formatError(error));
       throw error;
     }
   }
