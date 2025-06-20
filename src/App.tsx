@@ -292,6 +292,14 @@ const App: React.FC = () => {
                     }
                   />
                   <Route
+                    path="/watch-party/:partyId"
+                    element={
+                      <SafeRoute componentName="Watch Party">
+                        <WatchParty />
+                      </SafeRoute>
+                    }
+                  />
+                  <Route
                     path="*"
                     element={
                       <SafeRoute componentName="NotFound">
