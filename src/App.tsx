@@ -10,6 +10,9 @@ import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { SafeErrorBoundary } from "@/components/SafeErrorBoundary";
 import { ScrollToTop } from "./components/ScrollToTop";
 
+// Import network diagnostics for debugging
+import "./utils/networkDiagnostics";
+
 // Pages - wrapped in error boundaries for safety
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
