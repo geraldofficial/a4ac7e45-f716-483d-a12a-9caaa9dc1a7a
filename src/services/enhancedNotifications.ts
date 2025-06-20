@@ -322,14 +322,10 @@ class EnhancedNotificationsService {
       }
 
       if (error) {
-        const errorMessage = formatError(error);
-        if (
-          errorMessage &&
-          errorMessage !== "Unknown error" &&
-          errorMessage !== "{}"
-        ) {
-          console.error("Error creating notification:", errorMessage);
-        }
+        console.error(
+          "Error creating notification:",
+          error instanceof Error ? error.message : String(error),
+        );
       }
       return null;
     }
