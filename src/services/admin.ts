@@ -392,11 +392,11 @@ class AdminService {
               .select("id", { count: "exact" })
               .eq("user_id", user.id),
             supabase
-              .from("post_comments")
+              .from("community_post_comments")
               .select("id", { count: "exact" })
               .eq("user_id", user.id),
             supabase
-              .from("post_likes")
+              .from("community_post_likes")
               .select("id", { count: "exact" })
               .eq("user_id", user.id),
           ]);
