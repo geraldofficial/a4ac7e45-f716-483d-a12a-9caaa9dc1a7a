@@ -181,12 +181,30 @@ class RealNotificationsService {
         .eq("user_id", this.userId)
         .eq("is_read", false);
 
-      if (error) throw error;
+      if (error) {
+        // If table doesn't exist, just log and continue
+        if (error.code === "42P01") {
+          console.info(
+            "User notifications table not yet created. Cannot mark all as read.",
+          );
+          return;
+        }
+        throw error;
+      }
     } catch (error) {
       console.error(
         "Error marking all notifications as read:",
         formatError(error),
       );
+      // Don't throw error for missing table, just log it
+      if (
+        error &&
+        typeof error === "object" &&
+        "code" in error &&
+        error.code === "42P01"
+      ) {
+        return;
+      }
       throw error;
     }
   }
@@ -199,9 +217,27 @@ class RealNotificationsService {
         .eq("id", notificationId)
         .eq("user_id", this.userId);
 
-      if (error) throw error;
+      if (error) {
+        // If table doesn't exist, just log and continue
+        if (error.code === "42P01") {
+          console.info(
+            "User notifications table not yet created. Cannot toggle star.",
+          );
+          return;
+        }
+        throw error;
+      }
     } catch (error) {
       console.error("Error toggling notification star:", formatError(error));
+      // Don't throw error for missing table, just log it
+      if (
+        error &&
+        typeof error === "object" &&
+        "code" in error &&
+        error.code === "42P01"
+      ) {
+        return;
+      }
       throw error;
     }
   }
@@ -214,9 +250,27 @@ class RealNotificationsService {
         .eq("id", notificationId)
         .eq("user_id", this.userId);
 
-      if (error) throw error;
+      if (error) {
+        // If table doesn't exist, just log and continue
+        if (error.code === "42P01") {
+          console.info(
+            "User notifications table not yet created. Cannot delete notification.",
+          );
+          return;
+        }
+        throw error;
+      }
     } catch (error) {
       console.error("Error deleting notification:", formatError(error));
+      // Don't throw error for missing table, just log it
+      if (
+        error &&
+        typeof error === "object" &&
+        "code" in error &&
+        error.code === "42P01"
+      ) {
+        return;
+      }
       throw error;
     }
   }
