@@ -9,6 +9,13 @@ const SUPABASE_PUBLISHABLE_KEY =
 // Import the supabase client like this:
 // import { supabase } from "@/integrations/supabase/client";
 
+// Validate configuration
+if (!SUPABASE_URL || !SUPABASE_PUBLISHABLE_KEY) {
+  console.error(
+    "❌ Supabase configuration missing. Check SUPABASE_URL and SUPABASE_PUBLISHABLE_KEY",
+  );
+}
+
 export const supabase = createClient<Database>(
   SUPABASE_URL,
   SUPABASE_PUBLISHABLE_KEY,
@@ -16,10 +23,31 @@ export const supabase = createClient<Database>(
     auth: {
       persistSession: true,
       autoRefreshToken: true,
+      detectSessionInUrl: true,
+      flowType: "pkce",
     },
     global: {
       headers: {
         "x-application-name": "FlickPick",
+      },
+      fetch: (input, init) => {
+        // Add timeout and better error handling
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 15000); // 15 second timeout
+
+        return fetch(input, {
+          ...init,
+          signal: controller.signal,
+        })
+          .finally(() => clearTimeout(timeoutId))
+          .catch((error) => {
+            if (error.name === "AbortError") {
+              throw new Error(
+                "Request timeout - check your internet connection",
+              );
+            }
+            throw error;
+          });
       },
     },
     realtime: {
@@ -29,3 +57,8 @@ export const supabase = createClient<Database>(
     },
   },
 );
+
+// Test connection on initialization
+supabase.auth.getSession().catch((error) => {
+  console.warn("⚠️ Initial Supabase connection test failed:", error.message);
+});
