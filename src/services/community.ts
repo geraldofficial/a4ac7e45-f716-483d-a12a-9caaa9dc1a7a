@@ -341,12 +341,17 @@ class CommunityService {
     content: string,
   ): Promise<CommunityComment> {
     try {
+      const trimmedContent = content.trim();
+      if (!trimmedContent) {
+        throw new Error("Comment content cannot be empty");
+      }
+
       const { data: comment, error } = await supabase
         .from("community_post_comments")
         .insert({
           post_id: postId,
           user_id: userId,
-          content: content.trim(),
+          content: trimmedContent,
         })
         .select("*")
         .single();
