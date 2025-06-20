@@ -8,7 +8,7 @@ import { formatError } from "@/lib/utils";
 let globalProfileFetchState = {
   isProfileFetching: false,
   consecutiveTimeouts: 0,
-  profileFetchDisabled: true, // Temporarily disabled
+  profileFetchDisabled: false, // Re-enabled to test column fix
   maxTimeouts: 2,
 };
 
