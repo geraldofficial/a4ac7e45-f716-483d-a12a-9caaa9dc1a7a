@@ -12,6 +12,7 @@ import TVNavbar from "@/components/tv/TVNavbar";
 import TVInstallPrompt from "@/components/tv/TVInstallPrompt";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { SafeErrorBoundary } from "@/components/SafeErrorBoundary";
+import { NetworkErrorHandler } from "@/components/NetworkErrorHandler";
 import { ScrollToTop } from "./components/ScrollToTop";
 import "@/styles/tv-styles.css";
 
