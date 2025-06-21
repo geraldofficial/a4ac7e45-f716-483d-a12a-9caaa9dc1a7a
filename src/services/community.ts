@@ -53,15 +53,14 @@ export interface PostBookmark {
 }
 
 export interface CreatePostData {
+  user_id: string;
   content: string;
   media_urls?: string[];
-  media_type?: "image" | "video" | "mixed";
   movie_id?: string;
   movie_title?: string;
   movie_poster?: string;
   rating?: number;
 }
-
 // Get all community posts with enhanced error handling
 export const getCommunityPosts = async (
   limit: number = 20,
