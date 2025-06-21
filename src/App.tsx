@@ -91,60 +91,69 @@ function App() {
               <NetworkErrorHandler>
                 <AuthProvider>
                   <div className="min-h-screen bg-gray-950 text-white">
-                  <Toaster />
-                  <Sonner />
-                  <BrowserRouter>
-                    <ScrollToTop />
-                    <AppNavigation />
-                    <TVInstallPrompt />
+                    <Toaster />
+                    <Sonner />
+                    <BrowserRouter>
+                      <ScrollToTop />
+                      <AppNavigation />
+                      <TVInstallPrompt />
 
-                    <main>
-                      <React.Suspense
-                        fallback={
-                          <div className="flex items-center justify-center min-h-screen">
-                            <div className="tv-loading">
-                              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-600"></div>
-                              <span className="ml-4">Loading FlickPick...</span>
+                      <main>
+                        <React.Suspense
+                          fallback={
+                            <div className="flex items-center justify-center min-h-screen">
+                              <div className="tv-loading">
+                                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-600"></div>
+                                <span className="ml-4">
+                                  Loading FlickPick...
+                                </span>
+                              </div>
                             </div>
-                          </div>
-                        }
-                      >
-                        <Routes>
-                          <Route path="/" element={<HomePage />} />
-                          <Route path="/auth" element={<Auth />} />
-                          <Route path="/profile" element={<Profile />} />
-                          <Route path="/profiles" element={<Profiles />} />
-                          <Route path="/settings" element={<Settings />} />
-                          <Route
-                            path="/notifications/settings"
-                            element={<NotificationSettings />}
-                          />
-                          <Route path="/browse" element={<Browse />} />
-                          <Route path="/movies" element={<Movies />} />
-                          <Route path="/tv" element={<TVShows />} />
-                          <Route path="/trending" element={<Trending />} />
-                          <Route path="/community" element={<Community />} />
-                          <Route path="/detail/:id" element={<DetailPage />} />
-                          <Route path="/watch/:id" element={<WatchPage />} />
-                          <Route
-                            path="/watch-party/:id"
-                            element={<WatchParty />}
-                          />
-                          <Route path="/watchlist" element={<Watchlist />} />
-                          <Route path="/history" element={<History />} />
-                          <Route path="/admin" element={<Admin />} />
-                          <Route path="/help" element={<Help />} />
-                          <Route path="/contact" element={<Contact />} />
-                          <Route path="/privacy" element={<Privacy />} />
-                          <Route path="/terms" element={<Terms />} />
-                          <Route path="/onboarding" element={<Onboarding />} />
-                          <Route path="/donate" element={<Donate />} />
-                        </Routes>
-                      </React.Suspense>
-                    </main>
-                  </BrowserRouter>
-                </div>
-              </AuthProvider>
+                          }
+                        >
+                          <Routes>
+                            <Route path="/" element={<HomePage />} />
+                            <Route path="/auth" element={<Auth />} />
+                            <Route path="/profile" element={<Profile />} />
+                            <Route path="/profiles" element={<Profiles />} />
+                            <Route path="/settings" element={<Settings />} />
+                            <Route
+                              path="/notifications/settings"
+                              element={<NotificationSettings />}
+                            />
+                            <Route path="/browse" element={<Browse />} />
+                            <Route path="/movies" element={<Movies />} />
+                            <Route path="/tv" element={<TVShows />} />
+                            <Route path="/trending" element={<Trending />} />
+                            <Route path="/community" element={<Community />} />
+                            <Route
+                              path="/detail/:id"
+                              element={<DetailPage />}
+                            />
+                            <Route path="/watch/:id" element={<WatchPage />} />
+                            <Route
+                              path="/watch-party/:id"
+                              element={<WatchParty />}
+                            />
+                            <Route path="/watchlist" element={<Watchlist />} />
+                            <Route path="/history" element={<History />} />
+                            <Route path="/admin" element={<Admin />} />
+                            <Route path="/help" element={<Help />} />
+                            <Route path="/contact" element={<Contact />} />
+                            <Route path="/privacy" element={<Privacy />} />
+                            <Route path="/terms" element={<Terms />} />
+                            <Route
+                              path="/onboarding"
+                              element={<Onboarding />}
+                            />
+                            <Route path="/donate" element={<Donate />} />
+                          </Routes>
+                        </React.Suspense>
+                      </main>
+                    </BrowserRouter>
+                  </div>
+                </AuthProvider>
+              </NetworkErrorHandler>
             </TVGuestProvider>
           </TooltipProvider>
         </QueryClientProvider>
