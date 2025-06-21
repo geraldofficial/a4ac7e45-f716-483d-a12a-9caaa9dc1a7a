@@ -1,6 +1,6 @@
 import { supabase } from "@/integrations/supabase/client";
 import { safeLogError } from "@/utils/safeErrorFormat";
-import "@/utils/errorSuppression"; // Ensure error suppression is active
+// import "@/utils/errorSuppression"; // Ensure error suppression is active
 
 // Enhanced notification types
 export interface NotificationPreferences {
