@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useMemo, useRef } from "react";
-import { Volume2, VolumeX, Play } from "lucide-react";
+import { Volume2, VolumeX, Play, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 interface TrailerPlayerProps {
@@ -93,6 +93,19 @@ export const TrailerPlayer: React.FC<TrailerPlayerProps> = ({
         <div className="absolute inset-0 bg-gray-900 flex items-center justify-center z-20">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white"></div>
         </div>
+      )}
+
+      {/* Close Button */}
+      {onClose && (
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={onClose}
+          className="absolute top-4 left-4 z-10 bg-black/50 text-white hover:bg-black/70 rounded-full w-12 h-12 p-0 backdrop-blur-sm transition-all duration-200 hover:scale-105"
+          title="Close video"
+        >
+          <X className="h-5 w-5" />
+        </Button>
       )}
 
       {/* Sound/Play Button */}
