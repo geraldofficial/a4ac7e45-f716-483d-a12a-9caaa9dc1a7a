@@ -1,0 +1,346 @@
+/* TV-Optimized Styles for FlickPick */
+
+/* TV Detection */
+@media (min-width: 1280px) and (pointer: coarse), (min-width: 1920px), tv {
+  :root {
+    --tv-padding: 2rem;
+    --tv-focus-ring: 3px solid #dc2626;
+    --tv-focus-shadow: 0 0 0 6px rgba(220, 38, 38, 0.3);
+    --tv-transition: all 0.2s ease-in-out;
+  }
+
+  /* TV Body Styles */
+  body.tv-mode {
+    font-size: 1.2rem;
+    line-height: 1.6;
+    overflow-x: hidden;
+    cursor: none; /* Hide cursor for TV */
+  }
+
+  /* TV Safe Area */
+  .tv-safe-area {
+    padding: var(--tv-padding);
+    max-width: none;
+    margin: 0;
+  }
+
+  /* TV Navigation */
+  .tv-nav {
+    background: rgba(0, 0, 0, 0.95);
+    backdrop-filter: blur(20px);
+    border-bottom: 2px solid rgba(220, 38, 38, 0.3);
+    padding: 1.5rem var(--tv-padding);
+  }
+
+  .tv-nav-item {
+    padding: 1rem 2rem;
+    margin: 0 0.5rem;
+    border-radius: 12px;
+    font-size: 1.3rem;
+    font-weight: 600;
+    transition: var(--tv-transition);
+    border: 2px solid transparent;
+  }
+
+  .tv-nav-item:focus,
+  .tv-nav-item.focused {
+    outline: none;
+    border: var(--tv-focus-ring);
+    box-shadow: var(--tv-focus-shadow);
+    background: rgba(220, 38, 38, 0.2);
+    transform: scale(1.05);
+  }
+
+  /* TV Content Grid */
+  .tv-content-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 2rem;
+    padding: 2rem var(--tv-padding);
+  }
+
+  /* TV Movie/Show Cards */
+  .tv-card {
+    background: rgba(15, 23, 42, 0.8);
+    border-radius: 16px;
+    overflow: hidden;
+    transition: var(--tv-transition);
+    border: 3px solid transparent;
+    cursor: pointer;
+  }
+
+  .tv-card:focus,
+  .tv-card.focused {
+    outline: none;
+    border: var(--tv-focus-ring);
+    box-shadow: var(--tv-focus-shadow);
+    transform: scale(1.08);
+    z-index: 10;
+    position: relative;
+  }
+
+  .tv-card-image {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+    transition: var(--tv-transition);
+  }
+
+  .tv-card:focus .tv-card-image,
+  .tv-card.focused .tv-card-image {
+    transform: scale(1.05);
+  }
+
+  .tv-card-content {
+    padding: 1.5rem;
+  }
+
+  .tv-card-title {
+    font-size: 1.4rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+    color: #ffffff;
+  }
+
+  .tv-card-description {
+    font-size: 1.1rem;
+    color: #94a3b8;
+    line-height: 1.5;
+  }
+
+  /* TV Buttons */
+  .tv-button {
+    padding: 1.2rem 2.5rem;
+    font-size: 1.3rem;
+    font-weight: 600;
+    border-radius: 12px;
+    border: 2px solid transparent;
+    transition: var(--tv-transition);
+    min-width: 160px;
+  }
+
+  .tv-button:focus,
+  .tv-button.focused {
+    outline: none;
+    border: var(--tv-focus-ring);
+    box-shadow: var(--tv-focus-shadow);
+    transform: scale(1.05);
+  }
+
+  .tv-button-primary {
+    background: #dc2626;
+    color: white;
+  }
+
+  .tv-button-primary:focus,
+  .tv-button-primary.focused {
+    background: #b91c1c;
+  }
+
+  .tv-button-secondary {
+    background: rgba(148, 163, 184, 0.2);
+    color: #e2e8f0;
+  }
+
+  /* TV Hero Section */
+  .tv-hero {
+    height: 70vh;
+    background: linear-gradient(
+      135deg,
+      rgba(0, 0, 0, 0.8),
+      rgba(220, 38, 38, 0.1)
+    );
+    display: flex;
+    align-items: center;
+    padding: 0 var(--tv-padding);
+    position: relative;
+  }
+
+  .tv-hero-content {
+    max-width: 50%;
+    z-index: 2;
+  }
+
+  .tv-hero-title {
+    font-size: 4rem;
+    font-weight: 900;
+    line-height: 1.1;
+    margin-bottom: 1.5rem;
+    color: #ffffff;
+    text-shadow: 0 4px 8px rgba(0, 0, 0, 0.8);
+  }
+
+  .tv-hero-description {
+    font-size: 1.5rem;
+    color: #e2e8f0;
+    margin-bottom: 2.5rem;
+    line-height: 1.6;
+  }
+
+  .tv-hero-buttons {
+    display: flex;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+  }
+
+  /* TV Modal/Dialog */
+  .tv-modal {
+    background: rgba(0, 0, 0, 0.95);
+    border: 3px solid #dc2626;
+    border-radius: 20px;
+    padding: 3rem;
+    max-width: 80vw;
+    max-height: 80vh;
+  }
+
+  .tv-modal:focus-within {
+    box-shadow: 0 0 0 6px rgba(220, 38, 38, 0.3);
+  }
+
+  /* TV Input Fields */
+  .tv-input {
+    padding: 1.2rem 1.5rem;
+    font-size: 1.3rem;
+    border-radius: 12px;
+    border: 2px solid rgba(148, 163, 184, 0.3);
+    background: rgba(15, 23, 42, 0.8);
+    color: #ffffff;
+    transition: var(--tv-transition);
+  }
+
+  .tv-input:focus {
+    outline: none;
+    border-color: #dc2626;
+    box-shadow: var(--tv-focus-shadow);
+  }
+
+  /* TV Search */
+  .tv-search {
+    background: rgba(15, 23, 42, 0.9);
+    border-radius: 16px;
+    padding: 1.5rem;
+    margin: 2rem var(--tv-padding);
+    border: 2px solid rgba(148, 163, 184, 0.2);
+  }
+
+  .tv-search:focus-within {
+    border-color: #dc2626;
+    box-shadow: var(--tv-focus-shadow);
+  }
+
+  /* TV Skip Links for Accessibility */
+  .tv-skip-link {
+    position: absolute;
+    top: -100px;
+    left: var(--tv-padding);
+    background: #dc2626;
+    color: white;
+    padding: 1rem 2rem;
+    border-radius: 8px;
+    font-weight: 600;
+    text-decoration: none;
+    z-index: 1000;
+    transition: var(--tv-transition);
+  }
+
+  .tv-skip-link:focus {
+    top: var(--tv-padding);
+    outline: none;
+    box-shadow: var(--tv-focus-shadow);
+  }
+
+  /* TV Loading States */
+  .tv-loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 300px;
+    font-size: 1.5rem;
+    color: #94a3b8;
+  }
+
+  /* TV Error States */
+  .tv-error {
+    background: rgba(220, 38, 38, 0.1);
+    border: 2px solid #dc2626;
+    border-radius: 12px;
+    padding: 2rem;
+    text-align: center;
+    color: #fca5a5;
+  }
+
+  /* TV Success States */
+  .tv-success {
+    background: rgba(34, 197, 94, 0.1);
+    border: 2px solid #22c55e;
+    border-radius: 12px;
+    padding: 2rem;
+    text-align: center;
+    color: #86efac;
+  }
+}
+
+/* TV Remote Control Hints */
+.tv-controls-hint {
+  position: fixed;
+  bottom: 2rem;
+  right: 2rem;
+  background: rgba(0, 0, 0, 0.8);
+  color: #e2e8f0;
+  padding: 1rem 1.5rem;
+  border-radius: 12px;
+  font-size: 1rem;
+  border: 1px solid rgba(148, 163, 184, 0.3);
+  z-index: 100;
+  opacity: 0.7;
+  transition: opacity 0.3s;
+}
+
+.tv-controls-hint:hover {
+  opacity: 1;
+}
+
+/* TV App Install Banner */
+.tv-install-banner {
+  background: linear-gradient(135deg, #dc2626, #b91c1c);
+  color: white;
+  padding: 1.5rem var(--tv-padding);
+  text-align: center;
+  border-bottom: 3px solid #991b1b;
+}
+
+.tv-install-banner h3 {
+  font-size: 1.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.tv-install-banner p {
+  margin-bottom: 1rem;
+  opacity: 0.9;
+}
+
+/* TV Guest Mode Banner */
+.tv-guest-banner {
+  background: rgba(34, 197, 94, 0.2);
+  border: 2px solid #22c55e;
+  color: #86efac;
+  padding: 1rem var(--tv-padding);
+  text-align: center;
+  font-weight: 600;
+}
+
+/* TV Responsive Adjustments */
+@media (max-width: 1279px) {
+  .tv-hero-title {
+    font-size: 2.5rem;
+  }
+
+  .tv-hero-description {
+    font-size: 1.2rem;
+  }
+
+  .tv-content-grid {
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 1.5rem;
+  }
+}
