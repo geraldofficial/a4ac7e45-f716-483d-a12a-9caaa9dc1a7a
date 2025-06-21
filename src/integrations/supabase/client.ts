@@ -16,7 +16,7 @@ if (!SUPABASE_URL || !SUPABASE_PUBLISHABLE_KEY) {
   );
 }
 
-export const supabase = createClient<Database>(
+const originalClient = createClient<Database>(
   SUPABASE_URL,
   SUPABASE_PUBLISHABLE_KEY,
   {
@@ -58,8 +58,58 @@ export const supabase = createClient<Database>(
   },
 );
 
+// Create a wrapper that prevents database error logging
+const PROBLEMATIC_TABLES = [
+  "user_notifications",
+  "notification_preferences",
+  "push_subscriptions",
+  "user_settings",
+];
+
+export const supabase = new Proxy(originalClient, {
+  get(target, prop) {
+    if (prop === "from") {
+      return (tableName: string) => {
+        const originalFrom = target.from(tableName);
+
+        // If it's a problematic table, wrap to suppress errors
+        if (PROBLEMATIC_TABLES.includes(tableName)) {
+          return new Proxy(originalFrom, {
+            get(fromTarget, fromProp) {
+              const original = fromTarget[fromProp as keyof typeof fromTarget];
+              if (typeof original === "function") {
+                return function (...args: any[]) {
+                  const result = original.apply(fromTarget, args);
+
+                  // Wrap promises to handle 42P01 errors silently
+                  if (result && typeof result.then === "function") {
+                    return result.catch((error: any) => {
+                      if (error && error.code === "42P01") {
+                        // Return the error without logging
+                        return { data: null, error };
+                      }
+                      throw error;
+                    });
+                  }
+
+                  return result;
+                };
+              }
+              return original;
+            },
+          });
+        }
+
+        return originalFrom;
+      };
+    }
+
+    return target[prop as keyof typeof target];
+  },
+});
+
 // Test connection on initialization
-supabase.auth.getSession().catch((error) => {
+originalClient.auth.getSession().catch((error) => {
   if (
     !error.message?.includes("42P01") &&
     !error.message?.includes("does not exist")
