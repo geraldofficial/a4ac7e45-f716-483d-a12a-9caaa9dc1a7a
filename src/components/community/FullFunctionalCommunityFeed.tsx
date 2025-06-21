@@ -142,10 +142,6 @@ export const FullFunctionalCommunityFeed: React.FC<
         user_id: user.id,
         content: newPost.trim(),
         media_urls: mediaUrls.length > 0 ? mediaUrls : undefined,
-        movie_id: selectedMovieId || undefined,
-        movie_title: selectedMovieTitle || undefined,
-        movie_poster: selectedMoviePoster || undefined,
-        rating: rating > 0 ? rating : undefined,
       });
 
       // Reset form
