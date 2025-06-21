@@ -153,7 +153,7 @@ const DetailPage = () => {
   const trailer = getTrailer();
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-gray-950">
       {/* Video Player - Full Screen Overlay */}
       <DetailPageVideoPlayer
         isPlaying={isPlaying}
