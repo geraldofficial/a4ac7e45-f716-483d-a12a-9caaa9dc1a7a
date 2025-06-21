@@ -141,17 +141,38 @@ export const tmdbApi = {
   },
 
   getTopRatedTVShows: async () => {
-    const response = await fetch(`${BASE_URL}/tv/top_rated`, { headers });
+    const response = await fetch(`${BASE_URL}/tv/top_rated`, {
+      headers: getHeaders(),
+    });
+    if (!response.ok) {
+      throw new Error(
+        `TMDB API Error: ${response.status} ${response.statusText}`,
+      );
+    }
     return await response.json();
   },
 
   getOnTheAirTVShows: async () => {
-    const response = await fetch(`${BASE_URL}/tv/on_the_air`, { headers });
+    const response = await fetch(`${BASE_URL}/tv/on_the_air`, {
+      headers: getHeaders(),
+    });
+    if (!response.ok) {
+      throw new Error(
+        `TMDB API Error: ${response.status} ${response.statusText}`,
+      );
+    }
     return await response.json();
   },
 
   getAiringTodayTVShows: async () => {
-    const response = await fetch(`${BASE_URL}/tv/airing_today`, { headers });
+    const response = await fetch(`${BASE_URL}/tv/airing_today`, {
+      headers: getHeaders(),
+    });
+    if (!response.ok) {
+      throw new Error(
+        `TMDB API Error: ${response.status} ${response.statusText}`,
+      );
+    }
     return await response.json();
   },
 
