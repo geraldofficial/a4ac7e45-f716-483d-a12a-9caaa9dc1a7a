@@ -4,6 +4,7 @@ interface MigrationStatus {
   hasUserNotifications: boolean;
   hasNotificationPreferences: boolean;
   hasPushSubscriptions: boolean;
+  hasUserSettings: boolean;
   migrationNeeded: boolean;
 }
 
