@@ -9,7 +9,6 @@ import { DetailPageInfo } from "@/components/DetailPageInfo";
 import { DetailPageVideoPlayer } from "@/components/DetailPageVideoPlayer";
 import { DetailPageModals } from "@/components/DetailPageModals";
 import SimpleWatchParty from "@/components/SimpleWatchParty";
-import WatchPartyTest from "@/components/WatchPartyTest";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { useDetailPageState } from "@/hooks/useDetailPageState";
@@ -262,9 +261,6 @@ const DetailPage = () => {
               />
             </div>
           )}
-
-          {/* Debug Component - Remove in production */}
-          <WatchPartyTest />
         </>
       )}
     </div>
