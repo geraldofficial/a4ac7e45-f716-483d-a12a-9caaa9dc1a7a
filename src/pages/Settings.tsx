@@ -116,9 +116,21 @@ const Settings = () => {
         .eq("user_id", user.id)
         .single();
 
-      if (error && error.code !== "PGRST116") {
-        // Not found error is OK
-        console.error("Error loading settings:", error);
+      if (error) {
+        if (error.code === "PGRST116") {
+          // No settings found - use defaults
+          console.info("No user settings found, using defaults");
+          return;
+        }
+
+        if (error.code === "42P01") {
+          // Table doesn't exist - use defaults
+          console.info("User settings table not yet created, using defaults");
+          return;
+        }
+
+        // Other errors
+        safeLogError("Error loading settings", error);
         return;
       }
 
@@ -126,7 +138,7 @@ const Settings = () => {
         setSettings((prev) => ({ ...prev, ...data.settings }));
       }
     } catch (error) {
-      console.error("Error loading user settings:", error);
+      safeLogError("Error loading user settings", error);
     }
   };
 
