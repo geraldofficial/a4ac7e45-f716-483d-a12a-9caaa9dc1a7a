@@ -1,5 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
-import { formatError } from "@/lib/utils";
+import { safeLogError } from "@/utils/safeErrorFormat";
 
 export interface AdminStats {
   totalUsers: number;
@@ -56,510 +56,528 @@ export interface AdminComment {
   user_id: string;
   content: string;
   created_at: string;
+  post_title: string;
   author: {
     username: string;
     full_name: string;
     avatar: string;
   };
-  post: {
-    id: string;
-    content: string;
-  };
 }
 
-class AdminService {
-  async getStats(): Promise<AdminStats> {
-    try {
-      const now = new Date();
-      const todayStart = new Date(
-        now.getFullYear(),
-        now.getMonth(),
-        now.getDate(),
-      );
-      const weekStart = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-      const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+// Helper function to get date ranges
+const getDateRanges = () => {
+  const now = new Date();
+  const today = new Date(
+    now.getFullYear(),
+    now.getMonth(),
+    now.getDate(),
+  ).toISOString();
+  const weekAgo = new Date(
+    now.getTime() - 7 * 24 * 60 * 60 * 1000,
+  ).toISOString();
+  const monthAgo = new Date(
+    now.getTime() - 30 * 24 * 60 * 60 * 1000,
+  ).toISOString();
 
-      // Parallel queries for better performance
-      const [
-        usersResult,
-        postsResult,
-        commentsResult,
-        likesResult,
-        newUsersTodayResult,
-        newUsersWeekResult,
-        newUsersMonthResult,
-        postsTodayResult,
-        postsWeekResult,
-        postsMonthResult,
-      ] = await Promise.all([
-        // Total users
-        supabase.from("profiles").select("id", { count: "exact" }),
+  return { today, weekAgo, monthAgo };
+};
 
-        // Total posts
-        supabase.from("community_posts").select("id", { count: "exact" }),
+// Get comprehensive admin statistics
+export const getAdminStats = async (): Promise<AdminStats> => {
+  try {
+    const { today, weekAgo, monthAgo } = getDateRanges();
 
-        // Total comments
-        supabase
-          .from("community_post_comments")
-          .select("id", { count: "exact" }),
+    // Get total counts
+    const [
+      { count: totalUsers },
+      { count: totalPosts },
+      { count: totalComments },
+      { count: totalLikes },
+      { count: newUsersToday },
+      { count: newUsersThisWeek },
+      { count: newUsersThisMonth },
+      { count: postsToday },
+      { count: postsThisWeek },
+      { count: postsThisMonth },
+    ] = await Promise.all([
+      // Total users
+      supabase.from("profiles").select("*", { count: "exact", head: true }),
 
-        // Total likes
-        supabase.from("community_post_likes").select("id", { count: "exact" }),
-
-        // New users today
-        supabase
-          .from("profiles")
-          .select("id", { count: "exact" })
-          .gte("created_at", todayStart.toISOString()),
-
-        // New users this week
-        supabase
-          .from("profiles")
-          .select("id", { count: "exact" })
-          .gte("created_at", weekStart.toISOString()),
-
-        // New users this month
-        supabase
-          .from("profiles")
-          .select("id", { count: "exact" })
-          .gte("created_at", monthStart.toISOString()),
-
-        // Posts today
-        supabase
-          .from("community_posts")
-          .select("id", { count: "exact" })
-          .gte("created_at", todayStart.toISOString()),
-
-        // Posts this week
-        supabase
-          .from("community_posts")
-          .select("id", { count: "exact" })
-          .gte("created_at", weekStart.toISOString()),
-
-        // Posts this month
-        supabase
-          .from("community_posts")
-          .select("id", { count: "exact" })
-          .gte("created_at", monthStart.toISOString()),
-      ]);
-
-      return {
-        totalUsers: usersResult.count || 0,
-        activeUsers: Math.floor((usersResult.count || 0) * 0.3), // Estimate active users
-        totalPosts: postsResult.count || 0,
-        totalComments: commentsResult.count || 0,
-        totalLikes: likesResult.count || 0,
-        newUsersToday: newUsersTodayResult.count || 0,
-        newUsersThisWeek: newUsersWeekResult.count || 0,
-        newUsersThisMonth: newUsersMonthResult.count || 0,
-        postsToday: postsTodayResult.count || 0,
-        postsThisWeek: postsWeekResult.count || 0,
-        postsThisMonth: postsMonthResult.count || 0,
-      };
-    } catch (error) {
-      console.error("Error fetching admin stats:", formatError(error));
-      throw error;
-    }
-  }
-
-  async getUsers(limit = 20, offset = 0): Promise<AdminUser[]> {
-    try {
-      // Get users from auth.users and their profiles
-      const { data: authUsers, error: authError } =
-        await supabase.auth.admin.listUsers({
-          page: Math.floor(offset / limit) + 1,
-          perPage: limit,
-        });
-
-      if (authError) {
-        console.warn(
-          "Cannot access auth admin API, falling back to profiles table",
-        );
-        // Fallback to profiles table
-        const { data: profiles, error: profileError } = await supabase
-          .from("profiles")
-          .select("id, username, full_name, avatar, created_at")
-          .order("created_at", { ascending: false })
-          .range(offset, offset + limit - 1);
-
-        if (profileError) throw profileError;
-
-        const usersWithStats = await Promise.all(
-          (profiles || []).map(async (profile) => {
-            const [postsResult, commentsResult, likesResult] =
-              await Promise.all([
-                supabase
-                  .from("community_posts")
-                  .select("id", { count: "exact" })
-                  .eq("user_id", profile.id),
-
-                supabase
-                  .from("community_post_comments")
-                  .select("id", { count: "exact" })
-                  .eq("user_id", profile.id),
-
-                supabase
-                  .from("community_post_likes")
-                  .select("id", { count: "exact" })
-                  .eq("user_id", profile.id),
-              ]);
-
-            return {
-              id: profile.id,
-              username: profile.username || "Unknown",
-              full_name: profile.full_name || "Unknown User",
-              avatar: profile.avatar || "",
-              created_at: profile.created_at,
-              post_count: postsResult.count || 0,
-              comment_count: commentsResult.count || 0,
-              like_count: likesResult.count || 0,
-            };
-          }),
-        );
-
-        return usersWithStats;
-      }
-
-      // Process auth users and get their profiles
-      const usersWithStats = await Promise.all(
-        (authUsers.users || []).map(async (authUser) => {
-          // Get profile data
-          const { data: profile } = await supabase
-            .from("profiles")
-            .select("username, full_name, avatar")
-            .eq("id", authUser.id)
-            .single();
-
-          const [postsResult, commentsResult, likesResult] = await Promise.all([
-            supabase
-              .from("community_posts")
-              .select("id", { count: "exact" })
-              .eq("user_id", authUser.id),
-
-            supabase
-              .from("community_post_comments")
-              .select("id", { count: "exact" })
-              .eq("user_id", authUser.id),
-
-            supabase
-              .from("community_post_likes")
-              .select("id", { count: "exact" })
-              .eq("user_id", authUser.id),
-          ]);
-
-          return {
-            id: authUser.id,
-            email: authUser.email,
-            username:
-              profile?.username ||
-              authUser.user_metadata?.username ||
-              "Unknown",
-            full_name:
-              profile?.full_name ||
-              authUser.user_metadata?.full_name ||
-              "Unknown User",
-            avatar: profile?.avatar || "",
-            created_at: authUser.created_at,
-            last_sign_in_at: authUser.last_sign_in_at,
-            post_count: postsResult.count || 0,
-            comment_count: commentsResult.count || 0,
-            like_count: likesResult.count || 0,
-            profiles: {
-              username: profile?.username,
-              full_name: profile?.full_name,
-              avatar: profile?.avatar,
-            },
-          };
-        }),
-      );
-
-      return usersWithStats;
-    } catch (error) {
-      console.error("Error fetching admin users:", formatError(error));
-      throw error;
-    }
-  }
-
-  async getPosts(limit = 20, offset = 0): Promise<AdminPost[]> {
-    try {
-      const { data: posts, error } = await supabase
+      // Total posts
+      supabase
         .from("community_posts")
-        .select(
-          `
-          id,
-          user_id,
-          content,
-          created_at,
-          media_urls
-        `,
-        )
-        .order("created_at", { ascending: false })
-        .range(offset, offset + limit - 1);
+        .select("*", { count: "exact", head: true }),
 
-      if (error) throw error;
-
-      // Get likes and comments counts and profile data
-      const postsWithCounts = await Promise.all(
-        (posts || []).map(async (post) => {
-          const [likesResult, commentsResult, profileResult] =
-            await Promise.all([
-              supabase
-                .from("community_post_likes")
-                .select("id", { count: "exact" })
-                .eq("post_id", post.id),
-
-              supabase
-                .from("community_post_comments")
-                .select("id", { count: "exact" })
-                .eq("post_id", post.id),
-
-              supabase
-                .from("profiles")
-                .select("username, full_name, avatar")
-                .eq("id", post.user_id)
-                .single(),
-            ]);
-
-          return {
-            id: post.id,
-            user_id: post.user_id,
-            content: post.content,
-            created_at: post.created_at,
-            likes_count: likesResult.count || 0,
-            comments_count: commentsResult.count || 0,
-            has_media: !!(post.media_urls && post.media_urls.length > 0),
-            has_movie: false, // Not in current schema
-            movie_title: undefined,
-            author: {
-              username: profileResult.data?.username || "Unknown",
-              full_name: profileResult.data?.full_name || "Unknown User",
-              avatar: profileResult.data?.avatar || "",
-            },
-          };
-        }),
-      );
-
-      return postsWithCounts;
-    } catch (error) {
-      console.error("Error fetching admin posts:", formatError(error));
-      throw error;
-    }
-  }
-
-  async getComments(limit = 20, offset = 0): Promise<AdminComment[]> {
-    try {
-      const { data: comments, error } = await supabase
-        .from("community_post_comments")
-        .select(
-          `
-          id,
-          post_id,
-          user_id,
-          content,
-          created_at
-        `,
-        )
-        .order("created_at", { ascending: false })
-        .range(offset, offset + limit - 1);
-
-      if (error) throw error;
-
-      // Get profile and post data for each comment
-      const commentsWithData = await Promise.all(
-        (comments || []).map(async (comment) => {
-          const [profileResult, postResult] = await Promise.all([
-            supabase
-              .from("profiles")
-              .select("username, full_name, avatar")
-              .eq("id", comment.user_id)
-              .single(),
-
-            supabase
-              .from("community_posts")
-              .select("id, content")
-              .eq("id", comment.post_id)
-              .single(),
-          ]);
-
-          return {
-            id: comment.id,
-            post_id: comment.post_id,
-            user_id: comment.user_id,
-            content: comment.content,
-            created_at: comment.created_at,
-            author: {
-              username: profileResult.data?.username || "Unknown",
-              full_name: profileResult.data?.full_name || "Unknown User",
-              avatar: profileResult.data?.avatar || "",
-            },
-            post: {
-              id: postResult.data?.id || "",
-              content: postResult.data?.content || "",
-            },
-          };
-        }),
-      );
-
-      return commentsWithData;
-    } catch (error) {
-      console.error("Error fetching admin comments:", formatError(error));
-      throw error;
-    }
-  }
-
-  async deleteUser(userId: string): Promise<void> {
-    try {
-      // Note: In a real app, you'd want to handle this server-side
-      // with proper cascading deletes and data cleanup
-      const { error } = await supabase
-        .from("profiles")
-        .delete()
-        .eq("id", userId);
-
-      if (error) throw error;
-    } catch (error) {
-      console.error("Error deleting user:", formatError(error));
-      throw error;
-    }
-  }
-
-  async deletePost(postId: string): Promise<void> {
-    try {
-      const { error } = await supabase
-        .from("community_posts")
-        .delete()
-        .eq("id", postId);
-
-      if (error) throw error;
-    } catch (error) {
-      console.error("Error deleting post:", formatError(error));
-      throw error;
-    }
-  }
-
-  async deleteComment(commentId: string): Promise<void> {
-    try {
-      const { error } = await supabase
+      // Total comments
+      supabase
         .from("post_comments")
-        .delete()
-        .eq("id", commentId);
+        .select("*", { count: "exact", head: true }),
 
-      if (error) throw error;
-    } catch (error) {
-      console.error("Error deleting comment:", formatError(error));
-      throw error;
-    }
-  }
+      // Total likes
+      supabase.from("post_likes").select("*", { count: "exact", head: true }),
 
-  async searchUsers(query: string): Promise<AdminUser[]> {
-    try {
-      const { data: users, error } = await supabase
+      // New users today
+      supabase
         .from("profiles")
-        .select("id, username, full_name, avatar, created_at")
-        .or(`username.ilike.%${query}%,full_name.ilike.%${query}%`)
-        .order("created_at", { ascending: false })
-        .limit(20);
+        .select("*", { count: "exact", head: true })
+        .gte("created_at", today),
 
-      if (error) throw error;
+      // New users this week
+      supabase
+        .from("profiles")
+        .select("*", { count: "exact", head: true })
+        .gte("created_at", weekAgo),
 
-      // Get activity counts
-      const usersWithStats = await Promise.all(
-        (users || []).map(async (user) => {
-          const [postsResult, commentsResult, likesResult] = await Promise.all([
-            supabase
-              .from("community_posts")
-              .select("id", { count: "exact" })
-              .eq("user_id", user.id),
-            supabase
-              .from("community_post_comments")
-              .select("id", { count: "exact" })
-              .eq("user_id", user.id),
-            supabase
-              .from("community_post_likes")
-              .select("id", { count: "exact" })
-              .eq("user_id", user.id),
-          ]);
+      // New users this month
+      supabase
+        .from("profiles")
+        .select("*", { count: "exact", head: true })
+        .gte("created_at", monthAgo),
 
-          return {
-            ...user,
-            post_count: postsResult.count || 0,
-            comment_count: commentsResult.count || 0,
-            like_count: likesResult.count || 0,
-          };
-        }),
-      );
-
-      return usersWithStats;
-    } catch (error) {
-      console.error("Error searching users:", formatError(error));
-      throw error;
-    }
-  }
-
-  async searchPosts(query: string): Promise<AdminPost[]> {
-    try {
-      const { data: posts, error } = await supabase
+      // Posts today
+      supabase
         .from("community_posts")
-        .select(
-          `
-          id,
-          user_id,
-          content,
-          created_at,
-          media_urls,
-          movie_title,
-          profiles!community_posts_user_id_fkey (
-            username,
-            full_name,
-            avatar
-          )
-        `,
-        )
-        .ilike("content", `%${query}%`)
-        .order("created_at", { ascending: false })
-        .limit(20);
+        .select("*", { count: "exact", head: true })
+        .gte("created_at", today),
 
-      if (error) throw error;
+      // Posts this week
+      supabase
+        .from("community_posts")
+        .select("*", { count: "exact", head: true })
+        .gte("created_at", weekAgo),
 
-      // Get counts
-      const postsWithCounts = await Promise.all(
-        (posts || []).map(async (post) => {
-          const [likesResult, commentsResult] = await Promise.all([
-            supabase
-              .from("community_post_likes")
-              .select("id", { count: "exact" })
-              .eq("post_id", post.id),
-            supabase
-              .from("community_post_comments")
-              .select("id", { count: "exact" })
-              .eq("post_id", post.id),
-          ]);
+      // Posts this month
+      supabase
+        .from("community_posts")
+        .select("*", { count: "exact", head: true })
+        .gte("created_at", monthAgo),
+    ]);
 
-          return {
-            id: post.id,
-            user_id: post.user_id,
-            content: post.content,
-            created_at: post.created_at,
-            likes_count: likesResult.count || 0,
-            comments_count: commentsResult.count || 0,
-            has_media: !!(post.media_urls && post.media_urls.length > 0),
-            has_movie: !!post.movie_title,
-            movie_title: post.movie_title,
-            author: {
-              username: post.profiles?.username || "Unknown",
-              full_name: post.profiles?.full_name || "Unknown User",
-              avatar: post.profiles?.avatar || "",
-            },
-          };
-        }),
-      );
+    // Calculate active users (users who posted or commented in the last week)
+    const { data: activeUserIds } = await supabase
+      .from("community_posts")
+      .select("user_id")
+      .gte("created_at", weekAgo);
 
-      return postsWithCounts;
-    } catch (error) {
-      console.error("Error searching posts:", formatError(error));
-      throw error;
-    }
+    const { data: activeCommenters } = await supabase
+      .from("post_comments")
+      .select("user_id")
+      .gte("created_at", weekAgo);
+
+    const uniqueActiveUsers = new Set([
+      ...(activeUserIds?.map((u) => u.user_id) || []),
+      ...(activeCommenters?.map((u) => u.user_id) || []),
+    ]);
+
+    return {
+      totalUsers: totalUsers || 0,
+      activeUsers: uniqueActiveUsers.size,
+      totalPosts: totalPosts || 0,
+      totalComments: totalComments || 0,
+      totalLikes: totalLikes || 0,
+      newUsersToday: newUsersToday || 0,
+      newUsersThisWeek: newUsersThisWeek || 0,
+      newUsersThisMonth: newUsersThisMonth || 0,
+      postsToday: postsToday || 0,
+      postsThisWeek: postsThisWeek || 0,
+      postsThisMonth: postsThisMonth || 0,
+    };
+  } catch (error) {
+    safeLogError("Error fetching admin stats", error);
+    throw error;
   }
-}
+};
 
-export const adminService = new AdminService();
+// Get all users with their statistics
+export const getAdminUsers = async (
+  limit: number = 50,
+  offset: number = 0,
+): Promise<AdminUser[]> => {
+  try {
+    // Get users with their basic info
+    const { data: users, error: usersError } = await supabase
+      .from("profiles")
+      .select(
+        `
+        id,
+        username,
+        full_name,
+        avatar,
+        created_at
+      `,
+      )
+      .order("created_at", { ascending: false })
+      .range(offset, offset + limit - 1);
+
+    if (usersError) throw usersError;
+
+    if (!users || users.length === 0) {
+      return [];
+    }
+
+    // Get post counts for each user
+    const userIds = users.map((user) => user.id);
+
+    const [
+      { data: postCounts },
+      { data: commentCounts },
+      { data: likeCounts },
+    ] = await Promise.all([
+      // Post counts
+      supabase.from("community_posts").select("user_id").in("user_id", userIds),
+
+      // Comment counts
+      supabase.from("post_comments").select("user_id").in("user_id", userIds),
+
+      // Like counts (posts they liked)
+      supabase.from("post_likes").select("user_id").in("user_id", userIds),
+    ]);
+
+    // Count occurrences
+    const postCountMap = new Map();
+    const commentCountMap = new Map();
+    const likeCountMap = new Map();
+
+    postCounts?.forEach((post) => {
+      postCountMap.set(post.user_id, (postCountMap.get(post.user_id) || 0) + 1);
+    });
+
+    commentCounts?.forEach((comment) => {
+      commentCountMap.set(
+        comment.user_id,
+        (commentCountMap.get(comment.user_id) || 0) + 1,
+      );
+    });
+
+    likeCounts?.forEach((like) => {
+      likeCountMap.set(like.user_id, (likeCountMap.get(like.user_id) || 0) + 1);
+    });
+
+    return users.map((user) => ({
+      ...user,
+      email: "", // Email not accessible via profiles table
+      last_sign_in_at: undefined, // Not available in profiles
+      post_count: postCountMap.get(user.id) || 0,
+      comment_count: commentCountMap.get(user.id) || 0,
+      like_count: likeCountMap.get(user.id) || 0,
+    }));
+  } catch (error) {
+    safeLogError("Error fetching admin users", error);
+    throw error;
+  }
+};
+
+// Get all posts with author information
+export const getAdminPosts = async (
+  limit: number = 50,
+  offset: number = 0,
+): Promise<AdminPost[]> => {
+  try {
+    const { data: posts, error } = await supabase
+      .from("community_posts")
+      .select(
+        `
+        id,
+        user_id,
+        content,
+        created_at,
+        likes_count,
+        comments_count,
+        media_urls,
+        movie_title,
+        profiles (
+          username,
+          full_name,
+          avatar
+        )
+      `,
+      )
+      .order("created_at", { ascending: false })
+      .range(offset, offset + limit - 1);
+
+    if (error) throw error;
+
+    return (
+      posts?.map((post) => ({
+        id: post.id,
+        user_id: post.user_id,
+        content: post.content,
+        created_at: post.created_at,
+        likes_count: post.likes_count,
+        comments_count: post.comments_count,
+        has_media: Boolean(post.media_urls && post.media_urls.length > 0),
+        has_movie: Boolean(post.movie_title),
+        movie_title: post.movie_title,
+        author: {
+          username: post.profiles?.username || "Unknown",
+          full_name: post.profiles?.full_name || "Unknown User",
+          avatar: post.profiles?.avatar || "",
+        },
+      })) || []
+    );
+  } catch (error) {
+    safeLogError("Error fetching admin posts", error);
+    throw error;
+  }
+};
+
+// Get all comments with post and author information
+export const getAdminComments = async (
+  limit: number = 50,
+  offset: number = 0,
+): Promise<AdminComment[]> => {
+  try {
+    const { data: comments, error } = await supabase
+      .from("post_comments")
+      .select(
+        `
+        id,
+        post_id,
+        user_id,
+        content,
+        created_at,
+        community_posts (
+          content
+        ),
+        profiles (
+          username,
+          full_name,
+          avatar
+        )
+      `,
+      )
+      .order("created_at", { ascending: false })
+      .range(offset, offset + limit - 1);
+
+    if (error) throw error;
+
+    return (
+      comments?.map((comment) => ({
+        id: comment.id,
+        post_id: comment.post_id,
+        user_id: comment.user_id,
+        content: comment.content,
+        created_at: comment.created_at,
+        post_title:
+          comment.community_posts?.content?.substring(0, 50) + "..." ||
+          "Post not found",
+        author: {
+          username: comment.profiles?.username || "Unknown",
+          full_name: comment.profiles?.full_name || "Unknown User",
+          avatar: comment.profiles?.avatar || "",
+        },
+      })) || []
+    );
+  } catch (error) {
+    safeLogError("Error fetching admin comments", error);
+    throw error;
+  }
+};
+
+// Delete a user (admin only)
+export const deleteUser = async (userId: string): Promise<void> => {
+  try {
+    const { error } = await supabase.from("profiles").delete().eq("id", userId);
+
+    if (error) throw error;
+  } catch (error) {
+    safeLogError("Error deleting user", error);
+    throw error;
+  }
+};
+
+// Delete a post (admin only)
+export const deletePost = async (postId: string): Promise<void> => {
+  try {
+    const { error } = await supabase
+      .from("community_posts")
+      .delete()
+      .eq("id", postId);
+
+    if (error) throw error;
+  } catch (error) {
+    safeLogError("Error deleting post", error);
+    throw error;
+  }
+};
+
+// Delete a comment (admin only)
+export const deleteComment = async (commentId: string): Promise<void> => {
+  try {
+    const { error } = await supabase
+      .from("post_comments")
+      .delete()
+      .eq("id", commentId);
+
+    if (error) throw error;
+  } catch (error) {
+    safeLogError("Error deleting comment", error);
+    throw error;
+  }
+};
+
+// Search users
+export const searchUsers = async (
+  query: string,
+  limit: number = 20,
+  offset: number = 0,
+): Promise<AdminUser[]> => {
+  try {
+    if (!query.trim()) {
+      return getAdminUsers(limit, offset);
+    }
+
+    const { data: users, error } = await supabase
+      .from("profiles")
+      .select(
+        `
+        id,
+        username,
+        full_name,
+        avatar,
+        created_at
+      `,
+      )
+      .or(`username.ilike.%${query}%,full_name.ilike.%${query}%`)
+      .order("created_at", { ascending: false })
+      .range(offset, offset + limit - 1);
+
+    if (error) throw error;
+
+    if (!users || users.length === 0) {
+      return [];
+    }
+
+    // Get statistics for found users
+    const userIds = users.map((user) => user.id);
+
+    const [
+      { data: postCounts },
+      { data: commentCounts },
+      { data: likeCounts },
+    ] = await Promise.all([
+      supabase.from("community_posts").select("user_id").in("user_id", userIds),
+      supabase.from("post_comments").select("user_id").in("user_id", userIds),
+      supabase.from("post_likes").select("user_id").in("user_id", userIds),
+    ]);
+
+    const postCountMap = new Map();
+    const commentCountMap = new Map();
+    const likeCountMap = new Map();
+
+    postCounts?.forEach((post) => {
+      postCountMap.set(post.user_id, (postCountMap.get(post.user_id) || 0) + 1);
+    });
+
+    commentCounts?.forEach((comment) => {
+      commentCountMap.set(
+        comment.user_id,
+        (commentCountMap.get(comment.user_id) || 0) + 1,
+      );
+    });
+
+    likeCounts?.forEach((like) => {
+      likeCountMap.set(like.user_id, (likeCountMap.get(like.user_id) || 0) + 1);
+    });
+
+    return users.map((user) => ({
+      ...user,
+      email: "",
+      last_sign_in_at: undefined,
+      post_count: postCountMap.get(user.id) || 0,
+      comment_count: commentCountMap.get(user.id) || 0,
+      like_count: likeCountMap.get(user.id) || 0,
+    }));
+  } catch (error) {
+    safeLogError("Error searching users", error);
+    throw error;
+  }
+};
+
+// Search posts
+export const searchPosts = async (
+  query: string,
+  limit: number = 20,
+  offset: number = 0,
+): Promise<AdminPost[]> => {
+  try {
+    if (!query.trim()) {
+      return getAdminPosts(limit, offset);
+    }
+
+    const { data: posts, error } = await supabase
+      .from("community_posts")
+      .select(
+        `
+        id,
+        user_id,
+        content,
+        created_at,
+        likes_count,
+        comments_count,
+        media_urls,
+        movie_title,
+        profiles (
+          username,
+          full_name,
+          avatar
+        )
+      `,
+      )
+      .or(`content.ilike.%${query}%,movie_title.ilike.%${query}%`)
+      .order("created_at", { ascending: false })
+      .range(offset, offset + limit - 1);
+
+    if (error) throw error;
+
+    return (
+      posts?.map((post) => ({
+        id: post.id,
+        user_id: post.user_id,
+        content: post.content,
+        created_at: post.created_at,
+        likes_count: post.likes_count,
+        comments_count: post.comments_count,
+        has_media: Boolean(post.media_urls && post.media_urls.length > 0),
+        has_movie: Boolean(post.movie_title),
+        movie_title: post.movie_title,
+        author: {
+          username: post.profiles?.username || "Unknown",
+          full_name: post.profiles?.full_name || "Unknown User",
+          avatar: post.profiles?.avatar || "",
+        },
+      })) || []
+    );
+  } catch (error) {
+    safeLogError("Error searching posts", error);
+    throw error;
+  }
+};
+
+// Get system health metrics
+export const getSystemHealth = async () => {
+  try {
+    const { data, error } = await supabase
+      .from("profiles")
+      .select("created_at")
+      .limit(1);
+
+    if (error) throw error;
+
+    return {
+      database: "healthy",
+      storage: "healthy", // Would need actual storage check
+      auth: "healthy", // Would need actual auth check
+      lastChecked: new Date().toISOString(),
+    };
+  } catch (error) {
+    safeLogError("Error checking system health", error);
+    return {
+      database: "error",
+      storage: "unknown",
+      auth: "unknown",
+      lastChecked: new Date().toISOString(),
+      error: error instanceof Error ? error.message : "Unknown error",
+    };
+  }
+};

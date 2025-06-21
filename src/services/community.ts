@@ -1,5 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
-import { formatError } from "@/lib/utils";
+import { safeLogError } from "@/utils/safeErrorFormat";
 
 export interface CommunityPost {
   id: string;
@@ -53,437 +53,506 @@ export interface PostBookmark {
   created_at: string;
 }
 
-class CommunityService {
-  // Posts
-  async fetchPosts(
-    userId?: string,
-    limit = 20,
-    offset = 0,
-  ): Promise<CommunityPost[]> {
-    try {
-      let query = supabase
-        .from("community_posts")
-        .select("*")
-        .order("created_at", { ascending: false })
-        .range(offset, offset + limit - 1);
+export interface CreatePostData {
+  content: string;
+  media_urls?: string[];
+  media_type?: "image" | "video" | "mixed";
+  movie_id?: string;
+  movie_title?: string;
+  movie_poster?: string;
+  rating?: number;
+}
 
-      const { data: posts, error } = await query;
-      if (error) throw error;
+// Get all community posts with enhanced error handling
+export const getCommunityPosts = async (
+  limit: number = 20,
+  offset: number = 0,
+): Promise<{
+  posts: CommunityPost[];
+  error: string | null;
+}> => {
+  try {
+    console.log("🔄 Fetching community posts...");
 
-      // Get likes and comments counts
-      const postsWithCounts = await Promise.all(
-        (posts || []).map(async (post) => {
-          const [likesResult, commentsResult, profileResult] =
-            await Promise.all([
-              supabase
-                .from("community_post_likes")
-                .select("id, user_id")
-                .eq("post_id", post.id),
-              supabase
-                .from("community_post_comments")
-                .select("id")
-                .eq("post_id", post.id),
-              supabase
-                .from("profiles")
-                .select("id, username, full_name, avatar")
-                .eq("id", post.user_id)
-                .single(),
-            ]);
+    // First fetch the posts
+    const { data: posts, error: postsError } = await supabase
+      .from("community_posts")
+      .select(
+        `
+        id,
+        user_id,
+        content,
+        media_urls,
+        media_type,
+        movie_id,
+        movie_title,
+        movie_poster,
+        rating,
+        created_at,
+        updated_at,
+        likes_count,
+        comments_count
+      `,
+      )
+      .order("created_at", { ascending: false })
+      .range(offset, offset + limit - 1);
 
-          return {
-            ...post,
-            // Add default values for fields that don't exist in DB schema
-            media_type: undefined,
-            movie_id: undefined,
-            movie_title: undefined,
-            movie_poster: undefined,
-            rating: undefined,
-            likes_count: likesResult.data?.length || 0,
-            comments_count: commentsResult.data?.length || 0,
-            is_liked: userId
-              ? likesResult.data?.some((like: any) => like.user_id === userId)
-              : false,
-            is_bookmarked: false, // Will implement later
-            profiles: profileResult.data
-              ? {
-                  id: profileResult.data.id,
-                  username: profileResult.data.username,
-                  full_name: profileResult.data.full_name,
-                  avatar: profileResult.data.avatar,
-                }
-              : undefined,
-          };
-        }),
-      );
-
-      return postsWithCounts;
-    } catch (error) {
-      const errorMessage = formatError(error);
-      console.error("Error fetching posts:", errorMessage);
-      throw error;
+    if (postsError) {
+      safeLogError("❌ Error fetching posts", postsError);
+      throw postsError;
     }
+
+    if (!posts) {
+      console.log("📭 No posts found");
+      return { posts: [], error: null };
+    }
+
+    console.log(`✅ Found ${posts.length} posts`);
+
+    // Get unique user IDs
+    const userIds = [...new Set(posts.map((post) => post.user_id))];
+
+    if (userIds.length === 0) {
+      return { posts: [], error: null };
+    }
+
+    // Fetch user profiles
+    const { data: profiles, error: profilesError } = await supabase
+      .from("profiles")
+      .select("id, username, full_name, avatar")
+      .in("id", userIds);
+
+    if (profilesError) {
+      safeLogError("⚠️ Error fetching profiles", profilesError);
+      // Continue without profiles instead of failing
+    }
+
+    // Create profiles map for efficient lookup
+    const profilesMap = new Map();
+    profiles?.forEach((profile) => {
+      profilesMap.set(profile.id, profile);
+    });
+
+    // Attach profile data to posts
+    const postsWithProfiles = posts.map((post) => ({
+      ...post,
+      profiles: profilesMap.get(post.user_id) || {
+        id: post.user_id,
+        username: "Unknown User",
+        full_name: "Unknown User",
+        avatar: "",
+      },
+    }));
+
+    console.log("✅ Posts with profiles prepared");
+    return { posts: postsWithProfiles, error: null };
+  } catch (error) {
+    safeLogError("Error fetching posts", error);
+    const errorMessage =
+      error instanceof Error ? error.message : "Failed to fetch posts";
+    return { posts: [], error: errorMessage };
   }
+};
 
-  async createPost(data: {
-    user_id: string;
-    content: string;
-    media_urls?: string[];
-    media_type?: "image" | "video" | "mixed";
-    movie_id?: string;
-    movie_title?: string;
-    movie_poster?: string;
-    rating?: number;
-  }): Promise<CommunityPost> {
-    try {
-      const { data: post, error } = await supabase
-        .from("community_posts")
-        .insert({
-          user_id: data.user_id,
-          content: data.content,
-          media_urls: data.media_urls,
-          // Note: media_type, movie_id, movie_title, movie_poster, rating columns don't exist in DB schema
-        })
-        .select("*")
-        .single();
+// Create a new community post
+export const createCommunityPost = async (
+  postData: CreatePostData,
+): Promise<{
+  post: CommunityPost | null;
+  error: string | null;
+}> => {
+  try {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
 
-      if (error) throw error;
+    if (!user) {
+      return { post: null, error: "User not authenticated" };
+    }
 
-      // Get profile data
-      const { data: profile } = await supabase
-        .from("profiles")
-        .select("id, username, full_name, avatar")
-        .eq("id", data.user_id)
-        .single();
-
-      return {
-        ...post,
-        // Add fields that don't exist in DB but are expected by the interface
-        media_type: data.media_type,
-        movie_id: data.movie_id,
-        movie_title: data.movie_title,
-        movie_poster: data.movie_poster,
-        rating: data.rating,
+    const { data: post, error } = await supabase
+      .from("community_posts")
+      .insert({
+        ...postData,
+        user_id: user.id,
         likes_count: 0,
         comments_count: 0,
-        is_liked: false,
-        is_bookmarked: false,
-        profiles: profile
-          ? {
-              id: profile.id,
-              username: profile.username,
-              full_name: profile.full_name,
-              avatar: profile.avatar,
-            }
-          : undefined,
-      };
-    } catch (error) {
-      const errorMessage = formatError(error);
-      console.error("Error creating post:", errorMessage);
+      })
+      .select()
+      .single();
+
+    if (error) {
+      safeLogError("Error creating post", error);
       throw error;
     }
-  }
 
-  async deletePost(postId: string, userId: string): Promise<void> {
-    try {
-      const { error } = await supabase
-        .from("community_posts")
+    return { post, error: null };
+  } catch (error) {
+    safeLogError("Error creating post", error);
+    const errorMessage =
+      error instanceof Error ? error.message : "Failed to create post";
+    return { post: null, error: errorMessage };
+  }
+};
+
+// Delete a community post
+export const deleteCommunityPost = async (postId: string): Promise<void> => {
+  try {
+    const { error } = await supabase
+      .from("community_posts")
+      .delete()
+      .eq("id", postId);
+
+    if (error) throw error;
+  } catch (error) {
+    safeLogError("Error deleting post", error);
+    throw error;
+  }
+};
+
+// Toggle like on a post
+export const togglePostLike = async (
+  postId: string,
+): Promise<{
+  isLiked: boolean;
+  likesCount: number;
+}> => {
+  try {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+      throw new Error("User not authenticated");
+    }
+
+    // Check if already liked
+    const { data: existingLike } = await supabase
+      .from("post_likes")
+      .select("id")
+      .eq("post_id", postId)
+      .eq("user_id", user.id)
+      .single();
+
+    if (existingLike) {
+      // Unlike
+      await supabase
+        .from("post_likes")
         .delete()
-        .eq("id", postId)
-        .eq("user_id", userId);
-
-      if (error) throw error;
-    } catch (error) {
-      console.error("Error deleting post:", formatError(error));
-      throw error;
-    }
-  }
-
-  // Likes
-  async toggleLike(postId: string, userId: string): Promise<boolean> {
-    try {
-      // Check if already liked
-      const { data: existingLike, error: checkError } = await supabase
-        .from("community_post_likes")
-        .select("id")
         .eq("post_id", postId)
-        .eq("user_id", userId)
-        .single();
-
-      if (checkError && checkError.code !== "PGRST116") throw checkError;
-
-      if (existingLike) {
-        // Unlike
-        const { error } = await supabase
-          .from("community_post_likes")
-          .delete()
-          .eq("post_id", postId)
-          .eq("user_id", userId);
-
-        if (error) throw error;
-        return false;
-      } else {
-        // Like
-        const { error } = await supabase
-          .from("community_post_likes")
-          .insert({ post_id: postId, user_id: userId });
-
-        if (error) throw error;
-        return true;
-      }
-    } catch (error) {
-      console.error("Error toggling like:", formatError(error));
-      throw error;
+        .eq("user_id", user.id);
+    } else {
+      // Like
+      await supabase.from("post_likes").insert({
+        post_id: postId,
+        user_id: user.id,
+      });
     }
+
+    // Get updated count
+    const { count } = await supabase
+      .from("post_likes")
+      .select("*", { count: "exact" })
+      .eq("post_id", postId);
+
+    return {
+      isLiked: !existingLike,
+      likesCount: count || 0,
+    };
+  } catch (error) {
+    safeLogError("Error toggling like", error);
+    throw error;
   }
+};
 
-  // Bookmarks
-  async toggleBookmark(postId: string, userId: string): Promise<boolean> {
-    try {
-      // Check if already bookmarked
-      const { data: existingBookmark, error: checkError } = await supabase
-        .from("community_post_bookmarks")
-        .select("id")
-        .eq("post_id", postId)
-        .eq("user_id", userId)
-        .single();
+// Toggle bookmark on a post
+export const togglePostBookmark = async (
+  postId: string,
+): Promise<{
+  isBookmarked: boolean;
+}> => {
+  try {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
 
-      if (checkError && checkError.code !== "PGRST116") throw checkError;
-
-      if (existingBookmark) {
-        // Remove bookmark
-        const { error } = await supabase
-          .from("community_post_bookmarks")
-          .delete()
-          .eq("post_id", postId)
-          .eq("user_id", userId);
-
-        if (error) throw error;
-        return false;
-      } else {
-        // Add bookmark
-        const { error } = await supabase
-          .from("community_post_bookmarks")
-          .insert({ post_id: postId, user_id: userId });
-
-        if (error) throw error;
-        return true;
-      }
-    } catch (error) {
-      console.error("Error toggling bookmark:", formatError(error));
-      throw error;
+    if (!user) {
+      throw new Error("User not authenticated");
     }
-  }
 
-  // Comments
-  async fetchComments(postId: string): Promise<CommunityComment[]> {
-    try {
-      // First fetch comments
-      const { data: comments, error } = await supabase
-        .from("community_post_comments")
-        .select("*")
+    // Check if already bookmarked
+    const { data: existingBookmark } = await supabase
+      .from("post_bookmarks")
+      .select("id")
+      .eq("post_id", postId)
+      .eq("user_id", user.id)
+      .single();
+
+    if (existingBookmark) {
+      // Remove bookmark
+      await supabase
+        .from("post_bookmarks")
+        .delete()
         .eq("post_id", postId)
-        .order("created_at", { ascending: true });
+        .eq("user_id", user.id);
 
-      if (error) throw error;
-
-      if (!comments || comments.length === 0) {
-        return [];
-      }
-
-      // Get unique user IDs from comments
-      const userIds = [...new Set(comments.map((comment) => comment.user_id))];
-
-      // Fetch profile data for these users
-      const { data: profilesData, error: profilesError } = await supabase
-        .from("profiles")
-        .select("id, username, full_name, avatar")
-        .in("id", userIds);
-
-      if (profilesError) {
-        console.error(
-          "Error fetching comment profiles:",
-          formatError(profilesError),
-        );
-      }
-
-      // Create a map of user profiles for easy lookup
-      const profilesMap = new Map();
-      profilesData?.forEach((profile) => {
-        profilesMap.set(profile.id, {
-          id: profile.id,
-          username: profile.username || "anonymous",
-          full_name: profile.full_name || profile.username || "Anonymous User",
-          avatar: profile.avatar || "👤",
-        });
+      return { isBookmarked: false };
+    } else {
+      // Add bookmark
+      await supabase.from("post_bookmarks").insert({
+        post_id: postId,
+        user_id: user.id,
       });
 
-      // Combine comments with profile data
-      const commentsWithProfiles = comments.map((comment) => ({
-        ...comment,
-        profiles: profilesMap.get(comment.user_id) || {
-          id: comment.user_id,
-          username: "anonymous",
-          full_name: "Anonymous User",
-          avatar: "👤",
-        },
-      }));
-
-      return commentsWithProfiles;
-    } catch (error) {
-      console.error("Error fetching comments:", formatError(error));
-      throw error;
+      return { isBookmarked: true };
     }
+  } catch (error) {
+    safeLogError("Error toggling bookmark", error);
+    throw error;
   }
+};
 
-  async createComment(
-    postId: string,
-    userId: string,
-    content: string,
-  ): Promise<CommunityComment> {
-    try {
-      const trimmedContent = content.trim();
-      if (!trimmedContent) {
-        throw new Error("Comment content cannot be empty");
-      }
+// Get comments for a post
+export const getPostComments = async (
+  postId: string,
+): Promise<CommunityComment[]> => {
+  try {
+    const { data: comments, error } = await supabase
+      .from("post_comments")
+      .select("*")
+      .eq("post_id", postId)
+      .order("created_at", { ascending: true });
 
-      const { data: comment, error } = await supabase
-        .from("community_post_comments")
-        .insert({
-          post_id: postId,
-          user_id: userId,
-          content: trimmedContent,
-        })
-        .select("*")
-        .single();
+    if (error) throw error;
 
-      if (error) throw error;
-
-      // Fetch profile data separately
-      const { data: profile } = await supabase
-        .from("profiles")
-        .select("id, username, full_name, avatar")
-        .eq("id", userId)
-        .single();
-
-      return {
-        ...comment,
-        profiles: profile
-          ? {
-              id: profile.id,
-              username: profile.username || "anonymous",
-              full_name:
-                profile.full_name || profile.username || "Anonymous User",
-              avatar: profile.avatar || "👤",
-            }
-          : {
-              id: userId,
-              username: "anonymous",
-              full_name: "Anonymous User",
-              avatar: "👤",
-            },
-      };
-    } catch (error) {
-      console.error("Error creating comment:", formatError(error));
-      throw error;
+    if (!comments || comments.length === 0) {
+      return [];
     }
-  }
 
-  async deleteComment(commentId: string, userId: string): Promise<void> {
-    try {
-      const { error } = await supabase
-        .from("community_post_comments")
-        .delete()
-        .eq("id", commentId)
-        .eq("user_id", userId);
+    // Get user profiles for comments
+    const userIds = [...new Set(comments.map((comment) => comment.user_id))];
+    const { data: profiles, error: profilesError } = await supabase
+      .from("profiles")
+      .select("id, username, full_name, avatar")
+      .in("id", userIds);
 
-      if (error) throw error;
-    } catch (error) {
-      console.error("Error deleting comment:", formatError(error));
-      throw error;
+    if (profilesError) {
+      safeLogError("Error fetching comment profiles", profilesError);
+      // Continue without profiles instead of failing
     }
-  }
 
-  // Media Upload
-  async uploadMedia(file: File, userId: string): Promise<string> {
-    try {
+    // Create profiles map
+    const profilesMap = new Map();
+    profiles?.forEach((profile) => {
+      profilesMap.set(profile.id, profile);
+    });
+
+    // Attach profiles to comments
+    const commentsWithProfiles = comments.map((comment) => ({
+      ...comment,
+      profiles: profilesMap.get(comment.user_id) || {
+        id: comment.user_id,
+        username: "Unknown User",
+        full_name: "Unknown User",
+        avatar: "",
+      },
+    }));
+
+    return commentsWithProfiles;
+  } catch (error) {
+    safeLogError("Error fetching comments", error);
+    throw error;
+  }
+};
+
+// Create a comment on a post
+export const createPostComment = async (
+  postId: string,
+  content: string,
+): Promise<CommunityComment> => {
+  try {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+      throw new Error("User not authenticated");
+    }
+
+    const { data: comment, error } = await supabase
+      .from("post_comments")
+      .insert({
+        post_id: postId,
+        user_id: user.id,
+        content,
+      })
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    // Increment comments count on the post
+    await supabase.rpc("increment_comments_count", {
+      post_id: postId,
+    });
+
+    // Get user profile for the comment
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("id, username, full_name, avatar")
+      .eq("id", user.id)
+      .single();
+
+    return {
+      ...comment,
+      profiles: profile || {
+        id: user.id,
+        username: "Unknown User",
+        full_name: "Unknown User",
+        avatar: "",
+      },
+    };
+  } catch (error) {
+    safeLogError("Error creating comment", error);
+    throw error;
+  }
+};
+
+// Delete a comment
+export const deletePostComment = async (commentId: string): Promise<void> => {
+  try {
+    const { error } = await supabase
+      .from("post_comments")
+      .delete()
+      .eq("id", commentId);
+
+    if (error) throw error;
+  } catch (error) {
+    safeLogError("Error deleting comment", error);
+    throw error;
+  }
+};
+
+// Upload media files
+export const uploadMedia = async (files: File[]): Promise<string[]> => {
+  try {
+    const uploadPromises = files.map(async (file) => {
       const fileExt = file.name.split(".").pop();
-      const fileName = `${userId}/${Date.now()}.${fileExt}`;
+      const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`;
+      const filePath = `community/${fileName}`;
 
-      const { data, error } = await supabase.storage
-        .from("community-media")
-        .upload(fileName, file);
+      const { error: uploadError } = await supabase.storage
+        .from("media")
+        .upload(filePath, file);
 
-      if (error) throw error;
+      if (uploadError) throw uploadError;
 
-      const {
-        data: { publicUrl },
-      } = supabase.storage.from("community-media").getPublicUrl(fileName);
+      const { data } = supabase.storage.from("media").getPublicUrl(filePath);
 
-      return publicUrl;
-    } catch (error) {
-      console.error("Error uploading media:", formatError(error));
-      throw error;
-    }
+      return data.publicUrl;
+    });
+
+    return await Promise.all(uploadPromises);
+  } catch (error) {
+    safeLogError("Error uploading media", error);
+    throw error;
   }
+};
 
-  // Search
-  async searchPosts(query: string, userId?: string): Promise<CommunityPost[]> {
-    try {
-      const { data: posts, error } = await supabase
-        .from("community_posts")
-        .select(
-          `
-          *,
-          profiles!community_posts_user_id_fkey (
+// Get user's bookmarked posts
+export const getUserBookmarks = async (): Promise<CommunityPost[]> => {
+  try {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) return [];
+
+    const { data: bookmarks, error } = await supabase
+      .from("post_bookmarks")
+      .select(
+        `
+        created_at,
+        community_posts (
+          id,
+          user_id,
+          content,
+          media_urls,
+          media_type,
+          movie_id,
+          movie_title,
+          movie_poster,
+          rating,
+          created_at,
+          updated_at,
+          likes_count,
+          comments_count,
+          profiles (
             id,
             username,
             full_name,
             avatar
           )
-        `,
         )
-        .ilike("content", `%${query}%`)
-        .order("created_at", { ascending: false })
-        .limit(20);
+      `,
+      )
+      .eq("user_id", user.id)
+      .order("created_at", { ascending: false });
 
-      if (error) throw error;
+    if (error) throw error;
 
-      // Add counts and user interactions
-      const postsWithCounts = await Promise.all(
-        (posts || []).map(async (post) => {
-          const [likesResult, commentsResult] = await Promise.all([
-            supabase
-              .from("community_post_likes")
-              .select("id")
-              .eq("post_id", post.id),
-            supabase
-              .from("community_post_comments")
-              .select("id")
-              .eq("post_id", post.id),
-          ]);
-
-          return {
-            ...post,
-            // Add default values for fields that don't exist in DB schema
-            media_type: undefined,
-            movie_id: undefined,
-            movie_title: undefined,
-            movie_poster: undefined,
-            rating: undefined,
-            likes_count: likesResult.data?.length || 0,
-            comments_count: commentsResult.data?.length || 0,
-            is_liked: false,
-            is_bookmarked: false,
-          };
-        }),
-      );
-
-      return postsWithCounts;
-    } catch (error) {
-      console.error("Error searching posts:", formatError(error));
-      throw error;
-    }
+    return (
+      bookmarks?.map((bookmark) => bookmark.community_posts).filter(Boolean) ||
+      []
+    );
+  } catch (error) {
+    safeLogError("Error fetching bookmarks", error);
+    return [];
   }
-}
+};
 
-export const communityService = new CommunityService();
+// Search posts
+export const searchPosts = async (
+  query: string,
+  limit: number = 20,
+): Promise<CommunityPost[]> => {
+  try {
+    if (!query.trim()) return [];
+
+    const { data: posts, error } = await supabase
+      .from("community_posts")
+      .select(
+        `
+        id,
+        user_id,
+        content,
+        media_urls,
+        media_type,
+        movie_id,
+        movie_title,
+        movie_poster,
+        rating,
+        created_at,
+        updated_at,
+        likes_count,
+        comments_count,
+        profiles (
+          id,
+          username,
+          full_name,
+          avatar
+        )
+      `,
+      )
+      .or(`content.ilike.%${query}%,movie_title.ilike.%${query}%`)
+      .order("created_at", { ascending: false })
+      .limit(limit);
+
+    if (error) throw error;
+
+    return posts || [];
+  } catch (error) {
+    safeLogError("Error searching posts", error);
+    throw error;
+  }
+};
