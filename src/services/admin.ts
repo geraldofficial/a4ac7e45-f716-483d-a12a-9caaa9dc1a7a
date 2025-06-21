@@ -284,7 +284,6 @@ export const getAdminPosts = async (
         likes_count,
         comments_count,
         media_urls,
-        movie_title,
         profiles (
           username,
           full_name,
