@@ -595,21 +595,7 @@ export const FullFunctionalCommunityFeed: React.FC<
                 </div>
               )}
 
-              {/* Movie attachment */}
-              {post.movie_id && (
-                <div className="flex items-center space-x-3 p-3 bg-gray-800 rounded-lg">
-                  <img
-                    src={post.movie_poster}
-                    alt={post.movie_title}
-                    className="w-12 h-16 object-cover rounded"
-                  />
-                  <div className="flex-1">
-                    <h5 className="font-medium text-white">
-                      {post.movie_title}
-                    </h5>
-                    {post.rating && (
-                      <div className="mt-1">{renderStars(post.rating)}</div>
-                    )}
+
                   </div>
                   <Badge
                     variant="secondary"
