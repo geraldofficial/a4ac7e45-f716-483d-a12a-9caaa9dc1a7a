@@ -21,7 +21,11 @@ class ErrorSuppression {
         if (!this.warningShown) {
           this.warningShown = true;
           originalWarn(
-            "📝 Notification database tables are missing. Run migration 20250621000002-enhanced-notifications-system.sql to enable full functionality.",
+            "📝 Database Setup Required:\n" +
+              "   • Missing tables: user_notifications, notification_preferences, push_subscriptions, user_settings\n" +
+              "   • Run migration: supabase/migrations/20250621000002-enhanced-notifications-system.sql\n" +
+              "   • App works with fallback data until database is configured\n" +
+              "   • Error suppression is active to prevent console spam",
           );
         }
         return; // Suppress the error
@@ -57,12 +61,14 @@ class ErrorSuppression {
       '"code":"42P01"',
       "Error code: 42P01",
       "HTTP error: 404",
-      "Error fetching notifications: [object Object]",
-      "Error fetching notification stats:",
-      "Error fetching notification preferences:",
-      "Error loading settings: [object Object]",
-      "Error loading user settings:",
-      "Error saving settings:",
+      "Error fetching notifications",
+      "Error fetching notification stats",
+      "Error fetching notification preferences",
+      "Error loading settings",
+      "Error loading user settings",
+      "Error saving settings",
+      "TypeError: Failed to execute 'text' on 'Response': body stream already read",
+      "body stream already read",
     ];
 
     return suppressPatterns.some((pattern) => message.includes(pattern));
