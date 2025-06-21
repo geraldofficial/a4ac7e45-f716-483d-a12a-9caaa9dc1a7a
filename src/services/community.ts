@@ -269,7 +269,7 @@ export const togglePostBookmark = async (
 
     // Check if already bookmarked
     const { data: existingBookmark } = await supabase
-      .from("post_bookmarks")
+      .from("community_post_bookmarks")
       .select("id")
       .eq("post_id", postId)
       .eq("user_id", user.id)
