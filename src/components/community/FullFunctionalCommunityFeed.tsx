@@ -138,15 +138,6 @@ export const FullFunctionalCommunityFeed: React.FC<
     try {
       setCreating(true);
 
-      const mediaType =
-        mediaFiles.length > 0
-          ? mediaFiles.some((f) => f.type.startsWith("video/"))
-            ? mediaFiles.some((f) => f.type.startsWith("image/"))
-              ? "mixed"
-              : "video"
-            : "image"
-          : undefined;
-
       await communityService.createPost({
         user_id: user.id,
         content: newPost.trim(),
