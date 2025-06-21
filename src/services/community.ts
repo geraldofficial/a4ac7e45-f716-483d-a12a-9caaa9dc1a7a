@@ -286,7 +286,7 @@ export const togglePostBookmark = async (
       return { isBookmarked: false };
     } else {
       // Add bookmark
-      await supabase.from("post_bookmarks").insert({
+      await supabase.from("community_post_bookmarks").insert({
         post_id: postId,
         user_id: user.id,
       });
