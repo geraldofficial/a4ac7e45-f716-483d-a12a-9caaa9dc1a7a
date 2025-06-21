@@ -74,14 +74,11 @@ export const getCommunityPosts = async (
         user_id,
         content,
         media_urls,
-        movie_id,
-        movie_title,
-        movie_poster,
-        rating,
         created_at,
         updated_at,
         likes_count,
-        comments_count
+        comments_count,
+        shares_count
       `,
       )
       .order("created_at", { ascending: false })
