@@ -16,6 +16,7 @@ import "./utils/globalErrorHandler";
 import "./utils/migrationRunner";
 import "./utils/errorSuppression";
 import "./utils/linkValidator";
+import "./utils/settingsValidator";
 
 // Pages - wrapped in error boundaries for safety
 import Index from "./pages/Index";
