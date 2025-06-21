@@ -1,10 +1,4 @@
-import React, {
-  useState,
-  useCallback,
-  useMemo,
-  useRef,
-  useEffect,
-} from "react";
+import React, { useState, useCallback, useMemo, useRef } from "react";
 import { Volume2, VolumeX, Play } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -24,8 +18,9 @@ export const TrailerPlayer: React.FC<TrailerPlayerProps> = ({
   const [isMuted, setIsMuted] = useState(true);
   const [hasError, setHasError] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-  const [key, setKey] = useState(0); // Used to force iframe reload
+  const [showUnmutedVideo, setShowUnmutedVideo] = useState(false);
   const iframeRef = useRef<HTMLIFrameElement>(null);
+  const unmutedIframeRef = useRef<HTMLIFrameElement>(null);
 
   const handleLoad = useCallback(() => {
     setIsLoading(false);
@@ -38,22 +33,28 @@ export const TrailerPlayer: React.FC<TrailerPlayerProps> = ({
   }, []);
 
   const toggleMuteAndRestart = useCallback(() => {
-    // If currently muted, unmute and restart video from beginning
     if (isMuted) {
+      // Switch to unmuted video (starts from beginning with sound)
+      setShowUnmutedVideo(true);
       setIsMuted(false);
-      // Force iframe reload to restart video with sound
-      setKey((prev) => prev + 1);
     } else {
-      // If unmuted, mute the video (but don't restart)
+      // Switch back to muted video
+      setShowUnmutedVideo(false);
       setIsMuted(true);
     }
   }, [isMuted]);
 
-  // Memoize the YouTube URL to prevent unnecessary re-renders
-  const youtubeUrl = useMemo(
+  // Memoize the YouTube URLs
+  const mutedYoutubeUrl = useMemo(
     () =>
-      `https://www.youtube.com/embed/${videoKey}?autoplay=1&mute=${isMuted ? 1 : 0}&controls=0&modestbranding=1&rel=0&showinfo=0&loop=1&playlist=${videoKey}&iv_load_policy=3&fs=0&disablekb=1&start=0`,
-    [videoKey, isMuted, key],
+      `https://www.youtube.com/embed/${videoKey}?autoplay=1&mute=1&controls=0&modestbranding=1&rel=0&showinfo=0&loop=1&playlist=${videoKey}&iv_load_policy=3&fs=0&disablekb=1`,
+    [videoKey],
+  );
+
+  const unmutedYoutubeUrl = useMemo(
+    () =>
+      `https://www.youtube.com/embed/${videoKey}?autoplay=1&mute=0&controls=0&modestbranding=1&rel=0&showinfo=0&loop=1&playlist=${videoKey}&iv_load_policy=3&fs=0&disablekb=1&start=0`,
+    [videoKey],
   );
 
   // Memoize the backdrop image URL
@@ -109,13 +110,12 @@ export const TrailerPlayer: React.FC<TrailerPlayerProps> = ({
         )}
       </Button>
 
-      {/* Auto-playing trailer */}
+      {/* Muted trailer (default) */}
       <iframe
-        key={key} // This forces the iframe to reload when key changes
         ref={iframeRef}
-        className="w-full h-full"
-        src={youtubeUrl}
-        title={`${title} Trailer`}
+        className={`w-full h-full transition-opacity duration-300 ${showUnmutedVideo ? "opacity-0 pointer-events-none" : "opacity-100"}`}
+        src={mutedYoutubeUrl}
+        title={`${title} Trailer (Muted)`}
         frameBorder="0"
         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
         allowFullScreen={false}
@@ -123,8 +123,25 @@ export const TrailerPlayer: React.FC<TrailerPlayerProps> = ({
         onError={handleError}
         style={{
           pointerEvents: "none",
+          position: showUnmutedVideo ? "absolute" : "relative",
         }}
       />
+
+      {/* Unmuted trailer (with sound, starts from beginning) */}
+      {showUnmutedVideo && (
+        <iframe
+          ref={unmutedIframeRef}
+          className="w-full h-full absolute inset-0 transition-opacity duration-300 opacity-100"
+          src={unmutedYoutubeUrl}
+          title={`${title} Trailer (With Sound)`}
+          frameBorder="0"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+          allowFullScreen={false}
+          style={{
+            pointerEvents: "none",
+          }}
+        />
+      )}
 
       {/* Overlay to prevent clicking on the video */}
       <div
