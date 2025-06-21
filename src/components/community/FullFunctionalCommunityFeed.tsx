@@ -634,7 +634,7 @@ export const FullFunctionalCommunityFeed: React.FC<
       {posts.length === 0 && !loading && (
         <Card className="border-gray-800 bg-gray-900/50">
           <CardContent className="text-center py-12">
-            <Film className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+            <MessageCircle className="h-12 w-12 text-gray-400 mx-auto mb-4" />
             <h3 className="text-lg font-medium text-white mb-2">
               {searchQuery ? "No posts found" : "No posts yet"}
             </h3>
