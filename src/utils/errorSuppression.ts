@@ -11,58 +11,43 @@ class ErrorSuppression {
   private setupConsoleInterception() {
     const originalError = console.error;
     const originalWarn = console.warn;
-    const originalLog = console.log;
 
-    // Intercept console.error
-    console.error = (...args: any[]) => {
-      const message = this.argsToString(args);
+    try {
+      // Intercept console.error only (safer approach)
+      console.error = (...args: any[]) => {
+        try {
+          const message = this.argsToString(args);
 
-      // Check for known database table missing errors
-      if (this.shouldSuppressError(message)) {
-        // Track suppressed errors for debugging
-        this.suppressedErrors.add(message.substring(0, 100) + "...");
+          // Check for known database table missing errors
+          if (this.shouldSuppressError(message)) {
+            // Track suppressed errors for debugging
+            this.suppressedErrors.add(message.substring(0, 100) + "...");
 
-        // Only show the migration guidance once
-        if (!this.warningShown) {
-          this.warningShown = true;
-          originalWarn(
-            "📝 Database Setup Required:\n" +
-              "   • Missing tables: user_notifications, notification_preferences, push_subscriptions, user_settings\n" +
-              "   • Run migration: supabase/migrations/20250621000002-enhanced-notifications-system.sql\n" +
-              "   • App works with fallback data until database is configured\n" +
-              "   • Error suppression is active to prevent console spam",
-          );
+            // Only show the migration guidance once
+            if (!this.warningShown) {
+              this.warningShown = true;
+              originalWarn(
+                "📝 Database Setup Required:\n" +
+                  "   • Missing tables: user_notifications, notification_preferences, push_subscriptions, user_settings\n" +
+                  "   • Run migration: supabase/migrations/20250621000002-enhanced-notifications-system.sql\n" +
+                  "   • App works with fallback data until database is configured\n" +
+                  "   • Error suppression is active to prevent console spam",
+              );
+            }
+            return; // Suppress the error
+          }
+
+          // Allow all other errors
+          originalError(...args);
+        } catch (interceptError) {
+          // If there's an error in our interception, fall back to original
+          originalError(...args);
         }
-        return; // Suppress the error
-      }
-
-      // Allow all other errors
-      originalError(...args);
-    };
-
-    // Intercept console.log for JSON error objects
-    console.log = (...args: any[]) => {
-      const message = this.argsToString(args);
-
-      // Suppress JSON error objects being logged
-      if (this.shouldSuppressError(message)) {
-        return; // Suppress the log
-      }
-
-      originalLog(...args);
-    };
-
-    // Intercept console.warn
-    console.warn = (...args: any[]) => {
-      const message = this.argsToString(args);
-
-      // Suppress warnings about missing tables
-      if (this.shouldSuppressError(message)) {
-        return; // Suppress the warning
-      }
-
-      originalWarn(...args);
-    };
+      };
+    } catch (setupError) {
+      // If setup fails, just log it and continue
+      console.warn("Error suppression setup failed:", setupError);
+    }
   }
 
   private argsToString(args: any[]): string {
