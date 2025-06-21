@@ -286,17 +286,6 @@ export const CommunityFeed: React.FC<CommunityFeedProps> = ({ className }) => {
             </CardHeader>
 
             <CardContent className="space-y-4">
-
-                  </div>
-                  <Badge
-                    variant="secondary"
-                    className="bg-red-600/20 text-red-400"
-                  >
-                    Review
-                  </Badge>
-                </div>
-              )}
-
               {/* Post content */}
               {post.content && (
                 <p className="text-white leading-relaxed">{post.content}</p>
