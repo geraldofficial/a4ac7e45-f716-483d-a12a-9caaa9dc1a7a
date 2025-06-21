@@ -56,6 +56,21 @@ const originalClient = createClient<Database>(
               type: error.name,
             });
 
+            // Dispatch custom event for network error handler
+            if (
+              error.name === "TypeError" &&
+              error.message.includes("Failed to fetch")
+            ) {
+              window.dispatchEvent(
+                new CustomEvent("supabase-fetch-error", {
+                  detail: {
+                    error: error.message,
+                    url: typeof input === "string" ? input : input.url,
+                  },
+                }),
+              );
+            }
+
             if (error.name === "AbortError") {
               throw new Error(
                 "Request timeout - check your internet connection",
