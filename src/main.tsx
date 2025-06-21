@@ -1,10 +1,12 @@
+// MUST be first import - immediate error suppression
+import "./immediateErrorSuppression";
+
 import React from "react";
 import ReactDOM from "react-dom/client";
 import App from "./App.tsx";
 import "./index.css";
 
-// Import error suppression and debugging utilities
-import "./utils/simpleErrorSuppression";
+// Import debugging utilities
 import "./lib/safeUtils";
 
 // Ensure proper error handling for module loading
