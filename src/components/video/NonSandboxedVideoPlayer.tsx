@@ -524,7 +524,11 @@ export const NonSandboxedVideoPlayer: React.FC<VideoPlayerProps> = ({
         {/* Top Bar */}
         <div className="absolute top-0 left-0 right-0 p-4 flex items-center justify-between">
           <div className="flex items-center space-x-4">
-            <img src="/logo.svg" alt="FlickPick" className="h-8 w-auto" />
+            <img
+              src="https://cdn.builder.io/api/v1/assets/3a5e046f24294e60a3c1afd0f4c614eb/chatgpt-image-jun-21-2025-03_27_04-pm-65410f?format=webp&width=800"
+              alt="FlickPick"
+              className="h-8 w-auto"
+            />
             <h3 className="text-white font-medium">{title}</h3>
           </div>
 
