@@ -6,10 +6,14 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
+import { TVGuestProvider, useTVGuest } from "@/contexts/TVGuestContext";
 import { ModernNavbar } from "@/components/layout/ModernNavbar";
+import TVNavbar from "@/components/tv/TVNavbar";
+import TVInstallPrompt from "@/components/tv/TVInstallPrompt";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { SafeErrorBoundary } from "@/components/SafeErrorBoundary";
 import { ScrollToTop } from "./components/ScrollToTop";
+import "@/styles/tv-styles.css";
 
 // Import network diagnostics and error handling for debugging
 import "./utils/networkDiagnostics";
@@ -355,14 +359,15 @@ const App: React.FC = () => {
                       }
                     />
                   </Routes>
-                </main>
-              </div>
-            </AuthProvider>
-          </BrowserRouter>
-        </TooltipProvider>
-      </QueryClientProvider>
+                    </main>
+                  </div>
+                </BrowserRouter>
+              </AuthProvider>
+            </TVGuestProvider>
+          </TooltipProvider>
+        </QueryClientProvider>
+      </SafeErrorBoundary>
     </ErrorBoundary>
   );
-};
-
+}
 export default App;
