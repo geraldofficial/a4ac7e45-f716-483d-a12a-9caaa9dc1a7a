@@ -76,15 +76,25 @@ export const tmdbApi = {
   getTrendingMovies: async (page: number = 1) => {
     const response = await fetch(
       `${BASE_URL}/trending/movie/day?page=${page}`,
-      { headers },
+      { headers: getHeaders() },
     );
+    if (!response.ok) {
+      throw new Error(
+        `TMDB API Error: ${response.status} ${response.statusText}`,
+      );
+    }
     return await response.json();
   },
 
   getPopularMovies: async (page: number = 1) => {
     const response = await fetch(`${BASE_URL}/movie/popular?page=${page}`, {
-      headers,
+      headers: getHeaders(),
     });
+    if (!response.ok) {
+      throw new Error(
+        `TMDB API Error: ${response.status} ${response.statusText}`,
+      );
+    }
     return await response.json();
   },
 
