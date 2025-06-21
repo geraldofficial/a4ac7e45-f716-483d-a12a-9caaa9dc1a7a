@@ -459,6 +459,12 @@ export const ModernNavbar = () => {
 
       {/* Spacer for fixed navbar */}
       <div className="h-16" />
+
+      {/* Watch Party Dialog */}
+      <QuickWatchPartyDialog
+        open={showWatchPartyDialog}
+        onOpenChange={setShowWatchPartyDialog}
+      />
     </>
   );
 };
