@@ -61,15 +61,7 @@ class RealNotificationsService {
       }
       return data || [];
     } catch (error) {
-      const errorMsg =
-        error instanceof Error
-          ? error.message
-          : error && typeof error === "object" && error.message
-            ? error.message
-            : error && typeof error === "object" && error.code
-              ? `Error code: ${error.code}`
-              : String(error);
-      console.error("Error fetching notifications:", errorMsg);
+      safeLogError("Error fetching notifications", error);
       // Return fallback notifications if there's any error
       return this.getFallbackNotifications();
     }
