@@ -1,5 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
-import { formatError } from "@/lib/utils";
+import { safeLogError } from "@/utils/safeErrorFormat";
 
 export interface UserNotification {
   id: string;
