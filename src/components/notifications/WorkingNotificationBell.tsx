@@ -36,7 +36,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from "@/contexts/AuthContext";
-import { formatError } from "@/lib/utils";
+import { safeLogError } from "@/utils/safeErrorFormat";
 import { toast } from "sonner";
 import {
   realNotificationsService,
@@ -149,7 +149,7 @@ export const WorkingNotificationBell: React.FC = () => {
       const data = await realNotificationsService.getNotifications(50);
       setNotifications(data);
     } catch (error) {
-      console.error("Error fetching notifications:", formatError(error));
+      safeLogError("Error fetching notifications", error);
       toast.error("Failed to load notifications");
     } finally {
       setLoading(false);
@@ -161,7 +161,7 @@ export const WorkingNotificationBell: React.FC = () => {
       const statsData = await realNotificationsService.getNotificationStats();
       setStats(statsData);
     } catch (error) {
-      console.error("Error fetching notification stats:", formatError(error));
+      safeLogError("Error fetching notification stats", error);
     }
   };
 

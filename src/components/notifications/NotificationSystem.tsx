@@ -37,7 +37,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
-import { formatError } from "@/lib/utils";
+import { safeLogError } from "@/utils/safeErrorFormat";
 import { toast } from "sonner";
 
 interface Notification {
@@ -231,7 +231,7 @@ export const NotificationBell: React.FC = () => {
       setNotifications(mockNotifications);
       updateStats(mockNotifications);
     } catch (error) {
-      console.error("Error fetching notifications:", formatError(error));
+      safeLogError("Error fetching notifications", error);
       // Set empty array as fallback
       setNotifications([]);
       updateStats([]);
