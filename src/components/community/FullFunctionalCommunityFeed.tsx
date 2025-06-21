@@ -587,9 +587,10 @@ export const FullFunctionalCommunityFeed: React.FC<
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                   {post.media_urls.map((url, index) => (
                     <div key={index} className="rounded-lg overflow-hidden">
-                      {post.media_type === "video" ||
-                      url.includes(".mp4") ||
-                      url.includes(".webm") ? (
+                      {url.includes(".mp4") ||
+                      url.includes(".webm") ||
+                      url.includes(".mov") ||
+                      url.includes(".avi") ? (
                         <video
                           src={url}
                           className="w-full h-64 object-cover"
