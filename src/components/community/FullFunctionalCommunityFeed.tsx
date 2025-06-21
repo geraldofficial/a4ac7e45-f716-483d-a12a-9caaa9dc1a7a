@@ -57,10 +57,6 @@ export const FullFunctionalCommunityFeed: React.FC<
 
   // Post creation state
   const [newPost, setNewPost] = useState("");
-  const [selectedMovieId, setSelectedMovieId] = useState<string>("");
-  const [selectedMovieTitle, setSelectedMovieTitle] = useState<string>("");
-  const [selectedMoviePoster, setSelectedMoviePoster] = useState<string>("");
-  const [rating, setRating] = useState(0);
   const [mediaFiles, setMediaFiles] = useState<File[]>([]);
   const [mediaUrls, setMediaUrls] = useState<string[]>([]);
 
