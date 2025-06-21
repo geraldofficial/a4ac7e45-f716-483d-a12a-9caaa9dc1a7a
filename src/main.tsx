@@ -1,8 +1,3 @@
-// MUST be ABSOLUTE first import - ultimate console suppression
-import "./ultimateConsoleSuppression";
-// Second import - bulletproof error suppression
-import "./bulletproofSuppression";
-
 import React from "react";
 import ReactDOM from "react-dom/client";
 import App from "./App.tsx";
