@@ -37,11 +37,12 @@ import { toast } from "sonner";
 interface FullFunctionalCommunityFeedProps {
   className?: string;
   searchQuery?: string;
+  filter?: string;
 }
 
 export const FullFunctionalCommunityFeed: React.FC<
   FullFunctionalCommunityFeedProps
-> = ({ className, searchQuery = "" }) => {
+> = ({ className, searchQuery = "", filter = "all" }) => {
   const { user } = useAuth();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -79,13 +80,32 @@ export const FullFunctionalCommunityFeed: React.FC<
         fetchedPosts = await communityService.fetchPosts(user?.id);
       }
 
+      // Apply client-side filtering for now
+      if (filter === "trending") {
+        fetchedPosts = fetchedPosts
+          .sort(
+            (a, b) =>
+              b.likes_count +
+              b.comments_count -
+              (a.likes_count + a.comments_count),
+          )
+          .slice(0, 20);
+      } else if (filter === "movies") {
+        fetchedPosts = fetchedPosts.filter(
+          (post) =>
+            post.content.toLowerCase().includes("movie") ||
+            post.content.toLowerCase().includes("film") ||
+            post.movie_title,
+        );
+      }
+
       setPosts(fetchedPosts);
     } catch (error) {
       toast.error(`Failed to load posts: ${formatError(error)}`);
     } finally {
       setLoading(false);
     }
-  }, [user?.id, searchQuery]);
+  }, [user?.id, searchQuery, filter]);
 
   // Fetch comments for a post
   const fetchComments = async (postId: string) => {
