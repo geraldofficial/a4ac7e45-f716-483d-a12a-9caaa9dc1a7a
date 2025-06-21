@@ -54,47 +54,46 @@ interface UserSettings {
   showWatchHistory: boolean;
   dataCollection: boolean;
 
-  // Playback preferences
+  // Playback settings
   autoplay: boolean;
   videoQuality: "auto" | "480p" | "720p" | "1080p" | "4k";
-  subtitlesEnabled: boolean;
   subtitleLanguage: string;
+  subtitlesEnabled: boolean;
 
-  // Accessibility
+  // Account settings
+  language: string;
+  region: string;
+  theme: "dark" | "light" | "auto";
+
+  // Accessibility settings
   highContrast: boolean;
   largeText: boolean;
   reducedMotion: boolean;
-
-  // Language & Region
-  language: string;
-  region: string;
-  timezone: string;
 }
 
 const Settings = () => {
   const { user, currentProfile } = useAuth();
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState("account");
   const [loading, setLoading] = useState(false);
   const [saveMessage, setSaveMessage] = useState("");
 
   const [settings, setSettings] = useState<UserSettings>({
     emailNotifications: true,
-    pushNotifications: true,
+    pushNotifications: false,
     communityNotifications: true,
-    profileVisibility: "public",
+    profileVisibility: "friends",
     showWatchHistory: true,
     dataCollection: true,
     autoplay: true,
     videoQuality: "auto",
-    subtitlesEnabled: false,
     subtitleLanguage: "en",
+    subtitlesEnabled: false,
+    language: "en",
+    region: "US",
+    theme: "dark",
     highContrast: false,
     largeText: false,
     reducedMotion: false,
-    language: "en",
-    region: "US",
-    timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
   });
 
   useEffect(() => {
@@ -125,8 +124,12 @@ const Settings = () => {
 
         if (error.code === "42P01") {
           // Table doesn't exist - try to load from localStorage
-          console.info("User settings table not yet created, checking localStorage");
-          const localSettings = localStorage.getItem(`user_settings_${user.id}`);
+          console.info(
+            "User settings table not yet created, checking localStorage",
+          );
+          const localSettings = localStorage.getItem(
+            `user_settings_${user.id}`,
+          );
           if (localSettings) {
             try {
               const parsedSettings = JSON.parse(localSettings);
@@ -167,9 +170,14 @@ const Settings = () => {
 
       if (error) {
         if (error.code === "42P01") {
-          setSaveMessage("Settings table not yet created. Settings will be stored locally only.");
+          setSaveMessage(
+            "Settings table not yet created. Settings will be stored locally only.",
+          );
           // Store settings locally as fallback
-          localStorage.setItem(`user_settings_${user.id}`, JSON.stringify(settings));
+          localStorage.setItem(
+            `user_settings_${user.id}`,
+            JSON.stringify(settings),
+          );
           setTimeout(() => setSaveMessage(""), 5000);
           return;
         }
@@ -197,35 +205,37 @@ const Settings = () => {
       <div className="pt-20 pb-8 px-4">
         <div className="container mx-auto max-w-4xl">
           {/* Header */}
-          <div className="flex items-center justify-between mb-8">
-            <div>
-              <div className="flex items-center gap-3 mb-2">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => navigate(-1)}
-                  className="mr-2 text-gray-400 hover:text-white"
-                >
-                  <ArrowLeft className="h-4 w-4" />
-                </Button>
-                <SettingsIcon className="h-6 w-6 text-blue-400" />
-                <h1 className="text-3xl font-bold text-white">Settings</h1>
+          <div className="mb-8">
+            <Button
+              variant="ghost"
+              onClick={() => navigate(-1)}
+              className="mb-4 text-gray-300 hover:text-white"
+            >
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Back
+            </Button>
+
+            <div className="flex items-center justify-between">
+              <div>
+                <div className="flex items-center gap-3 mb-2">
+                  <SettingsIcon className="h-6 w-6 text-blue-400" />
+                  <h1 className="text-3xl font-bold text-white">Settings</h1>
+                </div>
+                <p className="text-gray-400">
+                  Customize your FlickPick experience
+                </p>
               </div>
-              <p className="text-gray-400">
-                Customize your FlickPick experience
-              </p>
+              <Badge variant="secondary" className="bg-gray-800 text-gray-300">
+                {user.email}
+              </Badge>
             </div>
-            <Badge variant="secondary" className="bg-gray-800 text-gray-300">
-              {user.email}
-            </Badge>
-          </div>
 
             {currentProfile && (
-              <div className="flex items-center gap-2 text-gray-400">
+              <div className="flex items-center gap-2 text-gray-400 mt-2">
                 <Users className="h-4 w-4" />
                 <span>Profile: {currentProfile.name}</span>
                 <Badge variant="outline" className="text-xs">
-                  {currentProfile.age_restriction}+
+                  {currentProfile.is_child ? "Child" : "Adult"}
                 </Badge>
               </div>
             )}
@@ -234,14 +244,16 @@ const Settings = () => {
           {/* Save Message */}
           {saveMessage && (
             <Alert
-              className={`mb-6 ${saveMessage.includes("success") ? "border-green-500 bg-green-500/10" : "border-red-500 bg-red-500/10"}`}
+              className={`mb-6 ${saveMessage.includes("successfully") ? "border-green-500 bg-green-500/10" : saveMessage.includes("locally") ? "border-yellow-500 bg-yellow-500/10" : "border-red-500 bg-red-500/10"}`}
             >
-              <Check className="h-4 w-4" />
+              <Info className="h-4 w-4" />
               <AlertDescription
                 className={
-                  saveMessage.includes("success")
+                  saveMessage.includes("successfully")
                     ? "text-green-400"
-                    : "text-red-400"
+                    : saveMessage.includes("locally")
+                      ? "text-yellow-400"
+                      : "text-red-400"
                 }
               >
                 {saveMessage}
@@ -249,12 +261,8 @@ const Settings = () => {
             </Alert>
           )}
 
-          <Tabs
-            value={activeTab}
-            onValueChange={setActiveTab}
-            className="space-y-6"
-          >
-            <TabsList className="grid w-full grid-cols-5 bg-gray-800 border-gray-700">
+          <Tabs defaultValue="account" className="space-y-6">
+            <TabsList className="grid w-full grid-cols-5 bg-gray-900 border-gray-800">
               <TabsTrigger
                 value="account"
                 className="text-gray-300 data-[state=active]:text-white"
@@ -319,7 +327,7 @@ const Settings = () => {
                     <div className="space-y-2">
                       <Label className="text-gray-300">Username</Label>
                       <Input
-                        value={user.username || ""}
+                        value={user.username || user.display_name || ""}
                         disabled
                         className="bg-gray-800 border-gray-700 text-gray-400"
                       />
@@ -356,6 +364,9 @@ const Settings = () => {
                   <Separator className="bg-gray-700" />
 
                   <div className="space-y-4">
+                    <h3 className="text-white font-medium">
+                      Language & Region
+                    </h3>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div className="space-y-2">
                         <Label className="text-gray-300">Language</Label>
@@ -373,53 +384,31 @@ const Settings = () => {
                             <SelectItem value="es">Español</SelectItem>
                             <SelectItem value="fr">Français</SelectItem>
                             <SelectItem value="de">Deutsch</SelectItem>
-                            <SelectItem value="pt">Português</SelectItem>
                             <SelectItem value="it">Italiano</SelectItem>
+                            <SelectItem value="pt">Português</SelectItem>
                           </SelectContent>
                         </Select>
                       </div>
-                    <div className="flex items-center justify-between">
-                      <div className="space-y-1">
-                        <Label className="text-gray-300">
-                          Community Notifications
-                        </Label>
-                        <p className="text-sm text-gray-500">
-                          Get notified about community activity
-                        </p>
-                      </div>
-                      <Switch
-                        checked={settings.communityNotifications}
-                        onCheckedChange={(checked) =>
-                          updateSetting("communityNotifications", checked)
-                        }
-                      />
-                    </div>
-                  </div>
-
-                  <Separator className="bg-gray-700" />
-
-                  <div className="space-y-4">
-                    <h3 className="text-white font-medium">
-                      Advanced Notification Settings
-                    </h3>
-                    <p className="text-gray-400 text-sm">
-                      For more detailed notification preferences, quiet hours, and push notification setup
-                    </p>
-                    <Link to="/notifications/settings">
-                      <Button
-                        variant="outline"
-                        className="border-gray-700 text-gray-300 hover:text-white"
-                      >
-                        <Bell className="h-4 w-4 mr-2" />
-                        Advanced Notification Settings
-                      </Button>
-                    </Link>
-                  </div>
-                </CardContent>
-              </Card>
-            </TabsContent>
-                            <SelectItem value="BR">Brazil</SelectItem>
-                            <SelectItem value="MX">Mexico</SelectItem>
+                      <div className="space-y-2">
+                        <Label className="text-gray-300">Region</Label>
+                        <Select
+                          value={settings.region}
+                          onValueChange={(value) =>
+                            updateSetting("region", value)
+                          }
+                        >
+                          <SelectTrigger className="bg-gray-800 border-gray-700 text-white">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent className="bg-gray-800 border-gray-700">
+                            <SelectItem value="US">United States</SelectItem>
+                            <SelectItem value="GB">United Kingdom</SelectItem>
+                            <SelectItem value="CA">Canada</SelectItem>
+                            <SelectItem value="AU">Australia</SelectItem>
+                            <SelectItem value="DE">Germany</SelectItem>
+                            <SelectItem value="FR">France</SelectItem>
+                            <SelectItem value="ES">Spain</SelectItem>
+                            <SelectItem value="IT">Italy</SelectItem>
                           </SelectContent>
                         </Select>
                       </div>
@@ -434,7 +423,7 @@ const Settings = () => {
               <Card className="border-gray-800 bg-gray-900/50">
                 <CardHeader>
                   <CardTitle className="text-white">
-                    Notification Preferences
+                    Basic Notification Preferences
                   </CardTitle>
                   <CardDescription className="text-gray-400">
                     Choose which notifications you want to receive
@@ -482,7 +471,7 @@ const Settings = () => {
                           Community Notifications
                         </Label>
                         <p className="text-sm text-gray-500">
-                          Updates from community posts and messages
+                          Get notified about community activity
                         </p>
                       </div>
                       <Switch
@@ -492,6 +481,27 @@ const Settings = () => {
                         }
                       />
                     </div>
+                  </div>
+
+                  <Separator className="bg-gray-700" />
+
+                  <div className="space-y-4">
+                    <h3 className="text-white font-medium">
+                      Advanced Notification Settings
+                    </h3>
+                    <p className="text-gray-400 text-sm">
+                      For more detailed notification preferences, quiet hours,
+                      and push notification setup
+                    </p>
+                    <Link to="/notifications/settings">
+                      <Button
+                        variant="outline"
+                        className="border-gray-700 text-gray-300 hover:text-white"
+                      >
+                        <Bell className="h-4 w-4 mr-2" />
+                        Advanced Notification Settings
+                      </Button>
+                    </Link>
                   </div>
                 </CardContent>
               </Card>
@@ -631,15 +641,13 @@ const Settings = () => {
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent className="bg-gray-800 border-gray-700">
+                            <SelectItem value="off">Off</SelectItem>
                             <SelectItem value="en">English</SelectItem>
                             <SelectItem value="es">Spanish</SelectItem>
                             <SelectItem value="fr">French</SelectItem>
                             <SelectItem value="de">German</SelectItem>
-                            <SelectItem value="pt">Portuguese</SelectItem>
                             <SelectItem value="it">Italian</SelectItem>
-                            <SelectItem value="ja">Japanese</SelectItem>
-                            <SelectItem value="ko">Korean</SelectItem>
-                            <SelectItem value="zh">Chinese</SelectItem>
+                            <SelectItem value="pt">Portuguese</SelectItem>
                           </SelectContent>
                         </Select>
                       </div>
@@ -648,10 +656,10 @@ const Settings = () => {
                     <div className="flex items-center justify-between">
                       <div className="space-y-1">
                         <Label className="text-gray-300">
-                          Enable Subtitles
+                          Enable Subtitles by Default
                         </Label>
                         <p className="text-sm text-gray-500">
-                          Show subtitles by default
+                          Always show subtitles when available
                         </p>
                       </div>
                       <Switch
@@ -698,7 +706,7 @@ const Settings = () => {
                       <div className="space-y-1">
                         <Label className="text-gray-300">Large Text</Label>
                         <p className="text-sm text-gray-500">
-                          Increase text size throughout the app
+                          Use larger font sizes throughout the app
                         </p>
                       </div>
                       <Switch
@@ -746,7 +754,7 @@ const Settings = () => {
             >
               {loading ? (
                 <>
-                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                  <Volume2 className="h-4 w-4 mr-2 animate-spin" />
                   Saving...
                 </>
               ) : (
