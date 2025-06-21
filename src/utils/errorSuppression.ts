@@ -138,10 +138,33 @@ declare global {
   interface Window {
     disableErrorSuppression: () => void;
     enableErrorSuppression: () => void;
+    testErrorSuppression: () => void;
+    showSuppressedErrors: () => void;
   }
 }
 
 window.disableErrorSuppression = () => errorSuppression.disableSuppression();
 window.enableErrorSuppression = () => errorSuppression.enableSuppression();
+window.testErrorSuppression = () => {
+  console.log("🧪 Testing error suppression...");
+
+  // Test patterns that should be suppressed
+  console.error(
+    '{"code":"42P01","details":null,"hint":null,"message":"relation \\"public.user_notifications\\" does not exist"}',
+  );
+  console.error(
+    "Error fetching notifications: TypeError: Failed to execute 'text' on 'Response': body stream already read",
+  );
+  console.error('relation "public.notification_preferences" does not exist');
+
+  console.log("✅ If you don't see errors above, suppression is working!");
+};
+window.showSuppressedErrors = () => {
+  console.group("🚫 Suppressed Error Patterns");
+  errorSuppression.suppressedErrors.forEach((pattern) => {
+    console.log("• " + pattern);
+  });
+  console.groupEnd();
+};
 
 export { errorSuppression };
