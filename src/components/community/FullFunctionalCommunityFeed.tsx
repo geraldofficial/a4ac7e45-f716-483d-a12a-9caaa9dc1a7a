@@ -426,21 +426,6 @@ export const FullFunctionalCommunityFeed: React.FC<
                 <Button
                   size="sm"
                   variant="outline"
-                  onClick={() => fileInputRef.current?.click()}
-                  disabled={uploading}
-                  className="border-gray-700 text-gray-300 hover:bg-gray-800"
-                >
-                  {uploading ? (
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2" />
-                  ) : (
-                    <Camera className="h-4 w-4 mr-2" />
-                  )}
-                  {uploading ? "Uploading..." : "Add Media"}
-                </Button>
-
-                <Button
-                  size="sm"
-                  variant="outline"
                   className="border-gray-700 text-gray-300 hover:bg-gray-800"
                 >
                   <Film className="h-4 w-4 mr-2" />
