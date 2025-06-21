@@ -125,22 +125,26 @@ const DetailPage = () => {
 
   if (!content) {
     return (
-      <div className="min-h-screen bg-background">
-        <Navbar />
-        <div className="pt-16 md:pt-24 pb-20 px-3 md:px-4">
-          <div className="container mx-auto text-center">
-            <div className="text-foreground text-sm md:text-xl">
-              Content not found
-            </div>
-            <p className="text-muted-foreground mt-2 text-xs md:text-base">
-              Type: {type}, ID: {id}
+      <div className="min-h-screen bg-gray-950">
+        <div className="flex items-center justify-center min-h-screen px-4">
+          <div className="text-center max-w-md">
+            <div className="text-6xl mb-4">🎬</div>
+            <div className="text-white text-xl mb-2">Content Not Found</div>
+            <p className="text-gray-400 mb-6">
+              Sorry, we couldn't find{" "}
+              {type === "movie" ? "this movie" : "this TV show"} (ID: {id}). It
+              might not exist or be unavailable.
             </p>
-            <Button onClick={() => navigate("/")} className="mt-4" size="sm">
-              Go Home
-            </Button>
+            <div className="space-y-2">
+              <Button onClick={() => navigate("/")} className="mr-2">
+                Go Home
+              </Button>
+              <Button onClick={() => navigate("/browse")} variant="outline">
+                Browse Content
+              </Button>
+            </div>
           </div>
         </div>
-        <Footer />
       </div>
     );
   }
