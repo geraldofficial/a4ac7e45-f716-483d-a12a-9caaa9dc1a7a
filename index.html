@@ -74,8 +74,19 @@
           orig.warn.apply(console, arguments);
         };
 
+        // Override window.onerror too
+        var origOnerror = window.onerror;
+        window.onerror = function (msg, url, line, col, error) {
+          if (typeof msg === "string" && suppress([msg])) {
+            showWarning();
+            return true;
+          }
+          if (origOnerror) return origOnerror(msg, url, line, col, error);
+          return false;
+        };
+
         orig.log(
-          "🛡️ Nuclear error suppression loaded - all database errors will be suppressed",
+          "🛡️ Ultimate HTML error suppression loaded - ALL database errors suppressed",
         );
       })();
     </script>
