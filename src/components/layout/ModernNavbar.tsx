@@ -152,6 +152,16 @@ export const ModernNavbar = () => {
                   {/* Notifications */}
                   <SimpleNotificationBell />
 
+                  {/* Watch Party */}
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setShowWatchPartyDialog(true)}
+                    className="text-gray-400 hover:text-white"
+                  >
+                    <Users className="h-5 w-5" />
+                  </Button>
+
                   {/* User Menu */}
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
