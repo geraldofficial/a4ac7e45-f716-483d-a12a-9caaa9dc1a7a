@@ -53,10 +53,6 @@ export interface CreatePostData {
   user_id: string;
   content: string;
   media_urls?: string[];
-  movie_id?: string;
-  movie_title?: string;
-  movie_poster?: string;
-  rating?: number;
 }
 // Get all community posts with enhanced error handling
 export const getCommunityPosts = async (
