@@ -25,27 +25,26 @@ export interface CommunityPost {
   };
 }
 
-export interface CommunityComment {
+export interface CommunityPost {
   id: string;
-  post_id: string;
   user_id: string;
   content: string;
+  media_urls?: string[];
+  movie_id?: string;
+  movie_title?: string;
+  movie_poster?: string;
+  rating?: number;
   created_at: string;
-  profiles?: {
+  updated_at: string;
+  likes_count: number;
+  comments_count: number;
+  user?: {
     id: string;
-    username: string;
-    full_name: string;
-    avatar: string;
+    username?: string;
+    full_name?: string;
+    avatar_url?: string;
   };
 }
-
-export interface PostLike {
-  id: string;
-  post_id: string;
-  user_id: string;
-  created_at: string;
-}
-
 export interface PostBookmark {
   id: string;
   post_id: string;
