@@ -294,7 +294,11 @@ export const EnhancedHeroCarousel: React.FC<HeroCarouselProps> = ({
 
       {/* FlickPick Logo */}
       <div className="absolute top-6 left-6 z-20">
-        <img src="/logo.svg" alt="FlickPick" className="h-12 w-auto" />
+        <img
+          src="https://cdn.builder.io/api/v1/assets/3a5e046f24294e60a3c1afd0f4c614eb/chatgpt-image-jun-21-2025-03_27_04-pm-65410f?format=webp&width=800"
+          alt="FlickPick"
+          className="h-12 w-auto"
+        />
       </div>
 
       {/* Main Content */}
