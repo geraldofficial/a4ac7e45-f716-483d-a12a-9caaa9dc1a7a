@@ -3,7 +3,8 @@ import ReactDOM from "react-dom/client";
 import App from "./App.tsx";
 import "./index.css";
 
-// Import safe utilities and debugging
+// Import error suppression and debugging utilities
+import "./utils/simpleErrorSuppression";
 import "./lib/safeUtils";
 
 // Ensure proper error handling for module loading
