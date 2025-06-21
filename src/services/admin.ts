@@ -515,7 +515,6 @@ export const searchPosts = async (
         likes_count,
         comments_count,
         media_urls,
-        movie_title,
         profiles (
           username,
           full_name,
@@ -523,7 +522,7 @@ export const searchPosts = async (
         )
       `,
       )
-      .or(`content.ilike.%${query}%,movie_title.ilike.%${query}%`)
+      .ilike("content", `%${query}%`)
       .order("created_at", { ascending: false })
       .range(offset, offset + limit - 1);
 
