@@ -52,6 +52,19 @@ const originalClient = createClient<Database>(
           credentials: "omit" as RequestCredentials,
         };
 
+        // Debug logging to verify headers (only in development)
+        if (import.meta.env.DEV) {
+          const hasApiKey =
+            enhancedInit.headers?.["apikey"] ||
+            enhancedInit.headers?.["Authorization"];
+          if (!hasApiKey) {
+            console.warn("⚠️ Supabase request missing API key:", {
+              url: typeof input === "string" ? input : input.url,
+              headers: enhancedInit.headers,
+            });
+          }
+        }
+
         return fetch(input, enhancedInit)
           .finally(() => clearTimeout(timeoutId))
           .catch((error) => {
