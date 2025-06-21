@@ -87,6 +87,23 @@
     configurable: false,
   });
 
+  // Add global test function
+  window.testConsoleSuppress = function () {
+    _origLog("🧪 Testing external console suppression...");
+    console.error(
+      '{"code":"42P01","details":null,"hint":null,"message":"relation \\"public.user_notifications\\" does not exist"}',
+    );
+    console.error(
+      '{"code":"42P01","details":null,"hint":null,"message":"relation \\"public.notification_preferences\\" does not exist"}',
+    );
+    console.log(
+      'TEST_SUPPRESSION_42P01: relation "public.test" does not exist',
+    );
+    _origLog(
+      "✅ External suppression test complete - errors should be suppressed",
+    );
+  };
+
   // Test immediately
   _origLog("🛡️ Non-configurable console suppression loaded");
   console.error("TEST_IMMEDIATE_42P01: This should be suppressed");
