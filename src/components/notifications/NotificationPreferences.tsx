@@ -107,7 +107,8 @@ export default function NotificationPreferences() {
   const loadPreferences = async () => {
     try {
       setIsLoading(true);
-      const prefs = await enhancedNotificationsService.getPreferences();
+      const prefs =
+        await enhancedNotificationsService.getNotificationPreferences();
       setPreferences(prefs);
     } catch (error) {
       console.error("Error loading preferences:", error);
