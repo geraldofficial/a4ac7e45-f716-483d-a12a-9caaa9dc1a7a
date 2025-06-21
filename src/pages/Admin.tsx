@@ -1,46 +1,31 @@
-
-import React, { useState } from 'react';
-import { AdminHeader } from '@/components/admin/AdminHeader';
-import { AdminSidebar } from '@/components/admin/AdminSidebar';
-import { ContentManagement } from '@/components/admin/ContentManagement';
-import { UserManagement } from '@/components/admin/UserManagement';
-import { AnalyticsDashboard } from '@/components/admin/AnalyticsDashboard';
-import { PaymentManagement } from '@/components/admin/PaymentManagement';
-
-type AdminSection = 'dashboard' | 'content' | 'users' | 'payments' | 'analytics';
+import React from "react";
+import { CloudscapeAdminDashboard } from "@/components/admin/CloudscapeAdminDashboard";
+import { useAuth } from "@/contexts/AuthContext";
+import { Navigate } from "react-router-dom";
 
 const Admin = () => {
-  const [activeSection, setActiveSection] = useState<AdminSection>('dashboard');
+  const { user, loading } = useAuth();
 
-  const renderContent = () => {
-    switch (activeSection) {
-      case 'content':
-        return <ContentManagement />;
-      case 'users':
-        return <UserManagement />;
-      case 'payments':
-        return <PaymentManagement />;
-      case 'analytics':
-        return <AnalyticsDashboard />;
-      default:
-        return <AnalyticsDashboard />;
-    }
-  };
-
-  return (
-    <div className="min-h-screen bg-background">
-      <AdminHeader />
-      <div className="flex">
-        <AdminSidebar 
-          activeSection={activeSection}
-          onSectionChange={setActiveSection}
-        />
-        <main className="flex-1 p-6">
-          {renderContent()}
-        </main>
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-gray-950">
+        <div className="text-center">
+          <img
+            src="https://cdn.builder.io/api/v1/assets/3a5e046f24294e60a3c1afd0f4c614eb/chatgpt-image-jun-21-2025-03_27_04-pm-65410f?format=webp&width=800"
+            alt="FlickPick"
+            className="h-12 w-auto mx-auto mb-4 animate-pulse"
+          />
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-red-600 mx-auto"></div>
+        </div>
       </div>
-    </div>
-  );
+    );
+  }
+
+  if (!user) {
+    return <Navigate to="/auth" replace />;
+  }
+
+  return <CloudscapeAdminDashboard />;
 };
 
 export default Admin;

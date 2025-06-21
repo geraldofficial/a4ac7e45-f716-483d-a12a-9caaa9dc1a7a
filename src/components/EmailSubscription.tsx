@@ -1,22 +1,34 @@
-
-import React, { useState, useEffect } from 'react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Switch } from '@/components/ui/switch';
-import { Label } from '@/components/ui/label';
-import { useToast } from '@/hooks/use-toast';
-import { useAuth } from '@/contexts/AuthContext';
-import { supabase } from '@/integrations/supabase/client';
-import { Mail, Bell, Settings } from 'lucide-react';
+import React, { useState, useEffect } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
+import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
+import { formatError } from "@/lib/utils";
+import { Mail, Bell, Settings } from "lucide-react";
 
 export const EmailSubscription = () => {
   const { user } = useAuth();
   const { toast } = useToast();
   const [subscription, setSubscription] = useState<any>(null);
-  const [email, setEmail] = useState('');
-  const [frequency, setFrequency] = useState('daily');
+  const [email, setEmail] = useState("");
+  const [frequency, setFrequency] = useState("daily");
   const [isActive, setIsActive] = useState(true);
   const [loading, setLoading] = useState(false);
   const [fetchingSubscription, setFetchingSubscription] = useState(true);
@@ -24,22 +36,22 @@ export const EmailSubscription = () => {
   useEffect(() => {
     if (user) {
       fetchSubscription();
-      setEmail(user.email || '');
+      setEmail(user.email || "");
     }
   }, [user]);
 
   const fetchSubscription = async () => {
     if (!user) return;
-    
+
     try {
       const { data, error } = await supabase
-        .from('email_subscriptions')
-        .select('*')
-        .eq('user_id', user.id)
+        .from("email_subscriptions")
+        .select("*")
+        .eq("user_id", user.id)
         .single();
 
-      if (error && error.code !== 'PGRST116') {
-        console.error('Error fetching subscription:', error);
+      if (error && error.code !== "PGRST116") {
+        console.error("Error fetching subscription:", formatError(error));
       } else if (data) {
         setSubscription(data);
         setEmail(data.email);
@@ -47,7 +59,7 @@ export const EmailSubscription = () => {
         setIsActive(data.is_active);
       }
     } catch (error) {
-      console.error('Error fetching subscription:', error);
+      console.error("Error fetching subscription:", formatError(error));
     } finally {
       setFetchingSubscription(false);
     }
@@ -68,14 +80,14 @@ export const EmailSubscription = () => {
       if (subscription) {
         // Update existing subscription
         const { error } = await supabase
-          .from('email_subscriptions')
+          .from("email_subscriptions")
           .update({
             email,
             frequency,
             is_active: isActive,
-            updated_at: new Date().toISOString()
+            updated_at: new Date().toISOString(),
           })
-          .eq('id', subscription.id);
+          .eq("id", subscription.id);
 
         if (error) throw error;
 
@@ -85,14 +97,12 @@ export const EmailSubscription = () => {
         });
       } else {
         // Create new subscription
-        const { error } = await supabase
-          .from('email_subscriptions')
-          .insert({
-            user_id: user.id,
-            email,
-            frequency,
-            is_active: isActive
-          });
+        const { error } = await supabase.from("email_subscriptions").insert({
+          user_id: user.id,
+          email,
+          frequency,
+          is_active: isActive,
+        });
 
         if (error) throw error;
 
@@ -101,10 +111,10 @@ export const EmailSubscription = () => {
           description: "You'll receive trending movies in your inbox.",
         });
       }
-      
+
       await fetchSubscription();
     } catch (error: any) {
-      console.error('Subscription error:', error);
+      console.error("Subscription error:", error);
       toast({
         title: "Error",
         description: error.message || "Failed to update subscription.",
@@ -121,9 +131,9 @@ export const EmailSubscription = () => {
     setLoading(true);
     try {
       const { error } = await supabase
-        .from('email_subscriptions')
+        .from("email_subscriptions")
         .delete()
-        .eq('id', subscription.id);
+        .eq("id", subscription.id);
 
       if (error) throw error;
 
@@ -133,7 +143,7 @@ export const EmailSubscription = () => {
         description: "You won't receive trending movie emails anymore.",
       });
     } catch (error: any) {
-      console.error('Unsubscribe error:', error);
+      console.error("Unsubscribe error:", error);
       toast({
         title: "Error",
         description: error.message || "Failed to unsubscribe.",
@@ -226,7 +236,7 @@ export const EmailSubscription = () => {
             disabled={loading}
             className="flex-1"
           >
-            {loading ? 'Saving...' : subscription ? 'Update' : 'Subscribe'}
+            {loading ? "Saving..." : subscription ? "Update" : "Subscribe"}
           </Button>
           {subscription && (
             <Button
@@ -242,10 +252,10 @@ export const EmailSubscription = () => {
         {subscription && (
           <div className="text-center text-sm text-muted-foreground">
             <Settings className="h-4 w-4 inline mr-1" />
-            Last sent: {subscription.last_sent_at 
+            Last sent:{" "}
+            {subscription.last_sent_at
               ? new Date(subscription.last_sent_at).toLocaleDateString()
-              : 'Never'
-            }
+              : "Never"}
           </div>
         )}
       </CardContent>
