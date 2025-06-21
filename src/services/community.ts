@@ -224,7 +224,7 @@ export const togglePostLike = async (
     if (existingLike) {
       // Unlike
       await supabase
-        .from("post_likes")
+        .from("community_post_likes")
         .delete()
         .eq("post_id", postId)
         .eq("user_id", user.id);
