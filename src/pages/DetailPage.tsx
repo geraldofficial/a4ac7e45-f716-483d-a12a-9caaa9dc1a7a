@@ -1,5 +1,5 @@
-import React from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import React, { useEffect } from "react";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";
@@ -16,9 +16,44 @@ import { useDetailPageState } from "@/hooks/useDetailPageState";
 const DetailPage = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const location = useLocation();
   const { user, addToWatchlist, removeFromWatchlist, isInWatchlist } =
     useAuth();
   const { toast } = useToast();
+
+  // Check URL parameters for watch party actions
+  useEffect(() => {
+    if (!content) return;
+
+    const urlParams = new URLSearchParams(location.search);
+    const watchPartyParam = urlParams.get("watch_party");
+    const joinPartyParam = urlParams.get("join_party");
+
+    if (watchPartyParam && user) {
+      // Auto-open watch party if created from dialog
+      setShowWatchParty(true);
+      // Clean URL
+      navigate(location.pathname, { replace: true });
+    } else if (joinPartyParam && user) {
+      // Auto-join watch party
+      const {
+        simpleWatchPartyService,
+      } = require("@/services/simpleWatchParty");
+      const session = simpleWatchPartyService.joinSession(
+        joinPartyParam,
+        user.id,
+      );
+      if (session) {
+        setShowWatchParty(true);
+        toast({
+          title: "Joined watch party!",
+          description: `You're now in ${session.movieTitle} watch party`,
+        });
+      }
+      // Clean URL
+      navigate(location.pathname, { replace: true });
+    }
+  }, [content, user, location.search, navigate]);
 
   const {
     content,
