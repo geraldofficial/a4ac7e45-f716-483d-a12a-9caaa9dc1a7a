@@ -305,8 +305,8 @@ export const getAdminPosts = async (
         likes_count: post.likes_count,
         comments_count: post.comments_count,
         has_media: Boolean(post.media_urls && post.media_urls.length > 0),
-        has_movie: Boolean(post.movie_title),
-        movie_title: post.movie_title,
+        has_movie: false,
+        movie_title: undefined,
         author: {
           username: post.profiles?.username || "Unknown",
           full_name: post.profiles?.full_name || "Unknown User",
