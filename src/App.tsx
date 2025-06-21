@@ -130,6 +130,8 @@ function App() {
                               path="/detail/:id"
                               element={<DetailPage />}
                             />
+                            <Route path="/movie/:id" element={<DetailPage />} />
+                            <Route path="/tv/:id" element={<DetailPage />} />
                             <Route path="/watch/:id" element={<WatchPage />} />
                             <Route
                               path="/watch-party/:id"
