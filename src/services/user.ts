@@ -1,5 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
-import { formatError } from "@/lib/utils";
+import { safeLogError } from "@/utils/safeErrorFormat";
 
 export const userApi = {
   async updateUser(updates: any) {
@@ -36,9 +36,8 @@ export const userApi = {
           return null;
         }
 
-        // Use formatError to properly format the error message
-        const formattedError = formatError(error);
-        console.error("❌ Profile fetch error:", formattedError);
+        // Use safe error logging to avoid body stream issues
+        safeLogError("❌ Profile fetch error", error);
 
         // Create a more informative error
         const fetchError = new Error(`Profile fetch failed: ${formattedError}`);
@@ -85,9 +84,8 @@ export const userApi = {
       .single();
 
     if (error) {
-      // Use formatError to properly format the error message
-      const formattedError = formatError(error);
-      console.error("❌ Profile creation error:", formattedError);
+      // Use safe error logging to avoid body stream issues
+      safeLogError("❌ Profile creation error", error);
 
       // Create a more informative error
       const creationError = new Error(
