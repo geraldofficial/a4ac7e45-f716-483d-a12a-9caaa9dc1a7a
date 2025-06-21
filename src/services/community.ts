@@ -556,3 +556,66 @@ export const searchPosts = async (
     throw error;
   }
 };
+
+// Community Service object for backward compatibility
+export const communityService = {
+  // Fetch posts (alias for getCommunityPosts)
+  fetchPosts: async (
+    userId?: string,
+    limit: number = 20,
+    offset: number = 0,
+  ) => {
+    const { posts } = await getCommunityPosts(limit, offset);
+    return posts;
+  },
+
+  // Create post (alias for createCommunityPost)
+  createPost: async (postData: CreatePostData) => {
+    const { post, error } = await createCommunityPost(postData);
+    if (error) throw new Error(error);
+    return post;
+  },
+
+  // Fetch comments (alias for getPostComments)
+  fetchComments: async (postId: string) => {
+    return await getPostComments(postId);
+  },
+
+  // Upload media (alias for uploadMedia)
+  uploadMedia: async (file: File, userId: string) => {
+    const urls = await uploadMedia([file]);
+    return urls[0];
+  },
+
+  // Toggle like (alias for togglePostLike)
+  toggleLike: async (postId: string, userId: string) => {
+    const { isLiked } = await togglePostLike(postId);
+    return isLiked;
+  },
+
+  // Toggle bookmark (alias for togglePostBookmark)
+  toggleBookmark: async (postId: string, userId: string) => {
+    const { isBookmarked } = await togglePostBookmark(postId);
+    return isBookmarked;
+  },
+
+  // Create comment (alias for createPostComment)
+  createComment: async (postId: string, userId: string, content: string) => {
+    return await createPostComment(postId, content);
+  },
+
+  // Delete post (alias for deleteCommunityPost)
+  deletePost: async (postId: string, userId: string) => {
+    return await deleteCommunityPost(postId);
+  },
+
+  // Delete comment (alias for deletePostComment)
+  deleteComment: async (commentId: string, userId: string) => {
+    return await deletePostComment(commentId);
+  },
+
+  // Search posts
+  searchPosts: async (query: string, limit: number = 20) => {
+    return await searchPosts(query, limit);
+  },
+};
