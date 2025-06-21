@@ -451,10 +451,7 @@ export const FullFunctionalCommunityFeed: React.FC<
               <Button
                 onClick={handleCreatePost}
                 disabled={
-                  creating ||
-                  (!newPost.trim() &&
-                    mediaUrls.length === 0 &&
-                    !selectedMovieId)
+                  creating || (!newPost.trim() && mediaUrls.length === 0)
                 }
                 className="bg-red-600 hover:bg-red-700 text-white"
               >
