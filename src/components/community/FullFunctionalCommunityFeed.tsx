@@ -529,6 +529,7 @@ export const FullFunctionalCommunityFeed: React.FC<
                   <Button
                     size="sm"
                     variant="ghost"
+                    onClick={() => handleShare(post.id)}
                     className="text-gray-400 hover:text-green-400 transition-colors"
                   >
                     <Share2 className="h-4 w-4 mr-1" />
