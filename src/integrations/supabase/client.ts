@@ -109,19 +109,31 @@ const testConnection = async () => {
     if (!error) {
       connectionHealthy = true;
       console.log("✅ Supabase connection healthy");
+    } else if (error.message?.includes("No API key found")) {
+      // Critical API key error
+      connectionHealthy = false;
+      console.error("🔑 CRITICAL: API key not found in Supabase requests");
+      console.error("Check Supabase client configuration");
     } else if (
       error.message?.includes("42P01") ||
       error.message?.includes("does not exist")
     ) {
       // These are expected schema errors, not connection issues
       connectionHealthy = true;
+      console.log(
+        "✅ Supabase connection healthy (schema errors are expected)",
+      );
     } else {
       connectionHealthy = false;
       console.warn("⚠️ Supabase connection issue:", error.message);
     }
   } catch (error: any) {
     connectionHealthy = false;
-    console.warn("⚠️ Supabase connection test failed:", error.message);
+    if (error.message?.includes("No API key found")) {
+      console.error("🔑 CRITICAL: API key configuration error");
+    } else {
+      console.warn("⚠️ Supabase connection test failed:", error.message);
+    }
   }
 
   return connectionHealthy;
