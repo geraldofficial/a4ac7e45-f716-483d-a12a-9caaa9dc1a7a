@@ -57,8 +57,12 @@ export const databaseSetupGuide = {
 
   checkTableExists: async (tableName: string): Promise<boolean> => {
     try {
-      const { supabase } = await import("@/integrations/supabase/client");
-      const { error } = await supabase.from(tableName).select("*").limit(1);
+      // Use static import to avoid dynamic import issues
+      const supabaseModule = await import("@/integrations/supabase/client");
+      const { error } = await supabaseModule.supabase
+        .from(tableName)
+        .select("*")
+        .limit(1);
 
       return !error || error.code !== "42P01";
     } catch {
@@ -82,7 +86,7 @@ export const databaseSetupGuide = {
     console.group("🗄️ Database Setup Guide");
     console.log("📖", guide.overview);
 
-    console.group("📋 Setup Instructions");
+    console.group("��� Setup Instructions");
     console.group("🔧 Using Supabase CLI (Recommended)");
     guide.instructions.supabaseCLI.forEach((step) => console.log(step));
     console.groupEnd();
