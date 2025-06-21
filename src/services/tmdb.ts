@@ -105,17 +105,38 @@ export const tmdbApi = {
   },
 
   getTopRatedMovies: async () => {
-    const response = await fetch(`${BASE_URL}/movie/top_rated`, { headers });
+    const response = await fetch(`${BASE_URL}/movie/top_rated`, {
+      headers: getHeaders(),
+    });
+    if (!response.ok) {
+      throw new Error(
+        `TMDB API Error: ${response.status} ${response.statusText}`,
+      );
+    }
     return await response.json();
   },
 
   getNowPlayingMovies: async () => {
-    const response = await fetch(`${BASE_URL}/movie/now_playing`, { headers });
+    const response = await fetch(`${BASE_URL}/movie/now_playing`, {
+      headers: getHeaders(),
+    });
+    if (!response.ok) {
+      throw new Error(
+        `TMDB API Error: ${response.status} ${response.statusText}`,
+      );
+    }
     return await response.json();
   },
 
   getUpcomingMovies: async () => {
-    const response = await fetch(`${BASE_URL}/movie/upcoming`, { headers });
+    const response = await fetch(`${BASE_URL}/movie/upcoming`, {
+      headers: getHeaders(),
+    });
+    if (!response.ok) {
+      throw new Error(
+        `TMDB API Error: ${response.status} ${response.statusText}`,
+      );
+    }
     return await response.json();
   },
 
