@@ -669,6 +669,19 @@ class EnhancedNotificationsService {
 
       // Save subscription to database with fallback handling
       try {
+        // Check if table exists first
+        const { error: checkError } = await supabase
+          .from("push_subscriptions")
+          .select("id")
+          .limit(1);
+
+        if (checkError && checkError.code === "42P01") {
+          console.info(
+            "Push subscriptions table not yet created. Subscription saved locally only.",
+          );
+          return;
+        }
+
         await supabase.from("push_subscriptions").upsert({
           user_id: this.userId,
           endpoint: subscription.endpoint,
