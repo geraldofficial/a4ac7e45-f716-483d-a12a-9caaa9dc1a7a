@@ -13,7 +13,7 @@ import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { Users, Play, Search } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
-import { perfectWatchPartyService } from "@/services/perfectWatchParty";
+import { simpleWatchPartyService } from "@/services/simpleWatchParty";
 import { toast } from "sonner";
 
 interface QuickWatchPartyDialogProps {
@@ -52,14 +52,16 @@ export const QuickWatchPartyDialog: React.FC<QuickWatchPartyDialogProps> = ({
 
     setCreating(true);
     try {
-      const sessionId = await perfectWatchPartyService.createSession(
+      const sessionId = simpleWatchPartyService.createSession(
         movieId,
         movieTitle,
         movieType,
+        user.id,
       );
 
       onOpenChange(false);
-      navigate(`/watch-party/${sessionId}`);
+      // Navigate to movie detail page and show watch party
+      navigate(`/movie/${movieId}?watch_party=${sessionId}`);
       toast.success(`Watch party created! Code: ${sessionId}`);
     } catch (error) {
       console.error("Error creating watch party:", error);
@@ -82,7 +84,7 @@ export const QuickWatchPartyDialog: React.FC<QuickWatchPartyDialogProps> = ({
 
     setJoining(true);
     try {
-      const exists = await perfectWatchPartyService.sessionExists(
+      const exists = simpleWatchPartyService.sessionExists(
         joinCode.trim().toUpperCase(),
       );
 
@@ -91,8 +93,17 @@ export const QuickWatchPartyDialog: React.FC<QuickWatchPartyDialogProps> = ({
         return;
       }
 
-      onOpenChange(false);
-      navigate(`/watch-party/${joinCode.trim().toUpperCase()}`);
+      const session = simpleWatchPartyService.getSession(
+        joinCode.trim().toUpperCase(),
+      );
+      if (session) {
+        onOpenChange(false);
+        // Navigate to the movie and join the party
+        navigate(
+          `/movie/${session.movieId}?join_party=${joinCode.trim().toUpperCase()}`,
+        );
+        toast.success("Joining watch party!");
+      }
     } catch (error) {
       console.error("Error joining watch party:", error);
       toast.error("Failed to join watch party");
