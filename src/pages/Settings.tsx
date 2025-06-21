@@ -124,8 +124,22 @@ const Settings = () => {
         }
 
         if (error.code === "42P01") {
-          // Table doesn't exist - use defaults
-          console.info("User settings table not yet created, using defaults");
+          // Table doesn't exist - try to load from localStorage
+          console.info(
+            "User settings table not yet created, checking localStorage",
+          );
+          const localSettings = localStorage.getItem(
+            `user_settings_${user.id}`,
+          );
+          if (localSettings) {
+            try {
+              const parsedSettings = JSON.parse(localSettings);
+              setSettings((prev) => ({ ...prev, ...parsedSettings }));
+              console.info("Loaded settings from localStorage");
+            } catch (parseError) {
+              console.warn("Failed to parse local settings, using defaults");
+            }
+          }
           return;
         }
 
