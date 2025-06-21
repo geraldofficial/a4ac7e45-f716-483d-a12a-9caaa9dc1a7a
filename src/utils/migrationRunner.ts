@@ -46,10 +46,20 @@ class MigrationRunner {
       this.migrationStatus.hasPushSubscriptions =
         !subscriptionsError || subscriptionsError.code !== "42P01";
 
+      // Check if user_settings table exists
+      const { error: settingsError } = await supabase
+        .from("user_settings")
+        .select("id")
+        .limit(1);
+
+      this.migrationStatus.hasUserSettings =
+        !settingsError || settingsError.code !== "42P01";
+
       this.migrationStatus.migrationNeeded = !(
         this.migrationStatus.hasUserNotifications &&
         this.migrationStatus.hasNotificationPreferences &&
-        this.migrationStatus.hasPushSubscriptions
+        this.migrationStatus.hasPushSubscriptions &&
+        this.migrationStatus.hasUserSettings
       );
 
       console.log("📊 Migration status:", this.migrationStatus);
