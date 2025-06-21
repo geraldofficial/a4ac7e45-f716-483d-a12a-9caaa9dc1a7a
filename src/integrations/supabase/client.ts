@@ -134,12 +134,46 @@ export const supabase = new Proxy(originalClient, {
   },
 });
 
-// Test connection on initialization
-originalClient.auth.getSession().catch((error) => {
-  if (
-    !error.message?.includes("42P01") &&
-    !error.message?.includes("does not exist")
-  ) {
-    console.warn("⚠️ Initial Supabase connection test failed:", error.message);
+// Enhanced connection test and health check
+let connectionHealthy = false;
+let lastConnectionTest = 0;
+
+const testConnection = async () => {
+  const now = Date.now();
+  // Only test connection every 30 seconds to avoid spam
+  if (now - lastConnectionTest < 30000 && connectionHealthy) {
+    return connectionHealthy;
   }
-});
+
+  lastConnectionTest = now;
+
+  try {
+    // Simple health check
+    const { error } = await originalClient.auth.getSession();
+
+    if (!error) {
+      connectionHealthy = true;
+      console.log("✅ Supabase connection healthy");
+    } else if (
+      error.message?.includes("42P01") ||
+      error.message?.includes("does not exist")
+    ) {
+      // These are expected schema errors, not connection issues
+      connectionHealthy = true;
+    } else {
+      connectionHealthy = false;
+      console.warn("⚠️ Supabase connection issue:", error.message);
+    }
+  } catch (error: any) {
+    connectionHealthy = false;
+    console.warn("⚠️ Supabase connection test failed:", error.message);
+  }
+
+  return connectionHealthy;
+};
+
+// Test connection on initialization
+testConnection();
+
+// Export connection health checker
+export { testConnection };
