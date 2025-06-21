@@ -392,15 +392,6 @@ export const FullFunctionalCommunityFeed: React.FC<
                   }
                   className="hidden"
                 />
-
-                <Button
-                  size="sm"
-                  variant="outline"
-                  className="border-gray-700 text-gray-300 hover:bg-gray-800"
-                >
-                  <Film className="h-4 w-4 mr-2" />
-                  Add Movie
-                </Button>
               </div>
 
               <Button
