@@ -13,6 +13,7 @@ class MigrationRunner {
     hasUserNotifications: false,
     hasNotificationPreferences: false,
     hasPushSubscriptions: false,
+    hasUserSettings: false,
     migrationNeeded: true,
   };
 
