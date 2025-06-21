@@ -282,34 +282,6 @@ export const FullFunctionalCommunityFeed: React.FC<
     return date.toLocaleDateString();
   };
 
-  // Star rating component
-  const renderStars = (
-    rating: number,
-    interactive = false,
-    onRate?: (rating: number) => void,
-  ) => {
-    return (
-      <div className="flex items-center space-x-1">
-        {[1, 2, 3, 4, 5].map((star) => (
-          <Star
-            key={star}
-            className={cn(
-              "h-4 w-4 transition-colors cursor-pointer",
-              star <= rating
-                ? "fill-yellow-400 text-yellow-400"
-                : "text-gray-400 hover:text-yellow-300",
-              interactive && "cursor-pointer hover:text-yellow-400",
-            )}
-            onClick={() => interactive && onRate?.(star)}
-          />
-        ))}
-        {rating > 0 && (
-          <span className="text-sm text-gray-400 ml-1">({rating}/5)</span>
-        )}
-      </div>
-    );
-  };
-
   // Effects
   useEffect(() => {
     fetchPosts();
