@@ -4,8 +4,7 @@ import App from "./App.tsx";
 import "./index.css";
 
 // Import debugging utilities
-// import './utils/errorSuppression'
-// import './utils/databaseSetupGuide'
+import "./utils/simpleErrorSuppression";
 
 // Ensure proper error handling for module loading
 const root = document.getElementById("root");
