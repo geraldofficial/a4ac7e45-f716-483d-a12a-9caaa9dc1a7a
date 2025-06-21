@@ -1,7 +1,7 @@
 // Error suppression utility to prevent console spam from expected missing table errors
 
 class ErrorSuppression {
-  private suppressedErrors: Set<string> = new Set();
+  public suppressedErrors: Set<string> = new Set();
   private warningShown = false;
 
   constructor() {
@@ -19,6 +19,9 @@ class ErrorSuppression {
 
       // Check for known database table missing errors
       if (this.shouldSuppressError(message)) {
+        // Track suppressed errors for debugging
+        this.suppressedErrors.add(message.substring(0, 100) + "...");
+
         // Only show the migration guidance once
         if (!this.warningShown) {
           this.warningShown = true;
