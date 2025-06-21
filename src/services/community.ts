@@ -456,7 +456,7 @@ export const getUserBookmarks = async (): Promise<CommunityPost[]> => {
     if (!user) return [];
 
     const { data: bookmarks, error } = await supabase
-      .from("post_bookmarks")
+      .from("community_post_bookmarks")
       .select(
         `
         created_at,
