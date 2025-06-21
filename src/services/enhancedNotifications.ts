@@ -787,7 +787,7 @@ class EnhancedNotificationsService {
   }
 
   private async loadPreferences(): Promise<void> {
-    this.preferences = await this.getPreferences();
+    this.preferences = await this.getNotificationPreferences();
   }
 
   private async createDefaultPreferences(): Promise<NotificationPreferences> {
