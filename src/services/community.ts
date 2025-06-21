@@ -278,7 +278,7 @@ export const togglePostBookmark = async (
     if (existingBookmark) {
       // Remove bookmark
       await supabase
-        .from("post_bookmarks")
+        .from("community_post_bookmarks")
         .delete()
         .eq("post_id", postId)
         .eq("user_id", user.id);
