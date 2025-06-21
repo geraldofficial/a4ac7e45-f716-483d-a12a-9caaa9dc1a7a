@@ -15,7 +15,7 @@ import { ScrollToTop } from "./components/ScrollToTop";
 import "./utils/networkDiagnostics";
 import "./utils/globalErrorHandler";
 import "./utils/migrationRunner";
-import "./utils/errorSuppression";
+// import "./utils/errorSuppression"; // Disabled - using external script instead
 import "./utils/linkValidator";
 import "./utils/settingsValidator";
 
