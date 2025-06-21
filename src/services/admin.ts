@@ -231,7 +231,10 @@ export const getAdminUsers = async (
       supabase.from("post_comments").select("user_id").in("user_id", userIds),
 
       // Like counts (posts they liked)
-      supabase.from("post_likes").select("user_id").in("user_id", userIds),
+      supabase
+        .from("community_post_likes")
+        .select("user_id")
+        .in("user_id", userIds),
     ]);
 
     // Count occurrences
