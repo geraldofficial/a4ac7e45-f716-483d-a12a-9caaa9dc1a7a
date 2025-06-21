@@ -3,8 +3,8 @@ import ReactDOM from "react-dom/client";
 import App from "./App.tsx";
 import "./index.css";
 
-// Import debugging utilities
-import "./utils/simpleErrorSuppression";
+// Import safe utilities and debugging
+import "./lib/safeUtils";
 
 // Ensure proper error handling for module loading
 const root = document.getElementById("root");
