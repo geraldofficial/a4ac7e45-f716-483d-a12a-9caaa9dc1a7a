@@ -81,7 +81,6 @@ export const getCommunityPosts = async (
         user_id,
         content,
         media_urls,
-        media_type,
         movie_id,
         movie_title,
         movie_poster,
