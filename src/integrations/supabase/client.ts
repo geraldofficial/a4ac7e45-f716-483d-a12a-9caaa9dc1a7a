@@ -31,21 +31,47 @@ const originalClient = createClient<Database>(
         "x-application-name": "FlickPick",
       },
       fetch: (input, init) => {
-        // Add timeout and better error handling
+        // Enhanced fetch with better error handling and CORS support
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 15000); // 15 second timeout
+        const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
 
-        return fetch(input, {
+        // Ensure proper headers for CORS and API requests
+        const enhancedInit = {
           ...init,
           signal: controller.signal,
-        })
+          headers: {
+            "Content-Type": "application/json",
+            ...init?.headers,
+          },
+          mode: "cors" as RequestMode,
+          credentials: "omit" as RequestCredentials,
+        };
+
+        return fetch(input, enhancedInit)
           .finally(() => clearTimeout(timeoutId))
           .catch((error) => {
+            console.warn("Supabase fetch error:", {
+              error: error.message,
+              input: typeof input === "string" ? input : input.url,
+              type: error.name,
+            });
+
             if (error.name === "AbortError") {
               throw new Error(
                 "Request timeout - check your internet connection",
               );
             }
+
+            // Handle network errors more gracefully
+            if (
+              error.name === "TypeError" &&
+              error.message.includes("Failed to fetch")
+            ) {
+              throw new Error(
+                "Network error - unable to connect to Supabase. Check your internet connection or try again later.",
+              );
+            }
+
             throw error;
           });
       },
