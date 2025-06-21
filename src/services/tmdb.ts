@@ -1,11 +1,21 @@
-const READ_ACCESS_TOKEN =
+const DEFAULT_READ_ACCESS_TOKEN =
   "eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiI5ZjRlMjI1ZDA3YTUyZGUwNmU1ZTE0ODdmNDU4MzdlMCIsIm5iZiI6MTc0OTU4MzU0OC40ODMsInN1YiI6IjY4NDg4NmJjZDdhZTVmMjkwNzFlYWY4MCIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.i9SAf8EuvGQbVnKVxQWWuA2cl6AjShk7F9NhlQaFEZM";
 const BASE_URL = "https://api.themoviedb.org/3";
 
-const headers = {
-  Authorization: `Bearer ${READ_ACCESS_TOKEN}`,
-  "Content-Type": "application/json;charset=utf-8",
+// Function to get current API key (from admin settings or default)
+const getApiKey = () => {
+  try {
+    return localStorage.getItem("tmdb_api_key") || DEFAULT_READ_ACCESS_TOKEN;
+  } catch {
+    return DEFAULT_READ_ACCESS_TOKEN;
+  }
 };
+
+// Function to get headers with current API key
+const getHeaders = () => ({
+  Authorization: `Bearer ${getApiKey()}`,
+  "Content-Type": "application/json;charset=utf-8",
+});
 
 export interface Movie {
   id: number;
