@@ -51,23 +51,27 @@ class ErrorSuppression {
   }
 
   private argsToString(args: any[]): string {
-    return args
-      .map((arg) => {
-        if (typeof arg === "string") return arg;
-        if (typeof arg === "object" && arg !== null) {
+    try {
+      return args
+        .map((arg) => {
           try {
-            // Handle error objects specially
-            if (arg.code || arg.message || arg.details !== undefined) {
-              return JSON.stringify(arg);
+            if (typeof arg === "string") return arg;
+            if (typeof arg === "object" && arg !== null) {
+              // Handle error objects specially
+              if (arg.code || arg.message || arg.details !== undefined) {
+                return JSON.stringify(arg);
+              }
+              return String(arg);
             }
             return String(arg);
           } catch {
-            return String(arg);
+            return "[Object]";
           }
-        }
-        return String(arg);
-      })
-      .join(" ");
+        })
+        .join(" ");
+    } catch {
+      return "Error parsing arguments";
+    }
   }
 
   private shouldSuppressError(message: string): boolean {
