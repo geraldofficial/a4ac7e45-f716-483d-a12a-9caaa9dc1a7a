@@ -1,4 +1,6 @@
-// MUST be first import - bulletproof error suppression
+// MUST be ABSOLUTE first import - ultimate console suppression
+import "./ultimateConsoleSuppression";
+// Second import - bulletproof error suppression
 import "./bulletproofSuppression";
 
 import React from "react";
