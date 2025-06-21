@@ -139,10 +139,6 @@ export const FullFunctionalCommunityFeed: React.FC<
 
       // Reset form
       setNewPost("");
-      setSelectedMovieId("");
-      setSelectedMovieTitle("");
-      setSelectedMoviePoster("");
-      setRating(0);
       setMediaFiles([]);
       setMediaUrls([]);
 
