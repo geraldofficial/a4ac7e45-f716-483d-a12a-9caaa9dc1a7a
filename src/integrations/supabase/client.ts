@@ -60,5 +60,10 @@ export const supabase = createClient<Database>(
 
 // Test connection on initialization
 supabase.auth.getSession().catch((error) => {
-  console.warn("⚠️ Initial Supabase connection test failed:", error.message);
+  if (
+    !error.message?.includes("42P01") &&
+    !error.message?.includes("does not exist")
+  ) {
+    console.warn("⚠️ Initial Supabase connection test failed:", error.message);
+  }
 });
