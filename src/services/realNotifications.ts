@@ -1,5 +1,6 @@
 import { supabase } from "@/integrations/supabase/client";
 import { safeLogError } from "@/utils/safeErrorFormat";
+import "@/utils/errorSuppression"; // Ensure error suppression is active
 
 export interface UserNotification {
   id: string;
