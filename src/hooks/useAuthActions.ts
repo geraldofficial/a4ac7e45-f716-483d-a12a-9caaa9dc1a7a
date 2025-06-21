@@ -2,7 +2,7 @@ import { useToast } from "@/hooks/use-toast";
 import { userApi } from "@/services/user";
 import { authApi } from "@/services/auth";
 import { UserProfile } from "@/types/auth";
-import { formatError } from "@/lib/utils";
+import { safeLogError } from "@/utils/safeErrorFormat";
 import { supabase } from "@/integrations/supabase/client";
 import { cleanupAuthState } from "@/utils/authCleanup";
 
@@ -34,7 +34,7 @@ export const useAuthActions = (
         window.location.href = "/";
       }
     } catch (error: any) {
-      console.error("Sign-in error:", formatError(error));
+      safeLogError("Sign-in error", error);
       toast({
         variant: "destructive",
         title: "Sign in failed",
@@ -64,7 +64,7 @@ export const useAuthActions = (
         window.location.href = "/onboarding";
       }
     } catch (error: any) {
-      console.error("Sign-up error:", formatError(error));
+      safeLogError("Sign-up error", error);
       toast({
         variant: "destructive",
         title: "Sign up failed",
@@ -97,7 +97,7 @@ export const useAuthActions = (
       // Force complete page reload to clear all state
       window.location.href = "/auth";
     } catch (error: any) {
-      console.error("Sign-out error:", formatError(error));
+      safeLogError("Sign-out error", error);
       toast({
         variant: "destructive",
         title: "Sign out failed",
@@ -122,7 +122,7 @@ export const useAuthActions = (
         description: "Your profile has been updated successfully.",
       });
     } catch (error: any) {
-      console.error("Profile update error:", formatError(error));
+      safeLogError("Profile update error", error);
       toast({
         variant: "destructive",
         title: "Profile update failed",
