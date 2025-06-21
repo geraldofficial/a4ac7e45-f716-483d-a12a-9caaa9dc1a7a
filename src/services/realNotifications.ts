@@ -6,14 +6,7 @@ export interface UserNotification {
   user_id: string;
   title: string;
   message: string;
-  type:
-    | "info"
-    | "warning"
-    | "success"
-    | "error"
-    | "announcement"
-    | "update"
-    | "promotion";
+  type: "info" | "warning" | "success" | "error" | "announcement" | "update" | "promotion";
   priority: "low" | "medium" | "high" | "urgent";
   is_read: boolean;
   is_starred: boolean;
@@ -51,10 +44,8 @@ class RealNotificationsService {
 
       if (error) {
         // If table doesn't exist, return empty array and log info
-        if (error.code === "42P01") {
-          console.info(
-            "User notifications table not yet created. Using fallback.",
-          );
+        if (error.code === '42P01') {
+          console.info("User notifications table not yet created. Using fallback.");
           return this.getFallbackNotifications();
         }
         throw error;
@@ -73,32 +64,31 @@ class RealNotificationsService {
     }
 
     try {
-      const [totalResult, unreadResult, starredResult, urgentResult] =
-        await Promise.all([
-          supabase
-            .from("user_notifications")
-            .select("id", { count: "exact" })
-            .eq("user_id", this.userId),
+      const [totalResult, unreadResult, starredResult, urgentResult] = await Promise.all([
+        supabase
+          .from("user_notifications")
+          .select("id", { count: "exact" })
+          .eq("user_id", this.userId),
 
-          supabase
-            .from("user_notifications")
-            .select("id", { count: "exact" })
-            .eq("user_id", this.userId)
-            .eq("is_read", false),
+        supabase
+          .from("user_notifications")
+          .select("id", { count: "exact" })
+          .eq("user_id", this.userId)
+          .eq("is_read", false),
 
-          supabase
-            .from("user_notifications")
-            .select("id", { count: "exact" })
-            .eq("user_id", this.userId)
-            .eq("is_starred", true),
+        supabase
+          .from("user_notifications")
+          .select("id", { count: "exact" })
+          .eq("user_id", this.userId)
+          .eq("is_starred", true),
 
-          supabase
-            .from("user_notifications")
-            .select("id", { count: "exact" })
-            .eq("user_id", this.userId)
-            .eq("priority", "urgent")
-            .eq("is_read", false),
-        ]);
+        supabase
+          .from("user_notifications")
+          .select("id", { count: "exact" })
+          .eq("user_id", this.userId)
+          .eq("priority", "urgent")
+          .eq("is_read", false),
+      ]);
 
       return {
         total: totalResult.count || 0,
@@ -108,44 +98,21 @@ class RealNotificationsService {
       };
     } catch (error) {
       // If table doesn't exist, return fallback stats
-      if (
-        error &&
-        typeof error === "object" &&
-        "code" in error &&
-        error.code === "42P01"
-      ) {
-        console.info(
-          "User notifications table not yet created. Using fallback stats.",
-        );
+      if (error && typeof error === 'object' && 'code' in error && error.code === '42P01') {
+        console.info("User notifications table not yet created. Using fallback stats.");
         const fallbackNotifications = this.getFallbackNotifications();
         return {
           total: fallbackNotifications.length,
-          unread: fallbackNotifications.filter((n) => !n.is_read).length,
-          starred: fallbackNotifications.filter((n) => n.is_starred).length,
-          urgent: fallbackNotifications.filter(
-            (n) => n.priority === "urgent" && !n.is_read,
-          ).length,
+          unread: fallbackNotifications.filter(n => !n.is_read).length,
+          starred: fallbackNotifications.filter(n => n.is_starred).length,
+          urgent: fallbackNotifications.filter(n => n.priority === 'urgent' && !n.is_read).length,
         };
       }
-      const errorMsg =
-        error instanceof Error
-          ? error.message
-          : error && typeof error === "object" && error.message
-            ? error.message
-            : error && typeof error === "object" && error.code
-              ? `Error code: ${error.code}`
-              : String(error);
-      console.error("Error fetching notification stats:", errorMsg);
-      return { total: 0, unread: 0, starred: 0, urgent: 0 };
-    }
-  }
-
+      safeLogError("Error fetching notification stats", error);
   async markAsRead(notificationId: string): Promise<void> {
     // Handle fallback notifications that don't exist in database
-    if (notificationId.startsWith("fallback-")) {
-      console.info(
-        `Marking fallback notification ${notificationId} as read (client-side only)`,
-      );
+    if (notificationId.startsWith('fallback-')) {
+      console.info(`Marking fallback notification ${notificationId} as read (client-side only)`);
       return;
     }
 
@@ -154,17 +121,15 @@ class RealNotificationsService {
         .from("user_notifications")
         .update({
           is_read: true,
-          read_at: new Date().toISOString(),
+          read_at: new Date().toISOString()
         })
         .eq("id", notificationId)
         .eq("user_id", this.userId);
 
       if (error) {
         // If table doesn't exist, just log and continue
-        if (error.code === "42P01") {
-          console.info(
-            "User notifications table not yet created. Cannot mark as read.",
-          );
+        if (error.code === '42P01') {
+          console.info("User notifications table not yet created. Cannot mark as read.");
           return;
         }
         throw error;
@@ -173,16 +138,11 @@ class RealNotificationsService {
       const errorMessage = formatError(error);
       console.error("Error marking notification as read:", errorMessage);
       // Don't throw error for missing table, just log it
-      if (
-        error &&
-        typeof error === "object" &&
-        "code" in error &&
-        error.code === "42P01"
-      ) {
+      if (error && typeof error === 'object' && 'code' in error && error.code === '42P01') {
         return;
       }
       // Don't throw error for operations on fallback notifications
-      if (errorMessage.includes("fallback") || errorMessage.includes("42P01")) {
+      if (errorMessage.includes('fallback') || errorMessage.includes('42P01')) {
         return;
       }
       throw error;
@@ -197,17 +157,15 @@ class RealNotificationsService {
         .from("user_notifications")
         .update({
           is_read: true,
-          read_at: new Date().toISOString(),
+          read_at: new Date().toISOString()
         })
         .eq("user_id", this.userId)
         .eq("is_read", false);
 
       if (error) {
         // If table doesn't exist, just log and continue
-        if (error.code === "42P01") {
-          console.info(
-            "User notifications table not yet created. Marking fallback notifications as read (client-side only).",
-          );
+        if (error.code === '42P01') {
+          console.info("User notifications table not yet created. Marking fallback notifications as read (client-side only).");
           return;
         }
         throw error;
@@ -216,15 +174,8 @@ class RealNotificationsService {
       const errorMessage = formatError(error);
       console.error("Error marking all notifications as read:", errorMessage);
       // Don't throw error for missing table, just log it
-      if (
-        error &&
-        typeof error === "object" &&
-        "code" in error &&
-        error.code === "42P01"
-      ) {
-        console.info(
-          "Fallback: marking all notifications as read (client-side only).",
-        );
+      if (error && typeof error === 'object' && 'code' in error && error.code === '42P01') {
+        console.info("Fallback: marking all notifications as read (client-side only).");
         return;
       }
       throw error;
@@ -233,10 +184,8 @@ class RealNotificationsService {
 
   async toggleStar(notificationId: string, isStarred: boolean): Promise<void> {
     // Handle fallback notifications that don't exist in database
-    if (notificationId.startsWith("fallback-")) {
-      console.info(
-        `Toggling star for fallback notification ${notificationId} (client-side only)`,
-      );
+    if (notificationId.startsWith('fallback-')) {
+      console.info(`Toggling star for fallback notification ${notificationId} (client-side only)`);
       return;
     }
 
@@ -249,10 +198,8 @@ class RealNotificationsService {
 
       if (error) {
         // If table doesn't exist, just log and continue
-        if (error.code === "42P01") {
-          console.info(
-            "User notifications table not yet created. Cannot toggle star.",
-          );
+        if (error.code === '42P01') {
+          console.info("User notifications table not yet created. Cannot toggle star.");
           return;
         }
         throw error;
@@ -261,12 +208,7 @@ class RealNotificationsService {
       const errorMessage = formatError(error);
       console.error("Error toggling notification star:", errorMessage);
       // Don't throw error for missing table, just log it
-      if (
-        error &&
-        typeof error === "object" &&
-        "code" in error &&
-        error.code === "42P01"
-      ) {
+      if (error && typeof error === 'object' && 'code' in error && error.code === '42P01') {
         return;
       }
       throw error;
@@ -275,10 +217,8 @@ class RealNotificationsService {
 
   async deleteNotification(notificationId: string): Promise<void> {
     // Handle fallback notifications that don't exist in database
-    if (notificationId.startsWith("fallback-")) {
-      console.info(
-        `Deleting fallback notification ${notificationId} (client-side only)`,
-      );
+    if (notificationId.startsWith('fallback-')) {
+      console.info(`Deleting fallback notification ${notificationId} (client-side only)`);
       return;
     }
 
@@ -291,10 +231,8 @@ class RealNotificationsService {
 
       if (error) {
         // If table doesn't exist, just log and continue
-        if (error.code === "42P01") {
-          console.info(
-            "User notifications table not yet created. Cannot delete notification.",
-          );
+        if (error.code === '42P01') {
+          console.info("User notifications table not yet created. Cannot delete notification.");
           return;
         }
         throw error;
@@ -303,63 +241,42 @@ class RealNotificationsService {
       const errorMessage = formatError(error);
       console.error("Error deleting notification:", errorMessage);
       // Don't throw error for missing table, just log it
-      if (
-        error &&
-        typeof error === "object" &&
-        "code" in error &&
-        error.code === "42P01"
-      ) {
+      if (error && typeof error === 'object' && 'code' in error && error.code === '42P01') {
         return;
       }
       throw error;
     }
   }
 
-  async createNotification(
-    notification: Omit<
-      UserNotification,
-      "id" | "created_at" | "is_read" | "is_starred"
-    >,
-  ): Promise<void> {
+  async createNotification(notification: Omit<UserNotification, "id" | "created_at" | "is_read" | "is_starred">): Promise<void> {
     try {
-      const { error } = await supabase.from("user_notifications").insert({
-        ...notification,
-        is_read: false,
-        is_starred: false,
-      });
+      const { error } = await supabase
+        .from("user_notifications")
+        .insert({
+          ...notification,
+          is_read: false,
+          is_starred: false,
+        });
 
       if (error) {
         // If table doesn't exist, just log and continue
-        if (error.code === "42P01") {
-          console.info(
-            "User notifications table not yet created. Cannot create notification.",
-          );
+        if (error.code === '42P01') {
+          console.info("User notifications table not yet created. Cannot create notification.");
           return;
         }
         throw error;
       }
     } catch (error) {
       // Don't log or throw error for missing table, just handle gracefully
-      if (
-        error &&
-        typeof error === "object" &&
-        "code" in error &&
-        error.code === "42P01"
-      ) {
-        console.info(
-          "User notifications table not yet created. Cannot create notification.",
-        );
+      if (error && typeof error === 'object' && 'code' in error && error.code === '42P01') {
+        console.info("User notifications table not yet created. Cannot create notification.");
         return;
       }
 
       // Only log meaningful errors
       if (error) {
         const errorMessage = formatError(error);
-        if (
-          errorMessage &&
-          errorMessage !== "Unknown error" &&
-          errorMessage !== "{}"
-        ) {
+        if (errorMessage && errorMessage !== "Unknown error" && errorMessage !== "{}") {
           console.error("Error creating notification:", errorMessage);
         }
       }
@@ -370,13 +287,10 @@ class RealNotificationsService {
   // Admin function to send notifications to multiple users
   async sendBulkNotification(
     userIds: string[],
-    notification: Omit<
-      UserNotification,
-      "id" | "user_id" | "created_at" | "is_read" | "is_starred"
-    >,
+    notification: Omit<UserNotification, "id" | "user_id" | "created_at" | "is_read" | "is_starred">
   ): Promise<void> {
     try {
-      const notifications = userIds.map((userId) => ({
+      const notifications = userIds.map(userId => ({
         ...notification,
         user_id: userId,
         is_read: false,
@@ -389,36 +303,23 @@ class RealNotificationsService {
 
       if (error) {
         // If table doesn't exist, just log and continue
-        if (error.code === "42P01") {
-          console.info(
-            "User notifications table not yet created. Cannot send bulk notification.",
-          );
+        if (error.code === '42P01') {
+          console.info("User notifications table not yet created. Cannot send bulk notification.");
           return;
         }
         throw error;
       }
     } catch (error) {
       // Don't log or throw error for missing table, just handle gracefully
-      if (
-        error &&
-        typeof error === "object" &&
-        "code" in error &&
-        error.code === "42P01"
-      ) {
-        console.info(
-          "User notifications table not yet created. Cannot send bulk notification.",
-        );
+      if (error && typeof error === 'object' && 'code' in error && error.code === '42P01') {
+        console.info("User notifications table not yet created. Cannot send bulk notification.");
         return;
       }
 
       // Only log meaningful errors
       if (error) {
         const errorMessage = formatError(error);
-        if (
-          errorMessage &&
-          errorMessage !== "Unknown error" &&
-          errorMessage !== "{}"
-        ) {
+        if (errorMessage && errorMessage !== "Unknown error" && errorMessage !== "{}") {
           console.error("Error sending bulk notification:", errorMessage);
         }
       }
@@ -427,9 +328,7 @@ class RealNotificationsService {
   }
 
   // Subscribe to real-time notification updates
-  subscribeToNotifications(
-    callback: (notification: UserNotification) => void,
-  ): () => void {
+  subscribeToNotifications(callback: (notification: UserNotification) => void): () => void {
     if (!this.userId) return () => {};
 
     try {
@@ -447,7 +346,7 @@ class RealNotificationsService {
             if (payload.new) {
               callback(payload.new as UserNotification);
             }
-          },
+          }
         )
         .subscribe();
 
@@ -455,10 +354,7 @@ class RealNotificationsService {
         supabase.removeChannel(channel);
       };
     } catch (error) {
-      console.warn(
-        "Could not subscribe to notifications - table may not exist:",
-        error,
-      );
+      console.warn("Could not subscribe to notifications - table may not exist:", error);
       return () => {};
     }
   }
@@ -472,8 +368,7 @@ class RealNotificationsService {
         id: "fallback-1",
         user_id: this.userId,
         title: "Welcome to FlickPick! 🎬",
-        message:
-          "Start exploring amazing movies and TV shows. Create your first watchlist and join the community!",
+        message: "Start exploring amazing movies and TV shows. Create your first watchlist and join the community!",
         type: "success",
         priority: "high",
         is_read: false,
@@ -485,8 +380,7 @@ class RealNotificationsService {
         id: "fallback-2",
         user_id: this.userId,
         title: "New Feature: Watch Parties! 🎉",
-        message:
-          "Invite friends to watch movies together in real-time. Create or join a watch party now!",
+        message: "Invite friends to watch movies together in real-time. Create or join a watch party now!",
         type: "announcement",
         priority: "medium",
         is_read: false,
@@ -498,8 +392,7 @@ class RealNotificationsService {
         id: "fallback-3",
         user_id: this.userId,
         title: "Database Setup Required",
-        message:
-          "Admin: Run the user notifications migration to enable full notification features.",
+        message: "Admin: Run the user notifications migration to enable full notification features.",
         type: "info",
         priority: "low",
         is_read: false,
@@ -520,16 +413,12 @@ class RealNotificationsService {
         .select("id")
         .limit(1);
 
-      if (testError && testError.code === "42P01") {
-        console.info(
-          "User notifications table not yet created. Cannot send sample notifications. Using fallback notifications instead.",
-        );
+      if (testError && testError.code === '42P01') {
+        console.info("User notifications table not yet created. Cannot send sample notifications. Using fallback notifications instead.");
         return;
       }
     } catch (error) {
-      console.info(
-        "User notifications table not accessible. Cannot send sample notifications. Using fallback notifications instead.",
-      );
+      console.info("User notifications table not accessible. Cannot send sample notifications. Using fallback notifications instead.");
       return;
     }
 
@@ -537,8 +426,7 @@ class RealNotificationsService {
       {
         user_id: this.userId,
         title: "Welcome to FlickPick!",
-        message:
-          "Start exploring amazing movies and TV shows. Create your first watchlist!",
+        message: "Start exploring amazing movies and TV shows. Create your first watchlist!",
         type: "success" as const,
         priority: "medium" as const,
         action_url: "/browse",
@@ -546,8 +434,7 @@ class RealNotificationsService {
       {
         user_id: this.userId,
         title: "New Feature Available",
-        message:
-          "Watch parties are now live! Invite friends to watch movies together.",
+        message: "Watch parties are now live! Invite friends to watch movies together.",
         type: "announcement" as const,
         priority: "high" as const,
         action_url: "/community",
