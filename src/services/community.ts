@@ -523,7 +523,7 @@ export const searchPosts = async (
         )
       `,
       )
-      .or(`content.ilike.%${query}%,movie_title.ilike.%${query}%`)
+      .ilike("content", `%${query}%`)
       .order("created_at", { ascending: false })
       .limit(limit);
 
