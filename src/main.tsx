@@ -1,5 +1,5 @@
-// MUST be first import - ultimate error suppression (covers everything)
-import "./ultimateErrorSuppression";
+// MUST be first import - foolproof error suppression
+import "./foolproofErrorSuppression";
 
 import React from "react";
 import ReactDOM from "react-dom/client";
