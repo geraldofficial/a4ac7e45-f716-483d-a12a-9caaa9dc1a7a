@@ -254,28 +254,26 @@ export const FullFunctionalCommunityFeed: React.FC<
   // Handle share post
   const handleShare = async (postId: string) => {
     try {
-      const post = posts.find(p => p.id === postId);
+      const post = posts.find((p) => p.id === postId);
       if (!post) return;
 
       if (navigator.share) {
         await navigator.share({
-          title: 'FlickPick Community Post',
+          title: "FlickPick Community Post",
           text: post.content,
-          url: `${window.location.origin}/community#post-${postId}`
+          url: `${window.location.origin}/community#post-${postId}`,
         });
-        toast.success('Post shared successfully');
+        toast.success("Post shared successfully");
       } else {
         // Fallback to clipboard
         await navigator.clipboard.writeText(
-          `Check out this post on FlickPick: ${post.content} - ${window.location.origin}/community#post-${postId}`
+          `Check out this post on FlickPick: ${post.content} - ${window.location.origin}/community#post-${postId}`,
         );
-        toast.success('Post link copied to clipboard');
+        toast.success("Post link copied to clipboard");
       }
     } catch (error) {
-      console.warn('Share failed:', error);
-      toast.error('Failed to share post');
-    }
-  };
+      console.warn("Share failed:", error);
+      toast.error("Failed to share post");
     }
   };
 
