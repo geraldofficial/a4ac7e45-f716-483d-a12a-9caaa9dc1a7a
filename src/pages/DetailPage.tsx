@@ -11,7 +11,6 @@ import { DetailPageModals } from "@/components/DetailPageModals";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { useDetailPageState } from "@/hooks/useDetailPageState";
-import { RouteDebugger } from "@/components/RouteDebugger";
 
 const DetailPage = () => {
   const { id } = useParams<{ id: string }>();
@@ -112,17 +111,14 @@ const DetailPage = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-background">
-        <RouteDebugger />
-        <Navbar />
-        <div className="pt-16 md:pt-24 pb-20 px-3 md:px-4">
-          <div className="container mx-auto text-center">
-            <div className="text-foreground text-sm md:text-xl">
-              Loading content...
-            </div>
+      <div className="min-h-screen bg-gray-950">
+        <div className="flex items-center justify-center min-h-screen">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-red-600 mx-auto mb-4"></div>
+            <div className="text-white text-lg">Loading movie details...</div>
+            <div className="text-gray-400 text-sm mt-2">Movie ID: {id}</div>
           </div>
         </div>
-        <Footer />
       </div>
     );
   }
