@@ -113,6 +113,7 @@ const DetailPage = () => {
   if (loading) {
     return (
       <div className="min-h-screen bg-background">
+        <RouteDebugger />
         <Navbar />
         <div className="pt-16 md:pt-24 pb-20 px-3 md:px-4">
           <div className="container mx-auto text-center">
