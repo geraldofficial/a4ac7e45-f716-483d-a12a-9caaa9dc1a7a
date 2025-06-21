@@ -97,7 +97,7 @@ const DetailPage = () => {
     setShowShareModal(true);
   };
 
-  const handleWatchParty = () => {
+  const handleWatchParty = async () => {
     if (!user) {
       toast({
         title: "Sign in required",
@@ -106,7 +106,35 @@ const DetailPage = () => {
       });
       return;
     }
-    setShowWatchParty(true);
+
+    try {
+      // Import the perfect watch party service
+      const { perfectWatchPartyService } = await import(
+        "@/services/perfectWatchParty"
+      );
+
+      // Create a new watch party session
+      const sessionId = await perfectWatchPartyService.createSession(
+        content.id,
+        content.title || content.name || "Unknown Title",
+        type,
+      );
+
+      // Navigate to the watch party
+      navigate(`/watch-party/${sessionId}`);
+
+      toast({
+        title: "Watch party created!",
+        description: `Party code: ${sessionId}`,
+      });
+    } catch (error) {
+      console.error("Error creating watch party:", error);
+      toast({
+        title: "Error",
+        description: "Failed to create watch party. Please try again.",
+        variant: "destructive",
+      });
+    }
   };
 
   if (loading) {
