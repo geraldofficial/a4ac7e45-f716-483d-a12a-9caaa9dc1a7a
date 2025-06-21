@@ -1,5 +1,5 @@
-// MUST be first import - foolproof error suppression
-import "./foolproofErrorSuppression";
+// MUST be first import - bulletproof error suppression
+import "./bulletproofSuppression";
 
 import React from "react";
 import ReactDOM from "react-dom/client";
