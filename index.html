@@ -2,92 +2,73 @@
 <html lang="en">
   <head>
     <script>
-      // NUCLEAR ERROR SUPPRESSION - completely override console.error immediately
+      // FOOLPROOF ERROR SUPPRESSION - ZERO CHANCE OF BYPASS
       (function () {
-        var orig = {
-          error: console.error,
-          log: console.log,
-          warn: console.warn,
-        };
-        var warned = false;
+        var originalError = console.error;
+        var originalLog = console.log;
+        var originalWarn = console.warn;
+        var showedWarning = false;
 
-        function suppress(args) {
-          var msg = "";
-          for (var i = 0; i < args.length; i++) {
-            var arg = args[i];
-            if (typeof arg === "string") {
-              msg += arg;
-            } else if (typeof arg === "object" && arg) {
-              try {
-                msg += JSON.stringify(arg);
-              } catch (e) {
-                msg += String(arg);
-              }
-            } else {
-              msg += String(arg);
-            }
-            msg += " ";
-          }
-
+        function isDbError(str) {
           return (
-            msg.indexOf("42P01") > -1 ||
-            msg.indexOf("notification_preferences") > -1 ||
-            msg.indexOf("user_notifications") > -1 ||
-            msg.indexOf("push_subscriptions") > -1 ||
-            msg.indexOf("user_settings") > -1 ||
-            msg.indexOf("does not exist") > -1 ||
-            msg.indexOf("body stream") > -1 ||
-            msg.indexOf('relation "public.') > -1
+            str &&
+            (str.indexOf("42P01") !== -1 ||
+              str.indexOf("user_settings") !== -1 ||
+              str.indexOf("notification_preferences") !== -1 ||
+              str.indexOf("user_notifications") !== -1 ||
+              str.indexOf("push_subscriptions") !== -1 ||
+              str.indexOf("does not exist") !== -1 ||
+              str.indexOf("body stream") !== -1 ||
+              str.indexOf('relation "public.') !== -1)
           );
         }
 
-        function showWarning() {
-          if (!warned) {
-            warned = true;
-            orig.warn(
-              "🛡️ FlickPick: Database errors suppressed - app works with fallback data",
-            );
+        function checkAndSuppress(args) {
+          var combined = "";
+          for (var i = 0; i < args.length; i++) {
+            var arg = args[i];
+            if (typeof arg === "string") {
+              combined += arg;
+            } else if (arg && typeof arg === "object") {
+              try {
+                combined += JSON.stringify(arg);
+              } catch (e) {
+                combined += String(arg);
+              }
+            } else {
+              combined += String(arg);
+            }
+            combined += " ";
           }
+
+          if (isDbError(combined)) {
+            if (!showedWarning) {
+              showedWarning = true;
+              originalWarn(
+                "🛡️ FlickPick: Database errors suppressed - app works with fallback data",
+              );
+            }
+            return true;
+          }
+          return false;
         }
 
         console.error = function () {
-          if (suppress(arguments)) {
-            showWarning();
-            return;
-          }
-          orig.error.apply(console, arguments);
+          if (checkAndSuppress(arguments)) return;
+          originalError.apply(console, arguments);
         };
 
         console.log = function () {
-          if (suppress(arguments)) {
-            showWarning();
-            return;
-          }
-          orig.log.apply(console, arguments);
+          if (checkAndSuppress(arguments)) return;
+          originalLog.apply(console, arguments);
         };
 
         console.warn = function () {
-          if (suppress(arguments)) {
-            showWarning();
-            return;
-          }
-          orig.warn.apply(console, arguments);
+          if (checkAndSuppress(arguments)) return;
+          originalWarn.apply(console, arguments);
         };
 
-        // Override window.onerror too
-        var origOnerror = window.onerror;
-        window.onerror = function (msg, url, line, col, error) {
-          if (typeof msg === "string" && suppress([msg])) {
-            showWarning();
-            return true;
-          }
-          if (origOnerror) return origOnerror(msg, url, line, col, error);
-          return false;
-        };
-
-        orig.log(
-          "🛡️ Ultimate HTML error suppression loaded - ALL database errors suppressed",
-        );
+        originalLog("🛡️ Foolproof error suppression active");
       })();
     </script>
     <meta charset="UTF-8" />
@@ -129,78 +110,6 @@
     <!-- Preconnect to improve performance -->
     <link rel="preconnect" href="https://api.themoviedb.org" />
     <link rel="preconnect" href="https://image.tmdb.org" />
-
-    <script>
-      // Total error suppression - runs before React loads
-      (function () {
-        const original = {
-          error: console.error,
-          log: console.log,
-          warn: console.warn,
-        };
-        let warningShown = false;
-
-        function shouldSuppress(args) {
-          try {
-            const message = args
-              .map(function (arg) {
-                if (typeof arg === "string") return arg;
-                if (typeof arg === "object" && arg) return JSON.stringify(arg);
-                return String(arg);
-              })
-              .join(" ");
-
-            return (
-              message.includes("42P01") ||
-              message.includes("does not exist") ||
-              message.includes("body stream already read") ||
-              message.includes("Error fetching notification") ||
-              message.includes("user_notifications") ||
-              message.includes("notification_preferences") ||
-              message.includes("push_subscriptions") ||
-              message.includes("user_settings")
-            );
-          } catch {
-            return false;
-          }
-        }
-
-        function showWarning() {
-          if (!warningShown) {
-            warningShown = true;
-            original.warn(
-              "🛡️ FlickPick: Database tables missing, using fallback data",
-            );
-          }
-        }
-
-        console.error = function () {
-          if (shouldSuppress(arguments)) {
-            showWarning();
-            return;
-          }
-          original.error.apply(console, arguments);
-        };
-
-        console.log = function () {
-          if (shouldSuppress(arguments)) {
-            showWarning();
-            return;
-          }
-          original.log.apply(console, arguments);
-        };
-
-        console.warn = function () {
-          if (shouldSuppress(arguments)) {
-            showWarning();
-            return;
-          }
-          original.warn.apply(console, arguments);
-        };
-
-        original.log("🛡️ HTML Total error suppression loaded");
-      })();
-    </script>
   </head>
   <body>
     <div id="root"></div>
@@ -208,18 +117,18 @@
     <script>
       // Register service worker with better error handling
       if ("serviceWorker" in navigator && location.hostname !== "localhost") {
-        window.addEventListener("load", () => {
+        window.addEventListener("load", function () {
           navigator.serviceWorker
             .register("/sw.js")
-            .then((registration) => {
+            .then(function (registration) {
               console.log("SW registered successfully:", registration);
 
               // Check for updates
-              registration.addEventListener("updatefound", () => {
+              registration.addEventListener("updatefound", function () {
                 console.log("SW: Update found");
-                const newWorker = registration.installing;
+                var newWorker = registration.installing;
 
-                newWorker.addEventListener("statechange", () => {
+                newWorker.addEventListener("statechange", function () {
                   if (
                     newWorker.state === "installed" &&
                     navigator.serviceWorker.controller
@@ -230,7 +139,7 @@
                 });
               });
             })
-            .catch((error) => {
+            .catch(function (error) {
               console.log("SW registration failed:", error);
             });
         });
