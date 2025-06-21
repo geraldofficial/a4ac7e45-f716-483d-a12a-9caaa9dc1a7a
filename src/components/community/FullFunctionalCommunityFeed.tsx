@@ -5,8 +5,6 @@ import {
   Share2,
   Bookmark,
   MoreHorizontal,
-  Film,
-  Star,
   ImageIcon,
   Video,
   Upload,
