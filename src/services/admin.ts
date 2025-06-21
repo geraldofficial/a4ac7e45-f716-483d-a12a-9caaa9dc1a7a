@@ -458,7 +458,10 @@ export const searchUsers = async (
     ] = await Promise.all([
       supabase.from("community_posts").select("user_id").in("user_id", userIds),
       supabase.from("post_comments").select("user_id").in("user_id", userIds),
-      supabase.from("post_likes").select("user_id").in("user_id", userIds),
+      supabase
+        .from("community_post_likes")
+        .select("user_id")
+        .in("user_id", userIds),
     ]);
 
     const postCountMap = new Map();
