@@ -35,13 +35,18 @@ const originalClient = createClient<Database>(
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
 
-        // Ensure proper headers for CORS and API requests
+        // Ensure proper headers for CORS and API requests while preserving Supabase headers
         const enhancedInit = {
           ...init,
           signal: controller.signal,
           headers: {
-            "Content-Type": "application/json",
+            // Preserve any existing headers first (including Supabase apikey)
             ...init?.headers,
+            // Only add Content-Type if not already set
+            ...(!(init?.headers as any)?.["Content-Type"] &&
+            !(init?.headers as any)?.["content-type"]
+              ? { "Content-Type": "application/json" }
+              : {}),
           },
           mode: "cors" as RequestMode,
           credentials: "omit" as RequestCredentials,
