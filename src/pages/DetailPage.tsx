@@ -1,22 +1,23 @@
-
-import React from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { Navbar } from '@/components/Navbar';
-import { Footer } from '@/components/Footer';
-import { Button } from '@/components/ui/button';
-import { DetailPageHeader } from '@/components/DetailPageHeader';
-import { DetailPageActions } from '@/components/DetailPageActions';
-import { DetailPageInfo } from '@/components/DetailPageInfo';
-import { DetailPageVideoPlayer } from '@/components/DetailPageVideoPlayer';
-import { DetailPageModals } from '@/components/DetailPageModals';
-import { useAuth } from '@/contexts/AuthContext';
-import { useToast } from '@/hooks/use-toast';
-import { useDetailPageState } from '@/hooks/useDetailPageState';
+import React from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import { Navbar } from "@/components/Navbar";
+import { Footer } from "@/components/Footer";
+import { Button } from "@/components/ui/button";
+import { DetailPageHeader } from "@/components/DetailPageHeader";
+import { DetailPageActions } from "@/components/DetailPageActions";
+import { DetailPageInfo } from "@/components/DetailPageInfo";
+import { DetailPageVideoPlayer } from "@/components/DetailPageVideoPlayer";
+import { DetailPageModals } from "@/components/DetailPageModals";
+import { useAuth } from "@/contexts/AuthContext";
+import { useToast } from "@/hooks/use-toast";
+import { useDetailPageState } from "@/hooks/useDetailPageState";
+import { RouteDebugger } from "@/components/RouteDebugger";
 
 const DetailPage = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { user, addToWatchlist, removeFromWatchlist, isInWatchlist } = useAuth();
+  const { user, addToWatchlist, removeFromWatchlist, isInWatchlist } =
+    useAuth();
   const { toast } = useToast();
 
   const {
@@ -31,25 +32,26 @@ const DetailPage = () => {
     shouldResume,
     setIsPlaying,
     setShowShareModal,
-    setShowWatchParty
+    setShowWatchParty,
   } = useDetailPageState(id);
 
   // Get the best trailer from videos
   const getTrailer = () => {
     if (!content?.videos?.results) return null;
-    
+
     // Look for official trailers first
     const officialTrailer = content.videos.results.find(
-      video => video.site === 'YouTube' && video.type === 'Trailer' && video.official
+      (video) =>
+        video.site === "YouTube" && video.type === "Trailer" && video.official,
     );
-    
+
     if (officialTrailer) return officialTrailer;
-    
+
     // Fall back to any trailer
     const anyTrailer = content.videos.results.find(
-      video => video.site === 'YouTube' && video.type === 'Trailer'
+      (video) => video.site === "YouTube" && video.type === "Trailer",
     );
-    
+
     return anyTrailer || null;
   };
 
@@ -75,7 +77,7 @@ const DetailPage = () => {
       return;
     }
 
-    const title = content.title || content.name || 'Unknown Title';
+    const title = content.title || content.name || "Unknown Title";
 
     if (isInWatchlist(content.id)) {
       removeFromWatchlist(content.id);
@@ -101,7 +103,7 @@ const DetailPage = () => {
       toast({
         title: "Sign in required",
         description: "Please sign in to create watch parties.",
-        variant: "destructive"
+        variant: "destructive",
       });
       return;
     }
@@ -114,7 +116,9 @@ const DetailPage = () => {
         <Navbar />
         <div className="pt-16 md:pt-24 pb-20 px-3 md:px-4">
           <div className="container mx-auto text-center">
-            <div className="text-foreground text-sm md:text-xl">Loading content...</div>
+            <div className="text-foreground text-sm md:text-xl">
+              Loading content...
+            </div>
           </div>
         </div>
         <Footer />
@@ -128,9 +132,13 @@ const DetailPage = () => {
         <Navbar />
         <div className="pt-16 md:pt-24 pb-20 px-3 md:px-4">
           <div className="container mx-auto text-center">
-            <div className="text-foreground text-sm md:text-xl">Content not found</div>
-            <p className="text-muted-foreground mt-2 text-xs md:text-base">Type: {type}, ID: {id}</p>
-            <Button onClick={() => navigate('/')} className="mt-4" size="sm">
+            <div className="text-foreground text-sm md:text-xl">
+              Content not found
+            </div>
+            <p className="text-muted-foreground mt-2 text-xs md:text-base">
+              Type: {type}, ID: {id}
+            </p>
+            <Button onClick={() => navigate("/")} className="mt-4" size="sm">
               Go Home
             </Button>
           </div>
@@ -140,7 +148,7 @@ const DetailPage = () => {
     );
   }
 
-  const title = content.title || content.name || 'Unknown Title';
+  const title = content.title || content.name || "Unknown Title";
   const trailer = getTrailer();
 
   return (
@@ -163,7 +171,7 @@ const DetailPage = () => {
       {!isPlaying && (
         <>
           <Navbar />
-          
+
           <div className="pt-14 md:pt-16">
             {/* Hero Section */}
             <DetailPageHeader
@@ -194,7 +202,7 @@ const DetailPage = () => {
             {/* Additional Info */}
             <DetailPageInfo content={content} />
           </div>
-          
+
           <Footer />
 
           {/* Modals */}
