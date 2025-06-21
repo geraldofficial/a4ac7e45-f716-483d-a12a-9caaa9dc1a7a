@@ -30,14 +30,11 @@ export interface CommunityPost {
   user_id: string;
   content: string;
   media_urls?: string[];
-  movie_id?: string;
-  movie_title?: string;
-  movie_poster?: string;
-  rating?: number;
   created_at: string;
   updated_at: string;
   likes_count: number;
   comments_count: number;
+  shares_count?: number;
   user?: {
     id: string;
     username?: string;
