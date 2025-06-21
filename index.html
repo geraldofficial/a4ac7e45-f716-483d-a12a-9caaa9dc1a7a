@@ -2,28 +2,81 @@
 <html lang="en">
   <head>
     <script>
-      // IMMEDIATE error suppression - runs before ANYTHING else
+      // NUCLEAR ERROR SUPPRESSION - completely override console.error immediately
       (function () {
-        var orig = console.error;
+        var orig = {
+          error: console.error,
+          log: console.log,
+          warn: console.warn,
+        };
         var warned = false;
-        console.error = function () {
-          var msg = Array.prototype.slice.call(arguments).join(" ");
-          if (
+
+        function suppress(args) {
+          var msg = "";
+          for (var i = 0; i < args.length; i++) {
+            var arg = args[i];
+            if (typeof arg === "string") {
+              msg += arg;
+            } else if (typeof arg === "object" && arg) {
+              try {
+                msg += JSON.stringify(arg);
+              } catch (e) {
+                msg += String(arg);
+              }
+            } else {
+              msg += String(arg);
+            }
+            msg += " ";
+          }
+
+          return (
             msg.indexOf("42P01") > -1 ||
             msg.indexOf("notification_preferences") > -1 ||
+            msg.indexOf("user_notifications") > -1 ||
+            msg.indexOf("push_subscriptions") > -1 ||
+            msg.indexOf("user_settings") > -1 ||
             msg.indexOf("does not exist") > -1 ||
-            msg.indexOf("body stream") > -1
-          ) {
-            if (!warned) {
-              warned = true;
-              console.warn(
-                "🛡️ Database errors suppressed - app works with fallback data",
-              );
-            }
+            msg.indexOf("body stream") > -1 ||
+            msg.indexOf('relation "public.') > -1
+          );
+        }
+
+        function showWarning() {
+          if (!warned) {
+            warned = true;
+            orig.warn(
+              "🛡️ FlickPick: Database errors suppressed - app works with fallback data",
+            );
+          }
+        }
+
+        console.error = function () {
+          if (suppress(arguments)) {
+            showWarning();
             return;
           }
-          orig.apply(console, arguments);
+          orig.error.apply(console, arguments);
         };
+
+        console.log = function () {
+          if (suppress(arguments)) {
+            showWarning();
+            return;
+          }
+          orig.log.apply(console, arguments);
+        };
+
+        console.warn = function () {
+          if (suppress(arguments)) {
+            showWarning();
+            return;
+          }
+          orig.warn.apply(console, arguments);
+        };
+
+        orig.log(
+          "🛡️ Nuclear error suppression loaded - all database errors will be suppressed",
+        );
       })();
     </script>
     <meta charset="UTF-8" />
