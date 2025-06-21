@@ -123,10 +123,7 @@ export const FullFunctionalCommunityFeed: React.FC<
 
   // Create post
   const handleCreatePost = async () => {
-    if (
-      !user ||
-      (!newPost.trim() && mediaUrls.length === 0 && !selectedMovieId)
-    ) {
+    if (!user || (!newPost.trim() && mediaUrls.length === 0)) {
       toast.error("Please add some content to your post");
       return;
     }
