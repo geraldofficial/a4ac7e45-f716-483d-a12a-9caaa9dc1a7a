@@ -582,7 +582,6 @@ export const FullFunctionalCommunityFeed: React.FC<
                           src={url}
                           className="w-full h-64 object-cover"
                           controls
-                          poster={post.movie_poster}
                         />
                       ) : (
                         <img
