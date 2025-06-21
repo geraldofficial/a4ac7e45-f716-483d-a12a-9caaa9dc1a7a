@@ -12,11 +12,6 @@ export const useDetailPageState = (id: string | undefined) => {
   const [showShareModal, setShowShareModal] = useState(false);
   const [showWatchParty, setShowWatchParty] = useState(false);
 
-  console.log("🔍 useDetailPageState called:", {
-    id,
-    pathname: location.pathname,
-  });
-
   // Determine type from the current route with proper typing and memoization
   const type: "movie" | "tv" = useMemo(
     () => (location.pathname.startsWith("/movie/") ? "movie" : "tv"),
