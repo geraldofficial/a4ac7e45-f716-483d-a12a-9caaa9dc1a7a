@@ -238,7 +238,7 @@ export const togglePostLike = async (
 
     // Get updated count
     const { count } = await supabase
-      .from("post_likes")
+      .from("community_post_likes")
       .select("*", { count: "exact" })
       .eq("post_id", postId);
 
