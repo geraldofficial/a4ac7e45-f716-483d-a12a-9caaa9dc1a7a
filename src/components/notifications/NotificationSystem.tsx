@@ -1,44 +1,5 @@
-import React, { useState, useEffect } from "react";
-import {
-  Bell,
-  X,
-  Info,
-  AlertTriangle,
-  CheckCircle,
-  XCircle,
-  Star,
-  Gift,
-  Megaphone,
-  Calendar,
-  Users,
-  Settings,
-  Trash2,
-  Eye,
-  EyeOff,
-} from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from "@/components/ui/sheet";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { useAuth } from "@/contexts/AuthContext";
-import { supabase } from "@/integrations/supabase/client";
-import { safeLogError } from "@/utils/safeErrorFormat";
-import { toast } from "sonner";
+import React from "react";
+import { SimpleNotificationBell } from "./SimpleNotificationBell";
 
 interface Notification {
   id: string;
