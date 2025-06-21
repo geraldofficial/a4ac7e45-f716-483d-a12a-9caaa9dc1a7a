@@ -436,6 +436,24 @@ export const FullFunctionalCommunityFeed: React.FC<
                   }
                   className="hidden"
                 />
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => fileInputRef.current?.click()}
+                  className="border-gray-700 text-gray-400"
+                >
+                  <ImageIcon className="h-4 w-4 mr-2" />
+                  Media
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => window.open("/browse", "_blank")}
+                  className="border-gray-700 text-gray-400"
+                >
+                  <Video className="h-4 w-4 mr-2" />
+                  Watch Party
+                </Button>
               </div>
 
               <Button
