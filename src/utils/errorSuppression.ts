@@ -41,10 +41,15 @@ class ErrorSuppression {
       .map((arg) => {
         if (typeof arg === "string") return arg;
         if (typeof arg === "object" && arg !== null) {
-          if (arg.code || arg.message) {
-            return JSON.stringify(arg);
+          try {
+            // Handle error objects specially
+            if (arg.code || arg.message || arg.details !== undefined) {
+              return JSON.stringify(arg);
+            }
+            return String(arg);
+          } catch {
+            return String(arg);
           }
-          return String(arg);
         }
         return String(arg);
       })
@@ -53,13 +58,20 @@ class ErrorSuppression {
 
   private shouldSuppressError(message: string): boolean {
     const suppressPatterns = [
+      // Database table missing errors
       'relation "public.user_notifications" does not exist',
       'relation "public.notification_preferences" does not exist',
       'relation "public.push_subscriptions" does not exist',
       'relation "public.user_settings" does not exist',
-      "Failed to execute 'text' on 'Response': body stream already read",
       '"code":"42P01"',
       "Error code: 42P01",
+
+      // Body stream errors
+      "Failed to execute 'text' on 'Response': body stream already read",
+      "TypeError: Failed to execute 'text' on 'Response': body stream already read",
+      "body stream already read",
+
+      // Common error messages
       "HTTP error: 404",
       "Error fetching notifications",
       "Error fetching notification stats",
@@ -67,8 +79,13 @@ class ErrorSuppression {
       "Error loading settings",
       "Error loading user settings",
       "Error saving settings",
-      "TypeError: Failed to execute 'text' on 'Response': body stream already read",
-      "body stream already read",
+
+      // JSON stringified error objects
+      '{"code":"42P01"',
+      '{"details":null,"hint":null,"message":"relation',
+
+      // Complete error patterns
+      'relation "public.', // Catches any public table missing error
     ];
 
     return suppressPatterns.some((pattern) => message.includes(pattern));
