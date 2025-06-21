@@ -410,38 +410,6 @@ export const FullFunctionalCommunityFeed: React.FC<
               </div>
             )}
 
-            {/* Movie attachment */}
-            {selectedMovieId && (
-              <div className="flex items-center space-x-3 p-3 bg-gray-800 rounded-lg">
-                <img
-                  src={selectedMoviePoster}
-                  alt={selectedMovieTitle}
-                  className="w-12 h-16 object-cover rounded"
-                />
-                <div className="flex-1">
-                  <h5 className="font-medium text-white">
-                    {selectedMovieTitle}
-                  </h5>
-                  <div className="mt-1">
-                    {renderStars(rating, true, setRating)}
-                  </div>
-                </div>
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  onClick={() => {
-                    setSelectedMovieId("");
-                    setSelectedMovieTitle("");
-                    setSelectedMoviePoster("");
-                    setRating(0);
-                  }}
-                  className="text-gray-400 hover:text-white"
-                >
-                  <X className="h-4 w-4" />
-                </Button>
-              </div>
-            )}
-
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-2">
                 <input
