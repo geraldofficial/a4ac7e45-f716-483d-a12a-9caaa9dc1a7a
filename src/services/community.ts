@@ -230,7 +230,7 @@ export const togglePostLike = async (
         .eq("user_id", user.id);
     } else {
       // Like
-      await supabase.from("post_likes").insert({
+      await supabase.from("community_post_likes").insert({
         post_id: postId,
         user_id: user.id,
       });
