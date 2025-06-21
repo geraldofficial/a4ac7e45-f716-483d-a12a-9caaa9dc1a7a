@@ -563,7 +563,6 @@ class EnhancedNotificationsService {
       }
 
       this.preferences = data;
-      return data;
     } catch (error) {
       // Use safe error logging to avoid body stream issues
       safeLogError("Error fetching notification preferences", error);
