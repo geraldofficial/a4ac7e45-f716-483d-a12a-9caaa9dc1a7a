@@ -155,12 +155,26 @@ const Settings = () => {
         updated_at: new Date().toISOString(),
       });
 
-      if (error) throw error;
+      if (error) {
+        if (error.code === "42P01") {
+          setSaveMessage(
+            "Settings table not yet created. Settings will be stored locally only.",
+          );
+          // Store settings locally as fallback
+          localStorage.setItem(
+            `user_settings_${user.id}`,
+            JSON.stringify(settings),
+          );
+          setTimeout(() => setSaveMessage(""), 5000);
+          return;
+        }
+        throw error;
+      }
 
       setSaveMessage("Settings saved successfully!");
       setTimeout(() => setSaveMessage(""), 3000);
     } catch (error) {
-      console.error("Error saving settings:", error);
+      safeLogError("Error saving settings", error);
       setSaveMessage("Failed to save settings. Please try again.");
     } finally {
       setLoading(false);
