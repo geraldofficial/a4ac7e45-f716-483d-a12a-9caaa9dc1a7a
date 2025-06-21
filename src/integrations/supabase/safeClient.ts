@@ -37,9 +37,17 @@ export class SafeSupabaseClient {
         if (
           error.message?.includes("invalid claim") ||
           error.message?.includes("JWT") ||
+          error.message?.includes("No API key found") || // API key errors
           error.code === "42P01" || // Table doesn't exist
           error.code === "42703" // Column doesn't exist
         ) {
+          // For API key errors, log and throw immediately
+          if (error.message?.includes("No API key found")) {
+            console.error("🔑 CRITICAL: API key missing from Supabase request");
+            console.error(
+              "This indicates a configuration issue with the Supabase client",
+            );
+          }
           throw error;
         }
 
