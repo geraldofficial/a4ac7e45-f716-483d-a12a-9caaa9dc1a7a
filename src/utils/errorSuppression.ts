@@ -11,7 +11,9 @@ class ErrorSuppression {
   private setupConsoleInterception() {
     const originalError = console.error;
     const originalWarn = console.warn;
+    const originalLog = console.log;
 
+    // Intercept console.error
     console.error = (...args: any[]) => {
       const message = this.argsToString(args);
 
@@ -33,6 +35,30 @@ class ErrorSuppression {
 
       // Allow all other errors
       originalError(...args);
+    };
+
+    // Intercept console.log for JSON error objects
+    console.log = (...args: any[]) => {
+      const message = this.argsToString(args);
+
+      // Suppress JSON error objects being logged
+      if (this.shouldSuppressError(message)) {
+        return; // Suppress the log
+      }
+
+      originalLog(...args);
+    };
+
+    // Intercept console.warn
+    console.warn = (...args: any[]) => {
+      const message = this.argsToString(args);
+
+      // Suppress warnings about missing tables
+      if (this.shouldSuppressError(message)) {
+        return; // Suppress the warning
+      }
+
+      originalWarn(...args);
     };
   }
 
