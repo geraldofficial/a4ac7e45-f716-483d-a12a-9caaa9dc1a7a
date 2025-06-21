@@ -88,8 +88,9 @@ function App() {
         <QueryClientProvider client={queryClient}>
           <TooltipProvider>
             <TVGuestProvider>
-              <AuthProvider>
-                <div className="min-h-screen bg-gray-950 text-white">
+              <NetworkErrorHandler>
+                <AuthProvider>
+                  <div className="min-h-screen bg-gray-950 text-white">
                   <Toaster />
                   <Sonner />
                   <BrowserRouter>
