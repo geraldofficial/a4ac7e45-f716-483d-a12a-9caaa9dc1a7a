@@ -23,10 +23,6 @@ interface Post {
   id: string;
   user_id: string;
   content: string;
-  movie_id?: string;
-  movie_title?: string;
-  movie_poster?: string;
-  rating?: number;
   created_at: string;
   likes_count: number;
   comments_count: number;
