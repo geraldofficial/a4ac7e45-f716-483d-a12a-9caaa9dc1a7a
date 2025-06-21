@@ -148,7 +148,7 @@ export const ModernNavbar = () => {
               {user ? (
                 <>
                   {/* Notifications */}
-                  <EnhancedNotificationBell />
+                  <SimpleNotificationBell />
 
                   {/* User Menu */}
                   <DropdownMenu>
