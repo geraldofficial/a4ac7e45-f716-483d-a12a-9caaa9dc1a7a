@@ -58,19 +58,28 @@ export const useDetailPageState = (id: string | undefined) => {
 
     setLoading(true);
     try {
-      console.log(`Fetching ${type} with id: ${id}`);
+      console.log(`🎬 Fetching ${type} with id: ${id}`);
       const data =
         type === "movie"
           ? await tmdbApi.getMovieDetails(parseInt(id))
           : await tmdbApi.getTVDetails(parseInt(id));
 
-      console.log("Fetched content:", data);
+      console.log(
+        "✅ Fetched content:",
+        data?.title || data?.name || "Unknown",
+      );
+
+      if (!data || (!data.title && !data.name)) {
+        throw new Error("Content not found or invalid response");
+      }
+
       setContent(data);
     } catch (error) {
-      console.error("Error fetching content:", error);
+      console.error("❌ Error fetching content:", error);
+      setContent(null);
       toast({
-        title: "Error",
-        description: "Failed to load content details.",
+        title: "Content Not Found",
+        description: `Could not load ${type} with ID ${id}. It might not exist or be unavailable.`,
         variant: "destructive",
       });
     } finally {
