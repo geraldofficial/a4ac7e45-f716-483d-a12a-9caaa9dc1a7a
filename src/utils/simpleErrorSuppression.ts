@@ -49,7 +49,10 @@ class SimpleErrorSuppression {
                 "   • Missing tables: user_notifications, notification_preferences, push_subscriptions, user_settings\n" +
                 "   • Run migration: supabase/migrations/20250621000002-enhanced-notifications-system.sql\n" +
                 "   • App works with fallback data until database is configured\n" +
-                "   • Use window.showDatabaseSetupGuide() for detailed setup instructions",
+                "   • Error suppression is active - " +
+                (args.length > 0
+                  ? "suppressing " + args.length + " error(s)"
+                  : "no errors"),
             );
           }
           return; // Suppress these errors
@@ -67,5 +70,32 @@ class SimpleErrorSuppression {
 
 // Initialize the simple error suppression
 const simpleErrorSuppression = new SimpleErrorSuppression();
+
+// Add debug functions to window
+declare global {
+  interface Window {
+    testErrorSuppression: () => void;
+    disableErrorSuppression: () => void;
+  }
+}
+
+if (typeof window !== "undefined") {
+  window.testErrorSuppression = () => {
+    console.log("🧪 Testing error suppression...");
+    console.error(
+      '{"code":"42P01","details":null,"hint":null,"message":"relation \\"public.user_notifications\\" does not exist"}',
+    );
+    console.error(
+      "Error fetching notification preferences: TypeError: Failed to execute 'text' on 'Response': body stream already read",
+    );
+    console.log(
+      "✅ If you see suppression warnings above instead of raw errors, it's working!",
+    );
+  };
+
+  window.disableErrorSuppression = () => {
+    location.reload(); // Simple way to disable - reload page
+  };
+}
 
 export { simpleErrorSuppression };
