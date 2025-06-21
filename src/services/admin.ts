@@ -114,8 +114,9 @@ export const getAdminStats = async (): Promise<AdminStats> => {
         .select("*", { count: "exact", head: true }),
 
       // Total likes
-      supabase.from("post_likes").select("*", { count: "exact", head: true }),
-
+      supabase
+        .from("community_post_likes")
+        .select("*", { count: "exact", head: true }),
       // New users today
       supabase
         .from("profiles")
