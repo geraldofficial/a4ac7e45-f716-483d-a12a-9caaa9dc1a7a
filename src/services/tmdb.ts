@@ -5,7 +5,7 @@ const BASE_URL = "https://api.themoviedb.org/3";
 // Function to get current API key (from admin settings or default)
 const getApiKey = () => {
   try {
-    return localStorage.getItem("tmdb_api_key") || DEFAULT_READ_ACCESS_TOKEN;
+    return localStorage.getItem('tmdb_api_key') || DEFAULT_READ_ACCESS_TOKEN;
   } catch {
     return DEFAULT_READ_ACCESS_TOKEN;
   }
@@ -79,9 +79,7 @@ export const tmdbApi = {
       { headers: getHeaders() },
     );
     if (!response.ok) {
-      throw new Error(
-        `TMDB API Error: ${response.status} ${response.statusText}`,
-      );
+      throw new Error(`TMDB API Error: ${response.status} ${response.statusText}`);
     }
     return await response.json();
   },
@@ -91,9 +89,7 @@ export const tmdbApi = {
       headers: getHeaders(),
     });
     if (!response.ok) {
-      throw new Error(
-        `TMDB API Error: ${response.status} ${response.statusText}`,
-      );
+      throw new Error(`TMDB API Error: ${response.status} ${response.statusText}`);
     }
     return await response.json();
   },
@@ -105,37 +101,25 @@ export const tmdbApi = {
   },
 
   getTopRatedMovies: async () => {
-    const response = await fetch(`${BASE_URL}/movie/top_rated`, {
-      headers: getHeaders(),
-    });
+    const response = await fetch(`${BASE_URL}/movie/top_rated`, { headers: getHeaders() });
     if (!response.ok) {
-      throw new Error(
-        `TMDB API Error: ${response.status} ${response.statusText}`,
-      );
+      throw new Error(`TMDB API Error: ${response.status} ${response.statusText}`);
     }
     return await response.json();
   },
 
   getNowPlayingMovies: async () => {
-    const response = await fetch(`${BASE_URL}/movie/now_playing`, {
-      headers: getHeaders(),
-    });
+    const response = await fetch(`${BASE_URL}/movie/now_playing`, { headers: getHeaders() });
     if (!response.ok) {
-      throw new Error(
-        `TMDB API Error: ${response.status} ${response.statusText}`,
-      );
+      throw new Error(`TMDB API Error: ${response.status} ${response.statusText}`);
     }
     return await response.json();
   },
 
   getUpcomingMovies: async () => {
-    const response = await fetch(`${BASE_URL}/movie/upcoming`, {
-      headers: getHeaders(),
-    });
+    const response = await fetch(`${BASE_URL}/movie/upcoming`, { headers: getHeaders() });
     if (!response.ok) {
-      throw new Error(
-        `TMDB API Error: ${response.status} ${response.statusText}`,
-      );
+      throw new Error(`TMDB API Error: ${response.status} ${response.statusText}`);
     }
     return await response.json();
   },
@@ -158,71 +142,98 @@ export const tmdbApi = {
   getMoviesByGenre: async (genreId: number, page: number = 1) => {
     const response = await fetch(
       `${BASE_URL}/discover/movie?with_genres=${genreId}&sort_by=popularity.desc&page=${page}&certification_country=US&certification.lte=PG-13`,
-      { headers },
+      { headers: getHeaders() },
     );
+    if (!response.ok) {
+      throw new Error(`TMDB API Error: ${response.status} ${response.statusText}`);
+    }
     return await response.json();
   },
 
-  getTVShowsByGenre: async (genreId: number) => {
-    const response = await fetch(
-      `${BASE_URL}/discover/tv?with_genres=${genreId}&sort_by=popularity.desc`,
-      { headers },
-    );
+  getTVShows: async () => {
+    const response = await fetch(`${BASE_URL}/tv/popular`, { headers: getHeaders() });
+    if (!response.ok) {
+      throw new Error(`TMDB API Error: ${response.status} ${response.statusText}`);
+    }
     return await response.json();
   },
 
   searchMovies: async (query: string) => {
     const response = await fetch(
       `${BASE_URL}/search/movie?query=${encodeURIComponent(query)}`,
-      { headers },
+      { headers: getHeaders() },
     );
+    if (!response.ok) {
+      throw new Error(`TMDB API Error: ${response.status} ${response.statusText}`);
+    }
     return await response.json();
   },
 
   searchTVShows: async (query: string) => {
     const response = await fetch(
       `${BASE_URL}/search/tv?query=${encodeURIComponent(query)}`,
-      { headers },
+      { headers: getHeaders() },
     );
+    if (!response.ok) {
+      throw new Error(`TMDB API Error: ${response.status} ${response.statusText}`);
+    }
     return await response.json();
   },
 
-  searchMulti: async (query: string, page: number = 1) => {
-    const response = await fetch(
-      `${BASE_URL}/search/multi?query=${encodeURIComponent(query)}&page=${page}`,
-      { headers },
-    );
-    return await response.json();
-  },
-
-  searchSuggestions: async (query: string) => {
+  searchMulti: async (query: string) => {
     const response = await fetch(
       `${BASE_URL}/search/multi?query=${encodeURIComponent(query)}`,
-      { headers },
+      { headers: getHeaders() },
     );
-    const data = await response.json();
-    return data.results.slice(0, 8);
+    if (!response.ok) {
+      throw new Error(`TMDB API Error: ${response.status} ${response.statusText}`);
+    }
+    return await response.json();
   },
 
-  discover: async (params: any) => {
+  discoverMovies: async (params: Record<string, string | number>) => {
     const queryParams = new URLSearchParams(params);
     const response = await fetch(`${BASE_URL}/discover/movie?${queryParams}`, {
-      headers,
+      headers: getHeaders(),
     });
+    if (!response.ok) {
+      throw new Error(`TMDB API Error: ${response.status} ${response.statusText}`);
+    }
     return await response.json();
   },
 
   getMovieDetails: async (id: number | string) => {
     const response = await fetch(
       `${BASE_URL}/movie/${id}?append_to_response=credits,videos,similar`,
-      { headers },
+      { headers: getHeaders() },
     );
+    if (!response.ok) {
+      throw new Error(`TMDB API Error: ${response.status} ${response.statusText}`);
+    }
     return await response.json();
   },
 
   getTVShowDetails: async (id: number | string) => {
     const response = await fetch(
       `${BASE_URL}/tv/${id}?append_to_response=credits,videos,similar`,
+      { headers: getHeaders() },
+    );
+    if (!response.ok) {
+      throw new Error(`TMDB API Error: ${response.status} ${response.statusText}`);
+    }
+    return await response.json();
+  },
+
+  getTVDetails: async (id: number | string) => {
+    const response = await fetch(
+      `${BASE_URL}/tv/${id}?append_to_response=credits,videos,similar`,
+      { headers: getHeaders() },
+    );
+    if (!response.ok) {
+      throw new Error(`TMDB API Error: ${response.status} ${response.statusText}`);
+    }
+    return await response.json();
+  },
       { headers },
     );
     return await response.json();
