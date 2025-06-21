@@ -215,7 +215,7 @@ export const togglePostLike = async (
 
     // Check if already liked
     const { data: existingLike } = await supabase
-      .from("post_likes")
+      .from("community_post_likes")
       .select("id")
       .eq("post_id", postId)
       .eq("user_id", user.id)
