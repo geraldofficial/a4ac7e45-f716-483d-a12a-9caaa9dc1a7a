@@ -581,3 +581,64 @@ export const getSystemHealth = async () => {
     };
   }
 };
+
+// Admin Service object for backward compatibility
+export const adminService = {
+  // Get stats (alias for getAdminStats)
+  getStats: async () => {
+    return await getAdminStats();
+  },
+
+  // Get users (alias for getAdminUsers)
+  getUsers: async (limit: number = 50, offset: number = 0) => {
+    return await getAdminUsers(limit, offset);
+  },
+
+  // Get posts (alias for getAdminPosts)
+  getPosts: async (limit: number = 50, offset: number = 0) => {
+    return await getAdminPosts(limit, offset);
+  },
+
+  // Get comments (alias for getAdminComments)
+  getComments: async (limit: number = 50, offset: number = 0) => {
+    return await getAdminComments(limit, offset);
+  },
+
+  // Delete user (alias for deleteUser)
+  deleteUser: async (userId: string) => {
+    return await deleteUser(userId);
+  },
+
+  // Delete post (alias for deletePost)
+  deletePost: async (postId: string) => {
+    return await deletePost(postId);
+  },
+
+  // Delete comment (alias for deleteComment)
+  deleteComment: async (commentId: string) => {
+    return await deleteComment(commentId);
+  },
+
+  // Search users (alias for searchUsers)
+  searchUsers: async (
+    query: string,
+    limit: number = 20,
+    offset: number = 0,
+  ) => {
+    return await searchUsers(query, limit, offset);
+  },
+
+  // Search posts (alias for searchPosts)
+  searchPosts: async (
+    query: string,
+    limit: number = 20,
+    offset: number = 0,
+  ) => {
+    return await searchPosts(query, limit, offset);
+  },
+
+  // Get system health (alias for getSystemHealth)
+  getSystemHealth: async () => {
+    return await getSystemHealth();
+  },
+};
