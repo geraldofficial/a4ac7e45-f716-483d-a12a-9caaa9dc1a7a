@@ -125,12 +125,8 @@ const Settings = () => {
 
         if (error.code === "42P01") {
           // Table doesn't exist - try to load from localStorage
-          console.info(
-            "User settings table not yet created, checking localStorage",
-          );
-          const localSettings = localStorage.getItem(
-            `user_settings_${user.id}`,
-          );
+          console.info("User settings table not yet created, checking localStorage");
+          const localSettings = localStorage.getItem(`user_settings_${user.id}`);
           if (localSettings) {
             try {
               const parsedSettings = JSON.parse(localSettings);
@@ -171,14 +167,9 @@ const Settings = () => {
 
       if (error) {
         if (error.code === "42P01") {
-          setSaveMessage(
-            "Settings table not yet created. Settings will be stored locally only.",
-          );
+          setSaveMessage("Settings table not yet created. Settings will be stored locally only.");
           // Store settings locally as fallback
-          localStorage.setItem(
-            `user_settings_${user.id}`,
-            JSON.stringify(settings),
-          );
+          localStorage.setItem(`user_settings_${user.id}`, JSON.stringify(settings));
           setTimeout(() => setSaveMessage(""), 5000);
           return;
         }
@@ -206,20 +197,28 @@ const Settings = () => {
       <div className="pt-20 pb-8 px-4">
         <div className="container mx-auto max-w-4xl">
           {/* Header */}
-          <div className="mb-8">
-            <Button
-              variant="ghost"
-              onClick={() => navigate(-1)}
-              className="mb-4 text-gray-300 hover:text-white"
-            >
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Back
-            </Button>
-
-            <div className="flex items-center gap-3 mb-2">
-              <SettingsIcon className="h-6 w-6 text-blue-400" />
-              <h1 className="text-3xl font-bold text-white">Settings</h1>
+          <div className="flex items-center justify-between mb-8">
+            <div>
+              <div className="flex items-center gap-3 mb-2">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => navigate(-1)}
+                  className="mr-2 text-gray-400 hover:text-white"
+                >
+                  <ArrowLeft className="h-4 w-4" />
+                </Button>
+                <SettingsIcon className="h-6 w-6 text-blue-400" />
+                <h1 className="text-3xl font-bold text-white">Settings</h1>
+              </div>
+              <p className="text-gray-400">
+                Customize your FlickPick experience
+              </p>
             </div>
+            <Badge variant="secondary" className="bg-gray-800 text-gray-300">
+              {user.email}
+            </Badge>
+          </div>
 
             {currentProfile && (
               <div className="flex items-center gap-2 text-gray-400">
