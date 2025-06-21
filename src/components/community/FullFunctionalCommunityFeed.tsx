@@ -595,7 +595,12 @@ export const FullFunctionalCommunityFeed: React.FC<
                 </div>
               )}
 
-
+              {/* Rating */}
+              {post.rating && (
+                <div className="flex items-center justify-between p-3 bg-gray-800 rounded-lg">
+                  <div className="flex items-center space-x-2">
+                    <span className="text-yellow-400">⭐</span>
+                    <span className="text-white">{post.rating}/10</span>
                   </div>
                   <Badge
                     variant="secondary"
