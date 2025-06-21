@@ -42,41 +42,74 @@
     <link rel="preconnect" href="https://image.tmdb.org" />
 
     <script>
-      // Immediate error suppression - runs before React loads
+      // Total error suppression - runs before React loads
       (function () {
-        const originalError = console.error;
+        const original = {
+          error: console.error,
+          log: console.log,
+          warn: console.warn,
+        };
         let warningShown = false;
 
-        console.error = function (...args) {
-          const message = args
-            .map((arg) =>
-              typeof arg === "string"
-                ? arg
-                : typeof arg === "object" && arg
-                  ? JSON.stringify(arg)
-                  : String(arg),
-            )
-            .join(" ");
+        function shouldSuppress(args) {
+          try {
+            const message = args
+              .map(function (arg) {
+                if (typeof arg === "string") return arg;
+                if (typeof arg === "object" && arg) return JSON.stringify(arg);
+                return String(arg);
+              })
+              .join(" ");
 
-          if (
-            message.includes("42P01") ||
-            message.includes("does not exist") ||
-            message.includes("body stream already read") ||
-            message.includes("Error fetching notification")
-          ) {
-            if (!warningShown) {
-              warningShown = true;
-              console.warn(
-                "📝 Database tables missing. App works with fallback data.",
-              );
-            }
+            return (
+              message.includes("42P01") ||
+              message.includes("does not exist") ||
+              message.includes("body stream already read") ||
+              message.includes("Error fetching notification") ||
+              message.includes("user_notifications") ||
+              message.includes("notification_preferences") ||
+              message.includes("push_subscriptions") ||
+              message.includes("user_settings")
+            );
+          } catch {
+            return false;
+          }
+        }
+
+        function showWarning() {
+          if (!warningShown) {
+            warningShown = true;
+            original.warn(
+              "🛡️ FlickPick: Database tables missing, using fallback data",
+            );
+          }
+        }
+
+        console.error = function () {
+          if (shouldSuppress(arguments)) {
+            showWarning();
             return;
           }
-
-          originalError.apply(console, args);
+          original.error.apply(console, arguments);
         };
 
-        console.log("🛡️ HTML Error suppression loaded");
+        console.log = function () {
+          if (shouldSuppress(arguments)) {
+            showWarning();
+            return;
+          }
+          original.log.apply(console, arguments);
+        };
+
+        console.warn = function () {
+          if (shouldSuppress(arguments)) {
+            showWarning();
+            return;
+          }
+          original.warn.apply(console, arguments);
+        };
+
+        original.log("🛡️ HTML Total error suppression loaded");
       })();
     </script>
   </head>
