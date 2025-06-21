@@ -2,7 +2,7 @@ import { useState, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
-import { formatError } from "@/lib/utils";
+import { safeLogError } from "@/utils/safeErrorFormat";
 
 export interface CommunityPost {
   id: string;
@@ -42,7 +42,7 @@ export const useCommunityPosts = () => {
         .order("created_at", { ascending: false });
 
       if (postsError) {
-        console.error("❌ Error fetching posts:", formatError(postsError));
+        safeLogError("❌ Error fetching posts", postsError);
         throw postsError;
       }
 
@@ -64,10 +64,7 @@ export const useCommunityPosts = () => {
         .in("id", userIds);
 
       if (profilesError) {
-        console.error(
-          "⚠️ Error fetching profiles:",
-          formatError(profilesError),
-        );
+        safeLogError("⚠️ Error fetching profiles", profilesError);
       }
 
       // Create a map of user profiles for easy lookup
@@ -136,8 +133,9 @@ export const useCommunityPosts = () => {
         setPosts(enrichedPosts);
       }
     } catch (error) {
-      console.error("💥 Critical error in fetchPosts:", formatError(error));
-      const errorMessage = formatError(error);
+      safeLogError("💥 Critical error in fetchPosts", error);
+      const errorMessage =
+        error instanceof Error ? error.message : "Failed to fetch posts";
       setError(errorMessage);
       toast({
         title: "Error",
@@ -204,7 +202,7 @@ export const useCommunityPosts = () => {
 
         fetchPosts(); // Refresh posts
       } catch (error) {
-        console.error("Error creating post:", formatError(error));
+        safeLogError("Error creating post", error);
         toast({
           title: "Error",
           description: "Failed to create post",

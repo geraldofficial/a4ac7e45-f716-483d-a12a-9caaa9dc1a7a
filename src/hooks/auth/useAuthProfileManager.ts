@@ -1,6 +1,6 @@
 import { userApi } from "@/services/user";
 import { UserProfile } from "@/types/auth";
-import { formatError } from "@/lib/utils";
+import { safeLogError } from "@/utils/safeErrorFormat";
 
 export const useAuthProfileManager = () => {
   const createBasicUserProfile = (authUser: any): UserProfile => {
@@ -36,10 +36,12 @@ export const useAuthProfileManager = () => {
             avatar: basicUser.avatar,
           });
         } catch (createError) {
-          const errorMessage = formatError(createError);
+          safeLogError(
+            "⚠️ Failed to create profile, using basic user data",
+            createError,
+          );
           console.warn(
             "⚠️ Failed to create profile, using basic user data:",
-            errorMessage,
             createError,
           );
           return basicUser;
@@ -60,10 +62,9 @@ export const useAuthProfileManager = () => {
       console.log("🎉 Full user profile merged:", fullUser.id);
       return fullUser;
     } catch (error) {
-      const errorMessage = formatError(error);
+      safeLogError("⚠️ Profile fetch/merge failed, using basic profile", error);
       console.warn(
         "⚠️ Profile fetch/merge failed, using basic profile:",
-        errorMessage,
         error,
       );
       return basicUser;

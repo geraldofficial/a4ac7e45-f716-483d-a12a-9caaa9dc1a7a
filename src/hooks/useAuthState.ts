@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { userApi } from "@/services/user";
 import { UserProfile } from "@/types/auth";
-import { formatError } from "@/lib/utils";
+import { safeLogError } from "@/utils/safeErrorFormat";
 
 // Global state to prevent multiple simultaneous profile fetches
 let globalProfileFetchState = {
@@ -78,8 +78,7 @@ export const useAuthState = () => {
             console.log("✅ Profile fetch successful");
             return profile;
           } catch (error) {
-            const errorMessage = formatError(error);
-            console.error("❌ Error fetching user profile:", errorMessage);
+            safeLogError("❌ Error fetching user profile", error);
             return null;
           }
         };
