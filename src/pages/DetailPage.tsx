@@ -22,6 +22,21 @@ const DetailPage = () => {
     useAuth();
   const { toast } = useToast();
 
+  const {
+    content,
+    loading,
+    isPlaying,
+    showShareModal,
+    showWatchParty,
+    type,
+    season,
+    episode,
+    shouldResume,
+    setIsPlaying,
+    setShowShareModal,
+    setShowWatchParty,
+  } = useDetailPageState(id);
+
   // Check URL parameters for watch party actions
   useEffect(() => {
     if (!content) return;
@@ -55,21 +70,6 @@ const DetailPage = () => {
       navigate(location.pathname, { replace: true });
     }
   }, [content, user, location.search, navigate]);
-
-  const {
-    content,
-    loading,
-    isPlaying,
-    showShareModal,
-    showWatchParty,
-    type,
-    season,
-    episode,
-    shouldResume,
-    setIsPlaying,
-    setShowShareModal,
-    setShowWatchParty,
-  } = useDetailPageState(id);
 
   // Get the best trailer from videos
   const getTrailer = () => {
