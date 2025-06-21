@@ -1,10 +1,14 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Users, Play, Copy, Share2 } from "lucide-react";
+import { Users, Play, Copy, Share2, X } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
+import {
+  simpleWatchPartyService,
+  SimpleWatchPartySession,
+} from "@/services/simpleWatchParty";
 import { toast } from "sonner";
 
 interface SimpleWatchPartyProps {
@@ -21,26 +25,51 @@ export const SimpleWatchParty: React.FC<SimpleWatchPartyProps> = ({
   const { user } = useAuth();
   const navigate = useNavigate();
   const [mode, setMode] = useState<"create" | "join" | "party">("create");
-  const [partyCode, setPartyCode] = useState("");
+  const [session, setSession] = useState<SimpleWatchPartySession | null>(null);
   const [joinCode, setJoinCode] = useState("");
-  const [participants] = useState([
-    { id: "1", name: user?.username || "You", isHost: true },
-  ]);
+  const [participants, setParticipants] = useState<
+    Array<{ id: string; name: string; isHost: boolean }>
+  >([]);
 
-  const generatePartyCode = () => {
-    const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-    let result = "";
-    for (let i = 0; i < 6; i++) {
-      result += chars.charAt(Math.floor(Math.random() * chars.length));
+  useEffect(() => {
+    if (session) {
+      // Update participants list
+      setParticipants([
+        { id: session.hostId, name: "Host", isHost: true },
+        ...session.participants
+          .filter((p) => p !== session.hostId)
+          .map((p, i) => ({
+            id: p,
+            name: `User ${i + 1}`,
+            isHost: false,
+          })),
+      ]);
     }
-    return result;
-  };
+  }, [session]);
 
   const handleCreateParty = () => {
-    const code = generatePartyCode();
-    setPartyCode(code);
-    setMode("party");
-    toast.success(`Watch party created! Code: ${code}`);
+    if (!user?.id) {
+      toast.error("Please sign in to create a watch party");
+      return;
+    }
+
+    try {
+      const sessionId = simpleWatchPartyService.createSession(
+        movieId,
+        movieTitle,
+        movieType,
+        user.id,
+      );
+
+      const newSession = simpleWatchPartyService.getSession(sessionId);
+      if (newSession) {
+        setSession(newSession);
+        setMode("party");
+        toast.success(`Watch party created! Code: ${sessionId}`);
+      }
+    } catch (error) {
+      toast.error("Failed to create watch party");
+    }
   };
 
   const handleJoinParty = () => {
@@ -49,22 +78,42 @@ export const SimpleWatchParty: React.FC<SimpleWatchPartyProps> = ({
       return;
     }
 
-    setPartyCode(joinCode.toUpperCase());
-    setMode("party");
-    toast.success("Joined watch party!");
+    if (!user?.id) {
+      toast.error("Please sign in to join a watch party");
+      return;
+    }
+
+    try {
+      const joinedSession = simpleWatchPartyService.joinSession(
+        joinCode.toUpperCase(),
+        user.id,
+      );
+      if (joinedSession) {
+        setSession(joinedSession);
+        setMode("party");
+        toast.success("Joined watch party!");
+      } else {
+        toast.error("Watch party not found or expired");
+      }
+    } catch (error) {
+      toast.error("Failed to join watch party");
+    }
   };
 
   const copyInviteLink = () => {
-    const inviteText = `Join my watch party for "${movieTitle}"! Code: ${partyCode}\n\nWatch together at: ${window.location.origin}/watch-party/${partyCode}`;
+    if (!session) return;
+    const inviteText = `Join my watch party for "${movieTitle}"! Code: ${session.id}\n\nWatch together on FlickPick!`;
     navigator.clipboard.writeText(inviteText);
     toast.success("Invite copied to clipboard!");
   };
 
   const shareParty = async () => {
+    if (!session) return;
+
     const shareData = {
       title: `Join my watch party for ${movieTitle}`,
-      text: `Watch ${movieTitle} together! Party code: ${partyCode}`,
-      url: `${window.location.origin}/watch-party/${partyCode}`,
+      text: `Watch ${movieTitle} together! Party code: ${session.id}`,
+      url: `${window.location.origin}`,
     };
 
     try {
@@ -76,6 +125,13 @@ export const SimpleWatchParty: React.FC<SimpleWatchPartyProps> = ({
     } catch (error) {
       copyInviteLink();
     }
+  };
+
+  const handleClose = () => {
+    if (session && user?.id) {
+      simpleWatchPartyService.leaveSession(session.id, user.id);
+    }
+    navigate(-1);
   };
 
   const startWatching = () => {
@@ -91,15 +147,19 @@ export const SimpleWatchParty: React.FC<SimpleWatchPartyProps> = ({
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-xl font-bold">{movieTitle}</h1>
-              <p className="text-gray-400">Party Code: {partyCode}</p>
+              <p className="text-gray-400">Party Code: {session?.id}</p>
+              <p className="text-xs text-gray-500">
+                {session?.participants.length} participants
+              </p>
             </div>
             <div className="flex items-center gap-2">
               <Button onClick={shareParty} variant="outline" size="sm">
                 <Share2 className="h-4 w-4 mr-2" />
                 Share
               </Button>
-              <Button onClick={() => navigate("/")} variant="outline" size="sm">
-                Leave
+              <Button onClick={handleClose} variant="outline" size="sm">
+                <X className="h-4 w-4 mr-2" />
+                Close
               </Button>
             </div>
           </div>
@@ -156,7 +216,7 @@ export const SimpleWatchParty: React.FC<SimpleWatchPartyProps> = ({
               <div className="space-y-2">
                 <div className="bg-gray-800 p-3 rounded-lg">
                   <p className="text-sm text-gray-400">Party Code</p>
-                  <p className="font-mono text-lg">{partyCode}</p>
+                  <p className="font-mono text-lg">{session?.id}</p>
                 </div>
                 <Button
                   onClick={copyInviteLink}
@@ -167,6 +227,11 @@ export const SimpleWatchParty: React.FC<SimpleWatchPartyProps> = ({
                   <Copy className="h-4 w-4 mr-2" />
                   Copy Invite
                 </Button>
+                <div className="text-center pt-2">
+                  <p className="text-xs text-gray-500">
+                    Share this code for others to join
+                  </p>
+                </div>
               </div>
             </div>
           </div>
@@ -241,7 +306,7 @@ export const SimpleWatchParty: React.FC<SimpleWatchPartyProps> = ({
 
           <div className="text-center">
             <Button
-              onClick={() => navigate(-1)}
+              onClick={handleClose}
               variant="ghost"
               className="text-gray-400"
             >
