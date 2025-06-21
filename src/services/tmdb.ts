@@ -287,17 +287,31 @@ export const tmdbApi = {
   getTVSeasonDetails: async (id: number | string, seasonNumber: number) => {
     const response = await fetch(
       `${BASE_URL}/tv/${id}/season/${seasonNumber}`,
-      { headers },
+      { headers: getHeaders() },
     );
+    if (!response.ok) {
+      throw new Error(
+        `TMDB API Error: ${response.status} ${response.statusText}`,
+      );
+    }
     return await response.json();
   },
 
   getGenres: async () => {
+    const headers = getHeaders();
     const [movieGenres, tvGenres] = await Promise.all([
-      fetch(`${BASE_URL}/genre/movie/list`, { headers }).then((res) =>
-        res.json(),
-      ),
-      fetch(`${BASE_URL}/genre/tv/list`, { headers }).then((res) => res.json()),
+      fetch(`${BASE_URL}/genre/movie/list`, { headers }).then(async (res) => {
+        if (!res.ok) {
+          throw new Error(`TMDB API Error: ${res.status} ${res.statusText}`);
+        }
+        return res.json();
+      }),
+      fetch(`${BASE_URL}/genre/tv/list`, { headers }).then(async (res) => {
+        if (!res.ok) {
+          throw new Error(`TMDB API Error: ${res.status} ${res.statusText}`);
+        }
+        return res.json();
+      }),
     ]);
 
     return {
