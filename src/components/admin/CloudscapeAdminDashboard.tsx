@@ -90,6 +90,7 @@ import {
 import { formatError } from "@/lib/utils";
 import { toast } from "sonner";
 import { realNotificationsService } from "@/services/realNotifications";
+import SimpleNotificationManager from "./SimpleNotificationManager";
 
 interface Notification {
   id: string;
