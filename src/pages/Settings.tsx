@@ -115,12 +115,23 @@ const Settings = () => {
         .eq("user_id", user.id)
         .single();
 
-      if (error) {
-        if (error.code === "PGRST116") {
-          // No settings found - use defaults
-          console.info("No user settings found, using defaults");
-          return;
+      if (error && error.code === "42P01") {
+        console.info(
+          "User settings table not yet created. Using localStorage fallback.",
+        );
+        // Use localStorage fallback for missing table
+        const localSettings = localStorage.getItem(`user_settings_${user.id}`);
+        if (localSettings) {
+          const parsed = JSON.parse(localSettings);
+          setSettings(parsed);
         }
+        return;
+      }
+
+      if (error && error.code !== "PGRST116") {
+        console.error("Error loading user settings:", error);
+        // Use localStorage fallback
+        const localSettings = localStorage.getItem(`user_settings_${user.id}`);
 
         if (error.code === "42P01") {
           // Table doesn't exist - try to load from localStorage
