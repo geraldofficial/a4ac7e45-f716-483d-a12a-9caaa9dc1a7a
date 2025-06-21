@@ -1,5 +1,5 @@
-// MUST be first import - total error suppression (nuclear option)
-import "./totalErrorSuppression";
+// MUST be first import - ultimate error suppression (covers everything)
+import "./ultimateErrorSuppression";
 
 import React from "react";
 import ReactDOM from "react-dom/client";
