@@ -124,7 +124,7 @@ export const WorkingNotificationBell: React.FC = () => {
           if (Notification.permission === "granted") {
             new Notification(newNotification.title, {
               body: newNotification.message,
-              icon: "/logo.svg",
+              icon: "https://cdn.builder.io/api/v1/assets/3a5e046f24294e60a3c1afd0f4c614eb/chatgpt-image-jun-21-2025-03_27_04-pm-65410f?format=webp&width=800",
             });
           }
 
