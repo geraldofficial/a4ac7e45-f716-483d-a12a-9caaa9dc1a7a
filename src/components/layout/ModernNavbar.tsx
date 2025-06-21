@@ -45,7 +45,7 @@ import {
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { useAuth } from "@/contexts/AuthContext";
 import { Link, useNavigate, useLocation } from "react-router-dom";
-import EnhancedNotificationBell from "@/components/notifications/EnhancedNotificationBell";
+import SimpleNotificationBell from "@/components/notifications/SimpleNotificationBell";
 
 const navigation = [
   { name: "Home", href: "/", icon: Home },
