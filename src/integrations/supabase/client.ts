@@ -30,25 +30,6 @@ const originalClient = createClient<Database>(
       headers: {
         "x-application-name": "FlickPick",
       },
-      fetch: (input, init) => {
-        // Add timeout and better error handling
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 15000); // 15 second timeout
-
-        return fetch(input, {
-          ...init,
-          signal: controller.signal,
-        })
-          .finally(() => clearTimeout(timeoutId))
-          .catch((error) => {
-            if (error.name === "AbortError") {
-              throw new Error(
-                "Request timeout - check your internet connection",
-              );
-            }
-            throw error;
-          });
-      },
     },
     realtime: {
       params: {
@@ -108,12 +89,58 @@ export const supabase = new Proxy(originalClient, {
   },
 });
 
-// Test connection on initialization
-originalClient.auth.getSession().catch((error) => {
-  if (
-    !error.message?.includes("42P01") &&
-    !error.message?.includes("does not exist")
-  ) {
-    console.warn("⚠️ Initial Supabase connection test failed:", error.message);
+// Enhanced connection test and health check
+let connectionHealthy = false;
+let lastConnectionTest = 0;
+
+const testConnection = async () => {
+  const now = Date.now();
+  // Only test connection every 30 seconds to avoid spam
+  if (now - lastConnectionTest < 30000 && connectionHealthy) {
+    return connectionHealthy;
   }
-});
+
+  lastConnectionTest = now;
+
+  try {
+    // Simple health check
+    const { error } = await originalClient.auth.getSession();
+
+    if (!error) {
+      connectionHealthy = true;
+      console.log("✅ Supabase connection healthy");
+    } else if (error.message?.includes("No API key found")) {
+      // Critical API key error
+      connectionHealthy = false;
+      console.error("🔑 CRITICAL: API key not found in Supabase requests");
+      console.error("Check Supabase client configuration");
+    } else if (
+      error.message?.includes("42P01") ||
+      error.message?.includes("does not exist")
+    ) {
+      // These are expected schema errors, not connection issues
+      connectionHealthy = true;
+      console.log(
+        "✅ Supabase connection healthy (schema errors are expected)",
+      );
+    } else {
+      connectionHealthy = false;
+      console.warn("⚠️ Supabase connection issue:", error.message);
+    }
+  } catch (error: any) {
+    connectionHealthy = false;
+    if (error.message?.includes("No API key found")) {
+      console.error("🔑 CRITICAL: API key configuration error");
+    } else {
+      console.warn("⚠️ Supabase connection test failed:", error.message);
+    }
+  }
+
+  return connectionHealthy;
+};
+
+// Test connection on initialization
+testConnection();
+
+// Export connection health checker
+export { testConnection };

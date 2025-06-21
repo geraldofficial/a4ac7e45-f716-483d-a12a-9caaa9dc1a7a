@@ -60,7 +60,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useAuth } from "@/contexts/AuthContext";
 import { safeLogError } from "@/utils/safeErrorFormat";
-import { formatError } from "@/lib/safeUtils";
+import { formatError } from "@/lib/utils";
 import { toast } from "sonner";
 import {
   enhancedNotificationsService,

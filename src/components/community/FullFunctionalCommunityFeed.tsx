@@ -37,11 +37,12 @@ import { toast } from "sonner";
 interface FullFunctionalCommunityFeedProps {
   className?: string;
   searchQuery?: string;
+  filter?: string;
 }
 
 export const FullFunctionalCommunityFeed: React.FC<
   FullFunctionalCommunityFeedProps
-> = ({ className, searchQuery = "" }) => {
+> = ({ className, searchQuery = "", filter = "all" }) => {
   const { user } = useAuth();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -79,13 +80,32 @@ export const FullFunctionalCommunityFeed: React.FC<
         fetchedPosts = await communityService.fetchPosts(user?.id);
       }
 
+      // Apply client-side filtering for now
+      if (filter === "trending") {
+        fetchedPosts = fetchedPosts
+          .sort(
+            (a, b) =>
+              b.likes_count +
+              b.comments_count -
+              (a.likes_count + a.comments_count),
+          )
+          .slice(0, 20);
+      } else if (filter === "movies") {
+        fetchedPosts = fetchedPosts.filter(
+          (post) =>
+            post.content.toLowerCase().includes("movie") ||
+            post.content.toLowerCase().includes("film") ||
+            post.movie_title,
+        );
+      }
+
       setPosts(fetchedPosts);
     } catch (error) {
       toast.error(`Failed to load posts: ${formatError(error)}`);
     } finally {
       setLoading(false);
     }
-  }, [user?.id, searchQuery]);
+  }, [user?.id, searchQuery, filter]);
 
   // Fetch comments for a post
   const fetchComments = async (postId: string) => {
@@ -242,14 +262,38 @@ export const FullFunctionalCommunityFeed: React.FC<
 
   // Handle delete post
   const handleDeletePost = async (postId: string) => {
-    if (!user) return;
-
     try {
-      await communityService.deletePost(postId, user.id);
+      await communityService.deletePost(postId);
       setPosts((prev) => prev.filter((post) => post.id !== postId));
-      toast.success("Post deleted");
+      toast.success("Post deleted successfully");
     } catch (error) {
       toast.error(`Failed to delete post: ${formatError(error)}`);
+    }
+  };
+
+  // Handle share post
+  const handleShare = async (postId: string) => {
+    try {
+      const post = posts.find((p) => p.id === postId);
+      if (!post) return;
+
+      if (navigator.share) {
+        await navigator.share({
+          title: "FlickPick Community Post",
+          text: post.content,
+          url: `${window.location.origin}/community#post-${postId}`,
+        });
+        toast.success("Post shared successfully");
+      } else {
+        // Fallback to clipboard
+        await navigator.clipboard.writeText(
+          `Check out this post on FlickPick: ${post.content} - ${window.location.origin}/community#post-${postId}`,
+        );
+        toast.success("Post link copied to clipboard");
+      }
+    } catch (error) {
+      console.warn("Share failed:", error);
+      toast.error("Failed to share post");
     }
   };
 
@@ -392,6 +436,24 @@ export const FullFunctionalCommunityFeed: React.FC<
                   }
                   className="hidden"
                 />
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => fileInputRef.current?.click()}
+                  className="border-gray-700 text-gray-400"
+                >
+                  <ImageIcon className="h-4 w-4 mr-2" />
+                  Media
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => window.open("/browse", "_blank")}
+                  className="border-gray-700 text-gray-400"
+                >
+                  <Video className="h-4 w-4 mr-2" />
+                  Watch Party
+                </Button>
               </div>
 
               <Button
@@ -529,6 +591,7 @@ export const FullFunctionalCommunityFeed: React.FC<
                   <Button
                     size="sm"
                     variant="ghost"
+                    onClick={() => handleShare(post.id)}
                     className="text-gray-400 hover:text-green-400 transition-colors"
                   >
                     <Share2 className="h-4 w-4 mr-1" />

@@ -45,7 +45,8 @@ import {
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { useAuth } from "@/contexts/AuthContext";
 import { Link, useNavigate, useLocation } from "react-router-dom";
-import EnhancedNotificationBell from "@/components/notifications/EnhancedNotificationBell";
+import SimpleNotificationBell from "@/components/notifications/SimpleNotificationBell";
+import QuickWatchPartyDialog from "@/components/QuickWatchPartyDialog";
 
 const navigation = [
   { name: "Home", href: "/", icon: Home },
@@ -60,6 +61,7 @@ export const ModernNavbar = () => {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [showWatchPartyDialog, setShowWatchPartyDialog] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
   const { user, signOut } = useAuth();
@@ -148,7 +150,17 @@ export const ModernNavbar = () => {
               {user ? (
                 <>
                   {/* Notifications */}
-                  <EnhancedNotificationBell />
+                  <SimpleNotificationBell />
+
+                  {/* Watch Party */}
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setShowWatchPartyDialog(true)}
+                    className="text-gray-400 hover:text-white"
+                  >
+                    <Users className="h-5 w-5" />
+                  </Button>
 
                   {/* User Menu */}
                   <DropdownMenu>
@@ -447,6 +459,12 @@ export const ModernNavbar = () => {
 
       {/* Spacer for fixed navbar */}
       <div className="h-16" />
+
+      {/* Watch Party Dialog */}
+      <QuickWatchPartyDialog
+        open={showWatchPartyDialog}
+        onOpenChange={setShowWatchPartyDialog}
+      />
     </>
   );
 };
