@@ -21,7 +21,6 @@ import "./utils/migrationRunner";
 // import "./utils/errorSuppression"; // Disabled - using external script instead
 import "./utils/linkValidator";
 import "./utils/settingsValidator";
-import "./utils/supabaseTest";
 
 // Lazy load pages for better performance
 const Index = React.lazy(() => import("./pages/Index"));
