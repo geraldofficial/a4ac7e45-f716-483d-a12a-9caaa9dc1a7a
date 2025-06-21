@@ -491,7 +491,7 @@ class EnhancedNotificationsService {
       }
 
       if (error) {
-        console.error("Error fetching notification preferences:", error.message || error);
+        // Error handled by safeLogError in catch block
         return this.getDefaultPreferences();
       }
 
