@@ -535,8 +535,8 @@ class EnhancedNotificationsService {
 
   // === PREFERENCES MANAGEMENT ===
 
-  async getPreferences(): Promise<NotificationPreferences | null> {
-    if (!this.userId) return null;
+  async getNotificationPreferences(): Promise<NotificationPreferences> {
+    if (!this.userId) return this.getDefaultPreferences();
 
     try {
       const { data, error } = await supabase
