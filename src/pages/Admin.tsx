@@ -1,31 +1,69 @@
-import React from "react";
-import { CloudscapeAdminDashboard } from "@/components/admin/CloudscapeAdminDashboard";
-import { useAuth } from "@/contexts/AuthContext";
-import { Navigate } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import AdminAuth from "@/components/admin/AdminAuth";
+import PerfectAdminDashboard from "@/components/admin/PerfectAdminDashboard";
 
 const Admin = () => {
-  const { user, loading } = useAuth();
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    checkAuthStatus();
+  }, []);
+
+  const checkAuthStatus = () => {
+    try {
+      const authStatus = sessionStorage.getItem("admin_authenticated");
+      const sessionStart = sessionStorage.getItem("admin_session_start");
+
+      if (authStatus === "true" && sessionStart) {
+        const startTime = parseInt(sessionStart);
+        const currentTime = Date.now();
+        const sessionDuration = currentTime - startTime;
+
+        // Session expires after 8 hours (8 * 60 * 60 * 1000 = 28800000 ms)
+        if (sessionDuration < 28800000) {
+          setIsAuthenticated(true);
+        } else {
+          // Session expired
+          sessionStorage.removeItem("admin_authenticated");
+          sessionStorage.removeItem("admin_session_start");
+          setIsAuthenticated(false);
+        }
+      }
+    } catch (error) {
+      console.error("Error checking auth status:", error);
+      setIsAuthenticated(false);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleAuthenticated = () => {
+    setIsAuthenticated(true);
+  };
+
+  const handleSignOut = () => {
+    sessionStorage.removeItem("admin_authenticated");
+    sessionStorage.removeItem("admin_session_start");
+    setIsAuthenticated(false);
+  };
 
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-gray-950">
         <div className="text-center">
-          <img
-            src="https://cdn.builder.io/api/v1/assets/3a5e046f24294e60a3c1afd0f4c614eb/chatgpt-image-jun-21-2025-03_27_04-pm-65410f?format=webp&width=800"
-            alt="FlickPick"
-            className="h-12 w-auto mx-auto mb-4 animate-pulse"
-          />
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-red-600 mx-auto"></div>
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-red-600 mx-auto mb-4"></div>
+          <p className="text-white">Checking authentication...</p>
         </div>
       </div>
     );
   }
 
-  if (!user) {
-    return <Navigate to="/auth" replace />;
+  if (!isAuthenticated) {
+    return <AdminAuth onAuthenticated={handleAuthenticated} />;
   }
 
-  return <CloudscapeAdminDashboard />;
+  return <PerfectAdminDashboard onSignOut={handleSignOut} />;
 };
 
 export default Admin;
