@@ -378,26 +378,46 @@ const Settings = () => {
                           </SelectContent>
                         </Select>
                       </div>
-                      <div className="space-y-2">
-                        <Label className="text-gray-300">Region</Label>
-                        <Select
-                          value={settings.region}
-                          onValueChange={(value) =>
-                            updateSetting("region", value)
-                          }
-                        >
-                          <SelectTrigger className="bg-gray-800 border-gray-700 text-white">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent className="bg-gray-800 border-gray-700">
-                            <SelectItem value="US">United States</SelectItem>
-                            <SelectItem value="CA">Canada</SelectItem>
-                            <SelectItem value="GB">United Kingdom</SelectItem>
-                            <SelectItem value="AU">Australia</SelectItem>
-                            <SelectItem value="DE">Germany</SelectItem>
-                            <SelectItem value="FR">France</SelectItem>
-                            <SelectItem value="ES">Spain</SelectItem>
-                            <SelectItem value="IT">Italy</SelectItem>
+                    <div className="flex items-center justify-between">
+                      <div className="space-y-1">
+                        <Label className="text-gray-300">
+                          Community Notifications
+                        </Label>
+                        <p className="text-sm text-gray-500">
+                          Get notified about community activity
+                        </p>
+                      </div>
+                      <Switch
+                        checked={settings.communityNotifications}
+                        onCheckedChange={(checked) =>
+                          updateSetting("communityNotifications", checked)
+                        }
+                      />
+                    </div>
+                  </div>
+
+                  <Separator className="bg-gray-700" />
+
+                  <div className="space-y-4">
+                    <h3 className="text-white font-medium">
+                      Advanced Notification Settings
+                    </h3>
+                    <p className="text-gray-400 text-sm">
+                      For more detailed notification preferences, quiet hours, and push notification setup
+                    </p>
+                    <Link to="/notifications/settings">
+                      <Button
+                        variant="outline"
+                        className="border-gray-700 text-gray-300 hover:text-white"
+                      >
+                        <Bell className="h-4 w-4 mr-2" />
+                        Advanced Notification Settings
+                      </Button>
+                    </Link>
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
                             <SelectItem value="BR">Brazil</SelectItem>
                             <SelectItem value="MX">Mexico</SelectItem>
                           </SelectContent>
