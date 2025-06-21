@@ -602,7 +602,6 @@ class EnhancedNotificationsService {
         // Other errors handled by safeLogError in catch block
         throw error;
       }
-      if (error) throw error;
 
       this.preferences = data;
       return data;
