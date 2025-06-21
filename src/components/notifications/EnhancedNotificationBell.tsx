@@ -370,7 +370,7 @@ export default function EnhancedNotificationBell() {
         await enhancedNotificationsService.getNotifications(appliedFilters);
       setNotifications(data);
     } catch (error) {
-      console.error("Error fetching notifications:", error);
+      safeLogError("Error fetching notifications", error);
       toast.error("Failed to load notifications");
     } finally {
       setIsLoading(false);
