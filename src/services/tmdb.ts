@@ -1,10 +1,10 @@
-
-const READ_ACCESS_TOKEN = 'eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiI5ZjRlMjI1ZDA3YTUyZGUwNmU1ZTE0ODdmNDU4MzdlMCIsIm5iZiI6MTc0OTU4MzU0OC40ODMsInN1YiI6IjY4NDg4NmJjZDdhZTVmMjkwNzFlYWY4MCIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.i9SAf8EuvGQbVnKVxQWWuA2cl6AjShk7F9NhlQaFEZM';
-const BASE_URL = 'https://api.themoviedb.org/3';
+const READ_ACCESS_TOKEN =
+  "eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiI5ZjRlMjI1ZDA3YTUyZGUwNmU1ZTE0ODdmNDU4MzdlMCIsIm5iZiI6MTc0OTU4MzU0OC40ODMsInN1YiI6IjY4NDg4NmJjZDdhZTVmMjkwNzFlYWY4MCIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.i9SAf8EuvGQbVnKVxQWWuA2cl6AjShk7F9NhlQaFEZM";
+const BASE_URL = "https://api.themoviedb.org/3";
 
 const headers = {
-  'Authorization': `Bearer ${READ_ACCESS_TOKEN}`,
-  'Content-Type': 'application/json;charset=utf-8'
+  Authorization: `Bearer ${READ_ACCESS_TOKEN}`,
+  "Content-Type": "application/json;charset=utf-8",
 };
 
 export interface Movie {
@@ -56,105 +56,257 @@ export interface Movie {
   };
 }
 
+const makeRequest = async (url: string, options = {}) => {
+  try {
+    const response = await fetch(url, { headers, ...options });
+
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+    }
+
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error("TMDB API Error:", error);
+    throw error;
+  }
+};
+
 export const tmdbApi = {
   getTrending: async () => {
-    const response = await fetch(`${BASE_URL}/trending/all/day`, { headers });
-    const data = await response.json();
-    return data.results;
+    try {
+      const data = await makeRequest(`${BASE_URL}/trending/all/day`);
+      return data.results || [];
+    } catch (error) {
+      console.error("Error fetching trending:", error);
+      return [];
+    }
   },
 
   getTrendingMovies: async (page: number = 1) => {
-    const response = await fetch(`${BASE_URL}/trending/movie/day?page=${page}`, { headers });
-    return await response.json();
+    try {
+      return await makeRequest(`${BASE_URL}/trending/movie/day?page=${page}`);
+    } catch (error) {
+      console.error("Error fetching trending movies:", error);
+      return { results: [], total_pages: 0, page: 1, total_results: 0 };
+    }
   },
 
   getPopularMovies: async (page: number = 1) => {
-    const response = await fetch(`${BASE_URL}/movie/popular?page=${page}`, { headers });
-    return await response.json();
+    try {
+      return await makeRequest(`${BASE_URL}/movie/popular?page=${page}`);
+    } catch (error) {
+      console.error("Error fetching popular movies:", error);
+      return { results: [], total_pages: 0, page: 1, total_results: 0 };
+    }
   },
 
   getPopularTVShows: async () => {
-    const response = await fetch(`${BASE_URL}/tv/popular`, { headers });
-    const data = await response.json();
-    return data.results;
+    try {
+      const data = await makeRequest(`${BASE_URL}/tv/popular`);
+      return data.results || [];
+    } catch (error) {
+      console.error("Error fetching popular TV shows:", error);
+      return [];
+    }
   },
 
   getTopRatedMovies: async () => {
-    const response = await fetch(`${BASE_URL}/movie/top_rated`, { headers });
-    return await response.json();
+    try {
+      return await makeRequest(`${BASE_URL}/movie/top_rated`);
+    } catch (error) {
+      console.error("Error fetching top rated movies:", error);
+      return { results: [] };
+    }
   },
 
   getUpcomingMovies: async () => {
-    const response = await fetch(`${BASE_URL}/movie/upcoming`, { headers });
-    return await response.json();
+    try {
+      return await makeRequest(`${BASE_URL}/movie/upcoming`);
+    } catch (error) {
+      console.error("Error fetching upcoming movies:", error);
+      return { results: [] };
+    }
   },
 
   getMoviesByGenre: async (genreId: number, page: number = 1) => {
-    const response = await fetch(`${BASE_URL}/discover/movie?with_genres=${genreId}&sort_by=popularity.desc&page=${page}&certification_country=US&certification.lte=PG-13`, { headers });
-    return await response.json();
+    try {
+      return await makeRequest(
+        `${BASE_URL}/discover/movie?with_genres=${genreId}&sort_by=popularity.desc&page=${page}&certification_country=US&certification.lte=PG-13`,
+      );
+    } catch (error) {
+      console.error("Error fetching movies by genre:", error);
+      return { results: [], total_pages: 0, page: 1, total_results: 0 };
+    }
   },
 
   getTVShowsByGenre: async (genreId: number) => {
-    const response = await fetch(`${BASE_URL}/discover/tv?with_genres=${genreId}&sort_by=popularity.desc`, { headers });
-    return await response.json();
+    try {
+      return await makeRequest(
+        `${BASE_URL}/discover/tv?with_genres=${genreId}&sort_by=popularity.desc`,
+      );
+    } catch (error) {
+      console.error("Error fetching TV shows by genre:", error);
+      return { results: [] };
+    }
   },
 
-  searchMovies: async (query: string) => {
-    const response = await fetch(`${BASE_URL}/search/movie?query=${encodeURIComponent(query)}`, { headers });
-    return await response.json();
+  searchMovies: async (query: string, page: number = 1) => {
+    try {
+      if (!query || query.trim().length === 0) {
+        return { results: [], total_pages: 0, page: 1, total_results: 0 };
+      }
+      return await makeRequest(
+        `${BASE_URL}/search/movie?query=${encodeURIComponent(query.trim())}&page=${page}`,
+      );
+    } catch (error) {
+      console.error("Error searching movies:", error);
+      return { results: [], total_pages: 0, page: 1, total_results: 0 };
+    }
   },
 
-  searchTVShows: async (query: string) => {
-    const response = await fetch(`${BASE_URL}/search/tv?query=${encodeURIComponent(query)}`, { headers });
-    return await response.json();
+  searchTVShows: async (query: string, page: number = 1) => {
+    try {
+      if (!query || query.trim().length === 0) {
+        return { results: [], total_pages: 0, page: 1, total_results: 0 };
+      }
+      return await makeRequest(
+        `${BASE_URL}/search/tv?query=${encodeURIComponent(query.trim())}&page=${page}`,
+      );
+    } catch (error) {
+      console.error("Error searching TV shows:", error);
+      return { results: [], total_pages: 0, page: 1, total_results: 0 };
+    }
   },
 
   searchMulti: async (query: string, page: number = 1) => {
-    const response = await fetch(`${BASE_URL}/search/multi?query=${encodeURIComponent(query)}&page=${page}`, { headers });
-    return await response.json();
+    try {
+      if (!query || query.trim().length === 0) {
+        return { results: [], total_pages: 0, page: 1, total_results: 0 };
+      }
+
+      const data = await makeRequest(
+        `${BASE_URL}/search/multi?query=${encodeURIComponent(query.trim())}&page=${page}`,
+      );
+
+      // Filter out person results and format movie/tv data
+      const filteredResults = (data.results || [])
+        .filter(
+          (item: any) =>
+            item.media_type === "movie" || item.media_type === "tv",
+        )
+        .map((item: any) => ({
+          ...item,
+          title: item.title || item.name,
+          media_type: item.media_type || (item.title ? "movie" : "tv"),
+        }));
+
+      return {
+        ...data,
+        results: filteredResults,
+      };
+    } catch (error) {
+      console.error("Error in multi search:", error);
+      return { results: [], total_pages: 0, page: 1, total_results: 0 };
+    }
   },
 
   searchSuggestions: async (query: string) => {
-    const response = await fetch(`${BASE_URL}/search/multi?query=${encodeURIComponent(query)}`, { headers });
-    const data = await response.json();
-    return data.results.slice(0, 8);
+    try {
+      if (!query || query.trim().length === 0) {
+        return [];
+      }
+
+      const data = await makeRequest(
+        `${BASE_URL}/search/multi?query=${encodeURIComponent(query.trim())}`,
+      );
+      return (data.results || [])
+        .filter(
+          (item: any) =>
+            item.media_type === "movie" || item.media_type === "tv",
+        )
+        .slice(0, 8);
+    } catch (error) {
+      console.error("Error fetching search suggestions:", error);
+      return [];
+    }
   },
 
   discover: async (params: any) => {
-    const queryParams = new URLSearchParams(params);
-    const response = await fetch(`${BASE_URL}/discover/movie?${queryParams}`, { headers });
-    return await response.json();
+    try {
+      const queryParams = new URLSearchParams(
+        Object.fromEntries(
+          Object.entries(params).filter(
+            ([_, value]) => value !== null && value !== undefined,
+          ),
+        ),
+      );
+      return await makeRequest(`${BASE_URL}/discover/movie?${queryParams}`);
+    } catch (error) {
+      console.error("Error in discover:", error);
+      return { results: [], total_pages: 0, page: 1, total_results: 0 };
+    }
   },
 
   getMovieDetails: async (id: number | string) => {
-    const response = await fetch(`${BASE_URL}/movie/${id}?append_to_response=credits,videos,similar`, { headers });
-    return await response.json();
+    try {
+      return await makeRequest(
+        `${BASE_URL}/movie/${id}?append_to_response=credits,videos,similar`,
+      );
+    } catch (error) {
+      console.error("Error fetching movie details:", error);
+      throw error;
+    }
   },
 
   getTVShowDetails: async (id: number | string) => {
-    const response = await fetch(`${BASE_URL}/tv/${id}?append_to_response=credits,videos,similar`, { headers });
-    return await response.json();
+    try {
+      return await makeRequest(
+        `${BASE_URL}/tv/${id}?append_to_response=credits,videos,similar`,
+      );
+    } catch (error) {
+      console.error("Error fetching TV show details:", error);
+      throw error;
+    }
   },
 
   getTVDetails: async (id: number | string) => {
-    const response = await fetch(`${BASE_URL}/tv/${id}?append_to_response=credits,videos,similar`, { headers });
-    return await response.json();
+    try {
+      return await makeRequest(
+        `${BASE_URL}/tv/${id}?append_to_response=credits,videos,similar`,
+      );
+    } catch (error) {
+      console.error("Error fetching TV details:", error);
+      throw error;
+    }
   },
 
   getTVSeasonDetails: async (id: number | string, seasonNumber: number) => {
-    const response = await fetch(`${BASE_URL}/tv/${id}/season/${seasonNumber}`, { headers });
-    return await response.json();
+    try {
+      return await makeRequest(`${BASE_URL}/tv/${id}/season/${seasonNumber}`);
+    } catch (error) {
+      console.error("Error fetching TV season details:", error);
+      throw error;
+    }
   },
 
   getGenres: async () => {
-    const [movieGenres, tvGenres] = await Promise.all([
-      fetch(`${BASE_URL}/genre/movie/list`, { headers }).then(res => res.json()),
-      fetch(`${BASE_URL}/genre/tv/list`, { headers }).then(res => res.json())
-    ]);
-    
-    return {
-      movie: movieGenres.genres,
-      tv: tvGenres.genres
-    };
-  }
+    try {
+      const [movieGenres, tvGenres] = await Promise.all([
+        makeRequest(`${BASE_URL}/genre/movie/list`),
+        makeRequest(`${BASE_URL}/genre/tv/list`),
+      ]);
+
+      return {
+        movie: movieGenres.genres || [],
+        tv: tvGenres.genres || [],
+      };
+    } catch (error) {
+      console.error("Error fetching genres:", error);
+      return {
+        movie: [],
+        tv: [],
+      };
+    }
+  },
 };
