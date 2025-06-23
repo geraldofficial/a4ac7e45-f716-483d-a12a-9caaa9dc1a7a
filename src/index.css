@@ -1,23 +1,38 @@
-@import url("https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Montserrat:wght@400;500;600;700;800&display=swap");
 @import url("./styles/video-player.css");
+@import url("./styles/tv-styles.css");
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 :root {
-  font-family: "Inter", sans-serif;
-  line-height: 1.5;
+  font-family:
+    "Inter",
+    system-ui,
+    -apple-system,
+    sans-serif;
+  line-height: 1.6;
   font-weight: 400;
 
   color-scheme: dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #000000;
+  color: rgba(255, 255, 255, 0.95);
+  background-color: #030712;
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   -webkit-text-size-adjust: 100%;
+
+  /* Modern design tokens */
+  --brand-red: #ef4444;
+  --brand-red-dark: #dc2626;
+  --brand-red-light: #f87171;
+
+  --gray-50: #fafafa;
+  --gray-900: #111827;
+  --gray-950: #030712;
 }
 
 @layer base {
@@ -50,10 +65,26 @@
     @apply border-border;
   }
   body {
-    @apply bg-background text-foreground;
-    background-color: #000000;
+    @apply bg-gray-950 text-white;
+    background: radial-gradient(
+      ellipse at top,
+      rgb(3, 7, 18) 0%,
+      rgb(0, 0, 0) 100%
+    );
+    min-height: 100vh;
     /* Disable pull-to-refresh on mobile */
     overscroll-behavior-y: contain;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-family: "Montserrat", system-ui, sans-serif;
+    font-weight: 600;
+    letter-spacing: -0.025em;
   }
 }
 
@@ -108,10 +139,89 @@
   }
 }
 
-/* Custom scrollbar */
+@layer components {
+  /* Modern Glass Effect */
+  .glass {
+    backdrop-filter: blur(16px) saturate(180%);
+    background-color: rgba(17, 24, 39, 0.75);
+    border: 1px solid rgba(255, 255, 255, 0.125);
+  }
+
+  /* Enhanced Card */
+  .card-modern {
+    @apply bg-gray-900/50 border border-gray-800 rounded-xl overflow-hidden;
+    backdrop-filter: blur(8px);
+  }
+
+  /* Modern Button */
+  .btn-modern {
+    @apply px-6 py-3 rounded-lg font-medium transition-all duration-200;
+    @apply focus:outline-none focus:ring-2 focus:ring-red-500/50;
+  }
+
+  .btn-primary {
+    @apply btn-modern bg-red-600 text-white hover:bg-red-700;
+    @apply shadow-lg hover:shadow-red-500/25;
+  }
+
+  .btn-secondary {
+    @apply btn-modern bg-gray-800 text-gray-300 hover:bg-gray-700 hover:text-white;
+    @apply border border-gray-700;
+  }
+}
+
+@layer utilities {
+  /* Custom scrollbar */
+  .scrollbar-modern::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  .scrollbar-modern::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .scrollbar-modern::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 3px;
+  }
+
+  .scrollbar-modern::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.3);
+  }
+
+  /* Text gradients */
+  .text-gradient-red {
+    @apply bg-gradient-to-r from-red-400 to-red-600 bg-clip-text text-transparent;
+  }
+
+  .text-gradient-blue {
+    @apply bg-gradient-to-r from-blue-400 to-blue-600 bg-clip-text text-transparent;
+  }
+
+  /* Modern shadows */
+  .shadow-glow {
+    box-shadow: 0 0 20px rgba(239, 68, 68, 0.15);
+  }
+
+  .shadow-glow-blue {
+    box-shadow: 0 0 20px rgba(59, 130, 246, 0.15);
+  }
+
+  /* Smooth transitions */
+  .transition-smooth {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .transition-fast {
+    transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+}
+
+/* Global styles */
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 6px;
+  height: 6px;
 }
 
 ::-webkit-scrollbar-track {
@@ -120,7 +230,7 @@
 
 ::-webkit-scrollbar-thumb {
   background: rgba(255, 255, 255, 0.2);
-  border-radius: 4px;
+  border-radius: 3px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
@@ -156,7 +266,7 @@
 
 /* Focus styles */
 :focus-visible {
-  outline: 2px solid #dc2626;
+  outline: 2px solid var(--brand-red);
   outline-offset: 2px;
 }
 

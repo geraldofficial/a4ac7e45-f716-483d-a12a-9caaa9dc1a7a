@@ -1,53 +1,102 @@
-
 {
   "name": "FlickPick - Stream Movies & TV Shows",
   "short_name": "FlickPick",
-  "description": "Stream unlimited movies and TV series with FlickPick - Your ultimate entertainment destination",
+  "description": "Stream unlimited movies and TV series with FlickPick - Your ultimate entertainment destination for TV, mobile, and web",
   "theme_color": "#dc2626",
   "background_color": "#000000",
-  "display": "standalone",
-  "orientation": "portrait",
+  "display": "fullscreen",
+  "orientation": "any",
   "scope": "/",
-  "start_url": "/",
+  "start_url": "/?source=tv",
+  "lang": "en",
+  "dir": "ltr",
+  "categories": ["entertainment", "multimedia", "streaming", "tv"],
+  "shortcuts": [
+    {
+      "name": "Browse Movies",
+      "short_name": "Movies",
+      "description": "Browse all movies",
+      "url": "/movies?source=tv",
+      "icons": [
+        {
+          "src": "/lovable-uploads/0bb41fd4-6209-45e7-a375-a53cedfcb322.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "Browse TV Shows",
+      "short_name": "TV Shows",
+      "description": "Browse all TV shows",
+      "url": "/tv?source=tv",
+      "icons": [
+        {
+          "src": "/lovable-uploads/0bb41fd4-6209-45e7-a375-a53cedfcb322.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "Trending Now",
+      "short_name": "Trending",
+      "description": "What's trending now",
+      "url": "/trending?source=tv",
+      "icons": [
+        {
+          "src": "/lovable-uploads/0bb41fd4-6209-45e7-a375-a53cedfcb322.png",
+          "sizes": "192x192"
+        }
+      ]
+    }
+  ],
   "icons": [
     {
-      "src": "/lovable-uploads/0bb41fd4-6209-45e7-a375-a53cedfcb322.png",
-      "type": "image/png",
+      "src": "https://cdn.builder.io/api/v1/assets/3a5e046f24294e60a3c1afd0f4c614eb/chatgpt-image-jun-21-2025-03_27_04-pm-65410f?format=webp&width=192",
+      "type": "image/webp",
       "sizes": "192x192",
       "purpose": "any"
     },
     {
-      "src": "/lovable-uploads/0bb41fd4-6209-45e7-a375-a53cedfcb322.png",
-      "type": "image/png", 
+      "src": "https://cdn.builder.io/api/v1/assets/3a5e046f24294e60a3c1afd0f4c614eb/chatgpt-image-jun-21-2025-03_27_04-pm-65410f?format=webp&width=512",
+      "type": "image/webp",
       "sizes": "512x512",
       "purpose": "any"
     },
     {
-      "src": "/lovable-uploads/0bb41fd4-6209-45e7-a375-a53cedfcb322.png",
-      "type": "image/png",
+      "src": "https://cdn.builder.io/api/v1/assets/3a5e046f24294e60a3c1afd0f4c614eb/chatgpt-image-jun-21-2025-03_27_04-pm-65410f?format=webp&width=192",
+      "type": "image/webp",
       "sizes": "192x192",
       "purpose": "maskable"
     },
     {
-      "src": "/lovable-uploads/0bb41fd4-6209-45e7-a375-a53cedfcb322.png",
-      "type": "image/png",
+      "src": "https://cdn.builder.io/api/v1/assets/3a5e046f24294e60a3c1afd0f4c614eb/chatgpt-image-jun-21-2025-03_27_04-pm-65410f?format=webp&width=512",
+      "type": "image/webp",
       "sizes": "512x512",
       "purpose": "maskable"
     }
   ],
-  "categories": ["entertainment", "multimedia"],
   "screenshots": [
     {
-      "src": "/lovable-uploads/0bb41fd4-6209-45e7-a375-a53cedfcb322.png",
-      "sizes": "1280x720",
-      "type": "image/png",
-      "form_factor": "wide"
+      "src": "https://cdn.builder.io/api/v1/assets/3a5e046f24294e60a3c1afd0f4c614eb/chatgpt-image-jun-21-2025-03_27_04-pm-65410f?format=webp&width=1920",
+      "sizes": "1920x1080",
+      "type": "image/webp",
+      "form_factor": "wide",
+      "label": "FlickPick on TV - Browse movies and shows"
     },
     {
-      "src": "/lovable-uploads/0bb41fd4-6209-45e7-a375-a53cedfcb322.png", 
+      "src": "https://cdn.builder.io/api/v1/assets/3a5e046f24294e60a3c1afd0f4c614eb/chatgpt-image-jun-21-2025-03_27_04-pm-65410f?format=webp&width=750",
       "sizes": "750x1334",
-      "type": "image/png",
-      "form_factor": "narrow"
+      "type": "image/webp",
+      "form_factor": "narrow",
+      "label": "FlickPick on mobile"
     }
-  ]
+  ],
+  "related_applications": [],
+  "prefer_related_applications": false,
+  "edge_side_panel": {
+    "preferred_width": 400
+  },
+  "launch_handler": {
+    "client_mode": "focus-existing"
+  }
 }

@@ -1,11 +1,21 @@
-const READ_ACCESS_TOKEN =
+const DEFAULT_READ_ACCESS_TOKEN =
   "eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiI5ZjRlMjI1ZDA3YTUyZGUwNmU1ZTE0ODdmNDU4MzdlMCIsIm5iZiI6MTc0OTU4MzU0OC40ODMsInN1YiI6IjY4NDg4NmJjZDdhZTVmMjkwNzFlYWY4MCIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.i9SAf8EuvGQbVnKVxQWWuA2cl6AjShk7F9NhlQaFEZM";
 const BASE_URL = "https://api.themoviedb.org/3";
 
-const headers = {
-  Authorization: `Bearer ${READ_ACCESS_TOKEN}`,
-  "Content-Type": "application/json;charset=utf-8",
+// Function to get current API key (from admin settings or default)
+const getApiKey = () => {
+  try {
+    return localStorage.getItem("tmdb_api_key") || DEFAULT_READ_ACCESS_TOKEN;
+  } catch {
+    return DEFAULT_READ_ACCESS_TOKEN;
+  }
 };
+
+// Function to get headers with current API key
+const getHeaders = () => ({
+  Authorization: `Bearer ${getApiKey()}`,
+  "Content-Type": "application/json;charset=utf-8",
+});
 
 export interface Movie {
   id: number;
@@ -58,7 +68,7 @@ export interface Movie {
 
 const makeRequest = async (url: string, options = {}) => {
   try {
-    const response = await fetch(url, { headers, ...options });
+    const response = await fetch(url, { headers: getHeaders(), ...options });
 
     if (!response.ok) {
       throw new Error(`HTTP ${response.status}: ${response.statusText}`);
@@ -120,11 +130,47 @@ export const tmdbApi = {
     }
   },
 
+  getNowPlayingMovies: async () => {
+    try {
+      return await makeRequest(`${BASE_URL}/movie/now_playing`);
+    } catch (error) {
+      console.error("Error fetching now playing movies:", error);
+      return { results: [] };
+    }
+  },
+
   getUpcomingMovies: async () => {
     try {
       return await makeRequest(`${BASE_URL}/movie/upcoming`);
     } catch (error) {
       console.error("Error fetching upcoming movies:", error);
+      return { results: [] };
+    }
+  },
+
+  getTopRatedTVShows: async () => {
+    try {
+      return await makeRequest(`${BASE_URL}/tv/top_rated`);
+    } catch (error) {
+      console.error("Error fetching top rated TV shows:", error);
+      return { results: [] };
+    }
+  },
+
+  getOnTheAirTVShows: async () => {
+    try {
+      return await makeRequest(`${BASE_URL}/tv/on_the_air`);
+    } catch (error) {
+      console.error("Error fetching on the air TV shows:", error);
+      return { results: [] };
+    }
+  },
+
+  getAiringTodayTVShows: async () => {
+    try {
+      return await makeRequest(`${BASE_URL}/tv/airing_today`);
+    } catch (error) {
+      console.error("Error fetching airing today TV shows:", error);
       return { results: [] };
     }
   },
@@ -147,6 +193,15 @@ export const tmdbApi = {
       );
     } catch (error) {
       console.error("Error fetching TV shows by genre:", error);
+      return { results: [] };
+    }
+  },
+
+  getTVShows: async () => {
+    try {
+      return await makeRequest(`${BASE_URL}/tv/popular`);
+    } catch (error) {
+      console.error("Error fetching TV shows:", error);
       return { results: [] };
     }
   },
@@ -244,6 +299,22 @@ export const tmdbApi = {
       return await makeRequest(`${BASE_URL}/discover/movie?${queryParams}`);
     } catch (error) {
       console.error("Error in discover:", error);
+      return { results: [], total_pages: 0, page: 1, total_results: 0 };
+    }
+  },
+
+  discoverMovies: async (params: Record<string, string | number>) => {
+    try {
+      const queryParams = new URLSearchParams(
+        Object.fromEntries(
+          Object.entries(params).filter(
+            ([_, value]) => value !== null && value !== undefined,
+          ),
+        ),
+      );
+      return await makeRequest(`${BASE_URL}/discover/movie?${queryParams}`);
+    } catch (error) {
+      console.error("Error in discover movies:", error);
       return { results: [], total_pages: 0, page: 1, total_results: 0 };
     }
   },

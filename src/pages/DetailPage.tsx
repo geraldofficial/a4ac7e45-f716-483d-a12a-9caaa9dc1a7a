@@ -1,22 +1,24 @@
-
-import React from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { Navbar } from '@/components/Navbar';
-import { Footer } from '@/components/Footer';
-import { Button } from '@/components/ui/button';
-import { DetailPageHeader } from '@/components/DetailPageHeader';
-import { DetailPageActions } from '@/components/DetailPageActions';
-import { DetailPageInfo } from '@/components/DetailPageInfo';
-import { DetailPageVideoPlayer } from '@/components/DetailPageVideoPlayer';
-import { DetailPageModals } from '@/components/DetailPageModals';
-import { useAuth } from '@/contexts/AuthContext';
-import { useToast } from '@/hooks/use-toast';
-import { useDetailPageState } from '@/hooks/useDetailPageState';
+import React, { useEffect } from "react";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
+import { Navbar } from "@/components/Navbar";
+import { Footer } from "@/components/Footer";
+import { Button } from "@/components/ui/button";
+import { DetailPageHeader } from "@/components/DetailPageHeader";
+import { DetailPageActions } from "@/components/DetailPageActions";
+import { DetailPageInfo } from "@/components/DetailPageInfo";
+import { DetailPageVideoPlayer } from "@/components/DetailPageVideoPlayer";
+import { DetailPageModals } from "@/components/DetailPageModals";
+import SimpleWatchParty from "@/components/SimpleWatchParty";
+import { useAuth } from "@/contexts/AuthContext";
+import { useToast } from "@/hooks/use-toast";
+import { useDetailPageState } from "@/hooks/useDetailPageState";
 
 const DetailPage = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { user, addToWatchlist, removeFromWatchlist, isInWatchlist } = useAuth();
+  const location = useLocation();
+  const { user, addToWatchlist, removeFromWatchlist, isInWatchlist } =
+    useAuth();
   const { toast } = useToast();
 
   const {
@@ -31,25 +33,60 @@ const DetailPage = () => {
     shouldResume,
     setIsPlaying,
     setShowShareModal,
-    setShowWatchParty
+    setShowWatchParty,
   } = useDetailPageState(id);
+
+  // Check URL parameters for watch party actions
+  useEffect(() => {
+    if (!content) return;
+
+    const urlParams = new URLSearchParams(location.search);
+    const watchPartyParam = urlParams.get("watch_party");
+    const joinPartyParam = urlParams.get("join_party");
+
+    if (watchPartyParam && user) {
+      // Auto-open watch party if created from dialog
+      setShowWatchParty(true);
+      // Clean URL
+      navigate(location.pathname, { replace: true });
+    } else if (joinPartyParam && user) {
+      // Auto-join watch party
+      const {
+        simpleWatchPartyService,
+      } = require("@/services/simpleWatchParty");
+      const session = simpleWatchPartyService.joinSession(
+        joinPartyParam,
+        user.id,
+      );
+      if (session) {
+        setShowWatchParty(true);
+        toast({
+          title: "Joined watch party!",
+          description: `You're now in ${session.movieTitle} watch party`,
+        });
+      }
+      // Clean URL
+      navigate(location.pathname, { replace: true });
+    }
+  }, [content, user, location.search, navigate]);
 
   // Get the best trailer from videos
   const getTrailer = () => {
     if (!content?.videos?.results) return null;
-    
+
     // Look for official trailers first
     const officialTrailer = content.videos.results.find(
-      video => video.site === 'YouTube' && video.type === 'Trailer' && video.official
+      (video) =>
+        video.site === "YouTube" && video.type === "Trailer" && video.official,
     );
-    
+
     if (officialTrailer) return officialTrailer;
-    
+
     // Fall back to any trailer
     const anyTrailer = content.videos.results.find(
-      video => video.site === 'YouTube' && video.type === 'Trailer'
+      (video) => video.site === "YouTube" && video.type === "Trailer",
     );
-    
+
     return anyTrailer || null;
   };
 
@@ -75,7 +112,7 @@ const DetailPage = () => {
       return;
     }
 
-    const title = content.title || content.name || 'Unknown Title';
+    const title = content.title || content.name || "Unknown Title";
 
     if (isInWatchlist(content.id)) {
       removeFromWatchlist(content.id);
@@ -101,7 +138,7 @@ const DetailPage = () => {
       toast({
         title: "Sign in required",
         description: "Please sign in to create watch parties.",
-        variant: "destructive"
+        variant: "destructive",
       });
       return;
     }
@@ -110,41 +147,49 @@ const DetailPage = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-background">
-        <Navbar />
-        <div className="pt-16 md:pt-24 pb-20 px-3 md:px-4">
-          <div className="container mx-auto text-center">
-            <div className="text-foreground text-sm md:text-xl">Loading content...</div>
+      <div className="min-h-screen bg-gray-950">
+        <div className="flex items-center justify-center min-h-screen">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-red-600 mx-auto mb-4"></div>
+            <div className="text-white text-lg">Loading movie details...</div>
+            <div className="text-gray-400 text-sm mt-2">Movie ID: {id}</div>
           </div>
         </div>
-        <Footer />
       </div>
     );
   }
 
   if (!content) {
     return (
-      <div className="min-h-screen bg-background">
-        <Navbar />
-        <div className="pt-16 md:pt-24 pb-20 px-3 md:px-4">
-          <div className="container mx-auto text-center">
-            <div className="text-foreground text-sm md:text-xl">Content not found</div>
-            <p className="text-muted-foreground mt-2 text-xs md:text-base">Type: {type}, ID: {id}</p>
-            <Button onClick={() => navigate('/')} className="mt-4" size="sm">
-              Go Home
-            </Button>
+      <div className="min-h-screen bg-gray-950">
+        <div className="flex items-center justify-center min-h-screen px-4">
+          <div className="text-center max-w-md">
+            <div className="text-6xl mb-4">🎬</div>
+            <div className="text-white text-xl mb-2">Content Not Found</div>
+            <p className="text-gray-400 mb-6">
+              Sorry, we couldn't find{" "}
+              {type === "movie" ? "this movie" : "this TV show"} (ID: {id}). It
+              might not exist or be unavailable.
+            </p>
+            <div className="space-y-2">
+              <Button onClick={() => navigate("/")} className="mr-2">
+                Go Home
+              </Button>
+              <Button onClick={() => navigate("/browse")} variant="outline">
+                Browse Content
+              </Button>
+            </div>
           </div>
         </div>
-        <Footer />
       </div>
     );
   }
 
-  const title = content.title || content.name || 'Unknown Title';
+  const title = content.title || content.name || "Unknown Title";
   const trailer = getTrailer();
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-gray-950">
       {/* Video Player - Full Screen Overlay */}
       <DetailPageVideoPlayer
         isPlaying={isPlaying}
@@ -163,7 +208,7 @@ const DetailPage = () => {
       {!isPlaying && (
         <>
           <Navbar />
-          
+
           <div className="pt-14 md:pt-16">
             {/* Hero Section */}
             <DetailPageHeader
@@ -194,18 +239,28 @@ const DetailPage = () => {
             {/* Additional Info */}
             <DetailPageInfo content={content} />
           </div>
-          
+
           <Footer />
 
           {/* Modals */}
           <DetailPageModals
             showShareModal={showShareModal}
-            showWatchParty={showWatchParty}
+            showWatchParty={false}
             content={content}
-            type={type}
-            onCloseShare={() => setShowShareModal(false)}
+            onCloseShareModal={() => setShowShareModal(false)}
             onCloseWatchParty={() => setShowWatchParty(false)}
           />
+
+          {/* Simple Watch Party */}
+          {showWatchParty && (
+            <div className="fixed inset-0 z-50">
+              <SimpleWatchParty
+                movieId={content.id}
+                movieTitle={content.title || content.name || "Unknown Title"}
+                movieType={type}
+              />
+            </div>
+          )}
         </>
       )}
     </div>

@@ -1,28 +1,28 @@
-
-import React, { useState, useRef } from 'react';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Play, Plus, Check, Star, Info, Heart, Share2 } from 'lucide-react';
-import { useAuth } from '@/contexts/AuthContext';
-import { useToast } from '@/hooks/use-toast';
-import { useNavigate } from 'react-router-dom';
-import { Movie } from '@/services/tmdb';
-import { cn } from '@/lib/utils';
+import React, { useState, useRef } from "react";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Play, Plus, Check, Star, Info, Heart, Share2 } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
+import { useToast } from "@/hooks/use-toast";
+import { useNavigate } from "react-router-dom";
+import { Movie } from "@/services/tmdb";
+import { cn } from "@/lib/utils";
 
 interface ImprovedMovieCardProps {
   movie: Movie;
   priority?: boolean;
   showGenres?: boolean;
-  variant?: 'default' | 'compact' | 'featured';
+  variant?: "default" | "compact" | "featured";
 }
 
-export const ImprovedMovieCard: React.FC<ImprovedMovieCardProps> = ({ 
-  movie, 
+export const ImprovedMovieCard: React.FC<ImprovedMovieCardProps> = ({
+  movie,
   priority = false,
   showGenres = false,
-  variant = 'default'
+  variant = "default",
 }) => {
-  const { user, addToWatchlist, removeFromWatchlist, isInWatchlist } = useAuth();
+  const { user, addToWatchlist, removeFromWatchlist, isInWatchlist } =
+    useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
   const [imageLoaded, setImageLoaded] = useState(false);
@@ -30,20 +30,21 @@ export const ImprovedMovieCard: React.FC<ImprovedMovieCardProps> = ({
   const [isHovered, setIsHovered] = useState(false);
   const cardRef = useRef<HTMLDivElement>(null);
 
-  const title = movie.title || movie.name || 'Unknown Title';
-  const releaseDate = movie.release_date || movie.first_air_date || '';
-  const type = movie.media_type || (movie.title ? 'movie' : 'tv');
-  const year = releaseDate ? new Date(releaseDate).getFullYear() : '';
+  const title = movie.title || movie.name || "Unknown Title";
+  const releaseDate = movie.release_date || movie.first_air_date || "";
+  const type = movie.media_type || (movie.title ? "movie" : "tv");
+  const year = releaseDate ? new Date(releaseDate).getFullYear() : "";
 
-  const posterUrl = movie.poster_path 
-    ? `https://image.tmdb.org/t/p/${variant === 'featured' ? 'w780' : 'w500'}${movie.poster_path}`
+  const posterUrl = movie.poster_path
+    ? `https://image.tmdb.org/t/p/${variant === "featured" ? "w780" : "w500"}${movie.poster_path}`
     : null;
 
-  const backdropUrl = movie.backdrop_path 
+  const backdropUrl = movie.backdrop_path
     ? `https://image.tmdb.org/t/p/w1280${movie.backdrop_path}`
     : null;
 
-  const fallbackUrl = 'https://images.unsplash.com/photo-1489599904276-39c2bb2d7b64?w=400&h=600&fit=crop';
+  const fallbackUrl =
+    "https://images.unsplash.com/photo-1489599904276-39c2bb2d7b64?w=400&h=600&fit=crop";
 
   const handleWatch = () => {
     if (!user) {
@@ -98,7 +99,7 @@ export const ImprovedMovieCard: React.FC<ImprovedMovieCardProps> = ({
   const handleShare = async (e: React.MouseEvent) => {
     e.stopPropagation();
     const url = `${window.location.origin}/${type}/${movie.id}`;
-    
+
     if (navigator.share) {
       try {
         await navigator.share({
@@ -119,41 +120,43 @@ export const ImprovedMovieCard: React.FC<ImprovedMovieCardProps> = ({
   };
 
   const getRatingColor = (rating: number) => {
-    if (rating >= 8) return 'text-green-400 bg-green-400/20';
-    if (rating >= 7) return 'text-yellow-400 bg-yellow-400/20';
-    if (rating >= 6) return 'text-orange-400 bg-orange-400/20';
-    return 'text-red-400 bg-red-400/20';
+    if (rating >= 8) return "text-green-400 bg-green-400/20";
+    if (rating >= 7) return "text-yellow-400 bg-yellow-400/20";
+    if (rating >= 6) return "text-orange-400 bg-orange-400/20";
+    return "text-red-400 bg-red-400/20";
   };
 
   const getVariantClasses = () => {
     switch (variant) {
-      case 'compact':
-        return 'w-full max-w-[140px]';
-      case 'featured':
-        return 'w-full max-w-lg';
+      case "compact":
+        return "w-full max-w-[140px]";
+      case "featured":
+        return "w-full max-w-lg";
       default:
-        return 'w-full max-w-sm';
+        return "w-full max-w-sm";
     }
   };
 
   const getAspectRatio = () => {
-    return variant === 'featured' ? 'aspect-[16/9]' : 'aspect-[2/3]';
+    return variant === "featured" ? "aspect-[16/9]" : "aspect-[2/3]";
   };
 
   return (
-    <div 
+    <div
       ref={cardRef}
       className={cn(
         "group relative overflow-hidden rounded-xl bg-card/80 backdrop-blur-sm border border-border/50 transition-all duration-500 cursor-pointer mx-auto",
         "hover:scale-[1.02] hover:shadow-2xl hover:border-primary/30",
         "hover:z-10 hover:bg-card/90",
-        getVariantClasses()
+        getVariantClasses(),
       )}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
       onClick={handleMoreInfo}
     >
-      <div className={cn("overflow-hidden relative bg-muted/20", getAspectRatio())}>
+      <div
+        className={cn("overflow-hidden relative bg-muted/20", getAspectRatio())}
+      >
         {/* Loading state */}
         {!imageLoaded && !imageError && (
           <div className="absolute inset-0 bg-muted/30 animate-pulse flex items-center justify-center">
@@ -168,12 +171,12 @@ export const ImprovedMovieCard: React.FC<ImprovedMovieCardProps> = ({
             alt={title}
             className={cn(
               "h-full w-full object-cover transition-all duration-700",
-              imageLoaded ? 'opacity-100 scale-100' : 'opacity-0 scale-105',
-              isHovered && "scale-110"
+              imageLoaded ? "opacity-100 scale-100" : "opacity-0 scale-105",
+              isHovered && "scale-110",
             )}
             onLoad={() => setImageLoaded(true)}
             onError={() => setImageError(true)}
-            loading={priority ? 'eager' : 'lazy'}
+            loading={priority ? "eager" : "lazy"}
           />
         )}
 
@@ -185,128 +188,6 @@ export const ImprovedMovieCard: React.FC<ImprovedMovieCardProps> = ({
             className="h-full w-full object-cover"
             onLoad={() => setImageLoaded(true)}
           />
-        )}
-
-        {/* Gradient overlay */}
-        <div className={cn(
-          "absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent transition-opacity duration-300",
-          variant === 'compact' ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'
-        )} />
-
-        {/* Rating badge */}
-        <div className="absolute top-2 left-2 z-10">
-          <Badge className={cn(
-            "px-2 py-1 text-xs font-bold border-0 backdrop-blur-sm",
-            getRatingColor(movie.vote_average)
-          )}>
-            <Star className="h-3 w-3 mr-1 fill-current" />
-            {movie.vote_average.toFixed(1)}
-          </Badge>
-        </div>
-
-        {/* Type badge */}
-        <div className="absolute top-2 right-2 z-10">
-          <Badge variant="secondary" className="bg-black/50 text-white backdrop-blur-sm border-0">
-            {type === 'tv' ? 'TV' : 'Movie'}
-          </Badge>
-        </div>
-
-        {/* Action buttons */}
-        <div className={cn(
-          "absolute bottom-2 left-2 right-2 z-10 transition-all duration-300 space-y-2",
-          variant === 'compact' ? 'opacity-100' : 'opacity-0 group-hover:opacity-100 group-hover:translate-y-0 translate-y-2'
-        )}>
-          {variant !== 'compact' && (
-            <>
-              <div className="flex items-center justify-between mb-2">
-                <div className="flex items-center gap-1">
-                  {year && (
-                    <Badge className="bg-white/20 text-white text-xs">
-                      {year}
-                    </Badge>
-                  )}
-                </div>
-              </div>
-              
-              <div className="flex gap-1.5">
-                <Button 
-                  size="sm" 
-                  className="bg-primary hover:bg-primary/90 text-primary-foreground font-medium transition-all duration-200 hover:scale-105 shadow-lg flex-1 h-8 text-xs rounded-full"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleWatch();
-                  }}
-                >
-                  <Play className="h-3 w-3 mr-1 fill-current" />
-                  Play
-                </Button>
-                
-                <Button 
-                  size="sm" 
-                  variant="outline"
-                  className="border-white/30 bg-white/10 backdrop-blur-sm text-white hover:bg-white/20 hover:border-white/50 transition-all duration-200 hover:scale-105 shadow-lg h-8 w-8 p-0 rounded-full"
-                  onClick={handleMoreInfo}
-                >
-                  <Info className="h-3 w-3" />
-                </Button>
-                
-                {user && (
-                  <Button 
-                    size="sm" 
-                    variant="outline" 
-                    className="border-white/30 bg-white/10 backdrop-blur-sm text-white hover:bg-white/20 hover:border-white/50 transition-all duration-200 hover:scale-105 shadow-lg h-8 w-8 p-0 rounded-full"
-                    onClick={handleWatchlistToggle}
-                  >
-                    {isInWatchlist(movie.id) ? <Check className="h-3 w-3" /> : <Plus className="h-3 w-3" />}
-                  </Button>
-                )}
-
-                <Button 
-                  size="sm" 
-                  variant="outline"
-                  className="border-white/30 bg-white/10 backdrop-blur-sm text-white hover:bg-white/20 hover:border-white/50 transition-all duration-200 hover:scale-105 shadow-lg h-8 w-8 p-0 rounded-full"
-                  onClick={handleShare}
-                >
-                  <Share2 className="h-3 w-3" />
-                </Button>
-              </div>
-            </>
-          )}
-        </div>
-      </div>
-      
-      {/* Content area */}
-      <div className={cn(
-        "p-3 bg-gradient-to-b from-card to-card/80",
-        variant === 'compact' && "p-2"
-      )}>
-        <h3 className={cn(
-          "text-foreground font-semibold truncate group-hover:text-primary transition-colors",
-          variant === 'compact' ? "text-xs mb-1" : "text-sm mb-1"
-        )}>
-          {title}
-        </h3>
-        
-        {variant !== 'compact' && (
-          <>
-            {year && (
-              <p className="text-muted-foreground text-xs mb-2">
-                {year}
-              </p>
-            )}
-            
-            {movie.overview && (
-              <p className="text-muted-foreground text-xs line-clamp-2 leading-relaxed">
-                {movie.overview}
-              </p>
-            )}
-          </>
-        )}
-
-        {variant === 'compact' && year && (
-          <p className="text-muted-foreground text-xs">
-            {year}
-          </p>
         )}
       </div>
     </div>
