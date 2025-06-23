@@ -1,5 +1,4 @@
-
-import React from 'react';
+import React from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -10,6 +9,7 @@ import { BottomNavigation } from "@/components/BottomNavigation";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { SafeErrorBoundary } from "@/components/SafeErrorBoundary";
 import { ScrollToTop } from "./components/ScrollToTop";
+import { AppStatusUpdate } from "./components/AppStatusUpdate";
 
 // Pages - wrapped in error boundaries for safety
 import Index from "./pages/Index";
@@ -37,7 +37,7 @@ const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
       retry: (failureCount, error) => {
-        if (error && typeof error === 'object' && 'status' in error) {
+        if (error && typeof error === "object" && "status" in error) {
           const status = (error as any).status;
           if (status >= 400 && status < 500) return false;
         }
@@ -49,16 +49,21 @@ const queryClient = new QueryClient({
   },
 });
 
-const SafeRoute: React.FC<{ children: React.ReactNode; componentName: string }> = ({ children, componentName }) => (
-  <SafeErrorBoundary 
+const SafeRoute: React.FC<{
+  children: React.ReactNode;
+  componentName: string;
+}> = ({ children, componentName }) => (
+  <SafeErrorBoundary
     componentName={componentName}
     fallback={
       <div className="min-h-screen bg-background flex items-center justify-center p-4">
         <div className="text-center">
           <h2 className="text-xl font-semibold mb-2">Page Not Available</h2>
-          <p className="text-muted-foreground mb-4">This page failed to load properly.</p>
-          <button 
-            onClick={() => window.location.href = '/'}
+          <p className="text-muted-foreground mb-4">
+            This page failed to load properly.
+          </p>
+          <button
+            onClick={() => (window.location.href = "/")}
             className="px-4 py-2 bg-primary text-primary-foreground rounded-lg"
           >
             Go Home
@@ -73,25 +78,41 @@ const SafeRoute: React.FC<{ children: React.ReactNode; componentName: string }> 
 
 const App: React.FC = () => {
   return (
-    <ErrorBoundary fallback={
-      <div className="min-h-screen bg-background flex items-center justify-center p-4">
-        <div className="text-center space-y-4 max-w-md">
-          <div className="text-red-500 mb-4">
-            <svg className="h-12 w-12 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.732-.833-2.5 0L4.268 19.5c-.77.833.192 2.5 1.732 2.5z" />
-            </svg>
+    <ErrorBoundary
+      fallback={
+        <div className="min-h-screen bg-background flex items-center justify-center p-4">
+          <div className="text-center space-y-4 max-w-md">
+            <div className="text-red-500 mb-4">
+              <svg
+                className="h-12 w-12 mx-auto"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.732-.833-2.5 0L4.268 19.5c-.77.833.192 2.5 1.732 2.5z"
+                />
+              </svg>
+            </div>
+            <h2 className="text-xl font-semibold text-foreground">
+              Application Error
+            </h2>
+            <p className="text-muted-foreground text-sm">
+              FlickPick failed to start. Please refresh the page.
+            </p>
+            <button
+              onClick={() => window.location.reload()}
+              className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors"
+            >
+              Reload App
+            </button>
           </div>
-          <h2 className="text-xl font-semibold text-foreground">Application Error</h2>
-          <p className="text-muted-foreground text-sm">FlickPick failed to start. Please refresh the page.</p>
-          <button 
-            onClick={() => window.location.reload()} 
-            className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors"
-          >
-            Reload App
-          </button>
         </div>
-      </div>
-    }>
+      }
+    >
       <QueryClientProvider client={queryClient}>
         <TooltipProvider>
           <Toaster />
@@ -100,28 +121,176 @@ const App: React.FC = () => {
             <AuthProvider>
               <div className="min-h-screen">
                 <ScrollToTop />
+                <AppStatusUpdate />
                 <Routes>
-                  <Route path="/" element={<SafeRoute componentName="Index"><Index /></SafeRoute>} />
-                  <Route path="/auth" element={<SafeRoute componentName="Auth"><Auth /></SafeRoute>} />
-                  <Route path="/onboarding" element={<SafeRoute componentName="Onboarding"><Onboarding /></SafeRoute>} />
-                  <Route path="/search" element={<SafeRoute componentName="Search"><Search /></SafeRoute>} />
-                  <Route path="/watchlist" element={<SafeRoute componentName="Watchlist"><Watchlist /></SafeRoute>} />
-                  <Route path="/browse" element={<SafeRoute componentName="Browse"><Browse /></SafeRoute>} />
-                  <Route path="/trending" element={<SafeRoute componentName="Trending"><Trending /></SafeRoute>} />
-                  <Route path="/top-rated" element={<SafeRoute componentName="TopRated"><TopRated /></SafeRoute>} />
-                  <Route path="/community" element={<SafeRoute componentName="Community"><Community /></SafeRoute>} />
-                  <Route path="/donate" element={<SafeRoute componentName="Donate"><Donate /></SafeRoute>} />
-                  <Route path="/profile" element={<SafeRoute componentName="Profile"><Profile /></SafeRoute>} />
-                  <Route path="/profiles" element={<SafeRoute componentName="Profiles"><Profiles /></SafeRoute>} />
-                  <Route path="/history" element={<SafeRoute componentName="History"><History /></SafeRoute>} />
-                  <Route path="/support" element={<SafeRoute componentName="Support"><Support /></SafeRoute>} />
-                  <Route path="/help" element={<SafeRoute componentName="Help"><Help /></SafeRoute>} />
-                  <Route path="/contact" element={<SafeRoute componentName="Contact"><Contact /></SafeRoute>} />
-                  <Route path="/privacy" element={<SafeRoute componentName="Privacy"><Privacy /></SafeRoute>} />
-                  <Route path="/terms" element={<SafeRoute componentName="Terms"><Terms /></SafeRoute>} />
-                  <Route path="/movie/:id" element={<SafeRoute componentName="Movie Detail"><DetailPage /></SafeRoute>} />
-                  <Route path="/tv/:id" element={<SafeRoute componentName="TV Detail"><DetailPage /></SafeRoute>} />
-                  <Route path="*" element={<SafeRoute componentName="NotFound"><NotFound /></SafeRoute>} />
+                  <Route
+                    path="/"
+                    element={
+                      <SafeRoute componentName="Index">
+                        <Index />
+                      </SafeRoute>
+                    }
+                  />
+                  <Route
+                    path="/auth"
+                    element={
+                      <SafeRoute componentName="Auth">
+                        <Auth />
+                      </SafeRoute>
+                    }
+                  />
+                  <Route
+                    path="/onboarding"
+                    element={
+                      <SafeRoute componentName="Onboarding">
+                        <Onboarding />
+                      </SafeRoute>
+                    }
+                  />
+                  <Route
+                    path="/search"
+                    element={
+                      <SafeRoute componentName="Search">
+                        <Search />
+                      </SafeRoute>
+                    }
+                  />
+                  <Route
+                    path="/watchlist"
+                    element={
+                      <SafeRoute componentName="Watchlist">
+                        <Watchlist />
+                      </SafeRoute>
+                    }
+                  />
+                  <Route
+                    path="/browse"
+                    element={
+                      <SafeRoute componentName="Browse">
+                        <Browse />
+                      </SafeRoute>
+                    }
+                  />
+                  <Route
+                    path="/trending"
+                    element={
+                      <SafeRoute componentName="Trending">
+                        <Trending />
+                      </SafeRoute>
+                    }
+                  />
+                  <Route
+                    path="/top-rated"
+                    element={
+                      <SafeRoute componentName="TopRated">
+                        <TopRated />
+                      </SafeRoute>
+                    }
+                  />
+                  <Route
+                    path="/community"
+                    element={
+                      <SafeRoute componentName="Community">
+                        <Community />
+                      </SafeRoute>
+                    }
+                  />
+                  <Route
+                    path="/donate"
+                    element={
+                      <SafeRoute componentName="Donate">
+                        <Donate />
+                      </SafeRoute>
+                    }
+                  />
+                  <Route
+                    path="/profile"
+                    element={
+                      <SafeRoute componentName="Profile">
+                        <Profile />
+                      </SafeRoute>
+                    }
+                  />
+                  <Route
+                    path="/profiles"
+                    element={
+                      <SafeRoute componentName="Profiles">
+                        <Profiles />
+                      </SafeRoute>
+                    }
+                  />
+                  <Route
+                    path="/history"
+                    element={
+                      <SafeRoute componentName="History">
+                        <History />
+                      </SafeRoute>
+                    }
+                  />
+                  <Route
+                    path="/support"
+                    element={
+                      <SafeRoute componentName="Support">
+                        <Support />
+                      </SafeRoute>
+                    }
+                  />
+                  <Route
+                    path="/help"
+                    element={
+                      <SafeRoute componentName="Help">
+                        <Help />
+                      </SafeRoute>
+                    }
+                  />
+                  <Route
+                    path="/contact"
+                    element={
+                      <SafeRoute componentName="Contact">
+                        <Contact />
+                      </SafeRoute>
+                    }
+                  />
+                  <Route
+                    path="/privacy"
+                    element={
+                      <SafeRoute componentName="Privacy">
+                        <Privacy />
+                      </SafeRoute>
+                    }
+                  />
+                  <Route
+                    path="/terms"
+                    element={
+                      <SafeRoute componentName="Terms">
+                        <Terms />
+                      </SafeRoute>
+                    }
+                  />
+                  <Route
+                    path="/movie/:id"
+                    element={
+                      <SafeRoute componentName="Movie Detail">
+                        <DetailPage />
+                      </SafeRoute>
+                    }
+                  />
+                  <Route
+                    path="/tv/:id"
+                    element={
+                      <SafeRoute componentName="TV Detail">
+                        <DetailPage />
+                      </SafeRoute>
+                    }
+                  />
+                  <Route
+                    path="*"
+                    element={
+                      <SafeRoute componentName="NotFound">
+                        <NotFound />
+                      </SafeRoute>
+                    }
+                  />
                 </Routes>
                 <SafeErrorBoundary componentName="Bottom Navigation">
                   <BottomNavigation />
