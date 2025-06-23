@@ -66,278 +66,318 @@ export interface Movie {
   };
 }
 
+const makeRequest = async (url: string, options = {}) => {
+  try {
+    const response = await fetch(url, { headers: getHeaders(), ...options });
+
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+    }
+
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error("TMDB API Error:", error);
+    throw error;
+  }
+};
+
 export const tmdbApi = {
   getTrending: async () => {
-    const response = await fetch(`${BASE_URL}/trending/all/day`, { headers });
-    const data = await response.json();
-    return data.results;
+    try {
+      const data = await makeRequest(`${BASE_URL}/trending/all/day`);
+      return data.results || [];
+    } catch (error) {
+      console.error("Error fetching trending:", error);
+      return [];
+    }
   },
 
   getTrendingMovies: async (page: number = 1) => {
-    const response = await fetch(
-      `${BASE_URL}/trending/movie/day?page=${page}`,
-      { headers: getHeaders() },
-    );
-    if (!response.ok) {
-      throw new Error(
-        `TMDB API Error: ${response.status} ${response.statusText}`,
-      );
+    try {
+      return await makeRequest(`${BASE_URL}/trending/movie/day?page=${page}`);
+    } catch (error) {
+      console.error("Error fetching trending movies:", error);
+      return { results: [], total_pages: 0, page: 1, total_results: 0 };
     }
-    return await response.json();
   },
 
   getPopularMovies: async (page: number = 1) => {
-    const response = await fetch(`${BASE_URL}/movie/popular?page=${page}`, {
-      headers: getHeaders(),
-    });
-    if (!response.ok) {
-      throw new Error(
-        `TMDB API Error: ${response.status} ${response.statusText}`,
-      );
+    try {
+      return await makeRequest(`${BASE_URL}/movie/popular?page=${page}`);
+    } catch (error) {
+      console.error("Error fetching popular movies:", error);
+      return { results: [], total_pages: 0, page: 1, total_results: 0 };
     }
-    return await response.json();
   },
 
   getPopularTVShows: async () => {
-    const response = await fetch(`${BASE_URL}/tv/popular`, { headers });
-    const data = await response.json();
-    return data.results;
+    try {
+      const data = await makeRequest(`${BASE_URL}/tv/popular`);
+      return data.results || [];
+    } catch (error) {
+      console.error("Error fetching popular TV shows:", error);
+      return [];
+    }
   },
 
   getTopRatedMovies: async () => {
-    const response = await fetch(`${BASE_URL}/movie/top_rated`, {
-      headers: getHeaders(),
-    });
-    if (!response.ok) {
-      throw new Error(
-        `TMDB API Error: ${response.status} ${response.statusText}`,
-      );
+    try {
+      return await makeRequest(`${BASE_URL}/movie/top_rated`);
+    } catch (error) {
+      console.error("Error fetching top rated movies:", error);
+      return { results: [] };
     }
-    return await response.json();
   },
 
   getNowPlayingMovies: async () => {
-    const response = await fetch(`${BASE_URL}/movie/now_playing`, {
-      headers: getHeaders(),
-    });
-    if (!response.ok) {
-      throw new Error(
-        `TMDB API Error: ${response.status} ${response.statusText}`,
-      );
+    try {
+      return await makeRequest(`${BASE_URL}/movie/now_playing`);
+    } catch (error) {
+      console.error("Error fetching now playing movies:", error);
+      return { results: [] };
     }
-    return await response.json();
   },
 
   getUpcomingMovies: async () => {
-    const response = await fetch(`${BASE_URL}/movie/upcoming`, {
-      headers: getHeaders(),
-    });
-    if (!response.ok) {
-      throw new Error(
-        `TMDB API Error: ${response.status} ${response.statusText}`,
-      );
+    try {
+      return await makeRequest(`${BASE_URL}/movie/upcoming`);
+    } catch (error) {
+      console.error("Error fetching upcoming movies:", error);
+      return { results: [] };
     }
-    return await response.json();
   },
 
   getTopRatedTVShows: async () => {
-    const response = await fetch(`${BASE_URL}/tv/top_rated`, {
-      headers: getHeaders(),
-    });
-    if (!response.ok) {
-      throw new Error(
-        `TMDB API Error: ${response.status} ${response.statusText}`,
-      );
+    try {
+      return await makeRequest(`${BASE_URL}/tv/top_rated`);
+    } catch (error) {
+      console.error("Error fetching top rated TV shows:", error);
+      return { results: [] };
     }
-    return await response.json();
   },
 
   getOnTheAirTVShows: async () => {
-    const response = await fetch(`${BASE_URL}/tv/on_the_air`, {
-      headers: getHeaders(),
-    });
-    if (!response.ok) {
-      throw new Error(
-        `TMDB API Error: ${response.status} ${response.statusText}`,
-      );
+    try {
+      return await makeRequest(`${BASE_URL}/tv/on_the_air`);
+    } catch (error) {
+      console.error("Error fetching on the air TV shows:", error);
+      return { results: [] };
     }
-    return await response.json();
   },
 
   getAiringTodayTVShows: async () => {
-    const response = await fetch(`${BASE_URL}/tv/airing_today`, {
-      headers: getHeaders(),
-    });
-    if (!response.ok) {
-      throw new Error(
-        `TMDB API Error: ${response.status} ${response.statusText}`,
-      );
+    try {
+      return await makeRequest(`${BASE_URL}/tv/airing_today`);
+    } catch (error) {
+      console.error("Error fetching airing today TV shows:", error);
+      return { results: [] };
     }
-    return await response.json();
   },
 
   getMoviesByGenre: async (genreId: number, page: number = 1) => {
-    const response = await fetch(
-      `${BASE_URL}/discover/movie?with_genres=${genreId}&sort_by=popularity.desc&page=${page}&certification_country=US&certification.lte=PG-13`,
-      { headers: getHeaders() },
-    );
-    if (!response.ok) {
-      throw new Error(
-        `TMDB API Error: ${response.status} ${response.statusText}`,
+    try {
+      return await makeRequest(
+        `${BASE_URL}/discover/movie?with_genres=${genreId}&sort_by=popularity.desc&page=${page}&certification_country=US&certification.lte=PG-13`,
       );
+    } catch (error) {
+      console.error("Error fetching movies by genre:", error);
+      return { results: [], total_pages: 0, page: 1, total_results: 0 };
     }
-    return await response.json();
+  },
+
+  getTVShowsByGenre: async (genreId: number) => {
+    try {
+      return await makeRequest(
+        `${BASE_URL}/discover/tv?with_genres=${genreId}&sort_by=popularity.desc`,
+      );
+    } catch (error) {
+      console.error("Error fetching TV shows by genre:", error);
+      return { results: [] };
+    }
   },
 
   getTVShows: async () => {
-    const response = await fetch(`${BASE_URL}/tv/popular`, {
-      headers: getHeaders(),
-    });
-    if (!response.ok) {
-      throw new Error(
-        `TMDB API Error: ${response.status} ${response.statusText}`,
-      );
+    try {
+      return await makeRequest(`${BASE_URL}/tv/popular`);
+    } catch (error) {
+      console.error("Error fetching TV shows:", error);
+      return { results: [] };
     }
-    return await response.json();
   },
 
-  searchMovies: async (query: string) => {
-    const response = await fetch(
-      `${BASE_URL}/search/movie?query=${encodeURIComponent(query)}`,
-      { headers: getHeaders() },
-    );
-    if (!response.ok) {
-      throw new Error(
-        `TMDB API Error: ${response.status} ${response.statusText}`,
+  searchMovies: async (query: string, page: number = 1) => {
+    try {
+      if (!query || query.trim().length === 0) {
+        return { results: [], total_pages: 0, page: 1, total_results: 0 };
+      }
+      return await makeRequest(
+        `${BASE_URL}/search/movie?query=${encodeURIComponent(query.trim())}&page=${page}`,
       );
+    } catch (error) {
+      console.error("Error searching movies:", error);
+      return { results: [], total_pages: 0, page: 1, total_results: 0 };
     }
-    return await response.json();
   },
 
-  searchTVShows: async (query: string) => {
-    const response = await fetch(
-      `${BASE_URL}/search/tv?query=${encodeURIComponent(query)}`,
-      { headers: getHeaders() },
-    );
-    if (!response.ok) {
-      throw new Error(
-        `TMDB API Error: ${response.status} ${response.statusText}`,
+  searchTVShows: async (query: string, page: number = 1) => {
+    try {
+      if (!query || query.trim().length === 0) {
+        return { results: [], total_pages: 0, page: 1, total_results: 0 };
+      }
+      return await makeRequest(
+        `${BASE_URL}/search/tv?query=${encodeURIComponent(query.trim())}&page=${page}`,
       );
+    } catch (error) {
+      console.error("Error searching TV shows:", error);
+      return { results: [], total_pages: 0, page: 1, total_results: 0 };
     }
-    return await response.json();
   },
 
-  searchMulti: async (query: string) => {
-    const response = await fetch(
-      `${BASE_URL}/search/multi?query=${encodeURIComponent(query)}`,
-      { headers: getHeaders() },
-    );
-    if (!response.ok) {
-      throw new Error(
-        `TMDB API Error: ${response.status} ${response.statusText}`,
+  searchMulti: async (query: string, page: number = 1) => {
+    try {
+      if (!query || query.trim().length === 0) {
+        return { results: [], total_pages: 0, page: 1, total_results: 0 };
+      }
+
+      const data = await makeRequest(
+        `${BASE_URL}/search/multi?query=${encodeURIComponent(query.trim())}&page=${page}`,
       );
+
+      // Filter out person results and format movie/tv data
+      const filteredResults = (data.results || [])
+        .filter(
+          (item: any) =>
+            item.media_type === "movie" || item.media_type === "tv",
+        )
+        .map((item: any) => ({
+          ...item,
+          title: item.title || item.name,
+          media_type: item.media_type || (item.title ? "movie" : "tv"),
+        }));
+
+      return {
+        ...data,
+        results: filteredResults,
+      };
+    } catch (error) {
+      console.error("Error in multi search:", error);
+      return { results: [], total_pages: 0, page: 1, total_results: 0 };
     }
-    return await response.json();
+  },
+
+  searchSuggestions: async (query: string) => {
+    try {
+      if (!query || query.trim().length === 0) {
+        return [];
+      }
+
+      const data = await makeRequest(
+        `${BASE_URL}/search/multi?query=${encodeURIComponent(query.trim())}`,
+      );
+      return (data.results || [])
+        .filter(
+          (item: any) =>
+            item.media_type === "movie" || item.media_type === "tv",
+        )
+        .slice(0, 8);
+    } catch (error) {
+      console.error("Error fetching search suggestions:", error);
+      return [];
+    }
+  },
+
+  discover: async (params: any) => {
+    try {
+      const queryParams = new URLSearchParams(
+        Object.fromEntries(
+          Object.entries(params).filter(
+            ([_, value]) => value !== null && value !== undefined,
+          ),
+        ),
+      );
+      return await makeRequest(`${BASE_URL}/discover/movie?${queryParams}`);
+    } catch (error) {
+      console.error("Error in discover:", error);
+      return { results: [], total_pages: 0, page: 1, total_results: 0 };
+    }
   },
 
   discoverMovies: async (params: Record<string, string | number>) => {
-    const queryParams = new URLSearchParams(params);
-    const response = await fetch(`${BASE_URL}/discover/movie?${queryParams}`, {
-      headers: getHeaders(),
-    });
-    if (!response.ok) {
-      throw new Error(
-        `TMDB API Error: ${response.status} ${response.statusText}`,
+    try {
+      const queryParams = new URLSearchParams(
+        Object.fromEntries(
+          Object.entries(params).filter(
+            ([_, value]) => value !== null && value !== undefined,
+          ),
+        ),
       );
+      return await makeRequest(`${BASE_URL}/discover/movie?${queryParams}`);
+    } catch (error) {
+      console.error("Error in discover movies:", error);
+      return { results: [], total_pages: 0, page: 1, total_results: 0 };
     }
-    return await response.json();
   },
 
   getMovieDetails: async (id: number | string) => {
-    const response = await fetch(
-      `${BASE_URL}/movie/${id}?append_to_response=credits,videos,similar`,
-      { headers: getHeaders() },
-    );
-    if (!response.ok) {
-      throw new Error(
-        `TMDB API Error: ${response.status} ${response.statusText}`,
+    try {
+      return await makeRequest(
+        `${BASE_URL}/movie/${id}?append_to_response=credits,videos,similar`,
       );
+    } catch (error) {
+      console.error("Error fetching movie details:", error);
+      throw error;
     }
-    return await response.json();
   },
 
   getTVShowDetails: async (id: number | string) => {
-    const response = await fetch(
-      `${BASE_URL}/tv/${id}?append_to_response=credits,videos,similar`,
-      { headers: getHeaders() },
-    );
-    if (!response.ok) {
-      throw new Error(
-        `TMDB API Error: ${response.status} ${response.statusText}`,
+    try {
+      return await makeRequest(
+        `${BASE_URL}/tv/${id}?append_to_response=credits,videos,similar`,
       );
+    } catch (error) {
+      console.error("Error fetching TV show details:", error);
+      throw error;
     }
-    return await response.json();
   },
 
   getTVDetails: async (id: number | string) => {
-    const response = await fetch(
-      `${BASE_URL}/tv/${id}?append_to_response=credits,videos,similar`,
-      { headers: getHeaders() },
-    );
-    if (!response.ok) {
-      throw new Error(
-        `TMDB API Error: ${response.status} ${response.statusText}`,
+    try {
+      return await makeRequest(
+        `${BASE_URL}/tv/${id}?append_to_response=credits,videos,similar`,
       );
+    } catch (error) {
+      console.error("Error fetching TV details:", error);
+      throw error;
     }
-    return await response.json();
-  },
-
-  getTVDetails: async (id: number | string) => {
-    const response = await fetch(
-      `${BASE_URL}/tv/${id}?append_to_response=credits,videos,similar`,
-      { headers: getHeaders() },
-    );
-    if (!response.ok) {
-      throw new Error(
-        `TMDB API Error: ${response.status} ${response.statusText}`,
-      );
-    }
-    return await response.json();
   },
 
   getTVSeasonDetails: async (id: number | string, seasonNumber: number) => {
-    const response = await fetch(
-      `${BASE_URL}/tv/${id}/season/${seasonNumber}`,
-      { headers: getHeaders() },
-    );
-    if (!response.ok) {
-      throw new Error(
-        `TMDB API Error: ${response.status} ${response.statusText}`,
-      );
+    try {
+      return await makeRequest(`${BASE_URL}/tv/${id}/season/${seasonNumber}`);
+    } catch (error) {
+      console.error("Error fetching TV season details:", error);
+      throw error;
     }
-    return await response.json();
   },
 
   getGenres: async () => {
-    const headers = getHeaders();
-    const [movieGenres, tvGenres] = await Promise.all([
-      fetch(`${BASE_URL}/genre/movie/list`, { headers }).then(async (res) => {
-        if (!res.ok) {
-          throw new Error(`TMDB API Error: ${res.status} ${res.statusText}`);
-        }
-        return res.json();
-      }),
-      fetch(`${BASE_URL}/genre/tv/list`, { headers }).then(async (res) => {
-        if (!res.ok) {
-          throw new Error(`TMDB API Error: ${res.status} ${res.statusText}`);
-        }
-        return res.json();
-      }),
-    ]);
+    try {
+      const [movieGenres, tvGenres] = await Promise.all([
+        makeRequest(`${BASE_URL}/genre/movie/list`),
+        makeRequest(`${BASE_URL}/genre/tv/list`),
+      ]);
 
-    return {
-      movie: movieGenres.genres,
-      tv: tvGenres.genres,
-    };
+      return {
+        movie: movieGenres.genres || [],
+        tv: tvGenres.genres || [],
+      };
+    } catch (error) {
+      console.error("Error fetching genres:", error);
+      return {
+        movie: [],
+        tv: [],
+      };
+    }
   },
 };

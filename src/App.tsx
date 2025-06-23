@@ -14,6 +14,7 @@ import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { SafeErrorBoundary } from "@/components/SafeErrorBoundary";
 import { NetworkErrorHandler } from "@/components/NetworkErrorHandler";
 import { ScrollToTop } from "./components/ScrollToTop";
+import { AppStatusUpdate } from "./components/AppStatusUpdate";
 import "@/styles/tv-styles.css";
 
 // Import network diagnostics and error handling for debugging
@@ -72,18 +73,85 @@ const HomePage: React.FC = () => {
   return <Index />;
 };
 
+const SafeRoute: React.FC<{
+  children: React.ReactNode;
+  componentName: string;
+}> = ({ children, componentName }) => (
+  <SafeErrorBoundary
+    componentName={componentName}
+    fallback={
+      <div className="min-h-screen bg-background flex items-center justify-center p-4">
+        <div className="text-center">
+          <h2 className="text-xl font-semibold mb-2">Page Not Available</h2>
+          <p className="text-muted-foreground mb-4">
+            This page failed to load properly.
+          </p>
+          <button
+            onClick={() => (window.location.href = "/")}
+            className="px-4 py-2 bg-primary text-primary-foreground rounded-lg"
+          >
+            Go Home
+          </button>
+        </div>
+      </div>
+    }
+  >
+    {children}
+  </SafeErrorBoundary>
+);
+
 function App() {
   const queryClient = new QueryClient({
     defaultOptions: {
       queries: {
         staleTime: 5 * 60 * 1000, // 5 minutes
-        retry: 1,
+        retry: (failureCount, error) => {
+          if (error && typeof error === "object" && "status" in error) {
+            const status = (error as any).status;
+            if (status >= 400 && status < 500) return false;
+          }
+          return failureCount < 2;
+        },
       },
     },
   });
 
   return (
-    <ErrorBoundary>
+    <ErrorBoundary
+      fallback={
+        <div className="min-h-screen bg-background flex items-center justify-center p-4">
+          <div className="text-center space-y-4 max-w-md">
+            <div className="text-red-500 mb-4">
+              <svg
+                className="h-12 w-12 mx-auto"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.732-.833-2.5 0L4.268 19.5c-.77.833.192 2.5 1.732 2.5z"
+                />
+              </svg>
+            </div>
+            <h2 className="text-xl font-semibold text-foreground">
+              Application Error
+            </h2>
+            <p className="text-muted-foreground text-sm">
+              FlickPick failed to start. Please refresh the page.
+            </p>
+            <button
+              onClick={() => window.location.reload()}
+              className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors"
+            >
+              Reload App
+            </button>
+          </div>
+        </div>
+      }
+    >
       <SafeErrorBoundary>
         <QueryClientProvider client={queryClient}>
           <TooltipProvider>
@@ -95,6 +163,7 @@ function App() {
                     <Sonner />
                     <BrowserRouter>
                       <ScrollToTop />
+                      <AppStatusUpdate />
                       <AppNavigation />
                       <TVInstallPrompt />
 
@@ -113,42 +182,198 @@ function App() {
                         >
                           <Routes>
                             <Route path="/" element={<HomePage />} />
-                            <Route path="/auth" element={<Auth />} />
-                            <Route path="/profile" element={<Profile />} />
-                            <Route path="/profiles" element={<Profiles />} />
-                            <Route path="/settings" element={<Settings />} />
+                            <Route
+                              path="/auth"
+                              element={
+                                <SafeRoute componentName="Auth">
+                                  <Auth />
+                                </SafeRoute>
+                              }
+                            />
+                            <Route
+                              path="/profile"
+                              element={
+                                <SafeRoute componentName="Profile">
+                                  <Profile />
+                                </SafeRoute>
+                              }
+                            />
+                            <Route
+                              path="/profiles"
+                              element={
+                                <SafeRoute componentName="Profiles">
+                                  <Profiles />
+                                </SafeRoute>
+                              }
+                            />
+                            <Route
+                              path="/settings"
+                              element={
+                                <SafeRoute componentName="Settings">
+                                  <Settings />
+                                </SafeRoute>
+                              }
+                            />
                             <Route
                               path="/notifications/settings"
-                              element={<NotificationSettings />}
+                              element={
+                                <SafeRoute componentName="NotificationSettings">
+                                  <NotificationSettings />
+                                </SafeRoute>
+                              }
                             />
-                            <Route path="/browse" element={<Browse />} />
-                            <Route path="/movies" element={<Movies />} />
-                            <Route path="/tv" element={<TVShows />} />
-                            <Route path="/trending" element={<Trending />} />
-                            <Route path="/community" element={<Community />} />
+                            <Route
+                              path="/browse"
+                              element={
+                                <SafeRoute componentName="Browse">
+                                  <Browse />
+                                </SafeRoute>
+                              }
+                            />
+                            <Route
+                              path="/movies"
+                              element={
+                                <SafeRoute componentName="Movies">
+                                  <Movies />
+                                </SafeRoute>
+                              }
+                            />
+                            <Route
+                              path="/tv"
+                              element={
+                                <SafeRoute componentName="TVShows">
+                                  <TVShows />
+                                </SafeRoute>
+                              }
+                            />
+                            <Route
+                              path="/trending"
+                              element={
+                                <SafeRoute componentName="Trending">
+                                  <Trending />
+                                </SafeRoute>
+                              }
+                            />
+                            <Route
+                              path="/community"
+                              element={
+                                <SafeRoute componentName="Community">
+                                  <Community />
+                                </SafeRoute>
+                              }
+                            />
                             <Route
                               path="/detail/:id"
-                              element={<DetailPage />}
+                              element={
+                                <SafeRoute componentName="DetailPage">
+                                  <DetailPage />
+                                </SafeRoute>
+                              }
                             />
-                            <Route path="/movie/:id" element={<DetailPage />} />
-                            <Route path="/tv/:id" element={<DetailPage />} />
-                            <Route path="/watch/:id" element={<WatchPage />} />
+                            <Route
+                              path="/movie/:id"
+                              element={
+                                <SafeRoute componentName="Movie Detail">
+                                  <DetailPage />
+                                </SafeRoute>
+                              }
+                            />
+                            <Route
+                              path="/tv/:id"
+                              element={
+                                <SafeRoute componentName="TV Detail">
+                                  <DetailPage />
+                                </SafeRoute>
+                              }
+                            />
+                            <Route
+                              path="/watch/:id"
+                              element={
+                                <SafeRoute componentName="WatchPage">
+                                  <WatchPage />
+                                </SafeRoute>
+                              }
+                            />
                             <Route
                               path="/watch-party/:id"
-                              element={<WatchParty />}
+                              element={
+                                <SafeRoute componentName="WatchParty">
+                                  <WatchParty />
+                                </SafeRoute>
+                              }
                             />
-                            <Route path="/watchlist" element={<Watchlist />} />
-                            <Route path="/history" element={<History />} />
-                            <Route path="/admin" element={<Admin />} />
-                            <Route path="/help" element={<Help />} />
-                            <Route path="/contact" element={<Contact />} />
-                            <Route path="/privacy" element={<Privacy />} />
-                            <Route path="/terms" element={<Terms />} />
+                            <Route
+                              path="/watchlist"
+                              element={
+                                <SafeRoute componentName="Watchlist">
+                                  <Watchlist />
+                                </SafeRoute>
+                              }
+                            />
+                            <Route
+                              path="/history"
+                              element={
+                                <SafeRoute componentName="History">
+                                  <History />
+                                </SafeRoute>
+                              }
+                            />
+                            <Route
+                              path="/admin"
+                              element={
+                                <SafeRoute componentName="Admin">
+                                  <Admin />
+                                </SafeRoute>
+                              }
+                            />
+                            <Route
+                              path="/help"
+                              element={
+                                <SafeRoute componentName="Help">
+                                  <Help />
+                                </SafeRoute>
+                              }
+                            />
+                            <Route
+                              path="/contact"
+                              element={
+                                <SafeRoute componentName="Contact">
+                                  <Contact />
+                                </SafeRoute>
+                              }
+                            />
+                            <Route
+                              path="/privacy"
+                              element={
+                                <SafeRoute componentName="Privacy">
+                                  <Privacy />
+                                </SafeRoute>
+                              }
+                            />
+                            <Route
+                              path="/terms"
+                              element={
+                                <SafeRoute componentName="Terms">
+                                  <Terms />
+                                </SafeRoute>
+                              }
+                            />
                             <Route
                               path="/onboarding"
-                              element={<Onboarding />}
+                              element={
+                                <SafeRoute componentName="Onboarding">
+                                  <Onboarding />
+                                </SafeRoute>
+                              }
                             />
-                            <Route path="/donate" element={<Donate />} />
+                            <Route
+                              path="/donate"
+                              element={
+                                <SafeRoute componentName="Donate">
+                                  <Donate />
+                                </SafeRoute>
+                              }
+                            />
                           </Routes>
                         </React.Suspense>
                       </main>
