@@ -31,24 +31,21 @@ const Index = () => {
   const featuredCategories = [
     {
       title: "Trending Now",
-      description: "The hottest movies and shows everyone is talking about",
+      description: "What's hot right now",
       icon: TrendingUp,
       link: "/trending",
-      gradient: "from-red-600 to-pink-600",
     },
     {
       title: "Top Rated",
-      description: "Critically acclaimed content with the highest ratings",
+      description: "Highest rated content",
       icon: Star,
       link: "/top-rated",
-      gradient: "from-yellow-500 to-orange-600",
     },
     {
-      title: "Community Picks",
-      description: "Discover what our community loves most",
+      title: "Community",
+      description: "Join the conversation",
       icon: Users,
       link: "/community",
-      gradient: "from-blue-600 to-purple-600",
     },
   ];
 
@@ -58,40 +55,27 @@ const Index = () => {
       <EnhancedHeroCarousel profile={currentProfile} />
 
       {/* Featured Categories */}
-      <section className="bg-gray-950 relative z-10">
-        <div className="container mx-auto px-4 py-20">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
-              Explore Our Collection
-            </h2>
-            <p className="text-gray-400 text-lg max-w-2xl mx-auto">
-              From blockbuster hits to hidden gems, find exactly what you're
-              looking for
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-16">
+      <section className="bg-gray-950 relative z-10 -mt-32">
+        <div className="container mx-auto px-4 py-12">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {featuredCategories.map((category) => {
               const Icon = category.icon;
               return (
                 <Link key={category.title} to={category.link}>
-                  <Card className="group border-gray-800 bg-gray-900/50 hover:bg-gray-900/80 transition-all duration-300 cursor-pointer overflow-hidden">
-                    <CardContent className="p-6 relative">
-                      <div
-                        className={`absolute inset-0 bg-gradient-to-br ${category.gradient} opacity-10 group-hover:opacity-20 transition-opacity`}
-                      />
-                      <div className="relative z-10">
-                        <div
-                          className={`w-12 h-12 rounded-lg bg-gradient-to-br ${category.gradient} flex items-center justify-center mb-4`}
-                        >
-                          <Icon className="h-6 w-6 text-white" />
+                  <Card className="group border-gray-800 bg-gray-900/80 hover:bg-gray-800/80 transition-all duration-200 cursor-pointer">
+                    <CardContent className="p-5">
+                      <div className="flex items-center gap-4">
+                        <div className="w-10 h-10 rounded-lg bg-red-600 flex items-center justify-center flex-shrink-0">
+                          <Icon className="h-5 w-5 text-white" />
                         </div>
-                        <h3 className="text-xl font-semibold text-white mb-2 group-hover:text-red-400 transition-colors">
-                          {category.title}
-                        </h3>
-                        <p className="text-gray-400 leading-relaxed">
-                          {category.description}
-                        </p>
+                        <div>
+                          <h3 className="text-base font-semibold text-white group-hover:text-red-400 transition-colors">
+                            {category.title}
+                          </h3>
+                          <p className="text-sm text-gray-400 hidden md:block">
+                            {category.description}
+                          </p>
+                        </div>
                       </div>
                     </CardContent>
                   </Card>
@@ -104,7 +88,7 @@ const Index = () => {
 
       {/* Main Content */}
       <main className="bg-gray-950 relative z-10">
-        <div className="container mx-auto px-4 py-16 space-y-16">
+        <div className="container mx-auto px-4 py-12 space-y-12">
           {user && (
             <>
               <ContinueWatching profile={currentProfile} />
@@ -113,45 +97,6 @@ const Index = () => {
           )}
 
           <EnhancedMovieSection />
-
-          {/* Stats Section */}
-          <section className="bg-gray-900/50 rounded-2xl p-8 md:p-12">
-            <div className="text-center mb-8">
-              <h2 className="text-2xl md:text-3xl font-bold text-white mb-4">
-                Join Millions of Movie Lovers
-              </h2>
-              <p className="text-gray-400">
-                Be part of the largest streaming community
-              </p>
-            </div>
-
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-              <div className="text-center">
-                <div className="text-3xl md:text-4xl font-bold text-red-400 mb-2">
-                  50K+
-                </div>
-                <div className="text-gray-400">Movies & Shows</div>
-              </div>
-              <div className="text-center">
-                <div className="text-3xl md:text-4xl font-bold text-red-400 mb-2">
-                  2M+
-                </div>
-                <div className="text-gray-400">Active Users</div>
-              </div>
-              <div className="text-center">
-                <div className="text-3xl md:text-4xl font-bold text-red-400 mb-2">
-                  98%
-                </div>
-                <div className="text-gray-400">Uptime</div>
-              </div>
-              <div className="text-center">
-                <div className="text-3xl md:text-4xl font-bold text-red-400 mb-2">
-                  4.9
-                </div>
-                <div className="text-gray-400">User Rating</div>
-              </div>
-            </div>
-          </section>
         </div>
       </main>
     </div>
