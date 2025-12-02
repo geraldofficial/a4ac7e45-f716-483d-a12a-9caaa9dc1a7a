@@ -1,5 +1,4 @@
 import { useToast } from "@/hooks/use-toast";
-import { userApi } from "@/services/user";
 import { authApi } from "@/services/auth";
 import { UserProfile } from "@/types/auth";
 import { safeLogError } from "@/utils/safeErrorFormat";
@@ -17,12 +16,9 @@ export const useAuthActions = (
     setLoading(true);
     try {
       cleanupAuthState();
-
       try {
         await supabase.auth.signOut({ scope: "global" });
-      } catch (err) {
-        // Continue even if this fails
-      }
+      } catch (err) {}
 
       const response = await authApi.signIn(email, password);
       if (response?.user) {
@@ -30,7 +26,6 @@ export const useAuthActions = (
           title: "Sign in successful!",
           description: `Welcome back!`,
         });
-        // Force a complete page reload to ensure clean state
         window.location.href = "/";
       }
     } catch (error: any) {
@@ -45,22 +40,16 @@ export const useAuthActions = (
     }
   };
 
-  const signUp = async (
-    email: string,
-    password: string,
-    userData: any = {},
-  ) => {
+  const signUp = async (email: string, password: string, userData: any = {}) => {
     setLoading(true);
     try {
       cleanupAuthState();
-
       const response = await authApi.signUp(email, password, userData);
       if (response?.user) {
         toast({
           title: "Sign up successful!",
-          description: `Welcome to FlickPick! Please check your email to verify your account.`,
+          description: `Welcome to FlickPick!`,
         });
-
         window.location.href = "/onboarding";
       }
     } catch (error: any) {
@@ -78,23 +67,12 @@ export const useAuthActions = (
   const signOut = async () => {
     setLoading(true);
     try {
-      // Clear state immediately
       setUser(null);
-
-      // Clean up all auth state including profiles
       cleanupAuthState();
-
       try {
         await supabase.auth.signOut({ scope: "global" });
-      } catch (err) {
-        console.warn("Sign out error:", err);
-      }
-
-      toast({
-        description: "Signed out successfully!",
-      });
-
-      // Force complete page reload to clear all state
+      } catch (err) {}
+      toast({ description: "Signed out successfully!" });
       window.location.href = "/auth";
     } catch (error: any) {
       safeLogError("Sign-out error", error);
@@ -110,13 +88,15 @@ export const useAuthActions = (
 
   const updateProfile = async (updates: Partial<UserProfile>) => {
     if (!user) return;
-
     try {
-      const updatedUser = await userApi.updateUser(updates);
-      const newUser = user
-        ? { ...user, ...updatedUser }
-        : (updatedUser as UserProfile);
-      setUser(newUser);
+      const { error } = await supabase
+        .from('profiles')
+        .update(updates)
+        .eq('id', user.id);
+      
+      if (error) throw error;
+      
+      setUser({ ...user, ...updates });
       toast({
         title: "Profile updated!",
         description: "Your profile has been updated successfully.",

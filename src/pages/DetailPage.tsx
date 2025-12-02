@@ -1,6 +1,6 @@
-import React, { useEffect } from "react";
-import { useParams, useNavigate, useLocation } from "react-router-dom";
-import { Navbar } from "@/components/Navbar";
+import React from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import { ModernNavbar } from "@/components/layout/ModernNavbar";
 import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { DetailPageHeader } from "@/components/DetailPageHeader";
@@ -15,7 +15,6 @@ import { useDetailPageState } from "@/hooks/useDetailPageState";
 const DetailPage = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const location = useLocation();
   const { user, addToWatchlist, removeFromWatchlist, isInWatchlist } =
     useAuth();
   const { toast } = useToast();
@@ -25,55 +24,17 @@ const DetailPage = () => {
     loading,
     isPlaying,
     showShareModal,
-    showWatchParty,
     type,
     season,
     episode,
     shouldResume,
     setIsPlaying,
     setShowShareModal,
-    setShowWatchParty,
   } = useDetailPageState(id);
 
-  // Check URL parameters for watch party actions
-  useEffect(() => {
-    if (!content) return;
-
-    const urlParams = new URLSearchParams(location.search);
-    const watchPartyParam = urlParams.get("watch_party");
-    const joinPartyParam = urlParams.get("join_party");
-
-    if (watchPartyParam && user) {
-      // Auto-open watch party if created from dialog
-      setShowWatchParty(true);
-      // Clean URL
-      navigate(location.pathname, { replace: true });
-    } else if (joinPartyParam && user) {
-      // Auto-join watch party
-      const {
-        simpleWatchPartyService,
-      } = require("@/services/simpleWatchParty");
-      const session = simpleWatchPartyService.joinSession(
-        joinPartyParam,
-        user.id,
-      );
-      if (session) {
-        setShowWatchParty(true);
-        toast({
-          title: "Joined watch party!",
-          description: `You're now in ${session.movieTitle} watch party`,
-        });
-      }
-      // Clean URL
-      navigate(location.pathname, { replace: true });
-    }
-  }, [content, user, location.search, navigate]);
-
-  // Get the best trailer from videos
   const getTrailer = () => {
     if (!content?.videos?.results) return null;
 
-    // Look for official trailers first
     const officialTrailer = content.videos.results.find(
       (video) =>
         video.site === "YouTube" && video.type === "Trailer" && video.official,
@@ -81,7 +42,6 @@ const DetailPage = () => {
 
     if (officialTrailer) return officialTrailer;
 
-    // Fall back to any trailer
     const anyTrailer = content.videos.results.find(
       (video) => video.site === "YouTube" && video.type === "Trailer",
     );
@@ -132,18 +92,6 @@ const DetailPage = () => {
     setShowShareModal(true);
   };
 
-  const handleWatchParty = () => {
-    if (!user) {
-      toast({
-        title: "Sign in required",
-        description: "Please sign in to create watch parties.",
-        variant: "destructive",
-      });
-      return;
-    }
-    setShowWatchParty(true);
-  };
-
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-950">
@@ -189,7 +137,6 @@ const DetailPage = () => {
 
   return (
     <div className="min-h-screen bg-gray-950">
-      {/* Video Player - Full Screen Overlay */}
       <DetailPageVideoPlayer
         isPlaying={isPlaying}
         title={title}
@@ -206,10 +153,9 @@ const DetailPage = () => {
 
       {!isPlaying && (
         <>
-          <Navbar />
+          <ModernNavbar />
 
           <div className="pt-14 md:pt-16">
-            {/* Hero Section */}
             <DetailPageHeader
               content={content}
               type={type}
@@ -220,7 +166,6 @@ const DetailPage = () => {
               onBack={() => navigate(-1)}
             />
 
-            {/* Action Buttons - Below the hero section */}
             <div className="container mx-auto px-3 md:px-4 py-4 md:py-6 -mt-2">
               <div className="max-w-full md:max-w-2xl">
                 <DetailPageActions
@@ -230,36 +175,23 @@ const DetailPage = () => {
                   onWatch={handleWatch}
                   onWatchlistToggle={handleWatchlistToggle}
                   onShare={handleShare}
-                  onWatchParty={handleWatchParty}
                 />
               </div>
             </div>
 
-            {/* Additional Info */}
             <DetailPageInfo content={content} />
           </div>
 
           <Footer />
 
-          {/* Modals */}
           <DetailPageModals
             showShareModal={showShareModal}
             showWatchParty={false}
             content={content}
-            onCloseShareModal={() => setShowShareModal(false)}
-            onCloseWatchParty={() => setShowWatchParty(false)}
+            type={type}
+            onCloseShare={() => setShowShareModal(false)}
+            onCloseWatchParty={() => {}}
           />
-
-          {/* Simple Watch Party */}
-          {showWatchParty && (
-            <div className="fixed inset-0 z-50">
-              <SimpleWatchParty
-                movieId={content.id}
-                movieTitle={content.title || content.name || "Unknown Title"}
-                movieType={type}
-              />
-            </div>
-          )}
         </>
       )}
     </div>

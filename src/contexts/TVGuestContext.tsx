@@ -6,6 +6,14 @@ import React, {
   ReactNode,
 } from "react";
 
+interface WatchHistoryItem {
+  id: number;
+  title: string;
+  poster_path?: string;
+  type: string;
+  watchedAt: string;
+}
+
 interface TVGuestContextType {
   isGuestMode: boolean;
   isTVMode: boolean;
@@ -17,6 +25,7 @@ interface TVGuestContextType {
   removeFromGuestWatchlist: (movieId: string) => void;
   guestHistory: string[];
   addToGuestHistory: (movieId: string) => void;
+  addToGuestWatchHistory: (item: WatchHistoryItem) => void;
   clearGuestData: () => void;
   showTVInstallPrompt: boolean;
   dismissTVInstallPrompt: () => void;
@@ -45,7 +54,6 @@ export const TVGuestProvider: React.FC<TVGuestProviderProps> = ({
   const [guestHistory, setGuestHistory] = useState<string[]>([]);
   const [showTVInstallPrompt, setShowTVInstallPrompt] = useState(false);
 
-  // Detect TV mode on load
   useEffect(() => {
     const detectTVMode = () => {
       const isLargeScreen = window.innerWidth >= 1280;
@@ -67,14 +75,12 @@ export const TVGuestProvider: React.FC<TVGuestProviderProps> = ({
 
       setIsTVMode(tvModeDetected);
 
-      // Auto-enable guest mode on TV
       if (tvModeDetected) {
         const savedGuestMode =
           localStorage.getItem("flickpick-guest-mode") !== "false";
         setIsGuestMode(savedGuestMode);
       }
 
-      // Show install prompt for TV users after 30 seconds
       if (
         tvModeDetected &&
         !localStorage.getItem("flickpick-install-dismissed")
@@ -91,7 +97,6 @@ export const TVGuestProvider: React.FC<TVGuestProviderProps> = ({
     return () => window.removeEventListener("resize", detectTVMode);
   }, []);
 
-  // Load guest data from localStorage
   useEffect(() => {
     try {
       const savedWatchlist = localStorage.getItem("flickpick-guest-watchlist");
@@ -108,7 +113,6 @@ export const TVGuestProvider: React.FC<TVGuestProviderProps> = ({
     }
   }, []);
 
-  // Save guest data to localStorage
   useEffect(() => {
     if (isGuestMode) {
       localStorage.setItem(
@@ -162,7 +166,15 @@ export const TVGuestProvider: React.FC<TVGuestProviderProps> = ({
   const addToGuestHistory = (movieId: string) => {
     setGuestHistory((prev) => {
       const filtered = prev.filter((id) => id !== movieId);
-      return [movieId, ...filtered].slice(0, 50); // Keep last 50 items
+      return [movieId, ...filtered].slice(0, 50);
+    });
+  };
+
+  const addToGuestWatchHistory = (item: WatchHistoryItem) => {
+    const movieId = item.id.toString();
+    setGuestHistory((prev) => {
+      const filtered = prev.filter((id) => id !== movieId);
+      return [movieId, ...filtered].slice(0, 50);
     });
   };
 
@@ -189,6 +201,7 @@ export const TVGuestProvider: React.FC<TVGuestProviderProps> = ({
     removeFromGuestWatchlist,
     guestHistory,
     addToGuestHistory,
+    addToGuestWatchHistory,
     clearGuestData,
     showTVInstallPrompt,
     dismissTVInstallPrompt,

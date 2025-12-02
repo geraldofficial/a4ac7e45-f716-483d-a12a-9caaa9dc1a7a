@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Navbar } from "@/components/Navbar";
+import { ModernNavbar } from "@/components/layout/ModernNavbar";
 import { MovieCard } from "@/components/MovieCard";
 import { Footer } from "@/components/Footer";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
@@ -54,7 +54,7 @@ const Movies = () => {
     return (
       <ErrorBoundary>
         <div className="min-h-screen bg-background">
-          <Navbar />
+          <ModernNavbar />
           <div className="pt-16 md:pt-24 pb-20 px-3 md:px-4">
             <div className="container mx-auto">
               <div className="flex items-center justify-center h-64">
@@ -75,7 +75,7 @@ const Movies = () => {
     return (
       <ErrorBoundary>
         <div className="min-h-screen bg-background">
-          <Navbar />
+          <ModernNavbar />
           <div className="pt-16 md:pt-24 pb-20 px-3 md:px-4">
             <div className="container mx-auto">
               <div className="flex items-center justify-center h-64">
@@ -99,11 +99,10 @@ const Movies = () => {
   return (
     <ErrorBoundary>
       <div className="min-h-screen bg-background">
-        <Navbar />
+        <ModernNavbar />
 
         <div className="pt-16 md:pt-24 pb-20 px-3 md:px-4">
           <div className="container mx-auto">
-            {/* Header */}
             <div className="mb-8 text-center">
               <div className="flex items-center justify-center mb-4">
                 <div className="bg-primary/10 p-3 rounded-full mr-4">
@@ -120,7 +119,6 @@ const Movies = () => {
               </div>
             </div>
 
-            {/* Content Tabs */}
             <Tabs
               value={activeTab}
               onValueChange={setActiveTab}
@@ -175,7 +173,7 @@ const Movies = () => {
 
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
                   {popularMovies?.map((movie) => (
-                    <MovieCard key={movie.id} movie={movie} type="movie" />
+                    <MovieCard key={movie.id} movie={movie} />
                   )) || []}
                 </div>
               </TabsContent>
@@ -196,7 +194,7 @@ const Movies = () => {
 
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
                   {topRatedMovies?.map((movie) => (
-                    <MovieCard key={movie.id} movie={movie} type="movie" />
+                    <MovieCard key={movie.id} movie={movie} />
                   )) || []}
                 </div>
               </TabsContent>
@@ -217,7 +215,7 @@ const Movies = () => {
 
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
                   {nowPlayingMovies?.map((movie) => (
-                    <MovieCard key={movie.id} movie={movie} type="movie" />
+                    <MovieCard key={movie.id} movie={movie} />
                   )) || []}
                 </div>
               </TabsContent>
@@ -238,45 +236,11 @@ const Movies = () => {
 
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
                   {upcomingMovies?.map((movie) => (
-                    <MovieCard key={movie.id} movie={movie} type="movie" />
+                    <MovieCard key={movie.id} movie={movie} />
                   )) || []}
                 </div>
               </TabsContent>
             </Tabs>
-
-            {/* Stats */}
-            <div className="mt-16 text-center">
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <div className="bg-card p-4 rounded-lg border">
-                  <div className="text-2xl font-bold text-primary">
-                    {popularMovies?.length || 0}
-                  </div>
-                  <div className="text-sm text-muted-foreground">
-                    Popular Movies
-                  </div>
-                </div>
-                <div className="bg-card p-4 rounded-lg border">
-                  <div className="text-2xl font-bold text-primary">
-                    {topRatedMovies?.length || 0}
-                  </div>
-                  <div className="text-sm text-muted-foreground">Top Rated</div>
-                </div>
-                <div className="bg-card p-4 rounded-lg border">
-                  <div className="text-2xl font-bold text-primary">
-                    {nowPlayingMovies?.length || 0}
-                  </div>
-                  <div className="text-sm text-muted-foreground">
-                    Now Playing
-                  </div>
-                </div>
-                <div className="bg-card p-4 rounded-lg border">
-                  <div className="text-2xl font-bold text-primary">
-                    {upcomingMovies?.length || 0}
-                  </div>
-                  <div className="text-sm text-muted-foreground">Upcoming</div>
-                </div>
-              </div>
-            </div>
           </div>
         </div>
 

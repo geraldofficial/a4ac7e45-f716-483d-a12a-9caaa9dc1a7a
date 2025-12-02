@@ -2,7 +2,6 @@ import React from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
-// Error suppression now handled by external script in HTML
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
@@ -14,15 +13,8 @@ import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { SafeErrorBoundary } from "@/components/SafeErrorBoundary";
 import { NetworkErrorHandler } from "@/components/NetworkErrorHandler";
 import { ScrollToTop } from "./components/ScrollToTop";
-import { AppStatusUpdate } from "./components/AppStatusUpdate";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import "@/styles/tv-styles.css";
-
-// Import network diagnostics and error handling for debugging
-import "./utils/migrationRunner";
-// import "./utils/errorSuppression"; // Disabled - using external script instead
-import "./utils/linkValidator";
-import "./utils/settingsValidator";
 
 // Lazy load pages for better performance
 const Index = React.lazy(() => import("./pages/Index"));
@@ -43,6 +35,7 @@ const Privacy = React.lazy(() => import("./pages/Privacy"));
 const Terms = React.lazy(() => import("./pages/Terms"));
 const Onboarding = React.lazy(() => import("./pages/Onboarding"));
 const Donate = React.lazy(() => import("./pages/Donate"));
+const Search = React.lazy(() => import("./pages/Search"));
 
 // Navigation component that switches between TV and regular navbar
 const AppNavigation: React.FC = () => {
@@ -97,7 +90,7 @@ function App() {
   const queryClient = new QueryClient({
     defaultOptions: {
       queries: {
-        staleTime: 5 * 60 * 1000, // 5 minutes
+        staleTime: 5 * 60 * 1000,
         retry: (failureCount, error) => {
           if (error && typeof error === "object" && "status" in error) {
             const status = (error as any).status;
@@ -156,26 +149,25 @@ function App() {
                     <Sonner />
                     <BrowserRouter>
                       <ScrollToTop />
-                      <AppStatusUpdate />
                       <AppNavigation />
                       <TVInstallPrompt />
 
                       <main>
-                          <React.Suspense
-                            fallback={
-                              <div className="flex flex-col items-center justify-center min-h-screen gap-4">
-                                <img
-                                  src="https://cdn.builder.io/api/v1/assets/3a5e046f24294e60a3c1afd0f4c614eb/chatgpt-image-jun-21-2025-03_27_04-pm-65410f?format=webp&width=800"
-                                  alt="FlickPick"
-                                  className="h-16 w-auto"
-                                />
-                                <div className="animate-spin-slow rounded-full h-10 w-10 border-b-2 border-red-600"></div>
-                                <span className="text-gray-400">
-                                  Loading FlickPick...
-                                </span>
-                              </div>
-                            }
-                          >
+                        <React.Suspense
+                          fallback={
+                            <div className="flex flex-col items-center justify-center min-h-screen gap-4">
+                              <img
+                                src="https://cdn.builder.io/api/v1/assets/3a5e046f24294e60a3c1afd0f4c614eb/chatgpt-image-jun-21-2025-03_27_04-pm-65410f?format=webp&width=800"
+                                alt="FlickPick"
+                                className="h-16 w-auto"
+                              />
+                              <div className="animate-spin-slow rounded-full h-10 w-10 border-b-2 border-red-600"></div>
+                              <span className="text-gray-400">
+                                Loading FlickPick...
+                              </span>
+                            </div>
+                          }
+                        >
                           <Routes>
                             <Route path="/" element={<HomePage />} />
                             <Route
@@ -217,6 +209,22 @@ function App() {
                               element={
                                 <SafeRoute componentName="TVShows">
                                   <TVShows />
+                                </SafeRoute>
+                              }
+                            />
+                            <Route
+                              path="/trending"
+                              element={
+                                <SafeRoute componentName="Trending">
+                                  <Trending />
+                                </SafeRoute>
+                              }
+                            />
+                            <Route
+                              path="/search"
+                              element={
+                                <SafeRoute componentName="Search">
+                                  <Search />
                                 </SafeRoute>
                               }
                             />
@@ -270,14 +278,6 @@ function App() {
                                     <History />
                                   </SafeRoute>
                                 </ProtectedRoute>
-                              }
-                            />
-                            <Route
-                              path="/admin"
-                              element={
-                                <SafeRoute componentName="Admin">
-                                  <Admin />
-                                </SafeRoute>
                               }
                             />
                             <Route

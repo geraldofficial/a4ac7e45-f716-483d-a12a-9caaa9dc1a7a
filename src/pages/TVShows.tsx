@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Navbar } from "@/components/Navbar";
+import { ModernNavbar } from "@/components/layout/ModernNavbar";
 import { MovieCard } from "@/components/MovieCard";
 import { Footer } from "@/components/Footer";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
@@ -54,7 +54,7 @@ const TVShows = () => {
     return (
       <ErrorBoundary>
         <div className="min-h-screen bg-background">
-          <Navbar />
+          <ModernNavbar />
           <div className="pt-16 md:pt-24 pb-20 px-3 md:px-4">
             <div className="container mx-auto">
               <div className="flex items-center justify-center h-64">
@@ -75,7 +75,7 @@ const TVShows = () => {
     return (
       <ErrorBoundary>
         <div className="min-h-screen bg-background">
-          <Navbar />
+          <ModernNavbar />
           <div className="pt-16 md:pt-24 pb-20 px-3 md:px-4">
             <div className="container mx-auto">
               <div className="flex items-center justify-center h-64">
@@ -99,11 +99,10 @@ const TVShows = () => {
   return (
     <ErrorBoundary>
       <div className="min-h-screen bg-background">
-        <Navbar />
+        <ModernNavbar />
 
         <div className="pt-16 md:pt-24 pb-20 px-3 md:px-4">
           <div className="container mx-auto">
-            {/* Header */}
             <div className="mb-8 text-center">
               <div className="flex items-center justify-center mb-4">
                 <div className="bg-primary/10 p-3 rounded-full mr-4">
@@ -120,7 +119,6 @@ const TVShows = () => {
               </div>
             </div>
 
-            {/* Content Tabs */}
             <Tabs
               value={activeTab}
               onValueChange={setActiveTab}
@@ -243,40 +241,6 @@ const TVShows = () => {
                 </div>
               </TabsContent>
             </Tabs>
-
-            {/* Stats */}
-            <div className="mt-16 text-center">
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <div className="bg-card p-4 rounded-lg border">
-                  <div className="text-2xl font-bold text-primary">
-                    {popularShows?.length || 0}
-                  </div>
-                  <div className="text-sm text-muted-foreground">
-                    Popular Shows
-                  </div>
-                </div>
-                <div className="bg-card p-4 rounded-lg border">
-                  <div className="text-2xl font-bold text-primary">
-                    {topRatedShows?.length || 0}
-                  </div>
-                  <div className="text-sm text-muted-foreground">Top Rated</div>
-                </div>
-                <div className="bg-card p-4 rounded-lg border">
-                  <div className="text-2xl font-bold text-primary">
-                    {onTheAirShows?.length || 0}
-                  </div>
-                  <div className="text-sm text-muted-foreground">On Air</div>
-                </div>
-                <div className="bg-card p-4 rounded-lg border">
-                  <div className="text-2xl font-bold text-primary">
-                    {airingTodayShows?.length || 0}
-                  </div>
-                  <div className="text-sm text-muted-foreground">
-                    Airing Today
-                  </div>
-                </div>
-              </div>
-            </div>
           </div>
         </div>
 
