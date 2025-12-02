@@ -168,18 +168,21 @@ function App() {
                       <TVInstallPrompt />
 
                       <main>
-                        <React.Suspense
-                          fallback={
-                            <div className="flex items-center justify-center min-h-screen">
-                              <div className="tv-loading">
-                                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-600"></div>
-                                <span className="ml-4">
+                          <React.Suspense
+                            fallback={
+                              <div className="flex flex-col items-center justify-center min-h-screen gap-4">
+                                <img
+                                  src="https://cdn.builder.io/api/v1/assets/3a5e046f24294e60a3c1afd0f4c614eb/chatgpt-image-jun-21-2025-03_27_04-pm-65410f?format=webp&width=800"
+                                  alt="FlickPick"
+                                  className="h-16 w-auto"
+                                />
+                                <div className="animate-spin-slow rounded-full h-10 w-10 border-b-2 border-red-600"></div>
+                                <span className="text-gray-400">
                                   Loading FlickPick...
                                 </span>
                               </div>
-                            </div>
-                          }
-                        >
+                            }
+                          >
                           <Routes>
                             <Route path="/" element={<HomePage />} />
                             <Route

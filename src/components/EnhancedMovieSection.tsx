@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
-import { EnhancedMovieRow } from './EnhancedMovieRow';
+import { MovieGrid } from './MovieGrid';
 import { LoadingSpinner } from './LoadingSpinner';
 import { EmailSubscription } from './EmailSubscription';
 import { tmdbApi, Movie } from '@/services/tmdb';
@@ -17,23 +17,7 @@ export const EnhancedMovieSection = () => {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [recommendedPage, setRecommendedPage] = useState(1);
-  const [hasMoreRecommended, setHasMoreRecommended] = useState(true);
-  const [loadingMore, setLoadingMore] = useState(false);
   const { user } = useAuth();
-  
-  const observer = useRef<IntersectionObserver>();
-  
-  const lastMovieElementRef = useCallback((node: HTMLDivElement) => {
-    if (loadingMore) return;
-    if (observer.current) observer.current.disconnect();
-    observer.current = new IntersectionObserver(entries => {
-      if (entries[0].isIntersecting && hasMoreRecommended) {
-        loadMoreRecommended();
-      }
-    });
-    if (node) observer.current.observe(node);
-  }, [loadingMore, hasMoreRecommended]);
 
   const fetchMovies = useCallback(async (isRefresh = false) => {
     try {
@@ -55,11 +39,8 @@ export const EnhancedMovieSection = () => {
       if (user && user.genre_preferences && user.genre_preferences.length > 0) {
         const recommendedResponse = await getPersonalizedRecommendations(user.genre_preferences, 1);
         setRecommendedMovies(recommendedResponse.results);
-        setHasMoreRecommended(recommendedResponse.total_pages > 1);
-        setRecommendedPage(1);
       } else {
         setRecommendedMovies(popularResponse.results);
-        setHasMoreRecommended(false);
       }
     } catch (error) {
       console.error('Error fetching movies:', error);
@@ -73,24 +54,6 @@ export const EnhancedMovieSection = () => {
   useEffect(() => {
     fetchMovies();
   }, [fetchMovies]);
-
-  const loadMoreRecommended = useCallback(async () => {
-    if (!user || !user.genre_preferences || loadingMore || !hasMoreRecommended) return;
-    
-    setLoadingMore(true);
-    try {
-      const nextPage = recommendedPage + 1;
-      const response = await getPersonalizedRecommendations(user.genre_preferences, nextPage);
-      
-      setRecommendedMovies(prev => [...prev, ...response.results]);
-      setRecommendedPage(nextPage);
-      setHasMoreRecommended(nextPage < response.total_pages);
-    } catch (error) {
-      console.error('Error loading more recommendations:', error);
-    } finally {
-      setLoadingMore(false);
-    }
-  }, [user, recommendedPage, loadingMore, hasMoreRecommended]);
 
   const recommendationTitle = useMemo(() => 
     user && user.genre_preferences 
@@ -116,7 +79,7 @@ export const EnhancedMovieSection = () => {
       <div className="flex items-center justify-center py-16 md:py-24">
         <Card className="w-full max-w-md mx-auto">
           <CardHeader className="text-center">
-            <CardTitle className="text-destructive">Oops! Something went wrong</CardTitle>
+            <CardTitle className="text-red-500">Oops! Something went wrong</CardTitle>
             <CardDescription>{error}</CardDescription>
           </CardHeader>
           <CardContent className="text-center">
@@ -131,49 +94,25 @@ export const EnhancedMovieSection = () => {
   }
 
   return (
-    <div className="space-y-6 md:space-y-8 lg:space-y-12">
-      {/* Email Subscription Section */}
-      <section className="px-3 md:px-6">
-        <div className="flex items-center gap-2 mb-6">
-          <div className="w-1 h-6 bg-gradient-to-b from-primary to-primary/50 rounded-full"></div>
-          <h2 className="text-lg md:text-2xl lg:text-3xl font-bold text-foreground">
-            Stay Updated
-          </h2>
-        </div>
-        <EmailSubscription />
-      </section>
-
-      <EnhancedMovieRow
+    <div className="space-y-8 md:space-y-12">
+      <MovieGrid
         title={recommendationTitle}
         movies={recommendedMovies}
-        sectionId="recommended"
-        showScrollButtons={false}
         priority={true}
-        lastMovieElementRef={lastMovieElementRef}
       />
 
-      <EnhancedMovieRow
+      <MovieGrid
         title="Trending Now"
         movies={trendingMovies}
-        sectionId="trending"
-        priority={false}
         showRefresh={true}
         refreshing={refreshing}
         onRefresh={handleRefresh}
       />
 
-      <EnhancedMovieRow
+      <MovieGrid
         title="Popular Movies"
         movies={popularMovies}
-        sectionId="popular"
-        priority={false}
       />
-
-      {loadingMore && (
-        <div className="text-center py-6">
-          <LoadingSpinner size="md" text="Loading more recommendations..." />
-        </div>
-      )}
     </div>
   );
 };
