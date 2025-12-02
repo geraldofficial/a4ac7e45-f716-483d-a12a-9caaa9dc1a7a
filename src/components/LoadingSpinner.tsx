@@ -25,9 +25,9 @@ export const LoadingSpinner: React.FC<LoadingSpinnerProps> = ({
   };
 
   return (
-    <div className={`flex flex-col items-center justify-center space-y-2 ${className}`}>
-      <div className={`${sizeClasses[size]} border-2 border-primary border-t-transparent rounded-full animate-spin`}></div>
-      <div className={`text-muted-foreground ${textSizeClasses[size]} font-medium`}>{text}</div>
+    <div className={`flex flex-col items-center justify-center gap-3 ${className}`}>
+      <div className={`${sizeClasses[size]} border-2 border-red-600 border-t-transparent rounded-full animate-spin-slow`}></div>
+      <div className={`text-gray-400 ${textSizeClasses[size]} font-medium`}>{text}</div>
     </div>
   );
 };

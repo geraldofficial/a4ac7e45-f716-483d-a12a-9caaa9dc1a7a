@@ -217,13 +217,13 @@ export const EnhancedHeroCarousel: React.FC<HeroCarouselProps> = ({
     return (
       <div className="relative w-full h-screen bg-gray-950">
         <div className="absolute inset-0 flex items-center justify-center">
-          <div className="text-center">
+          <div className="text-center space-y-4">
             <img
               src="https://cdn.builder.io/api/v1/assets/3a5e046f24294e60a3c1afd0f4c614eb/chatgpt-image-jun-21-2025-03_27_04-pm-65410f?format=webp&width=800"
               alt="FlickPick"
-              className="h-16 w-auto mx-auto mb-4 animate-pulse"
+              className="h-16 w-auto mx-auto mb-2"
             />
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-red-600 mx-auto"></div>
+            <div className="animate-spin-slow rounded-full h-8 w-8 border-b-2 border-red-600 mx-auto"></div>
           </div>
         </div>
       </div>
