@@ -29,21 +29,14 @@ const Index = React.lazy(() => import("./pages/Index"));
 const TVHome = React.lazy(() => import("./pages/TVHome"));
 const Auth = React.lazy(() => import("./pages/Auth"));
 const Profile = React.lazy(() => import("./pages/Profile"));
-const Profiles = React.lazy(() => import("./pages/Profiles"));
-const Settings = React.lazy(() => import("./pages/Settings"));
-const NotificationSettings = React.lazy(
-  () => import("./pages/NotificationSettings"),
-);
 const Browse = React.lazy(() => import("./pages/Browse"));
 const Movies = React.lazy(() => import("./pages/Movies"));
 const TVShows = React.lazy(() => import("./pages/TVShows"));
 const Trending = React.lazy(() => import("./pages/Trending"));
-const Community = React.lazy(() => import("./pages/Community"));
 const DetailPage = React.lazy(() => import("./pages/DetailPage"));
 const WatchPage = React.lazy(() => import("./pages/WatchPage"));
 const Watchlist = React.lazy(() => import("./pages/Watchlist"));
 const History = React.lazy(() => import("./pages/History"));
-const Admin = React.lazy(() => import("./pages/Admin"));
 const Help = React.lazy(() => import("./pages/Help"));
 const Contact = React.lazy(() => import("./pages/Contact"));
 const Privacy = React.lazy(() => import("./pages/Privacy"));
@@ -204,36 +197,6 @@ function App() {
                               }
                             />
                             <Route
-                              path="/profiles"
-                              element={
-                                <ProtectedRoute>
-                                  <SafeRoute componentName="Profiles">
-                                    <Profiles />
-                                  </SafeRoute>
-                                </ProtectedRoute>
-                              }
-                            />
-                            <Route
-                              path="/settings"
-                              element={
-                                <ProtectedRoute>
-                                  <SafeRoute componentName="Settings">
-                                    <Settings />
-                                  </SafeRoute>
-                                </ProtectedRoute>
-                              }
-                            />
-                            <Route
-                              path="/notifications/settings"
-                              element={
-                                <ProtectedRoute>
-                                  <SafeRoute componentName="NotificationSettings">
-                                    <NotificationSettings />
-                                  </SafeRoute>
-                                </ProtectedRoute>
-                              }
-                            />
-                            <Route
                               path="/browse"
                               element={
                                 <SafeRoute componentName="Browse">
@@ -254,22 +217,6 @@ function App() {
                               element={
                                 <SafeRoute componentName="TVShows">
                                   <TVShows />
-                                </SafeRoute>
-                              }
-                            />
-                            <Route
-                              path="/trending"
-                              element={
-                                <SafeRoute componentName="Trending">
-                                  <Trending />
-                                </SafeRoute>
-                              }
-                            />
-                            <Route
-                              path="/community"
-                              element={
-                                <SafeRoute componentName="Community">
-                                  <Community />
                                 </SafeRoute>
                               }
                             />

@@ -8,7 +8,6 @@ import { DetailPageActions } from "@/components/DetailPageActions";
 import { DetailPageInfo } from "@/components/DetailPageInfo";
 import { DetailPageVideoPlayer } from "@/components/DetailPageVideoPlayer";
 import { DetailPageModals } from "@/components/DetailPageModals";
-import SimpleWatchParty from "@/components/SimpleWatchParty";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { useDetailPageState } from "@/hooks/useDetailPageState";
