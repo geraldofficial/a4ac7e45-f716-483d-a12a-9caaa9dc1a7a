@@ -37,10 +37,6 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = (props) => {
     }
   }
 
-  const handleCastToggle = (isCasting: boolean) => {
-    console.log(`Cast status changed: ${isCasting ? 'Started' : 'Stopped'} casting ${props.title}`);
-  };
-
   return (
     <EnhancedVideoPlayerCore
       title={props.title}
@@ -50,7 +46,6 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = (props) => {
       episode={props.episode}
       resumeFrom={resumeFrom}
       onProgress={props.onProgress}
-      onCastToggle={handleCastToggle}
     />
   );
 };

@@ -2,7 +2,6 @@
 import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { MovieGrid } from './MovieGrid';
 import { LoadingSpinner } from './LoadingSpinner';
-import { EmailSubscription } from './EmailSubscription';
 import { tmdbApi, Movie } from '@/services/tmdb';
 import { getPersonalizedRecommendations, getRecommendationTitle } from '@/services/recommendations';
 import { useAuth } from '@/contexts/AuthContext';

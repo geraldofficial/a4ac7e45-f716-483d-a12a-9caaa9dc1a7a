@@ -45,8 +45,6 @@ import {
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { useAuth } from "@/contexts/AuthContext";
 import { Link, useNavigate, useLocation } from "react-router-dom";
-import SimpleNotificationBell from "@/components/notifications/SimpleNotificationBell";
-import QuickWatchPartyDialog from "@/components/QuickWatchPartyDialog";
 
 const navigation = [
   { name: "Home", href: "/", icon: Home },
