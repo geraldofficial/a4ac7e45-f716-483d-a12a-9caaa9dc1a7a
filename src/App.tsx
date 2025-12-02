@@ -41,7 +41,6 @@ const Trending = React.lazy(() => import("./pages/Trending"));
 const Community = React.lazy(() => import("./pages/Community"));
 const DetailPage = React.lazy(() => import("./pages/DetailPage"));
 const WatchPage = React.lazy(() => import("./pages/WatchPage"));
-const WatchParty = React.lazy(() => import("./pages/WatchParty"));
 const Watchlist = React.lazy(() => import("./pages/Watchlist"));
 const History = React.lazy(() => import("./pages/History"));
 const Admin = React.lazy(() => import("./pages/Admin"));
@@ -300,14 +299,6 @@ function App() {
                               element={
                                 <SafeRoute componentName="WatchPage">
                                   <WatchPage />
-                                </SafeRoute>
-                              }
-                            />
-                            <Route
-                              path="/watch-party/:id"
-                              element={
-                                <SafeRoute componentName="WatchParty">
-                                  <WatchParty />
                                 </SafeRoute>
                               }
                             />

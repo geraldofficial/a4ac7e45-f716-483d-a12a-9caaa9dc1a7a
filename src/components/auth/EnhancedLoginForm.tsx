@@ -104,10 +104,10 @@ export const EnhancedLoginForm: React.FC<EnhancedLoginFormProps> = ({ onToggleMo
   }
 
   return (
-    <div className="min-h-screen flex">
+    <div className="min-h-screen flex flex-col md:flex-row">
       {/* Left side - Form */}
-      <div className="flex-1 flex items-center justify-center bg-background p-8">
-        <div className="w-full max-w-md space-y-8">
+      <div className="flex-1 flex items-center justify-center bg-background p-6 md:p-8">
+        <div className="w-full max-w-md space-y-6">
           <LoginFormHeader />
 
           {authError && (
@@ -141,8 +141,10 @@ export const EnhancedLoginForm: React.FC<EnhancedLoginFormProps> = ({ onToggleMo
         </div>
       </div>
 
-      {/* Right side - Banner */}
-      <AuthBanner />
+      {/* Right side - Banner (hidden on mobile) */}
+      <div className="hidden md:block">
+        <AuthBanner />
+      </div>
     </div>
   );
 };

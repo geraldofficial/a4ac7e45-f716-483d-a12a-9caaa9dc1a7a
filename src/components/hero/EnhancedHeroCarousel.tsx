@@ -39,7 +39,6 @@ export const EnhancedHeroCarousel: React.FC<HeroCarouselProps> = ({
   const [movies, setMovies] = useState<HeroMovie[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [loading, setLoading] = useState(true);
-  const [autoPlay, setAutoPlay] = useState(true);
   const [imageLoaded, setImageLoaded] = useState<boolean[]>([]);
 
   const navigate = useNavigate();
@@ -52,10 +51,10 @@ export const EnhancedHeroCarousel: React.FC<HeroCarouselProps> = ({
   }, [profile]);
 
   useEffect(() => {
-    if (autoPlay && movies.length > 0) {
+    if (movies.length > 0) {
       intervalRef.current = setInterval(() => {
         setCurrentIndex((prev) => (prev + 1) % movies.length);
-      }, 8000);
+      }, 6000);
     }
 
     return () => {
@@ -63,7 +62,7 @@ export const EnhancedHeroCarousel: React.FC<HeroCarouselProps> = ({
         clearInterval(intervalRef.current);
       }
     };
-  }, [autoPlay, movies.length]);
+  }, [movies.length]);
 
   const fetchHeroMovies = async () => {
     try {
@@ -146,17 +145,10 @@ export const EnhancedHeroCarousel: React.FC<HeroCarouselProps> = ({
 
   const goToNext = () => {
     setCurrentIndex((prev) => (prev + 1) % movies.length);
-    setAutoPlay(false);
   };
 
   const goToPrevious = () => {
     setCurrentIndex((prev) => (prev - 1 + movies.length) % movies.length);
-    setAutoPlay(false);
-  };
-
-  const goToSlide = (index: number) => {
-    setCurrentIndex(index);
-    setAutoPlay(false);
   };
 
   const handleWatch = (movie: HeroMovie) => {
@@ -405,57 +397,6 @@ export const EnhancedHeroCarousel: React.FC<HeroCarouselProps> = ({
         </div>
       </div>
 
-      {/* Navigation Controls */}
-      {movies.length > 1 && (
-        <>
-          {/* Previous Button */}
-          <Button
-            variant="ghost"
-            size="icon"
-            className="absolute left-4 top-1/2 transform -translate-y-1/2 z-20 h-12 w-12 rounded-full bg-black/50 hover:bg-black/70 text-white"
-            onClick={goToPrevious}
-          >
-            <ChevronLeft className="h-6 w-6" />
-          </Button>
-
-          {/* Next Button */}
-          <Button
-            variant="ghost"
-            size="icon"
-            className="absolute right-4 top-1/2 transform -translate-y-1/2 z-20 h-12 w-12 rounded-full bg-black/50 hover:bg-black/70 text-white"
-            onClick={goToNext}
-          >
-            <ChevronRight className="h-6 w-6" />
-          </Button>
-
-          {/* Slide Indicators */}
-          <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 z-20">
-            <div className="flex space-x-2">
-              {movies.map((_, index) => (
-                <button
-                  key={index}
-                  className={`w-3 h-3 rounded-full transition-all duration-300 ${
-                    index === currentIndex
-                      ? "bg-red-600 scale-125"
-                      : "bg-white/50 hover:bg-white/75"
-                  }`}
-                  onClick={() => goToSlide(index)}
-                />
-              ))}
-            </div>
-
-            {/* Progress Bar */}
-            {autoPlay && (
-              <div className="mt-4 w-64">
-                <Progress
-                  value={((currentIndex + 1) / movies.length) * 100}
-                  className="h-1 bg-white/20"
-                />
-              </div>
-            )}
-          </div>
-        </>
-      )}
 
       {/* Profile Indicator */}
       {profile && (

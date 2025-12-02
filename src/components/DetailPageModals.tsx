@@ -1,7 +1,6 @@
 
 import React from 'react';
 import { ShareModal } from './ShareModal';
-import { FullyFunctionalWatchParty } from './FullyFunctionalWatchParty';
 
 interface DetailPageModalsProps {
   showShareModal: boolean;
@@ -10,31 +9,13 @@ interface DetailPageModalsProps {
   type: 'movie' | 'tv';
   onCloseShare: () => void;
   onCloseWatchParty: () => void;
-  currentPlaybackTime?: number;
-  isCurrentlyPlaying?: boolean;
-  videoDuration?: number;
-  volume?: number;
-  onVolumeChange?: (volume: number) => void;
-  onSeek?: (time: number) => void;
-  onPlayPause?: () => void;
-  onPlaybackSync?: (data: { position: number; isPlaying: boolean; timestamp: string }) => void;
 }
 
 export const DetailPageModals: React.FC<DetailPageModalsProps> = ({
   showShareModal,
-  showWatchParty,
   content,
   type,
   onCloseShare,
-  onCloseWatchParty,
-  currentPlaybackTime,
-  isCurrentlyPlaying,
-  videoDuration,
-  volume,
-  onVolumeChange,
-  onSeek,
-  onPlayPause,
-  onPlaybackSync
 }) => {
   // Create ShareableContent object for ShareModal
   const shareableContent = {
@@ -52,24 +33,6 @@ export const DetailPageModals: React.FC<DetailPageModalsProps> = ({
         <ShareModal
           content={shareableContent}
           onClose={onCloseShare}
-        />
-      )}
-
-      {/* Watch Party */}
-      {showWatchParty && (
-        <FullyFunctionalWatchParty
-          movieId={content.id}
-          movieTitle={shareableContent.title}
-          movieType={type}
-          onClose={onCloseWatchParty}
-          currentPlaybackTime={currentPlaybackTime}
-          isCurrentlyPlaying={isCurrentlyPlaying}
-          videoDuration={videoDuration}
-          volume={volume}
-          onVolumeChange={onVolumeChange}
-          onSeek={onSeek}
-          onPlayPause={onPlayPause}
-          onPlaybackSync={onPlaybackSync}
         />
       )}
     </>

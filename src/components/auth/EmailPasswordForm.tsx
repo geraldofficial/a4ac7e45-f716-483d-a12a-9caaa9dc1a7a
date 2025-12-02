@@ -85,7 +85,7 @@ export const EmailPasswordForm: React.FC<EmailPasswordFormProps> = ({
       <Button
         type="submit"
         disabled={isLoading || isGoogleLoading}
-        className="w-full h-12 bg-purple-600 hover:bg-purple-700 text-white transition-colors"
+        className="w-full h-12 bg-red-600 hover:bg-red-700 text-white transition-colors"
       >
         {isLoading ? "Signing in..." : "Sign in"}
       </Button>
