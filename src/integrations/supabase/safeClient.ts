@@ -1,4 +1,4 @@
-import { supabase, testConnection } from "./client";
+import { supabase } from "./client";
 import type { Database } from "./types";
 
 /**
@@ -24,11 +24,6 @@ export class SafeSupabaseClient {
 
     for (let attempt = 1; attempt <= this.retryAttempts; attempt++) {
       try {
-        // Test connection before important operations
-        if (attempt === 1) {
-          await testConnection();
-        }
-
         return await operation();
       } catch (error: any) {
         lastError = error;

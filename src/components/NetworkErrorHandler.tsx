@@ -2,7 +2,6 @@ import React, { useEffect, useState } from "react";
 import { AlertCircle, RefreshCw, Wifi, WifiOff } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
-import { testConnection } from "@/integrations/supabase/client";
 
 interface NetworkErrorHandlerProps {
   children: React.ReactNode;
@@ -41,15 +40,6 @@ export const NetworkErrorHandler: React.FC<NetworkErrorHandlerProps> = ({
     window.addEventListener("offline", handleOffline);
     window.addEventListener("supabase-fetch-error", handleFetchError);
 
-    // Initial connection test
-    if (isOnline) {
-      testConnection().catch(() => {
-        setNetworkError(
-          "Unable to connect to the server. Please check your internet connection.",
-        );
-      });
-    }
-
     return () => {
       window.removeEventListener("online", handleOnline);
       window.removeEventListener("offline", handleOffline);
@@ -59,22 +49,11 @@ export const NetworkErrorHandler: React.FC<NetworkErrorHandlerProps> = ({
 
   const handleRetry = async () => {
     setIsRetrying(true);
-    try {
-      const connectionOk = await testConnection();
-      if (connectionOk) {
-        setNetworkError(null);
-        // Force a page reload to reset any stuck states
-        window.location.reload();
-      } else {
-        setNetworkError("Still unable to connect. Please try again later.");
-      }
-    } catch (error) {
-      setNetworkError(
-        "Connection test failed. Please check your internet connection.",
-      );
-    } finally {
-      setIsRetrying(false);
-    }
+    setNetworkError(null);
+    // Force a page reload to reset any stuck states
+    setTimeout(() => {
+      window.location.reload();
+    }, 500);
   };
 
   if (networkError) {
