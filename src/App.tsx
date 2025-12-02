@@ -15,6 +15,7 @@ import { SafeErrorBoundary } from "@/components/SafeErrorBoundary";
 import { NetworkErrorHandler } from "@/components/NetworkErrorHandler";
 import { ScrollToTop } from "./components/ScrollToTop";
 import { AppStatusUpdate } from "./components/AppStatusUpdate";
+import { ProtectedRoute } from "@/components/ProtectedRoute";
 import "@/styles/tv-styles.css";
 
 // Import network diagnostics and error handling for debugging
@@ -193,33 +194,41 @@ function App() {
                             <Route
                               path="/profile"
                               element={
-                                <SafeRoute componentName="Profile">
-                                  <Profile />
-                                </SafeRoute>
+                                <ProtectedRoute>
+                                  <SafeRoute componentName="Profile">
+                                    <Profile />
+                                  </SafeRoute>
+                                </ProtectedRoute>
                               }
                             />
                             <Route
                               path="/profiles"
                               element={
-                                <SafeRoute componentName="Profiles">
-                                  <Profiles />
-                                </SafeRoute>
+                                <ProtectedRoute>
+                                  <SafeRoute componentName="Profiles">
+                                    <Profiles />
+                                  </SafeRoute>
+                                </ProtectedRoute>
                               }
                             />
                             <Route
                               path="/settings"
                               element={
-                                <SafeRoute componentName="Settings">
-                                  <Settings />
-                                </SafeRoute>
+                                <ProtectedRoute>
+                                  <SafeRoute componentName="Settings">
+                                    <Settings />
+                                  </SafeRoute>
+                                </ProtectedRoute>
                               }
                             />
                             <Route
                               path="/notifications/settings"
                               element={
-                                <SafeRoute componentName="NotificationSettings">
-                                  <NotificationSettings />
-                                </SafeRoute>
+                                <ProtectedRoute>
+                                  <SafeRoute componentName="NotificationSettings">
+                                    <NotificationSettings />
+                                  </SafeRoute>
+                                </ProtectedRoute>
                               }
                             />
                             <Route
@@ -305,17 +314,21 @@ function App() {
                             <Route
                               path="/watchlist"
                               element={
-                                <SafeRoute componentName="Watchlist">
-                                  <Watchlist />
-                                </SafeRoute>
+                                <ProtectedRoute>
+                                  <SafeRoute componentName="Watchlist">
+                                    <Watchlist />
+                                  </SafeRoute>
+                                </ProtectedRoute>
                               }
                             />
                             <Route
                               path="/history"
                               element={
-                                <SafeRoute componentName="History">
-                                  <History />
-                                </SafeRoute>
+                                <ProtectedRoute>
+                                  <SafeRoute componentName="History">
+                                    <History />
+                                  </SafeRoute>
+                                </ProtectedRoute>
                               }
                             />
                             <Route
