@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { supabase, testConnection } from "@/integrations/supabase/client";
+import { supabase } from "@/integrations/supabase/client";
 import { safeSupabase } from "@/integrations/supabase/safeClient";
 import { useAuthStateManager } from "./auth/useAuthStateManager";
 import { useAuthProfileManager } from "./auth/useAuthProfileManager";
@@ -157,14 +157,6 @@ export const useRobustAuthState = () => {
 
           console.log("🔍 Checking for existing session...");
           try {
-            // Test connection first
-            const connectionOk = await testConnection();
-            if (!connectionOk) {
-              console.warn(
-                "⚠️ Connection test failed, attempting session check anyway...",
-              );
-            }
-
             const {
               data: { session },
               error: sessionError,
