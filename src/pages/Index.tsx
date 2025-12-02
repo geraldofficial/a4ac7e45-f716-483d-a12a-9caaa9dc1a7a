@@ -4,10 +4,8 @@ import { EnhancedMovieSection } from "@/components/EnhancedMovieSection";
 import { ContinueWatching } from "@/components/ContinueWatching";
 import { RecentlyWatched } from "@/components/RecentlyWatched";
 import { useAuth } from "@/contexts/AuthContext";
-import { Play, TrendingUp, Star, Users, Film } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { TrendingUp, Star, Film } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Link } from "react-router-dom";
 
 const Index = () => {
@@ -15,7 +13,6 @@ const Index = () => {
   const [currentProfile, setCurrentProfile] = useState(null);
 
   useEffect(() => {
-    // Get the selected profile from localStorage with error handling
     const savedProfile = localStorage.getItem("selectedProfile");
     if (savedProfile) {
       try {
@@ -23,7 +20,7 @@ const Index = () => {
         setCurrentProfile(parsedProfile);
       } catch (error) {
         console.error("Error parsing saved profile:", error);
-        localStorage.removeItem("selectedProfile"); // Clean up corrupted data
+        localStorage.removeItem("selectedProfile");
       }
     }
   }, []);
@@ -39,22 +36,20 @@ const Index = () => {
       title: "Top Rated",
       description: "Highest rated content",
       icon: Star,
-      link: "/top-rated",
+      link: "/browse",
     },
     {
-      title: "Community",
-      description: "Join the conversation",
-      icon: Users,
-      link: "/community",
+      title: "Browse All",
+      description: "Explore everything",
+      icon: Film,
+      link: "/browse",
     },
   ];
 
   return (
     <div className="min-h-screen bg-gray-950">
-      {/* Hero Section */}
       <EnhancedHeroCarousel profile={currentProfile} />
 
-      {/* Featured Categories */}
       <section className="bg-gray-950 relative z-10 -mt-32">
         <div className="container mx-auto px-4 py-12">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -86,7 +81,6 @@ const Index = () => {
         </div>
       </section>
 
-      {/* Main Content */}
       <main className="bg-gray-950 relative z-10">
         <div className="container mx-auto px-4 py-12 space-y-12">
           {user && (

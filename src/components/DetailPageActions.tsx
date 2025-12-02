@@ -1,7 +1,6 @@
-
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { Play, Plus, Check, Share, Users } from 'lucide-react';
+import { Play, Plus, Check, Share } from 'lucide-react';
 
 interface DetailPageActionsProps {
   shouldResume: boolean;
@@ -10,7 +9,6 @@ interface DetailPageActionsProps {
   onWatch: () => void;
   onWatchlistToggle: () => void;
   onShare: () => void;
-  onWatchParty: () => void;
 }
 
 export const DetailPageActions: React.FC<DetailPageActionsProps> = ({
@@ -20,7 +18,6 @@ export const DetailPageActions: React.FC<DetailPageActionsProps> = ({
   onWatch,
   onWatchlistToggle,
   onShare,
-  onWatchParty
 }) => {
   return (
     <div className="flex flex-col sm:flex-row gap-3">
@@ -48,16 +45,6 @@ export const DetailPageActions: React.FC<DetailPageActionsProps> = ({
           ) : (
             <Plus className="h-5 w-5" />
           )}
-        </Button>
-
-        {/* Watch Party Button */}
-        <Button 
-          onClick={onWatchParty}
-          variant="outline" 
-          size="lg"
-          className="bg-red-600/80 border-red-500 text-white hover:bg-red-700 h-12 px-4 rounded-lg"
-        >
-          <Users className="h-5 w-5" />
         </Button>
 
         {/* Share Button */}

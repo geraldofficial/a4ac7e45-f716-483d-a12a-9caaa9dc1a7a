@@ -291,9 +291,9 @@ export const tmdbApi = {
     try {
       const queryParams = new URLSearchParams(
         Object.fromEntries(
-          Object.entries(params).filter(
-            ([_, value]) => value !== null && value !== undefined,
-          ),
+          Object.entries(params)
+            .filter(([_, value]) => value !== null && value !== undefined)
+            .map(([key, value]) => [key, String(value)])
         ),
       );
       return await makeRequest(`${BASE_URL}/discover/movie?${queryParams}`);
@@ -307,9 +307,9 @@ export const tmdbApi = {
     try {
       const queryParams = new URLSearchParams(
         Object.fromEntries(
-          Object.entries(params).filter(
-            ([_, value]) => value !== null && value !== undefined,
-          ),
+          Object.entries(params)
+            .filter(([_, value]) => value !== null && value !== undefined)
+            .map(([key, value]) => [key, String(value)])
         ),
       );
       return await makeRequest(`${BASE_URL}/discover/movie?${queryParams}`);

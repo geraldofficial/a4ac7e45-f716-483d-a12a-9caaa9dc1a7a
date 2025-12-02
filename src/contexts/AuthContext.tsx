@@ -1,14 +1,13 @@
-
 import React, { createContext, useContext } from 'react';
 import { AuthContextType } from '@/types/auth';
-import { useRobustAuthState } from '@/hooks/useRobustAuthState';
+import { useAuthStateManager } from '@/hooks/auth/useAuthStateManager';
 import { useAuthActions } from '@/hooks/useAuthActions';
 import { useWatchlistActions } from '@/hooks/useWatchlistActions';
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const { user, setUser, loading, setLoading, error, setError } = useRobustAuthState();
+  const { user, setUser, loading, setLoading, error, setError } = useAuthStateManager();
   const authActions = useAuthActions(user, setUser, setLoading);
   const watchlistActions = useWatchlistActions(user, authActions.updateProfile);
 
@@ -19,8 +18,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     ...authActions,
     ...watchlistActions,
   };
-
-  console.log('🎯 AuthProvider render - loading:', loading, 'user:', user?.id || 'none', 'error:', error);
 
   return (
     <AuthContext.Provider value={value}>

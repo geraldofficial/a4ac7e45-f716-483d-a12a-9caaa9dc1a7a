@@ -13,6 +13,7 @@ interface ImprovedMovieCardProps {
   priority?: boolean;
   showGenres?: boolean;
   variant?: "default" | "compact" | "featured";
+  type?: "movie" | "tv";
 }
 
 export const ImprovedMovieCard: React.FC<ImprovedMovieCardProps> = ({
@@ -20,6 +21,7 @@ export const ImprovedMovieCard: React.FC<ImprovedMovieCardProps> = ({
   priority = false,
   showGenres = false,
   variant = "default",
+  type: propType,
 }) => {
   const { user, addToWatchlist, removeFromWatchlist, isInWatchlist } =
     useAuth();
@@ -32,7 +34,7 @@ export const ImprovedMovieCard: React.FC<ImprovedMovieCardProps> = ({
 
   const title = movie.title || movie.name || "Unknown Title";
   const releaseDate = movie.release_date || movie.first_air_date || "";
-  const type = movie.media_type || (movie.title ? "movie" : "tv");
+  const type = propType || movie.media_type || (movie.title ? "movie" : "tv");
   const year = releaseDate ? new Date(releaseDate).getFullYear() : "";
 
   const posterUrl = movie.poster_path
