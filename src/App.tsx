@@ -150,7 +150,9 @@ function App() {
                     <Sonner />
                     <BrowserRouter>
                       <ScrollToTop />
-                      <AppNavigation />
+                      <div className="hidden md:block">
+                        <AppNavigation />
+                      </div>
                       <TVInstallPrompt />
 
                       <main>
