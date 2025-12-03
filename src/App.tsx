@@ -14,6 +14,7 @@ import { SafeErrorBoundary } from "@/components/SafeErrorBoundary";
 import { NetworkErrorHandler } from "@/components/NetworkErrorHandler";
 import { ScrollToTop } from "./components/ScrollToTop";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
+import { Spinner } from "@/components/ui/spinner";
 import "@/styles/tv-styles.css";
 
 // Lazy load pages for better performance
@@ -144,7 +145,7 @@ function App() {
             <TVGuestProvider>
               <NetworkErrorHandler>
                 <AuthProvider>
-                  <div className="min-h-screen bg-gray-950 text-white">
+                    <div className="min-h-screen bg-background text-foreground">
                     <Toaster />
                     <Sonner />
                     <BrowserRouter>
@@ -155,16 +156,14 @@ function App() {
                       <main>
                         <React.Suspense
                           fallback={
-                            <div className="flex flex-col items-center justify-center min-h-screen gap-4">
+                            <div className="flex flex-col items-center justify-center min-h-screen gap-4 p-4">
                               <img
                                 src="https://cdn.builder.io/api/v1/assets/3a5e046f24294e60a3c1afd0f4c614eb/chatgpt-image-jun-21-2025-03_27_04-pm-65410f?format=webp&width=800"
                                 alt="FlickPick"
-                                className="h-16 w-auto"
+                                className="h-10 md:h-14 w-auto"
                               />
-                              <div className="animate-spin-slow rounded-full h-10 w-10 border-b-2 border-red-600"></div>
-                              <span className="text-gray-400">
-                                Loading FlickPick...
-                              </span>
+                              <Spinner size="lg" />
+                              <span className="text-muted-foreground text-sm">Loading...</span>
                             </div>
                           }
                         >
