@@ -1,6 +1,5 @@
-
 import React from 'react';
-import { ProductionLoadingSpinner } from '../ProductionLoadingSpinner';
+import { Spinner } from '@/components/ui/spinner';
 import { Button } from '@/components/ui/button';
 import { RefreshCw, SkipForward, AlertCircle } from 'lucide-react';
 
@@ -25,16 +24,13 @@ export const VideoPlayerState: React.FC<VideoPlayerStateProps> = ({
 }) => {
   if (isLoading) {
     return (
-      <div className="absolute inset-0 flex items-center justify-center bg-black/90 backdrop-blur-sm z-10">
-        <div className="text-center space-y-4 p-6">
-          <ProductionLoadingSpinner 
-            size="lg" 
-            text={`Loading ${title}...`}
-            showLogo={true}
-          />
-          <p className="text-white/70 text-sm animate-pulse">
-            Connecting to {currentSourceName}
-          </p>
+      <div className="absolute inset-0 flex items-center justify-center bg-background/95 backdrop-blur-sm z-10">
+        <div className="text-center space-y-4 p-4">
+          <Spinner size="lg" />
+          <div>
+            <p className="text-foreground text-sm font-medium">Loading {title}...</p>
+            <p className="text-muted-foreground text-xs mt-1">Connecting to {currentSourceName}</p>
+          </div>
         </div>
       </div>
     );
@@ -42,30 +38,23 @@ export const VideoPlayerState: React.FC<VideoPlayerStateProps> = ({
 
   if (hasError) {
     return (
-      <div className="absolute inset-0 flex items-center justify-center bg-black/90 backdrop-blur-sm z-10">
-        <div className="text-center max-w-md mx-auto p-6 rounded-lg bg-gray-900/50 border border-gray-800">
-          <AlertCircle className="h-12 w-12 text-red-500 mx-auto mb-4 animate-pulse" />
-          <h3 className="text-white mb-2 text-xl font-semibold">Playback Error</h3>
-          <p className="text-white/70 mb-2">Failed to load from {currentSourceName}</p>
+      <div className="absolute inset-0 flex items-center justify-center bg-background/95 backdrop-blur-sm z-10 p-4">
+        <div className="text-center max-w-sm mx-auto p-4 rounded-lg bg-card border border-border">
+          <AlertCircle className="h-10 w-10 text-destructive mx-auto mb-3" />
+          <h3 className="text-foreground mb-2 text-lg font-semibold">Playback Error</h3>
+          <p className="text-muted-foreground mb-2 text-sm">Failed to load from {currentSourceName}</p>
           {errorMessage && (
-            <p className="text-white/60 mb-6 text-sm bg-red-500/10 p-3 rounded border border-red-500/20">
+            <p className="text-muted-foreground mb-4 text-xs bg-destructive/10 p-2 rounded border border-destructive/20">
               {errorMessage}
             </p>
           )}
-          <div className="flex gap-3 justify-center">
-            <Button
-              onClick={onSwitchSource}
-              className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-all duration-200"
-            >
-              <SkipForward className="h-4 w-4 mr-2" />
-              Try Next Source
+          <div className="flex gap-2 justify-center flex-wrap">
+            <Button onClick={onSwitchSource} size="sm">
+              <SkipForward className="h-4 w-4 mr-1" />
+              Next Source
             </Button>
-            <Button
-              onClick={onRetry}
-              variant="outline"
-              className="px-4 py-2 bg-gray-700/50 text-white border-gray-600 rounded-lg hover:bg-gray-600/50 transition-all duration-200"
-            >
-              <RefreshCw className="h-4 w-4 mr-2" />
+            <Button onClick={onRetry} variant="outline" size="sm">
+              <RefreshCw className="h-4 w-4 mr-1" />
               Retry
             </Button>
           </div>

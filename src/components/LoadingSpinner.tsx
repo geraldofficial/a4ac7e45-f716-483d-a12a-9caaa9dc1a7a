@@ -1,5 +1,5 @@
-
 import React from 'react';
+import { Spinner } from '@/components/ui/spinner';
 
 interface LoadingSpinnerProps {
   size?: 'sm' | 'md' | 'lg';
@@ -9,25 +9,13 @@ interface LoadingSpinnerProps {
 
 export const LoadingSpinner: React.FC<LoadingSpinnerProps> = ({ 
   size = 'md', 
-  text = 'Loading...', 
+  text, 
   className = '' 
 }) => {
-  const sizeClasses = {
-    sm: 'w-4 h-4',
-    md: 'w-8 h-8',
-    lg: 'w-12 h-12'
-  };
-
-  const textSizeClasses = {
-    sm: 'text-xs',
-    md: 'text-sm',
-    lg: 'text-lg'
-  };
-
   return (
     <div className={`flex flex-col items-center justify-center gap-3 ${className}`}>
-      <div className={`${sizeClasses[size]} border-2 border-red-600 border-t-transparent rounded-full animate-spin-slow`}></div>
-      <div className={`text-gray-400 ${textSizeClasses[size]} font-medium`}>{text}</div>
+      <Spinner size={size} />
+      {text && <p className="text-muted-foreground text-sm">{text}</p>}
     </div>
   );
 };

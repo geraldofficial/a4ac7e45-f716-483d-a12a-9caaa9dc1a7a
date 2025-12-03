@@ -1,17 +1,8 @@
 import React, { useState, useEffect, useRef } from "react";
-import {
-  ChevronLeft,
-  ChevronRight,
-  Play,
-  Plus,
-  Info,
-  Star,
-  Clock,
-  Calendar,
-} from "lucide-react";
+import { Play, Plus, Info, Star, Clock, Calendar } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
+import { Spinner } from "@/components/ui/spinner";
 import { tmdbApi, Movie } from "@/services/tmdb";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
@@ -39,7 +30,6 @@ export const EnhancedHeroCarousel: React.FC<HeroCarouselProps> = ({
   const [movies, setMovies] = useState<HeroMovie[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [loading, setLoading] = useState(true);
-  const [imageLoaded, setImageLoaded] = useState<boolean[]>([]);
 
   const navigate = useNavigate();
   const { user, addToWatchlist, isInWatchlist } = useAuth();
@@ -67,23 +57,18 @@ export const EnhancedHeroCarousel: React.FC<HeroCarouselProps> = ({
   const fetchHeroMovies = async () => {
     try {
       setLoading(true);
-
-      // Get trending movies first
       const trendingResponse = await tmdbApi.getTrendingMovies();
       let heroMovies = trendingResponse.results.slice(0, 8);
 
-      // Filter based on profile if available
       if (profile) {
         heroMovies = filterMoviesForProfile(heroMovies);
       }
 
-      // Get detailed info for each movie
       const detailedMovies = await Promise.all(
         heroMovies.map(async (movie) => {
           try {
             const details = await tmdbApi.getMovieDetails(movie.id);
             const genres = details.genres?.map((g) => g.name) || [];
-
             return {
               ...movie,
               genre_names: genres,
@@ -98,16 +83,13 @@ export const EnhancedHeroCarousel: React.FC<HeroCarouselProps> = ({
       );
 
       setMovies(detailedMovies);
-      setImageLoaded(new Array(detailedMovies.length).fill(false));
     } catch (error) {
       console.error("Error fetching hero movies:", error);
-      // Fallback to mock data
       setMovies([
         {
           id: 1,
           title: "Featured Movie",
-          overview:
-            "Discover amazing movies and TV shows on FlickPick. Your ultimate entertainment destination.",
+          overview: "Discover amazing movies and TV shows on FlickPick.",
           backdrop_path: "",
           poster_path: "",
           vote_average: 8.5,
@@ -125,30 +107,11 @@ export const EnhancedHeroCarousel: React.FC<HeroCarouselProps> = ({
 
   const filterMoviesForProfile = (movies: Movie[]): Movie[] => {
     if (!profile) return movies;
-
     return movies.filter((movie) => {
-      // Age restriction filtering
       if (profile.is_child && movie.adult) return false;
-
-      // Content rating based filtering
-      const movieYear = movie.release_date
-        ? new Date(movie.release_date).getFullYear()
-        : 2020;
-      if (profile.age_restriction <= 13 && movieYear < 2010) return false;
-
-      // Rating filtering for child profiles
       if (profile.is_child && movie.vote_average < 6.0) return false;
-
       return true;
     });
-  };
-
-  const goToNext = () => {
-    setCurrentIndex((prev) => (prev + 1) % movies.length);
-  };
-
-  const goToPrevious = () => {
-    setCurrentIndex((prev) => (prev - 1 + movies.length) % movies.length);
   };
 
   const handleWatch = (movie: HeroMovie) => {
@@ -160,7 +123,6 @@ export const EnhancedHeroCarousel: React.FC<HeroCarouselProps> = ({
       });
       return;
     }
-
     const type = movie.title ? "movie" : "tv";
     navigate(`/${type}/${movie.id}`);
   };
@@ -179,7 +141,6 @@ export const EnhancedHeroCarousel: React.FC<HeroCarouselProps> = ({
       });
       return;
     }
-
     try {
       await addToWatchlist(movie.id);
       toast({
@@ -195,14 +156,6 @@ export const EnhancedHeroCarousel: React.FC<HeroCarouselProps> = ({
     }
   };
 
-  const handleImageLoad = (index: number) => {
-    setImageLoaded((prev) => {
-      const newState = [...prev];
-      newState[index] = true;
-      return newState;
-    });
-  };
-
   const getBackdropUrl = (path: string) => {
     return path ? `https://image.tmdb.org/t/p/original${path}` : "/logo.svg";
   };
@@ -215,16 +168,14 @@ export const EnhancedHeroCarousel: React.FC<HeroCarouselProps> = ({
 
   if (loading) {
     return (
-      <div className="relative w-full h-screen bg-gray-950">
-        <div className="absolute inset-0 flex items-center justify-center">
-          <div className="text-center space-y-4">
-            <img
-              src="https://cdn.builder.io/api/v1/assets/3a5e046f24294e60a3c1afd0f4c614eb/chatgpt-image-jun-21-2025-03_27_04-pm-65410f?format=webp&width=800"
-              alt="FlickPick"
-              className="h-16 w-auto mx-auto mb-2"
-            />
-            <div className="animate-spin-slow rounded-full h-8 w-8 border-b-2 border-red-600 mx-auto"></div>
-          </div>
+      <div className="relative w-full h-[70vh] md:h-screen bg-background flex items-center justify-center">
+        <div className="text-center space-y-4">
+          <img
+            src="https://cdn.builder.io/api/v1/assets/3a5e046f24294e60a3c1afd0f4c614eb/chatgpt-image-jun-21-2025-03_27_04-pm-65410f?format=webp&width=800"
+            alt="FlickPick"
+            className="h-10 md:h-14 w-auto mx-auto"
+          />
+          <Spinner size="lg" />
         </div>
       </div>
     );
@@ -232,17 +183,17 @@ export const EnhancedHeroCarousel: React.FC<HeroCarouselProps> = ({
 
   if (movies.length === 0) {
     return (
-      <div className="relative w-full h-screen bg-gray-950 flex items-center justify-center">
+      <div className="relative w-full h-[70vh] md:h-screen bg-background flex items-center justify-center px-4">
         <div className="text-center">
           <img
             src="https://cdn.builder.io/api/v1/assets/3a5e046f24294e60a3c1afd0f4c614eb/chatgpt-image-jun-21-2025-03_27_04-pm-65410f?format=webp&width=800"
             alt="FlickPick"
-            className="h-20 w-auto mx-auto mb-6"
+            className="h-14 md:h-20 w-auto mx-auto mb-6"
           />
-          <h2 className="text-2xl font-bold text-white mb-2">
+          <h2 className="text-xl md:text-2xl font-bold text-foreground mb-2">
             Welcome to FlickPick
           </h2>
-          <p className="text-gray-400">
+          <p className="text-muted-foreground text-sm md:text-base">
             Your ultimate entertainment destination
           </p>
         </div>
@@ -253,7 +204,7 @@ export const EnhancedHeroCarousel: React.FC<HeroCarouselProps> = ({
   const currentMovie = movies[currentIndex];
 
   return (
-    <div className="relative w-full h-screen overflow-hidden bg-gray-950">
+    <div className="relative w-full h-[70vh] md:h-screen overflow-hidden bg-background">
       {/* Background Images */}
       {movies.map((movie, index) => (
         <div
@@ -262,49 +213,30 @@ export const EnhancedHeroCarousel: React.FC<HeroCarouselProps> = ({
             index === currentIndex ? "opacity-100" : "opacity-0"
           }`}
         >
-          {/* Background Image */}
           <div
-            className="absolute inset-0 bg-cover bg-center"
+            className="absolute inset-0 bg-cover bg-center bg-no-repeat"
             style={{
               backgroundImage: `url(${getBackdropUrl(movie.backdrop_path)})`,
             }}
-          >
-            {/* Image preload */}
-            <img
-              src={getBackdropUrl(movie.backdrop_path)}
-              alt=""
-              className="hidden"
-              onLoad={() => handleImageLoad(index)}
-            />
-          </div>
-
-          {/* Gradient Overlays */}
-          <div className="absolute inset-0 bg-gradient-to-r from-gray-950 via-gray-950/80 to-transparent" />
-          <div className="absolute inset-0 bg-gradient-to-t from-gray-950 via-transparent to-transparent" />
+          />
+          {/* Gradient Overlays - adjusted for mobile */}
+          <div className="absolute inset-0 bg-gradient-to-r from-background via-background/90 md:via-background/70 to-background/50 md:to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-t from-background via-background/50 md:via-transparent to-transparent" />
         </div>
       ))}
 
-      {/* FlickPick Logo */}
-      <div className="absolute top-6 left-6 z-20">
-        <img
-          src="https://cdn.builder.io/api/v1/assets/3a5e046f24294e60a3c1afd0f4c614eb/chatgpt-image-jun-21-2025-03_27_04-pm-65410f?format=webp&width=800"
-          alt="FlickPick"
-          className="h-12 w-auto"
-        />
-      </div>
-
       {/* Main Content */}
-      <div className="relative z-10 flex items-center h-full">
-        <div className="container mx-auto px-6 py-20">
-          <div className="max-w-3xl">
-            {/* Genre Tags */}
+      <div className="relative z-10 flex items-end md:items-center h-full">
+        <div className="container mx-auto px-4 pb-8 md:pb-0 md:py-20">
+          <div className="max-w-full md:max-w-2xl lg:max-w-3xl">
+            {/* Genre Tags - hidden on small mobile */}
             {currentMovie.genre_names && (
-              <div className="flex flex-wrap gap-2 mb-4">
+              <div className="hidden sm:flex flex-wrap gap-2 mb-3 md:mb-4">
                 {currentMovie.genre_names.slice(0, 3).map((genre) => (
                   <Badge
                     key={genre}
                     variant="outline"
-                    className="border-red-600/50 text-red-400 bg-red-600/10"
+                    className="border-primary/50 text-primary bg-primary/10 text-xs"
                   >
                     {genre}
                   </Badge>
@@ -313,83 +245,76 @@ export const EnhancedHeroCarousel: React.FC<HeroCarouselProps> = ({
             )}
 
             {/* Title */}
-            <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold mb-4 text-white leading-tight">
+            <h1 className="text-2xl sm:text-3xl md:text-5xl lg:text-6xl font-bold mb-2 md:mb-3 text-foreground leading-tight line-clamp-2">
               {currentMovie.title || currentMovie.name}
             </h1>
 
-            {/* Tagline */}
+            {/* Tagline - hidden on mobile */}
             {currentMovie.tagline && (
-              <p className="text-xl md:text-2xl text-red-400 mb-4 font-medium">
+              <p className="hidden md:block text-lg lg:text-xl text-primary mb-3 font-medium line-clamp-1">
                 {currentMovie.tagline}
               </p>
             )}
 
             {/* Movie Info */}
-            <div className="flex items-center space-x-6 mb-6 text-gray-300">
+            <div className="flex items-center flex-wrap gap-3 md:gap-4 mb-3 md:mb-4 text-muted-foreground text-sm md:text-base">
               {currentMovie.vote_average && (
-                <div className="flex items-center space-x-1">
-                  <Star className="h-5 w-5 text-yellow-400 fill-current" />
-                  <span className="font-semibold">
+                <div className="flex items-center gap-1">
+                  <Star className="h-4 w-4 text-yellow-400 fill-current" />
+                  <span className="font-medium text-foreground">
                     {currentMovie.vote_average.toFixed(1)}
                   </span>
                 </div>
               )}
-
               {currentMovie.release_date && (
-                <div className="flex items-center space-x-1">
-                  <Calendar className="h-5 w-5" />
-                  <span>
-                    {new Date(currentMovie.release_date).getFullYear()}
-                  </span>
+                <div className="flex items-center gap-1">
+                  <Calendar className="h-4 w-4" />
+                  <span>{new Date(currentMovie.release_date).getFullYear()}</span>
                 </div>
               )}
-
               {currentMovie.runtime && (
-                <div className="flex items-center space-x-1">
-                  <Clock className="h-5 w-5" />
+                <div className="hidden sm:flex items-center gap-1">
+                  <Clock className="h-4 w-4" />
                   <span>{formatRuntime(currentMovie.runtime)}</span>
                 </div>
               )}
             </div>
 
-            {/* Overview */}
-            <p className="text-lg md:text-xl text-gray-300 mb-8 leading-relaxed max-w-2xl">
+            {/* Overview - truncated on mobile */}
+            <p className="text-sm md:text-base lg:text-lg text-muted-foreground mb-4 md:mb-6 leading-relaxed line-clamp-2 md:line-clamp-3 max-w-xl">
               {currentMovie.overview}
             </p>
 
             {/* Action Buttons */}
-            <div className="flex flex-col sm:flex-row gap-4 items-start">
+            <div className="flex flex-wrap gap-2 md:gap-3">
               <Button
-                size="lg"
-                className="bg-red-600 hover:bg-red-700 text-white shadow-xl hover:shadow-red-500/25 transition-all transform hover:scale-105"
+                size="default"
+                className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg h-10 md:h-11 px-4 md:px-6 text-sm md:text-base"
                 onClick={() => handleWatch(currentMovie)}
               >
-                <Play className="h-5 w-5 mr-2 fill-current" />
-                {user ? "Watch Now" : "Sign In to Watch"}
+                <Play className="h-4 w-4 md:h-5 md:w-5 mr-2 fill-current" />
+                {user ? "Watch" : "Sign In"}
               </Button>
 
               <Button
-                size="lg"
+                size="default"
                 variant="outline"
-                className="border-gray-600 text-white hover:bg-gray-800 hover:border-gray-500 transition-all"
+                className="border-border text-foreground hover:bg-secondary h-10 md:h-11 px-4 md:px-6 text-sm md:text-base"
                 onClick={() => handleMoreInfo(currentMovie)}
               >
-                <Info className="h-5 w-5 mr-2" />
-                More Info
+                <Info className="h-4 w-4 md:h-5 md:w-5 mr-2" />
+                Info
               </Button>
 
               {user && (
                 <Button
-                  size="lg"
+                  size="icon"
                   variant="outline"
-                  className="border-gray-600 text-white hover:bg-gray-800 hover:border-gray-500 transition-all"
+                  className="border-border text-foreground hover:bg-secondary h-10 w-10 md:h-11 md:w-11"
                   onClick={() => handleAddToWatchlist(currentMovie)}
                   disabled={isInWatchlist(currentMovie.id)}
                 >
-                  <Plus className="h-5 w-5 mr-2" />
-                  {isInWatchlist(currentMovie.id)
-                    ? "In Watchlist"
-                    : "Add to List"}
+                  <Plus className="h-4 w-4 md:h-5 md:w-5" />
                 </Button>
               )}
             </div>
@@ -397,15 +322,14 @@ export const EnhancedHeroCarousel: React.FC<HeroCarouselProps> = ({
         </div>
       </div>
 
-
       {/* Profile Indicator */}
       {profile && (
-        <div className="absolute top-6 right-6 z-20">
+        <div className="absolute top-20 md:top-6 right-4 md:right-6 z-20">
           <Badge
             variant="outline"
-            className="border-blue-600/50 text-blue-400 bg-blue-600/10"
+            className="border-blue-600/50 text-blue-400 bg-blue-600/10 text-xs"
           >
-            {profile.name}'s Profile
+            {profile.name}
           </Badge>
         </div>
       )}
