@@ -1,9 +1,11 @@
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import { useSearchParams } from "react-router-dom";
-import { Navbar } from "@/components/Navbar";
+import { ModernNavbar } from "@/components/layout/ModernNavbar";
 import { MovieCard } from "@/components/MovieCard";
 import { Footer } from "@/components/Footer";
+import { BottomNavigation } from "@/components/BottomNavigation";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
+import { Spinner } from "@/components/ui/spinner";
 import { tmdbApi, Movie } from "@/services/tmdb";
 import { Search as SearchIcon, AlertTriangle, Filter, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -200,10 +202,10 @@ const Search = () => {
 
   return (
     <ErrorBoundary>
-      <div className="min-h-screen bg-background">
-        <Navbar />
+      <div className="min-h-screen bg-background pb-16 md:pb-0">
+        <ModernNavbar />
 
-        <div className="pt-20 pb-32 md:pb-20 px-4 safe-area-top safe-area-bottom">
+        <div className="md:pt-20 pb-4 px-4">
           <div className="container mx-auto max-w-7xl">
             {/* Header */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
@@ -476,7 +478,10 @@ const Search = () => {
           </div>
         </div>
 
-        <Footer />
+        <div className="hidden md:block">
+          <Footer />
+        </div>
+        <BottomNavigation />
       </div>
     </ErrorBoundary>
   );

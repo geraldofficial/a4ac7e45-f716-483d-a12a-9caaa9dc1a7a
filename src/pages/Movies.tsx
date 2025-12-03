@@ -2,7 +2,9 @@ import React, { useState, useEffect } from "react";
 import { ModernNavbar } from "@/components/layout/ModernNavbar";
 import { MovieCard } from "@/components/MovieCard";
 import { Footer } from "@/components/Footer";
+import { BottomNavigation } from "@/components/BottomNavigation";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
+import { Spinner } from "@/components/ui/spinner";
 import { tmdbApi, Movie } from "@/services/tmdb";
 import { Film, TrendingUp, Star, Clock, Calendar } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -53,19 +55,14 @@ const Movies = () => {
   if (loading) {
     return (
       <ErrorBoundary>
-        <div className="min-h-screen bg-background">
+        <div className="min-h-screen bg-background pb-16 md:pb-0">
           <ModernNavbar />
-          <div className="pt-16 md:pt-24 pb-20 px-3 md:px-4">
-            <div className="container mx-auto">
-              <div className="flex items-center justify-center h-64">
-                <div className="text-center">
-                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-                  <p className="text-muted-foreground">Loading movies...</p>
-                </div>
-              </div>
+          <div className="md:pt-20 py-8 px-4">
+            <div className="flex justify-center">
+              <Spinner size="lg" />
             </div>
           </div>
-          <Footer />
+          <BottomNavigation />
         </div>
       </ErrorBoundary>
     );
@@ -98,10 +95,10 @@ const Movies = () => {
 
   return (
     <ErrorBoundary>
-      <div className="min-h-screen bg-background">
+      <div className="min-h-screen bg-background pb-16 md:pb-0">
         <ModernNavbar />
 
-        <div className="pt-16 md:pt-24 pb-20 px-3 md:px-4">
+        <div className="md:pt-20 py-6 px-4">
           <div className="container mx-auto">
             <div className="mb-8 text-center">
               <div className="flex items-center justify-center mb-4">
@@ -244,7 +241,10 @@ const Movies = () => {
           </div>
         </div>
 
-        <Footer />
+        <div className="hidden md:block">
+          <Footer />
+        </div>
+        <BottomNavigation />
       </div>
     </ErrorBoundary>
   );

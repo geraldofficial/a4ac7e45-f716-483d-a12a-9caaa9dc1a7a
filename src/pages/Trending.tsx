@@ -1,9 +1,9 @@
-
 import React, { useState, useEffect } from 'react';
-import { Navbar } from '@/components/Navbar';
+import { ModernNavbar } from '@/components/layout/ModernNavbar';
 import { MovieCard } from '@/components/MovieCard';
 import { Footer } from '@/components/Footer';
-import { PullToRefresh } from '@/components/PullToRefresh';
+import { BottomNavigation } from '@/components/BottomNavigation';
+import { Spinner } from '@/components/ui/spinner';
 import { tmdbApi, Movie } from '@/services/tmdb';
 import { TrendingUp } from 'lucide-react';
 
@@ -11,54 +11,52 @@ const Trending = () => {
   const [trendingContent, setTrendingContent] = useState<Movie[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const fetchTrending = async () => {
-    try {
-      const trending = await tmdbApi.getTrending();
-      setTrendingContent(trending);
-    } catch (error) {
-      console.error('Error fetching trending:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
   useEffect(() => {
+    const fetchTrending = async () => {
+      try {
+        const trending = await tmdbApi.getTrending();
+        setTrendingContent(trending);
+      } catch (error) {
+        console.error('Error fetching trending:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
     fetchTrending();
   }, []);
 
-  const handleRefresh = async () => {
-    await fetchTrending();
-  };
-
   return (
-    <div className="min-h-screen bg-background">
-      <Navbar />
-      <PullToRefresh onRefresh={handleRefresh} className="pt-20 pb-24 md:pb-8">
-        <div className="container mx-auto px-3 md:px-4 py-3 md:py-8">
-          <div className="flex items-center gap-2 md:gap-3 mb-4 md:mb-8">
-            <div className="bg-primary/10 p-2 md:p-3 rounded-lg md:rounded-xl flex-shrink-0">
-              <TrendingUp className="h-5 w-5 md:h-6 md:w-6 text-primary" />
+    <div className="min-h-screen bg-background pb-16 md:pb-0">
+      <ModernNavbar />
+      <div className="md:pt-20">
+        <div className="container mx-auto px-4 py-6 md:py-8">
+          <div className="flex items-center gap-3 mb-6">
+            <div className="bg-primary/10 p-2 rounded-lg">
+              <TrendingUp className="h-5 w-5 text-primary" />
             </div>
-            <div className="flex-1 min-w-0">
-              <h1 className="text-xl md:text-3xl lg:text-4xl font-bold text-foreground truncate">Trending Now</h1>
-              <p className="text-muted-foreground text-sm md:text-lg">
-                What's popular this week across movies and TV shows
-              </p>
+            <div>
+              <h1 className="text-xl md:text-3xl font-bold text-foreground">Trending Now</h1>
+              <p className="text-muted-foreground text-sm">What's popular this week</p>
             </div>
           </div>
           
           {loading ? (
-            <div className="text-center text-muted-foreground text-sm md:text-xl py-12">Loading trending content...</div>
+            <div className="flex justify-center py-12">
+              <Spinner size="lg" />
+            </div>
           ) : (
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-3 md:gap-4 lg:gap-6">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 md:gap-4">
               {trendingContent.map((item) => (
-                <MovieCard key={`${item.id}-${item.media_type}`} movie={item} />
+                <MovieCard key={item.id} movie={item} />
               ))}
             </div>
           )}
         </div>
-      </PullToRefresh>
-      <Footer />
+      </div>
+      <div className="hidden md:block">
+        <Footer />
+      </div>
+      <BottomNavigation />
     </div>
   );
 };

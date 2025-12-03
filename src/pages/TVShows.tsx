@@ -2,7 +2,9 @@ import React, { useState, useEffect } from "react";
 import { ModernNavbar } from "@/components/layout/ModernNavbar";
 import { MovieCard } from "@/components/MovieCard";
 import { Footer } from "@/components/Footer";
+import { BottomNavigation } from "@/components/BottomNavigation";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
+import { Spinner } from "@/components/ui/spinner";
 import { tmdbApi, Movie } from "@/services/tmdb";
 import { Tv, TrendingUp, Star, Clock, Calendar } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -244,7 +246,10 @@ const TVShows = () => {
           </div>
         </div>
 
-        <Footer />
+        <div className="hidden md:block">
+          <Footer />
+        </div>
+        <BottomNavigation />
       </div>
     </ErrorBoundary>
   );
