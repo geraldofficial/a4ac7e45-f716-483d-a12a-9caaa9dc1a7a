@@ -1,7 +1,5 @@
-
 import React from 'react';
-import { EnhancedVideoPlayerCore } from './video/EnhancedVideoPlayerCore';
-import { watchHistoryService } from '@/services/watchHistory';
+import { NetflixVideoPlayer } from './video/NetflixVideoPlayer';
 
 interface VideoPlayerProps {
   title: string;
@@ -19,33 +17,24 @@ interface VideoPlayerProps {
   onClose?: () => void;
 }
 
-export const VideoPlayer: React.FC<VideoPlayerProps> = (props) => {
-  // Get resume information if shouldResume is true
-  let resumeFrom = 0;
-  
-  if (props.shouldResume) {
-    const resumeInfo = watchHistoryService.getResumeInfo(
-      props.tmdbId, 
-      props.type, 
-      props.season, 
-      props.episode
-    );
-    
-    if (resumeInfo.shouldResume) {
-      resumeFrom = resumeInfo.progress;
-      console.log(`Resuming ${props.title} from ${Math.floor(resumeFrom)}s`);
-    }
-  }
-
+export const VideoPlayer: React.FC<VideoPlayerProps> = ({
+  title,
+  tmdbId,
+  type,
+  season,
+  episode,
+  poster_path,
+  onClose,
+}) => {
   return (
-    <EnhancedVideoPlayerCore
-      title={props.title}
-      tmdbId={props.tmdbId}
-      type={props.type}
-      season={props.season}
-      episode={props.episode}
-      resumeFrom={resumeFrom}
-      onProgress={props.onProgress}
+    <NetflixVideoPlayer
+      title={title}
+      tmdbId={tmdbId}
+      type={type}
+      season={season}
+      episode={episode}
+      posterPath={poster_path}
+      onClose={onClose}
     />
   );
 };

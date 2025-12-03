@@ -1,6 +1,5 @@
-
-import React, { useMemo } from 'react';
-import { VideoPlayer } from './VideoPlayer';
+import React from 'react';
+import { NetflixVideoPlayer } from './video/NetflixVideoPlayer';
 
 interface DetailPageVideoPlayerProps {
   isPlaying: boolean;
@@ -24,37 +23,22 @@ export const DetailPageVideoPlayer: React.FC<DetailPageVideoPlayerProps> = ({
   season,
   episode,
   posterPath,
-  backdropPath,
-  duration,
-  shouldResume,
   onClose
 }) => {
-  // Memoize the display title calculation to prevent unnecessary re-renders
-  const displayTitle = useMemo(() => {
-    if (type === 'tv' && season && episode) {
-      return `${title} - Season ${season} Episode ${episode}`;
-    }
-    return title;
-  }, [title, type, season, episode]);
-
-  // Memoize the duration calculation
-  const videoDuration = useMemo(() => {
-    return duration ? duration * 60 : undefined;
-  }, [duration]);
-
   if (!isPlaying) return null;
 
+  const displayTitle = type === 'tv' && season && episode
+    ? `${title} - Season ${season} Episode ${episode}`
+    : title;
+
   return (
-    <VideoPlayer
+    <NetflixVideoPlayer
       title={displayTitle}
       tmdbId={contentId}
       type={type}
       season={season}
       episode={episode}
-      poster_path={posterPath}
-      backdrop_path={backdropPath}
-      duration={videoDuration}
-      shouldResume={shouldResume}
+      posterPath={posterPath}
       onClose={onClose}
     />
   );
