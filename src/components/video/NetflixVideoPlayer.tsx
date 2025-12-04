@@ -13,8 +13,8 @@ import {
   Minimize,
   PictureInPicture2,
   List,
-  Play,
-  Pause,
+  Gauge,
+  SkipForward,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { EpisodeList } from "./EpisodeList";
@@ -36,6 +36,8 @@ interface NetflixVideoPlayerProps {
   onClose?: () => void;
 }
 
+const PLAYBACK_SPEEDS = [0.5, 1, 1.25, 1.5, 2];
+
 export const NetflixVideoPlayer: React.FC<NetflixVideoPlayerProps> = ({
   title,
   tmdbId,
@@ -50,12 +52,15 @@ export const NetflixVideoPlayer: React.FC<NetflixVideoPlayerProps> = ({
   const [hasError, setHasError] = useState(false);
   const [showControls, setShowControls] = useState(true);
   const [showSourceMenu, setShowSourceMenu] = useState(false);
+  const [showSpeedMenu, setShowSpeedMenu] = useState(false);
   const [showEpisodeList, setShowEpisodeList] = useState(false);
   const [isPiPActive, setIsPiPActive] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [currentSeason, setCurrentSeason] = useState(season);
   const [currentEpisode, setCurrentEpisode] = useState(episode);
   const [seasons, setSeasons] = useState<Season[]>([]);
+  const [playbackSpeed, setPlaybackSpeed] = useState(1);
+  const [autoPlayNext, setAutoPlayNext] = useState(true);
   
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -76,6 +81,44 @@ export const NetflixVideoPlayer: React.FC<NetflixVideoPlayerProps> = ({
     ? `${title} - S${currentSeason}E${currentEpisode}`
     : title;
 
+  // Check if there's a next episode
+  const hasNextEpisode = useCallback(() => {
+    if (type !== "tv" || seasons.length === 0) return false;
+    const currentSeasonData = seasons.find(s => s.season_number === currentSeason);
+    if (!currentSeasonData) return false;
+    
+    // Check if there's another episode in current season
+    if (currentEpisode < currentSeasonData.episode_count) return true;
+    
+    // Check if there's a next season
+    const nextSeason = seasons.find(s => s.season_number === currentSeason + 1);
+    return !!nextSeason && nextSeason.episode_count > 0;
+  }, [type, seasons, currentSeason, currentEpisode]);
+
+  // Play next episode
+  const playNextEpisode = useCallback(() => {
+    if (!hasNextEpisode()) return;
+    
+    const currentSeasonData = seasons.find(s => s.season_number === currentSeason);
+    if (!currentSeasonData) return;
+
+    if (currentEpisode < currentSeasonData.episode_count) {
+      // Next episode in same season
+      setCurrentEpisode(prev => prev + 1);
+    } else {
+      // First episode of next season
+      setCurrentSeason(prev => prev + 1);
+      setCurrentEpisode(1);
+    }
+    
+    setIsLoading(true);
+    setHasError(false);
+    toast({
+      title: "Playing next episode",
+      description: `Loading next episode...`,
+    });
+  }, [hasNextEpisode, seasons, currentSeason, currentEpisode, toast]);
+
   // Fetch TV show seasons
   useEffect(() => {
     if (type === "tv") {
@@ -95,26 +138,26 @@ export const NetflixVideoPlayer: React.FC<NetflixVideoPlayerProps> = ({
 
   // Handle controls visibility with tap/click
   const handleContainerClick = useCallback((e: React.MouseEvent | React.TouchEvent) => {
-    // Don't toggle if clicking on a button or menu
     const target = e.target as HTMLElement;
     if (target.closest('button') || target.closest('[role="menu"]')) {
       return;
     }
     
     setShowControls(prev => !prev);
+    setShowSourceMenu(false);
+    setShowSpeedMenu(false);
     
     if (!showControls) {
-      // Reset timeout when showing controls
       if (controlsTimeoutRef.current) {
         clearTimeout(controlsTimeoutRef.current);
       }
       controlsTimeoutRef.current = setTimeout(() => {
-        if (!showSourceMenu && !showEpisodeList) {
+        if (!showSourceMenu && !showEpisodeList && !showSpeedMenu) {
           setShowControls(false);
         }
       }, 4000);
     }
-  }, [showControls, showSourceMenu, showEpisodeList]);
+  }, [showControls, showSourceMenu, showEpisodeList, showSpeedMenu]);
 
   // Auto-hide controls
   useEffect(() => {
@@ -124,7 +167,7 @@ export const NetflixVideoPlayer: React.FC<NetflixVideoPlayerProps> = ({
       }
       setShowControls(true);
       controlsTimeoutRef.current = setTimeout(() => {
-        if (!showSourceMenu && !showEpisodeList) {
+        if (!showSourceMenu && !showEpisodeList && !showSpeedMenu) {
           setShowControls(false);
         }
       }, 4000);
@@ -141,7 +184,7 @@ export const NetflixVideoPlayer: React.FC<NetflixVideoPlayerProps> = ({
         clearTimeout(controlsTimeoutRef.current);
       }
     };
-  }, [showSourceMenu, showEpisodeList]);
+  }, [showSourceMenu, showEpisodeList, showSpeedMenu]);
 
   // Handle fullscreen changes
   useEffect(() => {
@@ -210,33 +253,22 @@ export const NetflixVideoPlayer: React.FC<NetflixVideoPlayerProps> = ({
     }
   }, []);
 
-  const handlePiP = useCallback(async () => {
-    try {
-      if (document.pictureInPictureElement) {
-        await document.exitPictureInPicture();
-        setIsPiPActive(false);
-        toast({ title: "Picture-in-Picture disabled" });
-      } else {
-        // For iframe-based players, we need to try a different approach
-        // Create a video element that captures the iframe content
-        toast({
-          title: "Picture-in-Picture",
-          description: "PiP mode - minimize the player to continue browsing",
-        });
-        
-        // Minimize to corner
-        setIsPiPActive(true);
-      }
-    } catch (error) {
-      console.error("PiP error:", error);
-      // Fallback to mini-player mode
-      setIsPiPActive(!isPiPActive);
-      toast({
-        title: isPiPActive ? "Exiting mini player" : "Mini player mode",
-        description: isPiPActive ? "Back to fullscreen" : "Drag to reposition",
-      });
-    }
+  const handlePiP = useCallback(() => {
+    setIsPiPActive(!isPiPActive);
+    toast({
+      title: isPiPActive ? "Exiting mini player" : "Mini player mode",
+      description: isPiPActive ? "Back to fullscreen" : "Continue browsing while watching",
+    });
   }, [isPiPActive, toast]);
+
+  const handleSpeedChange = useCallback((speed: number) => {
+    setPlaybackSpeed(speed);
+    setShowSpeedMenu(false);
+    toast({
+      title: "Playback speed",
+      description: `Speed set to ${speed}x`,
+    });
+  }, [toast]);
 
   const handleSelectEpisode = useCallback((newSeason: number, newEpisode: number) => {
     setCurrentSeason(newSeason);
@@ -249,9 +281,8 @@ export const NetflixVideoPlayer: React.FC<NetflixVideoPlayerProps> = ({
     });
   }, [toast]);
 
-  // Mini-player (PiP) mode styles
   const containerStyles = isPiPActive
-    ? "fixed bottom-20 right-4 w-80 h-48 z-50 rounded-lg overflow-hidden shadow-2xl border border-white/20"
+    ? "fixed bottom-20 right-4 w-80 h-48 z-50 rounded-lg overflow-hidden shadow-2xl border border-border"
     : "fixed inset-0 z-50 bg-black";
 
   return (
@@ -301,7 +332,7 @@ export const NetflixVideoPlayer: React.FC<NetflixVideoPlayerProps> = ({
                     {displayTitle}
                   </h1>
                   <p className="text-gray-400 text-xs">
-                    Source: {currentSource.name}
+                    Source: {currentSource.name} • {playbackSpeed}x
                   </p>
                 </div>
               )}
@@ -320,6 +351,48 @@ export const NetflixVideoPlayer: React.FC<NetflixVideoPlayerProps> = ({
                 >
                   <List className="h-5 w-5 text-white" />
                 </button>
+              )}
+
+              {/* Playback Speed */}
+              {!isPiPActive && (
+                <div className="relative">
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setShowSpeedMenu(!showSpeedMenu);
+                      setShowSourceMenu(false);
+                    }}
+                    className="p-2 rounded-full bg-black/50 hover:bg-black/70 transition-colors"
+                    title="Playback Speed"
+                  >
+                    <Gauge className="h-5 w-5 text-white" />
+                  </button>
+
+                  {showSpeedMenu && (
+                    <div 
+                      className="absolute right-0 top-full mt-2 w-32 bg-gray-900/95 backdrop-blur-lg rounded-lg border border-gray-700 shadow-2xl overflow-hidden z-50"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <div className="p-2 border-b border-gray-700">
+                        <h3 className="text-white font-semibold text-xs">Speed</h3>
+                      </div>
+                      {PLAYBACK_SPEEDS.map((speed) => (
+                        <button
+                          key={speed}
+                          onClick={() => handleSpeedChange(speed)}
+                          className={`w-full px-3 py-2 flex items-center justify-between hover:bg-gray-800 transition-colors ${
+                            speed === playbackSpeed ? "bg-primary/20" : ""
+                          }`}
+                        >
+                          <span className="text-white text-sm">{speed}x</span>
+                          {speed === playbackSpeed && (
+                            <div className="w-2 h-2 rounded-full bg-primary" />
+                          )}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
               )}
 
               {/* Download Button */}
@@ -343,6 +416,7 @@ export const NetflixVideoPlayer: React.FC<NetflixVideoPlayerProps> = ({
                     onClick={(e) => {
                       e.stopPropagation();
                       setShowSourceMenu(!showSourceMenu);
+                      setShowSpeedMenu(false);
                     }}
                     className="p-2 rounded-full bg-black/50 hover:bg-black/70 transition-colors"
                     title="Change Source"
@@ -434,10 +508,38 @@ export const NetflixVideoPlayer: React.FC<NetflixVideoPlayerProps> = ({
         </div>
       </div>
 
-      {/* Mobile Title Bar */}
-      {!isPiPActive && (
+      {/* Bottom Bar with Next Episode */}
+      {type === "tv" && hasNextEpisode() && !isPiPActive && (
         <div
-          className={`absolute bottom-16 left-0 right-0 z-10 sm:hidden transition-opacity duration-300 ${
+          className={`absolute bottom-0 left-0 right-0 z-20 transition-opacity duration-300 ${
+            showControls && !showEpisodeList ? "opacity-100" : "opacity-0 pointer-events-none"
+          }`}
+        >
+          <div className="bg-gradient-to-t from-black/90 via-black/50 to-transparent p-4">
+            <div className="flex items-center justify-between">
+              <div className="sm:hidden">
+                <p className="text-white text-sm font-medium truncate">{displayTitle}</p>
+                <p className="text-gray-400 text-xs">{currentSource.name}</p>
+              </div>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  playNextEpisode();
+                }}
+                className="flex items-center gap-2 px-4 py-2 bg-white text-black rounded-lg hover:bg-gray-200 transition-colors ml-auto"
+              >
+                <SkipForward className="h-4 w-4" />
+                <span className="text-sm font-medium">Next Episode</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Mobile Title Bar (non-TV) */}
+      {!isPiPActive && type !== "tv" && (
+        <div
+          className={`absolute bottom-4 left-0 right-0 z-10 sm:hidden transition-opacity duration-300 ${
             showControls && !showEpisodeList ? "opacity-100" : "opacity-0"
           }`}
         >
@@ -519,7 +621,7 @@ export const NetflixVideoPlayer: React.FC<NetflixVideoPlayerProps> = ({
         }}
       />
 
-      {/* Tap indicator (shown briefly when controls hidden) */}
+      {/* Tap indicator */}
       {!showControls && !isPiPActive && !showEpisodeList && (
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
           <div className="text-white/30 text-sm">Tap to show controls</div>
