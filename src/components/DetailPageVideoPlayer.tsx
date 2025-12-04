@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { NetflixVideoPlayer } from './video/NetflixVideoPlayer';
 
 interface DetailPageVideoPlayerProps {
@@ -13,6 +13,7 @@ interface DetailPageVideoPlayerProps {
   duration?: number;
   shouldResume: boolean;
   onClose: () => void;
+  onEpisodeChange?: (season: number, episode: number) => void;
 }
 
 export const DetailPageVideoPlayer: React.FC<DetailPageVideoPlayerProps> = ({
@@ -20,24 +21,29 @@ export const DetailPageVideoPlayer: React.FC<DetailPageVideoPlayerProps> = ({
   title,
   contentId,
   type,
-  season,
-  episode,
+  season = 1,
+  episode = 1,
   posterPath,
-  onClose
+  onClose,
+  onEpisodeChange
 }) => {
-  if (!isPlaying) return null;
+  const [currentSeason, setCurrentSeason] = useState(season);
+  const [currentEpisode, setCurrentEpisode] = useState(episode);
 
-  const displayTitle = type === 'tv' && season && episode
-    ? `${title} - Season ${season} Episode ${episode}`
-    : title;
+  useEffect(() => {
+    setCurrentSeason(season);
+    setCurrentEpisode(episode);
+  }, [season, episode]);
+
+  if (!isPlaying) return null;
 
   return (
     <NetflixVideoPlayer
-      title={displayTitle}
+      title={title}
       tmdbId={contentId}
       type={type}
-      season={season}
-      episode={episode}
+      season={type === 'tv' ? currentSeason : undefined}
+      episode={type === 'tv' ? currentEpisode : undefined}
       posterPath={posterPath}
       onClose={onClose}
     />
