@@ -1,21 +1,30 @@
 import React, { useState, useCallback, useRef, useEffect } from "react";
 import { streamingSources, getStreamingUrl, getSourcesByReliability } from "@/services/streaming";
+import { tmdbApi } from "@/services/tmdb";
 import { Spinner } from "@/components/ui/spinner";
 import { Button } from "@/components/ui/button";
 import {
   ArrowLeft,
-  Settings,
   Download,
   RefreshCw,
   Server,
   X,
-  ChevronRight,
-  Volume2,
   Maximize,
-  SkipForward,
-  SkipBack,
+  Minimize,
+  PictureInPicture2,
+  List,
+  Play,
+  Pause,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { EpisodeList } from "./EpisodeList";
+
+interface Season {
+  id: number;
+  name: string;
+  season_number: number;
+  episode_count: number;
+}
 
 interface NetflixVideoPlayerProps {
   title: string;
@@ -31,8 +40,8 @@ export const NetflixVideoPlayer: React.FC<NetflixVideoPlayerProps> = ({
   title,
   tmdbId,
   type,
-  season,
-  episode,
+  season = 1,
+  episode = 1,
   posterPath,
   onClose,
 }) => {
@@ -41,17 +50,71 @@ export const NetflixVideoPlayer: React.FC<NetflixVideoPlayerProps> = ({
   const [hasError, setHasError] = useState(false);
   const [showControls, setShowControls] = useState(true);
   const [showSourceMenu, setShowSourceMenu] = useState(false);
+  const [showEpisodeList, setShowEpisodeList] = useState(false);
+  const [isPiPActive, setIsPiPActive] = useState(false);
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const [currentSeason, setCurrentSeason] = useState(season);
+  const [currentEpisode, setCurrentEpisode] = useState(episode);
+  const [seasons, setSeasons] = useState<Season[]>([]);
+  
   const iframeRef = useRef<HTMLIFrameElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
   const controlsTimeoutRef = useRef<NodeJS.Timeout>();
   const { toast } = useToast();
 
   const sortedSources = getSourcesByReliability();
   const currentSource = sortedSources[currentSourceIndex];
-  const currentUrl = getStreamingUrl(tmdbId, type, currentSourceIndex, season, episode);
+  const currentUrl = getStreamingUrl(
+    tmdbId, 
+    type, 
+    currentSourceIndex, 
+    type === "tv" ? currentSeason : undefined, 
+    type === "tv" ? currentEpisode : undefined
+  );
 
-  const displayTitle = type === "tv" && season && episode
-    ? `${title} - S${season}E${episode}`
+  const displayTitle = type === "tv"
+    ? `${title} - S${currentSeason}E${currentEpisode}`
     : title;
+
+  // Fetch TV show seasons
+  useEffect(() => {
+    if (type === "tv") {
+      const fetchSeasons = async () => {
+        try {
+          const data = await tmdbApi.getTVShowDetails(tmdbId);
+          if (data.seasons) {
+            setSeasons(data.seasons);
+          }
+        } catch (error) {
+          console.error("Error fetching seasons:", error);
+        }
+      };
+      fetchSeasons();
+    }
+  }, [tmdbId, type]);
+
+  // Handle controls visibility with tap/click
+  const handleContainerClick = useCallback((e: React.MouseEvent | React.TouchEvent) => {
+    // Don't toggle if clicking on a button or menu
+    const target = e.target as HTMLElement;
+    if (target.closest('button') || target.closest('[role="menu"]')) {
+      return;
+    }
+    
+    setShowControls(prev => !prev);
+    
+    if (!showControls) {
+      // Reset timeout when showing controls
+      if (controlsTimeoutRef.current) {
+        clearTimeout(controlsTimeoutRef.current);
+      }
+      controlsTimeoutRef.current = setTimeout(() => {
+        if (!showSourceMenu && !showEpisodeList) {
+          setShowControls(false);
+        }
+      }, 4000);
+    }
+  }, [showControls, showSourceMenu, showEpisodeList]);
 
   // Auto-hide controls
   useEffect(() => {
@@ -61,27 +124,36 @@ export const NetflixVideoPlayer: React.FC<NetflixVideoPlayerProps> = ({
       }
       setShowControls(true);
       controlsTimeoutRef.current = setTimeout(() => {
-        if (!showSourceMenu) {
+        if (!showSourceMenu && !showEpisodeList) {
           setShowControls(false);
         }
       }, 4000);
     };
 
     const handleMouseMove = () => resetControlsTimeout();
-    const handleTouchStart = () => resetControlsTimeout();
 
     window.addEventListener("mousemove", handleMouseMove);
-    window.addEventListener("touchstart", handleTouchStart);
     resetControlsTimeout();
 
     return () => {
       window.removeEventListener("mousemove", handleMouseMove);
-      window.removeEventListener("touchstart", handleTouchStart);
       if (controlsTimeoutRef.current) {
         clearTimeout(controlsTimeoutRef.current);
       }
     };
-  }, [showSourceMenu]);
+  }, [showSourceMenu, showEpisodeList]);
+
+  // Handle fullscreen changes
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      setIsFullscreen(!!document.fullscreenElement);
+    };
+
+    document.addEventListener("fullscreenchange", handleFullscreenChange);
+    return () => {
+      document.removeEventListener("fullscreenchange", handleFullscreenChange);
+    };
+  }, []);
 
   const handleIframeLoad = useCallback(() => {
     setIsLoading(false);
@@ -118,119 +190,242 @@ export const NetflixVideoPlayer: React.FC<NetflixVideoPlayerProps> = ({
   }, [currentSourceIndex, sortedSources.length, switchSource]);
 
   const handleDownload = useCallback(() => {
-    // Open download page in new tab
-    const downloadUrl = `https://dl.vidsrc.vip/movie/${tmdbId}`;
+    const downloadUrl = type === "movie" 
+      ? `https://dl.vidsrc.vip/movie/${tmdbId}`
+      : `https://dl.vidsrc.vip/tv/${tmdbId}/${currentSeason}/${currentEpisode}`;
     window.open(downloadUrl, "_blank", "noopener,noreferrer");
     toast({
       title: "Download",
       description: "Opening download page in new tab...",
     });
-  }, [tmdbId, toast]);
+  }, [tmdbId, type, currentSeason, currentEpisode, toast]);
 
   const handleFullscreen = useCallback(() => {
-    const container = document.getElementById("video-player-container");
-    if (container) {
+    if (containerRef.current) {
       if (document.fullscreenElement) {
         document.exitFullscreen();
       } else {
-        container.requestFullscreen();
+        containerRef.current.requestFullscreen();
       }
     }
   }, []);
 
+  const handlePiP = useCallback(async () => {
+    try {
+      if (document.pictureInPictureElement) {
+        await document.exitPictureInPicture();
+        setIsPiPActive(false);
+        toast({ title: "Picture-in-Picture disabled" });
+      } else {
+        // For iframe-based players, we need to try a different approach
+        // Create a video element that captures the iframe content
+        toast({
+          title: "Picture-in-Picture",
+          description: "PiP mode - minimize the player to continue browsing",
+        });
+        
+        // Minimize to corner
+        setIsPiPActive(true);
+      }
+    } catch (error) {
+      console.error("PiP error:", error);
+      // Fallback to mini-player mode
+      setIsPiPActive(!isPiPActive);
+      toast({
+        title: isPiPActive ? "Exiting mini player" : "Mini player mode",
+        description: isPiPActive ? "Back to fullscreen" : "Drag to reposition",
+      });
+    }
+  }, [isPiPActive, toast]);
+
+  const handleSelectEpisode = useCallback((newSeason: number, newEpisode: number) => {
+    setCurrentSeason(newSeason);
+    setCurrentEpisode(newEpisode);
+    setIsLoading(true);
+    setHasError(false);
+    toast({
+      title: "Loading episode",
+      description: `S${newSeason}E${newEpisode}`,
+    });
+  }, [toast]);
+
+  // Mini-player (PiP) mode styles
+  const containerStyles = isPiPActive
+    ? "fixed bottom-20 right-4 w-80 h-48 z-50 rounded-lg overflow-hidden shadow-2xl border border-white/20"
+    : "fixed inset-0 z-50 bg-black";
+
   return (
     <div
+      ref={containerRef}
       id="video-player-container"
-      className="fixed inset-0 z-50 bg-black flex flex-col"
+      className={containerStyles}
+      onClick={handleContainerClick}
     >
+      {/* Episode List Overlay */}
+      {showEpisodeList && type === "tv" && seasons.length > 0 && (
+        <EpisodeList
+          tmdbId={tmdbId}
+          seasons={seasons}
+          currentSeason={currentSeason}
+          currentEpisode={currentEpisode}
+          onSelectEpisode={handleSelectEpisode}
+          onClose={() => setShowEpisodeList(false)}
+        />
+      )}
+
       {/* Top Bar */}
       <div
         className={`absolute top-0 left-0 right-0 z-20 transition-opacity duration-300 ${
-          showControls ? "opacity-100" : "opacity-0 pointer-events-none"
+          showControls && !showEpisodeList ? "opacity-100" : "opacity-0 pointer-events-none"
         }`}
       >
-        <div className="bg-gradient-to-b from-black/90 via-black/50 to-transparent p-4 md:p-6">
+        <div className="bg-gradient-to-b from-black/90 via-black/50 to-transparent p-3 md:p-4">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-3">
               <button
-                onClick={onClose}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  if (isPiPActive) {
+                    setIsPiPActive(false);
+                  } else {
+                    onClose?.();
+                  }
+                }}
                 className="p-2 rounded-full bg-black/50 hover:bg-black/70 transition-colors"
               >
-                <ArrowLeft className="h-5 w-5 md:h-6 md:w-6 text-white" />
+                <ArrowLeft className="h-5 w-5 text-white" />
               </button>
-              <div className="hidden sm:block">
-                <h1 className="text-white font-semibold text-lg md:text-xl truncate max-w-md">
-                  {displayTitle}
-                </h1>
-                <p className="text-gray-400 text-sm">
-                  Source: {currentSource.name}
-                </p>
-              </div>
+              {!isPiPActive && (
+                <div className="hidden sm:block">
+                  <h1 className="text-white font-semibold text-base md:text-lg truncate max-w-md">
+                    {displayTitle}
+                  </h1>
+                  <p className="text-gray-400 text-xs">
+                    Source: {currentSource.name}
+                  </p>
+                </div>
+              )}
             </div>
 
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1 md:gap-2">
+              {/* Episode List (TV only) */}
+              {type === "tv" && !isPiPActive && (
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setShowEpisodeList(true);
+                  }}
+                  className="p-2 rounded-full bg-black/50 hover:bg-black/70 transition-colors"
+                  title="Episodes"
+                >
+                  <List className="h-5 w-5 text-white" />
+                </button>
+              )}
+
               {/* Download Button */}
-              <button
-                onClick={handleDownload}
-                className="p-2 md:p-3 rounded-full bg-black/50 hover:bg-black/70 transition-colors"
-                title="Download"
-              >
-                <Download className="h-5 w-5 text-white" />
-              </button>
+              {!isPiPActive && (
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleDownload();
+                  }}
+                  className="p-2 rounded-full bg-black/50 hover:bg-black/70 transition-colors"
+                  title="Download"
+                >
+                  <Download className="h-5 w-5 text-white" />
+                </button>
+              )}
 
               {/* Source Selector */}
-              <div className="relative">
-                <button
-                  onClick={() => setShowSourceMenu(!showSourceMenu)}
-                  className="p-2 md:p-3 rounded-full bg-black/50 hover:bg-black/70 transition-colors"
-                  title="Change Source"
-                >
-                  <Server className="h-5 w-5 text-white" />
-                </button>
+              {!isPiPActive && (
+                <div className="relative">
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setShowSourceMenu(!showSourceMenu);
+                    }}
+                    className="p-2 rounded-full bg-black/50 hover:bg-black/70 transition-colors"
+                    title="Change Source"
+                  >
+                    <Server className="h-5 w-5 text-white" />
+                  </button>
 
-                {showSourceMenu && (
-                  <div className="absolute right-0 top-full mt-2 w-64 bg-gray-900/95 backdrop-blur-lg rounded-lg border border-gray-700 shadow-2xl overflow-hidden">
-                    <div className="p-3 border-b border-gray-700">
-                      <h3 className="text-white font-semibold text-sm">Select Source</h3>
+                  {showSourceMenu && (
+                    <div 
+                      className="absolute right-0 top-full mt-2 w-64 bg-gray-900/95 backdrop-blur-lg rounded-lg border border-gray-700 shadow-2xl overflow-hidden z-50"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <div className="p-3 border-b border-gray-700">
+                        <h3 className="text-white font-semibold text-sm">Select Source</h3>
+                      </div>
+                      <div className="max-h-80 overflow-y-auto">
+                        {sortedSources.map((source, index) => (
+                          <button
+                            key={source.name}
+                            onClick={() => switchSource(index)}
+                            className={`w-full px-4 py-3 flex items-center justify-between hover:bg-gray-800 transition-colors ${
+                              index === currentSourceIndex ? "bg-primary/20" : ""
+                            }`}
+                          >
+                            <div className="text-left">
+                              <p className="text-white text-sm font-medium">{source.name}</p>
+                              <p className="text-gray-400 text-xs capitalize">
+                                {source.reliability} reliability
+                              </p>
+                            </div>
+                            {index === currentSourceIndex && (
+                              <div className="w-2 h-2 rounded-full bg-primary" />
+                            )}
+                          </button>
+                        ))}
+                      </div>
                     </div>
-                    <div className="max-h-80 overflow-y-auto">
-                      {sortedSources.map((source, index) => (
-                        <button
-                          key={source.name}
-                          onClick={() => switchSource(index)}
-                          className={`w-full px-4 py-3 flex items-center justify-between hover:bg-gray-800 transition-colors ${
-                            index === currentSourceIndex ? "bg-red-600/20" : ""
-                          }`}
-                        >
-                          <div className="text-left">
-                            <p className="text-white text-sm font-medium">{source.name}</p>
-                            <p className="text-gray-400 text-xs capitalize">
-                              {source.reliability} reliability
-                            </p>
-                          </div>
-                          {index === currentSourceIndex && (
-                            <div className="w-2 h-2 rounded-full bg-red-500" />
-                          )}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </div>
+                  )}
+                </div>
+              )}
 
-              {/* Fullscreen */}
+              {/* Picture-in-Picture */}
               <button
-                onClick={handleFullscreen}
-                className="p-2 md:p-3 rounded-full bg-black/50 hover:bg-black/70 transition-colors"
-                title="Fullscreen"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handlePiP();
+                }}
+                className="p-2 rounded-full bg-black/50 hover:bg-black/70 transition-colors"
+                title="Picture-in-Picture"
               >
-                <Maximize className="h-5 w-5 text-white" />
+                <PictureInPicture2 className="h-5 w-5 text-white" />
               </button>
 
-              {/* Close */}
+              {/* Fullscreen */}
+              {!isPiPActive && (
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleFullscreen();
+                  }}
+                  className="p-2 rounded-full bg-black/50 hover:bg-black/70 transition-colors"
+                  title="Fullscreen"
+                >
+                  {isFullscreen ? (
+                    <Minimize className="h-5 w-5 text-white" />
+                  ) : (
+                    <Maximize className="h-5 w-5 text-white" />
+                  )}
+                </button>
+              )}
+
+              {/* Close (mobile) */}
               <button
-                onClick={onClose}
-                className="p-2 md:p-3 rounded-full bg-black/50 hover:bg-black/70 transition-colors sm:hidden"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  if (isPiPActive) {
+                    setIsPiPActive(false);
+                    onClose?.();
+                  } else {
+                    onClose?.();
+                  }
+                }}
+                className="p-2 rounded-full bg-black/50 hover:bg-black/70 transition-colors sm:hidden"
               >
                 <X className="h-5 w-5 text-white" />
               </button>
@@ -240,50 +435,65 @@ export const NetflixVideoPlayer: React.FC<NetflixVideoPlayerProps> = ({
       </div>
 
       {/* Mobile Title Bar */}
-      <div
-        className={`absolute bottom-20 left-0 right-0 z-10 sm:hidden transition-opacity duration-300 ${
-          showControls ? "opacity-100" : "opacity-0"
-        }`}
-      >
-        <div className="px-4">
-          <h1 className="text-white font-semibold text-base truncate">
-            {displayTitle}
-          </h1>
+      {!isPiPActive && (
+        <div
+          className={`absolute bottom-16 left-0 right-0 z-10 sm:hidden transition-opacity duration-300 ${
+            showControls && !showEpisodeList ? "opacity-100" : "opacity-0"
+          }`}
+        >
+          <div className="px-4">
+            <h1 className="text-white font-semibold text-sm truncate">
+              {displayTitle}
+            </h1>
+            <p className="text-gray-400 text-xs">
+              {currentSource.name}
+            </p>
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Loading State */}
-      {isLoading && (
+      {isLoading && !showEpisodeList && (
         <div className="absolute inset-0 flex items-center justify-center bg-black/80 z-30">
-          <div className="text-center space-y-4">
-            <Spinner size="lg" />
-            <p className="text-white text-sm">Loading from {currentSource.name}...</p>
+          <div className="text-center space-y-3">
+            <Spinner size={isPiPActive ? "md" : "lg"} />
+            {!isPiPActive && (
+              <p className="text-white text-sm">Loading from {currentSource.name}...</p>
+            )}
           </div>
         </div>
       )}
 
       {/* Error State */}
-      {hasError && (
+      {hasError && !showEpisodeList && (
         <div className="absolute inset-0 flex items-center justify-center bg-black/90 z-30">
-          <div className="text-center space-y-4 p-6 max-w-sm">
-            <div className="w-16 h-16 mx-auto rounded-full bg-red-500/20 flex items-center justify-center">
-              <X className="h-8 w-8 text-red-500" />
+          <div className="text-center space-y-3 p-4 max-w-sm">
+            <div className="w-12 h-12 mx-auto rounded-full bg-destructive/20 flex items-center justify-center">
+              <X className="h-6 w-6 text-destructive" />
             </div>
-            <h3 className="text-xl font-semibold text-white">Playback Error</h3>
+            <h3 className="text-lg font-semibold text-white">Playback Error</h3>
             <p className="text-gray-400 text-sm">
-              Unable to load video from {currentSource.name}
+              Unable to load from {currentSource.name}
             </p>
             <div className="flex flex-col gap-2">
               <Button
-                onClick={handleRetry}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleRetry();
+                }}
                 className="bg-white text-black hover:bg-gray-200"
+                size="sm"
               >
                 <RefreshCw className="h-4 w-4 mr-2" />
                 Retry
               </Button>
               <Button
-                onClick={tryNextSource}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  tryNextSource();
+                }}
                 variant="outline"
+                size="sm"
                 className="border-gray-600 text-white hover:bg-gray-800"
               >
                 <Server className="h-4 w-4 mr-2" />
@@ -305,33 +515,16 @@ export const NetflixVideoPlayer: React.FC<NetflixVideoPlayerProps> = ({
         onLoad={handleIframeLoad}
         onError={handleIframeError}
         style={{
-          visibility: isLoading || hasError ? "hidden" : "visible",
+          visibility: isLoading || hasError || showEpisodeList ? "hidden" : "visible",
         }}
       />
 
-      {/* Bottom Controls - Mobile */}
-      <div
-        className={`absolute bottom-0 left-0 right-0 z-20 sm:hidden transition-opacity duration-300 ${
-          showControls ? "opacity-100" : "opacity-0 pointer-events-none"
-        }`}
-      >
-        <div className="bg-gradient-to-t from-black/90 via-black/50 to-transparent p-4">
-          <div className="flex items-center justify-around">
-            <button className="p-3">
-              <SkipBack className="h-6 w-6 text-white" />
-            </button>
-            <button
-              onClick={handleRetry}
-              className="p-4 rounded-full bg-white/20"
-            >
-              <RefreshCw className="h-8 w-8 text-white" />
-            </button>
-            <button className="p-3">
-              <SkipForward className="h-6 w-6 text-white" />
-            </button>
-          </div>
+      {/* Tap indicator (shown briefly when controls hidden) */}
+      {!showControls && !isPiPActive && !showEpisodeList && (
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+          <div className="text-white/30 text-sm">Tap to show controls</div>
         </div>
-      </div>
+      )}
     </div>
   );
 };
