@@ -1,14 +1,11 @@
-
 import React from 'react';
 import { ShareModal } from './ShareModal';
 
 interface DetailPageModalsProps {
   showShareModal: boolean;
-  showWatchParty: boolean;
   content: any;
   type: 'movie' | 'tv';
   onCloseShare: () => void;
-  onCloseWatchParty: () => void;
 }
 
 export const DetailPageModals: React.FC<DetailPageModalsProps> = ({
@@ -17,7 +14,6 @@ export const DetailPageModals: React.FC<DetailPageModalsProps> = ({
   type,
   onCloseShare,
 }) => {
-  // Create ShareableContent object for ShareModal
   const shareableContent = {
     id: content?.id || 0,
     title: content?.title || content?.name || 'Unknown Title',
@@ -28,7 +24,6 @@ export const DetailPageModals: React.FC<DetailPageModalsProps> = ({
 
   return (
     <>
-      {/* Share Modal */}
       {showShareModal && (
         <ShareModal
           content={shareableContent}

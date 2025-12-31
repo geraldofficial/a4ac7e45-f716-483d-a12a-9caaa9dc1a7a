@@ -159,11 +159,9 @@ const DetailPage = () => {
 
           <DetailPageModals
             showShareModal={showShareModal}
-            showWatchParty={false}
             content={content}
             type={type}
             onCloseShare={() => setShowShareModal(false)}
-            onCloseWatchParty={() => {}}
           />
         </>
       )}
