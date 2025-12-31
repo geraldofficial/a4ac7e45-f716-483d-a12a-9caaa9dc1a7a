@@ -2,7 +2,7 @@ export interface AppNotification {
   id: string;
   title: string;
   message: string;
-  type: 'new_content' | 'watch_party' | 'recommendation' | 'general';
+  type: 'new_content' | 'recommendation' | 'general';
   isRead: boolean;
   createdAt: string;
   actionUrl?: string;
@@ -28,14 +28,12 @@ class NotificationsService {
     };
 
     const existingNotifications = await this.getNotifications();
-    existingNotifications.unshift(newNotification); // Add to beginning
+    existingNotifications.unshift(newNotification);
     
-    // Keep only last 50 notifications
     const trimmedNotifications = existingNotifications.slice(0, 50);
     
     localStorage.setItem(this.getStorageKey(), JSON.stringify(trimmedNotifications));
     
-    // Show browser notification if permission granted
     if (Notification.permission === 'granted') {
       new Notification(notification.title, {
         body: notification.message,
@@ -73,7 +71,6 @@ class NotificationsService {
     return false;
   }
 
-  // Simulate new content notifications
   async simulateNewContentNotification(): Promise<void> {
     await this.addNotification({
       title: 'New Content Available!',

@@ -1,54 +1,84 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerTrigger } from '@/components/ui/drawer';
-import { Users, LogOut } from 'lucide-react';
+import { Menu, LogOut, Home, Film, Tv, History, Heart, User, HelpCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 
-export const NavigationDrawer: React.FC<{ onOpenWatchParty?: () => void }> = ({ onOpenWatchParty }) => {
-  const { signOut } = useAuth();
+export const NavigationDrawer: React.FC = () => {
+  const { signOut, user } = useAuth();
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
 
   const handleSignOut = async () => {
     try {
       await signOut();
-      window.location.href = '/auth';
     } catch (error) {
       console.error('Error signing out:', error);
     }
   };
 
+  const menuItems = [
+    { icon: Home, label: 'Home', path: '/' },
+    { icon: Film, label: 'Movies', path: '/movies' },
+    { icon: Tv, label: 'TV Shows', path: '/tv-shows' },
+    { icon: Heart, label: 'Watchlist', path: '/watchlist' },
+    { icon: History, label: 'History', path: '/history' },
+    { icon: User, label: 'Profile', path: '/profile' },
+    { icon: HelpCircle, label: 'Help', path: '/help' },
+  ];
+
   return (
     <Drawer open={open} onOpenChange={setOpen}>
       <DrawerTrigger asChild>
-        <Button variant="ghost" size="sm" className="text-white">
-          <Users className="h-5 w-5" />
+        <Button variant="ghost" size="sm" className="text-white p-2">
+          <Menu className="h-5 w-5" />
         </Button>
       </DrawerTrigger>
-      <DrawerContent className="bg-gray-900 border-gray-700 z-50">
-        <DrawerHeader>
-          <DrawerTitle className="text-white text-left">Menu</DrawerTitle>
+      <DrawerContent className="bg-background border-border z-50 max-h-[85vh]">
+        <DrawerHeader className="border-b border-border pb-4">
+          <DrawerTitle className="text-foreground text-left">
+            {user ? `Hi, ${user.full_name || user.email?.split('@')[0] || 'User'}` : 'Menu'}
+          </DrawerTitle>
         </DrawerHeader>
-        <div className="p-4 space-y-3">
-          <Button
-            className="w-full h-12 bg-blue-600 text-white rounded-lg font-semibold"
-            onClick={() => {
-              setOpen(false);
-              if (onOpenWatchParty) onOpenWatchParty();
-              else navigate('/watch-party');
-            }}
-          >
-            Watch Party Room
-          </Button>
-          <Button
-            className="w-full h-12 bg-black text-red-500 border border-red-700 rounded-lg font-semibold"
-            onClick={handleSignOut}
-          >
-            <LogOut className="h-5 w-5 mr-2" />
-            Sign Out
-          </Button>
+        <div className="p-4 space-y-2 overflow-y-auto">
+          {menuItems.map((item) => (
+            <Button
+              key={item.path}
+              variant="ghost"
+              className="w-full h-12 justify-start text-foreground hover:bg-secondary"
+              onClick={() => {
+                setOpen(false);
+                navigate(item.path);
+              }}
+            >
+              <item.icon className="h-5 w-5 mr-3" />
+              {item.label}
+            </Button>
+          ))}
+          
+          {user && (
+            <Button
+              variant="destructive"
+              className="w-full h-12 mt-4"
+              onClick={handleSignOut}
+            >
+              <LogOut className="h-5 w-5 mr-2" />
+              Sign Out
+            </Button>
+          )}
+          
+          {!user && (
+            <Button
+              className="w-full h-12 mt-4"
+              onClick={() => {
+                setOpen(false);
+                navigate('/auth');
+              }}
+            >
+              Sign In
+            </Button>
+          )}
         </div>
       </DrawerContent>
     </Drawer>

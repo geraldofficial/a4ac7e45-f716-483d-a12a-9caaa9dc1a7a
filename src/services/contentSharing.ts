@@ -1,4 +1,3 @@
-
 export interface ShareableContent {
   id: number;
   title: string;
@@ -23,7 +22,6 @@ class ContentSharingService {
         console.log('Share canceled or failed');
       }
     } else {
-      // Fallback to clipboard
       await navigator.clipboard.writeText(`${shareText} ${shareUrl}`);
       return Promise.resolve();
     }
@@ -52,8 +50,8 @@ class ContentSharingService {
     }
   }
 
-  generateWatchPartyLink(movieId: number, movieTitle: string): string {
-    return `${window.location.origin}/watch-party/invite?movie=${movieId}&title=${encodeURIComponent(movieTitle)}`;
+  generateShareLink(contentId: number, contentTitle: string): string {
+    return `${window.location.origin}/movie/${contentId}?ref=share`;
   }
 }
 

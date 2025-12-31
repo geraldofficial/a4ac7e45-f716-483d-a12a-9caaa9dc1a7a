@@ -46,7 +46,6 @@ export const MobileNotificationCenter: React.FC = () => {
   const getNotificationIcon = (type: AppNotification['type']) => {
     switch (type) {
       case 'new_content': return '🎬';
-      case 'watch_party': return '👥';
       case 'recommendation': return '⭐';
       default: return '📢';
     }

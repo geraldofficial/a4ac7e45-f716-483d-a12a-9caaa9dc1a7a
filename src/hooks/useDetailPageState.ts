@@ -10,7 +10,6 @@ export const useDetailPageState = (id: string | undefined) => {
   const [loading, setLoading] = useState(true);
   const [isPlaying, setIsPlaying] = useState(false);
   const [showShareModal, setShowShareModal] = useState(false);
-  const [showWatchParty, setShowWatchParty] = useState(false);
 
   // Determine type from the current route with proper typing and memoization
   const type: "movie" | "tv" = useMemo(
@@ -111,13 +110,11 @@ export const useDetailPageState = (id: string | undefined) => {
     loading,
     isPlaying,
     showShareModal,
-    showWatchParty,
     type,
     season,
     episode,
     shouldResume,
     setIsPlaying,
     setShowShareModal,
-    setShowWatchParty,
   };
 };

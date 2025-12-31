@@ -15,9 +15,12 @@ import {
   List,
   Gauge,
   SkipForward,
+  Captions,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { EpisodeList } from "./EpisodeList";
+import { SubtitleSettingsPanel } from "./SubtitleSettingsPanel";
+import { useWatchProgress } from "@/hooks/useWatchProgress";
 
 interface Season {
   id: number;
@@ -53,6 +56,7 @@ export const NetflixVideoPlayer: React.FC<NetflixVideoPlayerProps> = ({
   const [showControls, setShowControls] = useState(true);
   const [showSourceMenu, setShowSourceMenu] = useState(false);
   const [showSpeedMenu, setShowSpeedMenu] = useState(false);
+  const [showSubtitleMenu, setShowSubtitleMenu] = useState(false);
   const [showEpisodeList, setShowEpisodeList] = useState(false);
   const [isPiPActive, setIsPiPActive] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
@@ -61,6 +65,7 @@ export const NetflixVideoPlayer: React.FC<NetflixVideoPlayerProps> = ({
   const [seasons, setSeasons] = useState<Season[]>([]);
   const [playbackSpeed, setPlaybackSpeed] = useState(1);
   const [autoPlayNext, setAutoPlayNext] = useState(true);
+  const [currentSubtitle, setCurrentSubtitle] = useState('off');
   
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -69,6 +74,17 @@ export const NetflixVideoPlayer: React.FC<NetflixVideoPlayerProps> = ({
 
   const sortedSources = getSourcesByReliability();
   const currentSource = sortedSources[currentSourceIndex];
+
+  // Watch progress hook
+  const { saveProgress, updateCurrentTime, getResumePosition } = useWatchProgress({
+    tmdbId,
+    type,
+    title,
+    posterPath,
+    season: type === "tv" ? currentSeason : undefined,
+    episode: type === "tv" ? currentEpisode : undefined,
+    currentSource: currentSource.name,
+  });
   const currentUrl = getStreamingUrl(
     tmdbId, 
     type, 
@@ -146,18 +162,19 @@ export const NetflixVideoPlayer: React.FC<NetflixVideoPlayerProps> = ({
     setShowControls(prev => !prev);
     setShowSourceMenu(false);
     setShowSpeedMenu(false);
+    setShowSubtitleMenu(false);
     
     if (!showControls) {
       if (controlsTimeoutRef.current) {
         clearTimeout(controlsTimeoutRef.current);
       }
       controlsTimeoutRef.current = setTimeout(() => {
-        if (!showSourceMenu && !showEpisodeList && !showSpeedMenu) {
+        if (!showSourceMenu && !showEpisodeList && !showSpeedMenu && !showSubtitleMenu) {
           setShowControls(false);
         }
       }, 4000);
     }
-  }, [showControls, showSourceMenu, showEpisodeList, showSpeedMenu]);
+  }, [showControls, showSourceMenu, showEpisodeList, showSpeedMenu, showSubtitleMenu]);
 
   // Auto-hide controls
   useEffect(() => {
@@ -167,7 +184,7 @@ export const NetflixVideoPlayer: React.FC<NetflixVideoPlayerProps> = ({
       }
       setShowControls(true);
       controlsTimeoutRef.current = setTimeout(() => {
-        if (!showSourceMenu && !showEpisodeList && !showSpeedMenu) {
+        if (!showSourceMenu && !showEpisodeList && !showSpeedMenu && !showSubtitleMenu) {
           setShowControls(false);
         }
       }, 4000);
@@ -184,7 +201,7 @@ export const NetflixVideoPlayer: React.FC<NetflixVideoPlayerProps> = ({
         clearTimeout(controlsTimeoutRef.current);
       }
     };
-  }, [showSourceMenu, showEpisodeList, showSpeedMenu]);
+  }, [showSourceMenu, showEpisodeList, showSpeedMenu, showSubtitleMenu]);
 
   // Handle fullscreen changes
   useEffect(() => {
@@ -353,6 +370,30 @@ export const NetflixVideoPlayer: React.FC<NetflixVideoPlayerProps> = ({
                 </button>
               )}
 
+              {/* Subtitles */}
+              {!isPiPActive && (
+                <div className="relative">
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setShowSubtitleMenu(!showSubtitleMenu);
+                      setShowSpeedMenu(false);
+                      setShowSourceMenu(false);
+                    }}
+                    className={`p-2 rounded-full transition-colors ${currentSubtitle !== 'off' ? 'bg-primary/50' : 'bg-black/50 hover:bg-black/70'}`}
+                    title="Subtitles"
+                  >
+                    <Captions className="h-5 w-5 text-white" />
+                  </button>
+                  <SubtitleSettingsPanel
+                    isOpen={showSubtitleMenu}
+                    currentLanguage={currentSubtitle}
+                    onLanguageChange={setCurrentSubtitle}
+                    onClose={() => setShowSubtitleMenu(false)}
+                  />
+                </div>
+              )}
+
               {/* Playback Speed */}
               {!isPiPActive && (
                 <div className="relative">
@@ -361,6 +402,7 @@ export const NetflixVideoPlayer: React.FC<NetflixVideoPlayerProps> = ({
                       e.stopPropagation();
                       setShowSpeedMenu(!showSpeedMenu);
                       setShowSourceMenu(false);
+                      setShowSubtitleMenu(false);
                     }}
                     className="p-2 rounded-full bg-black/50 hover:bg-black/70 transition-colors"
                     title="Playback Speed"
